@@ -83,6 +83,8 @@ void Scene2g::OnDestroy() {
 }
 
 void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
+	static bool mouseHeld = false;
+	static int lastX = 0, lastY = 0;
 	switch (sdlEvent.type) {
 	case SDL_KEYDOWN:
 		switch (sdlEvent.key.keysym.scancode) {
@@ -93,15 +95,39 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 		}
 		break;
 
-	case SDL_MOUSEMOTION:
-		break;
-
 	case SDL_MOUSEBUTTONDOWN:
+		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
+			mouseHeld = true;
+			lastX = sdlEvent.button.x;
+			lastY = sdlEvent.button.y;
+		}
 		break;
 
 	case SDL_MOUSEBUTTONUP:
+		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
+			mouseHeld = false;
+		}
 		break;
 
+	case SDL_MOUSEMOTION:
+		if (mouseHeld) {
+			int deltaX = sdlEvent.motion.x - lastX;
+			int deltaY = sdlEvent.motion.y - lastY;
+			lastX = sdlEvent.motion.x;
+			lastY = sdlEvent.motion.y;
+
+			// Adjust rotation based on mouse movement
+			float sensitivity = 0.005f;
+			Quaternion pitchRotation = QMath::normalize(Quaternion(1.0f, Vec3(deltaY * sensitivity, 0, 0)));
+			Quaternion yawRotation = QMath::normalize(Quaternion(1.0f, Vec3(0, deltaX * sensitivity, 0)));
+
+			Quaternion newRotation = yawRotation * pitchRotation * sceneGraph.GetActor("Board")->GetComponent<TransformComponent>()->GetQuaternion();
+			sceneGraph.GetActor("Board")->GetComponent<TransformComponent>()->SetTransform(
+				sceneGraph.GetActor("Board")->GetComponent<TransformComponent>()->GetPosition(),
+				newRotation
+			);
+		}
+		break;
 	default:
 		break;
 	}
@@ -114,11 +140,34 @@ void Scene2g::Update(const float deltaTime) {
 
 
 	// makes board spin
-	Matrix4 boardModel = MMath::rotate(angle, Vec3(0.0f, 0.0f, 1.0f)) *
-		MMath::rotate(-90.0f, Vec3(0.0f, 1.0f, 0.0f)) *
-		MMath::rotate(90.0f, Vec3(0.0f, 1.0f, 0.0f));
+	//Matrix4 boardModel;
 
-	sceneGraph.GetActor("Board")->GetComponent<TransformComponent>()->SetOrientation(QMath::toQuaternion(boardModel));
+	const Uint8* keys = SDL_GetKeyboardState(NULL);
+
+	if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) {
+		Ref<TransformComponent> objMoved = sceneGraph.GetActor("Board")->GetComponent<TransformComponent>();
+		objMoved->SetTransform(objMoved->GetPosition(), objMoved->GetQuaternion() * QMath::normalize(Quaternion(1.0f, Vec3(0.01, 0, 0))));
+	
+	}
+	if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
+		Ref<TransformComponent> objMoved = sceneGraph.GetActor("Board")->GetComponent<TransformComponent>();
+		objMoved->SetTransform(objMoved->GetPosition(), objMoved->GetQuaternion() * QMath::normalize(Quaternion(1.0f, Vec3(-0.01, 0, 0))));
+
+	}
+	if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]) {
+		Ref<TransformComponent> objMoved = sceneGraph.GetActor("Board")->GetComponent<TransformComponent>();
+		objMoved->SetTransform(objMoved->GetPosition(), objMoved->GetQuaternion() * QMath::normalize(Quaternion(1.0f, Vec3(0, -0.01, 0))));
+
+	}
+	if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) {
+		Ref<TransformComponent> objMoved = sceneGraph.GetActor("Board")->GetComponent<TransformComponent>();
+		objMoved->SetTransform(objMoved->GetPosition(), objMoved->GetQuaternion() * QMath::normalize(Quaternion(1.0f, Vec3(0, 0.01, 0))));
+
+
+	}
+
+
+	//if (boardModel) sceneGraph.GetActor("Board")->GetComponent<TransformComponent>()->SetOrientation(QMath::toQuaternion(boardModel));
 	
 	collisionSystem.Update(deltaTime);
 
