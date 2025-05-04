@@ -1,4 +1,4 @@
-Sun May  4 17:55:32 2025
+Sun May  4 18:33:12 2025
 [INFO]: Starting the SceneManager
 [INFO]: OpenGL version: 4.6.0 NVIDIA 546.92
 [INFO]: Graphics card vendor NVIDIA Corporation
@@ -21,13 +21,3 @@ Sun May  4 17:55:32 2025
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
-[INFO]: Deleting the SceneManager
-[INFO]: Deleting assets Scene2g: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleted Scene2g: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 

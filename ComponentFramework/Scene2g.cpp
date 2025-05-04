@@ -4,7 +4,7 @@
 #include "Scene2g.h"
 #include <MMath.h>
 #include "Debug.h"
-
+#include "ExampleXML.h"
 Scene2g::Scene2g() : drawInWireMode{ false } {
 	Debug::Info("Created Scene2g: ", __FILE__, __LINE__);
 }
@@ -23,6 +23,9 @@ bool Scene2g::OnCreate() {
 	camera = new CameraActor(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
 	camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
 	camera->OnCreate();
+
+	XMLtest example;
+	example.readDoc();
 
 	// Light Pos
 	lightPos = Vec3(5.0f, -1.0f, 0.0f);
