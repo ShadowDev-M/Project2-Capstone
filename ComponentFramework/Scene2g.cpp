@@ -29,13 +29,21 @@ bool Scene2g::OnCreate() {
 	TransformComponent* example = new TransformComponent(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
 	
 
-	//
-	XMLtest::writeActor("Bob");
-	XMLtest::writeComponent<TransformComponent>("Bob", example);
+	XMLObjectFile::writeActor("Bob");
+	XMLObjectFile::writeActor("Bill");
+
+	XMLObjectFile::writeComponent<TransformComponent>("Bob", example);
 
 	TransformComponent* tempTestWrite = std::apply([](auto&&... args) {
 		return new TransformComponent(args...);
-		}, XMLtest::getComponent<TransformComponent>("Bob"));
+		}, XMLObjectFile::getComponent<TransformComponent>("Bob"));
+
+	XMLObjectFile::writeCellFile("LevelOne");
+	XMLObjectFile::writeActorToCell("LevelOne", "Bob", true);
+	XMLObjectFile::writeActorToCell("LevelOne", "Bill", true);
+
+	XMLObjectFile::writeActorToCell("LevelOne", "Bill", false);
+
 
 	std::cout <<
 		"position: Vec3("

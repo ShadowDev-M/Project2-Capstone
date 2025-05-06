@@ -11,7 +11,7 @@ constexpr auto TypeName = static_cast<std::string>(typeid(T).name()).substr(6);
 
 using namespace tinyxml2;
 
-class XMLtest {
+class XMLObjectFile {
 public:
 
     /// Creates an object file for the actor
@@ -26,6 +26,66 @@ public:
         return 0;
     }
    
+    static int writeCellFile(std::string name) {
+
+        XMLDocument doc;
+
+        XMLNode* cRoot = doc.NewElement("CellFile");
+        doc.InsertFirstChild(cRoot);
+
+        doc.SaveFile(("Cell Files/" + name + ".xml").c_str());
+        return 0;
+    }
+
+  
+
+    static int writeActorToCell(std::string filename, std::string name, bool enabled) {
+        std::string path = "Cell Files/" + filename + ".xml";
+        const char* id = path.c_str();
+        XMLDocument doc;
+
+        //try loading the file into doc
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+            return eResult;
+        }
+
+
+        std::cout << "Found file to write: " << filename << std::endl;
+
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* actorList = cRoot->FirstChildElement("Actors");
+
+        if (!actorList) {
+            actorList = doc.NewElement("Actors");
+
+            std::cout << "Creating Element: Actors" << std::endl;
+
+        }
+
+        const char* nameCStr = name.c_str();
+
+        if (enabled) actorList->SetAttribute(nameCStr, nameCStr);
+        else actorList->DeleteAttribute(nameCStr);
+
+
+        cRoot->InsertEndChild(actorList);
+
+
+        XMLError eResultSave = doc.SaveFile(id);
+
+        if (eResultSave != XML_SUCCESS) {
+            std::cerr << "Error saving file: " << eResultSave << std::endl;
+            return -1;
+        }
+
+        std::cout << "Save game written to '" << filename << ".xml'\n";
+
+        return 0;
+
+    }
     
     template<typename ComponentTemplate>
     static auto getComponent(std::string name){
