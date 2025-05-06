@@ -5,6 +5,7 @@ C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\CollisionCom
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\CollisionSystem.cpp;C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug\CollisionSystem.obj
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Component.cpp;C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug\Component.obj
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug.cpp;C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug\Debug.obj
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\ExampleXML.cpp;C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug\ExampleXML.obj
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Main.cpp;C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug\Main.obj
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MaterialComponent.cpp;C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug\MaterialComponent.obj
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp;C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Debug\MeshComponent.obj

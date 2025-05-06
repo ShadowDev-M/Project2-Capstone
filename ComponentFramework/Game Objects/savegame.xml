@@ -1,8 +1,0 @@
-<SaveGame>
-    <Player name="Hero" level="5" health="87.5">
-        <Inventory>
-            <Item name="Sword" quantity="1"/>
-            <Item name="Potion" quantity="3"/>
-        </Inventory>
-    </Player>
-</SaveGame>

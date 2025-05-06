@@ -5,6 +5,9 @@
 #include "tinyxml2.h"
 #include "Component.h"
 #include <tuple>
+#include "TransformComponent.h"  
+#include "SceneGraph.h"
+
 template <typename T>
 constexpr auto TypeName = static_cast<std::string>(typeid(T).name()).substr(6);
 
@@ -12,6 +15,8 @@ constexpr auto TypeName = static_cast<std::string>(typeid(T).name()).substr(6);
 using namespace tinyxml2;
 
 class XMLObjectFile {
+    static void addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute);
+
 public:
 
     /// Creates an object file for the actor
@@ -37,7 +42,28 @@ public:
         return 0;
     }
 
-  
+    static int addActorsFromFile(SceneGraph* sceneGraph, std::string filename) {
+        std::string path = "Cell Files/" + filename + ".xml";
+        const char* id = path.c_str();
+        XMLDocument doc;
+
+        //try loading the file into doc
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+            return eResult;
+        }
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* actorList = cRoot->FirstChildElement("Actors");
+
+        if (actorList->FirstAttribute()) addAttributeRecursive(sceneGraph, actorList->FirstAttribute());;
+        
+        
+
+    }
+
+    
 
     static int writeActorToCell(std::string filename, std::string name, bool enabled) {
         std::string path = "Cell Files/" + filename + ".xml";

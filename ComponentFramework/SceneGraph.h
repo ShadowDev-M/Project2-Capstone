@@ -18,6 +18,7 @@
 
 class SceneGraph
 {
+	friend class XMLObjectFile;
 private:
 	std::unordered_map<std::string, Ref<Actor>> Actors;
 
@@ -37,6 +38,10 @@ public:
 		
 		Actors[name] = actor;
 		return true;
+	}
+
+	void LoadAllActorsFromFile(std::string name) {
+		
 	}
 
 	Ref<Actor> GetActor(const std::string& actorName) const {

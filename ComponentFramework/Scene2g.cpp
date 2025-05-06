@@ -26,26 +26,33 @@ bool Scene2g::OnCreate() {
 
 	//example.readDoc();
 
-	TransformComponent* example = new TransformComponent(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
+	/*TransformComponent* example = new TransformComponent(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
 	
 
 	XMLObjectFile::writeActor("Bob");
 	XMLObjectFile::writeActor("Bill");
 
 	XMLObjectFile::writeComponent<TransformComponent>("Bob", example);
+	XMLObjectFile::writeComponent<TransformComponent>("Bill", example);
+
 
 	TransformComponent* tempTestWrite = std::apply([](auto&&... args) {
 		return new TransformComponent(args...);
 		}, XMLObjectFile::getComponent<TransformComponent>("Bob"));
 
+	
+
 	XMLObjectFile::writeCellFile("LevelOne");
 	XMLObjectFile::writeActorToCell("LevelOne", "Bob", true);
 	XMLObjectFile::writeActorToCell("LevelOne", "Bill", true);
+	*/
 
-	XMLObjectFile::writeActorToCell("LevelOne", "Bill", false);
+	
+
+	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelOne");
 
 
-	std::cout <<
+	/*std::cout <<
 		"position: Vec3("
 		<< tempTestWrite->GetPosition().x << " "
 		<< tempTestWrite->GetPosition().y << " "
@@ -62,7 +69,7 @@ bool Scene2g::OnCreate() {
 		<< tempTestWrite->GetScale().x << " "
 		<< tempTestWrite->GetScale().y << " "
 		<< tempTestWrite->GetScale().z << ")"
-		<< std::endl;
+		<< std::endl;*/
 
 	// Light Pos
 	lightPos = Vec3(5.0f, -1.0f, 0.0f);
