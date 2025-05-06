@@ -3,40 +3,40 @@
   "WorkspaceRootPath": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene2g.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\Scene2g.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\ExampleXML.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\ExampleXML.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\TransformComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\TransformComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\CollisionSystem.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\CollisionSystem.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\MeshComponent.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\MeshComponent.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\AssetManager.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\AssetManager.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene2g.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\Scene2g.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\MeshComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\MeshComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\PhysicsComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\PhysicsComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\CollisionSystem.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\CollisionSystem.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\CollisionComponent.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\CollisionComponent.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\MeshComponent.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\MeshComponent.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\PhysicsComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\PhysicsComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\TransformComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\TransformComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\AssetManager.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\AssetManager.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\PhysicsComponent.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -53,7 +53,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -61,20 +61,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 7,
               "Title": "TransformComponent.h",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\TransformComponent.h",
               "RelativeDocumentMoniker": "ComponentFramework\\TransformComponent.h",
               "ToolTip": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\TransformComponent.h",
               "RelativeToolTip": "ComponentFramework\\TransformComponent.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAAYAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-05-05T16:29:59.958Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 2,
               "Title": "MeshComponent.h",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\MeshComponent.h",
               "RelativeDocumentMoniker": "ComponentFramework\\MeshComponent.h",
@@ -87,7 +87,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
               "Title": "PhysicsComponent.h",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\PhysicsComponent.h",
               "RelativeDocumentMoniker": "ComponentFramework\\PhysicsComponent.h",
@@ -100,13 +100,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "ExampleXML.h",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\ExampleXML.h",
               "RelativeDocumentMoniker": "ComponentFramework\\ExampleXML.h",
               "ToolTip": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\ExampleXML.h",
               "RelativeToolTip": "ComponentFramework\\ExampleXML.h",
-              "ViewState": "AgIAAGYAAAAAAAAAAAAcwBsAAAALAAAAAAAAAA==",
+              "ViewState": "AgIAACcAAAAAAAAAAAAswD4AAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-05-04T22:31:00.476Z",
               "EditorCaption": ""
@@ -126,7 +126,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 4,
               "Title": "CollisionComponent.cpp",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\CollisionComponent.cpp",
               "RelativeDocumentMoniker": "ComponentFramework\\CollisionComponent.cpp",
@@ -139,7 +139,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "MeshComponent.cpp",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\MeshComponent.cpp",
               "RelativeDocumentMoniker": "ComponentFramework\\MeshComponent.cpp",
@@ -152,20 +152,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Scene2g.cpp",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene2g.cpp",
               "RelativeDocumentMoniker": "ComponentFramework\\Scene2g.cpp",
               "ToolTip": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene2g.cpp",
               "RelativeToolTip": "ComponentFramework\\Scene2g.cpp",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAcwBkAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABUAAAAAAAAAAAAcwCMAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-05-04T21:41:25.111Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "AssetManager.h",
               "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\AssetManager.h",
               "RelativeDocumentMoniker": "ComponentFramework\\AssetManager.h",
@@ -173,8 +173,7 @@
               "RelativeToolTip": "ComponentFramework\\AssetManager.h",
               "ViewState": "AgIAADMAAAAAAAAAAAAAABkAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-05-05T16:41:27.45Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T16:41:27.45Z"
             },
             {
               "$type": "Document",

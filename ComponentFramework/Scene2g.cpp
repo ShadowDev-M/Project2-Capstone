@@ -26,10 +26,35 @@ bool Scene2g::OnCreate() {
 
 	//example.readDoc();
 
-	TransformComponent* tempTestWrite = new TransformComponent(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
+	TransformComponent* example = new TransformComponent(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
 	
+
+	//
 	XMLtest::writeActor("Bob");
-	XMLtest::writeComponent<TransformComponent>("Bob", tempTestWrite);
+	XMLtest::writeComponent<TransformComponent>("Bob", example);
+
+	TransformComponent* tempTestWrite = std::apply([](auto&&... args) {
+		return new TransformComponent(args...);
+		}, XMLtest::getComponent<TransformComponent>("Bob"));
+
+	std::cout <<
+		"position: Vec3("
+		<< tempTestWrite->GetPosition().x << " "
+		<< tempTestWrite->GetPosition().y << " "
+		<< tempTestWrite->GetPosition().z << ")"
+		<< std::endl;
+	std::cout << "Rotation: " <<
+		tempTestWrite->GetQuaternion().w << ", Vec3("
+		<< tempTestWrite->GetQuaternion().ijk.x << " "
+		<< tempTestWrite->GetQuaternion().ijk.y << " "
+		<< tempTestWrite->GetQuaternion().ijk.z << ")"
+		<< std::endl;
+	std::cout <<
+		"scale: Vec3("
+		<< tempTestWrite->GetScale().x << " "
+		<< tempTestWrite->GetScale().y << " "
+		<< tempTestWrite->GetScale().z << ")"
+		<< std::endl;
 
 	// Light Pos
 	lightPos = Vec3(5.0f, -1.0f, 0.0f);

@@ -4,24 +4,107 @@
 
 #include "tinyxml2.h"
 #include "Component.h"
+#include <tuple>
 template <typename T>
 constexpr auto TypeName = static_cast<std::string>(typeid(T).name()).substr(6);
+
 
 using namespace tinyxml2;
 
 class XMLtest {
 public:
 
+    /// Creates an object file for the actor
     static int writeActor(std::string name) {
-        XMLDocument doc;
 
+        XMLDocument doc;
+        
         XMLNode* cRoot = doc.NewElement("Actor");
         doc.InsertFirstChild(cRoot);
 
-
-
         doc.SaveFile(("Game Objects/" + name + ".xml").c_str());
         return 0;
+    }
+   
+    
+    template<typename ComponentTemplate>
+    static auto getComponent(std::string name){
+
+        /*
+        
+        example of use
+
+        TransformComponent* tempTestWrite = std::apply([](auto&&... args) {
+        return new TransformComponent(args...);
+        }, XMLtest::getComponent<TransformComponent>("Bob"));        
+        
+        */
+
+        std::string path = "Game Objects/" + name + ".xml";
+
+        const char* id = path.c_str();
+
+        XMLDocument doc;
+
+        std::string componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
+
+
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+        }
+
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* component = cRoot->FirstChildElement(componentType.c_str());
+        
+        //Specify the components to determine how to extract data for each type
+        if constexpr (std::is_same_v<ComponentTemplate, TransformComponent>) {
+            //TRANSFORM
+
+            XMLElement* position = component->FirstChildElement("position");
+            XMLElement* rotation = component->FirstChildElement("rotation");
+            XMLElement* scale = component->FirstChildElement("scale");
+
+            //TRANSFORM POSITION
+            Vec3 posArg = Vec3(
+                GetAttrF(position, "x"),
+                GetAttrF(position, "y"),
+                GetAttrF(position, "z")
+            );
+
+            //TRANSFORM ROTATION
+            Quaternion rotationArg = Quaternion(
+                GetAttrF(rotation, "w"),
+                Vec3(
+                    GetAttrF(rotation, "x"),
+                    GetAttrF(rotation, "y"),
+                    GetAttrF(rotation, "z")
+                )
+            );
+
+            //TRANSFORM SCALE
+            Vec3 scaleArg = Vec3(
+                GetAttrF(scale, "x"),
+                GetAttrF(scale, "y"),
+                GetAttrF(scale, "z")
+
+            );
+
+            //return the tuple to act as arguments
+            auto args = std::make_tuple(nullptr, 
+                posArg,
+                rotationArg,
+                scaleArg);
+            return args;
+
+        }
+
+    }
+
+    ///Simplify FindAttribute() implimentation for coding convenience
+    static inline float GetAttrF(XMLElement* element, const char* name) {
+        return element->FindAttribute(name)->FloatValue();
     }
 
     template<typename ComponentTemplate>

@@ -1,8 +1,8 @@
 ﻿  Scene2g.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(156,118): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(161,118): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(166,121): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(171,121): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(181,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(186,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(191,121): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(196,121): warning C4305: 'argument': truncation from 'double' to 'float'
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
