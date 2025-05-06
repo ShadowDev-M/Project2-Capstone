@@ -24,8 +24,12 @@ bool Scene2g::OnCreate() {
 	camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
 	camera->OnCreate();
 
-	XMLtest example;
-	example.readDoc();
+	//example.readDoc();
+
+	TransformComponent* tempTestWrite = new TransformComponent(nullptr, Vec3(0.0f, 0.0f, -15.0f), Quaternion(), Vec3(1.0f, 1.0f, 1.0f));
+	
+	XMLtest::writeActor("Bob");
+	XMLtest::writeComponent<TransformComponent>("Bob", tempTestWrite);
 
 	// Light Pos
 	lightPos = Vec3(5.0f, -1.0f, 0.0f);

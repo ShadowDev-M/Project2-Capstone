@@ -5,6 +5,8 @@
 #include "Euler.h"
 using namespace MATH;
 class TransformComponent : public Component {
+	friend class XMLtest;
+
 private:
 	Vec3 pos;
 	Vec3 scale;
