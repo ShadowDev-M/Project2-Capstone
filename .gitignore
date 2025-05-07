@@ -29,3 +29,7 @@
 *.exe
 *.out
 *.app
+/.vs/ComponentFramework/FileContentIndex
+.vs/ComponentFramework/v17/Browse.VC.db
+.vs/ComponentFramework/v17/Browse.VC.db
+/ComponentFramework/Debug

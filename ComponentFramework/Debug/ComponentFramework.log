@@ -1,9 +1,82 @@
-﻿  Scene2g.cpp
+﻿  Actor.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(196,118): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(201,118): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(206,121): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(211,121): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\ExampleXML.h(64,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
-  ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
+  AssetManager.cpp
+  CameraActor.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  CollisionComponent.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  CollisionSystem.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  Component.cpp
+  Debug.cpp
+  ExampleXML.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  Main.cpp
+  MaterialComponent.cpp
+  MeshComponent.cpp
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\tiny_obj_loader.h(1665,27): warning C4018: '<': signed/unsigned mismatch
+  (compiling source file 'MeshComponent.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\MeshComponent.cpp(17,15): warning C4553: '==': result of expression not used; did you intend '='?
+  PhysicsComponent.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  Scene0g.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  Scene1g.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  Scene2g.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene2g.cpp(196,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene2g.cpp(201,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene2g.cpp(206,121): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene2g.cpp(211,121): warning C4305: 'argument': truncation from 'double' to 'float'
+  Scene3.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3.cpp(196,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3.cpp(201,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3.cpp(206,121): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3.cpp(211,121): warning C4305: 'argument': truncation from 'double' to 'float'
+  Scene4.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene4.cpp(196,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene4.cpp(201,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene4.cpp(206,121): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene4.cpp(211,121): warning C4305: 'argument': truncation from 'double' to 'float'
+  Scene5.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene5.cpp(196,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene5.cpp(201,118): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene5.cpp(206,121): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene5.cpp(211,121): warning C4305: 'argument': truncation from 'double' to 'float'
+  SceneManager.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+  ShaderComponent.cpp
+  Generating Code...
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(64,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(64,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(64,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(64,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\PhysicsComponent.cpp(41,1): warning C4715: 'PhysicsComponent::OnCreate': not all control paths return a value
+  Compiling...
+  Timer.cpp
+  tinyxml2.cpp
+  TransformComponent.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\TransformComponent.cpp(21,12): warning C4553: '==': result of expression not used; did you intend '='?
+  Window.cpp
+  Generating Code...
+  ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe

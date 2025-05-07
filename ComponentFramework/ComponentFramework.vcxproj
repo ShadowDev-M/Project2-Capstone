@@ -141,6 +141,9 @@
     <ClInclude Include="Scene0g.h" />
     <ClInclude Include="Scene1g.h" />
     <ClInclude Include="Scene2g.h" />
+    <ClInclude Include="Scene3.h" />
+    <ClInclude Include="Scene4.h" />
+    <ClInclude Include="Scene5.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ShaderComponent.h" />
@@ -172,6 +175,9 @@
     <ClCompile Include="Scene0g.cpp" />
     <ClCompile Include="Scene1g.cpp" />
     <ClCompile Include="Scene2g.cpp" />
+    <ClCompile Include="Scene3.cpp" />
+    <ClCompile Include="Scene4.cpp" />
+    <ClCompile Include="Scene5.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ShaderComponent.cpp" />
     <ClCompile Include="Timer.cpp" />

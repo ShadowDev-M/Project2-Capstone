@@ -1,6 +1,6 @@
-Tue May  6 15:48:25 2025
+Wed May  7 15:27:51 2025
 [INFO]: Starting the SceneManager
-[INFO]: OpenGL version: 4.6.0 NVIDIA 546.92
+[INFO]: OpenGL version: 4.6.0 NVIDIA 576.02
 [INFO]: Graphics card vendor NVIDIA Corporation
 [INFO]: Graphics card name NVIDIA GeForce RTX 3070 Ti Laptop GPU/PCIe/SSE2
 [INFO]: GLSL Version 4.60 NVIDIA
@@ -25,7 +25,6 @@ Tue May  6 15:48:25 2025
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
-[INFO]: Deleting the SceneManager
 [INFO]: Deleting assets Scene2g: 
 [INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 
@@ -39,3 +38,374 @@ Tue May  6 15:48:25 2025
 [INFO]: Deleted Scene2g: 
 [INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene2g: 
+[INFO]: Loading assets Scene2g: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"modelMatrix" loc:2
+"projectionMatrix" loc:0
+"viewMatrix" loc:1
+
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Deleting assets Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene2g: 
+[INFO]: Loading assets Scene2g: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"modelMatrix" loc:2
+"projectionMatrix" loc:0
+"viewMatrix" loc:1
+
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Deleting assets Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene2g: 
+[INFO]: Loading assets Scene2g: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"modelMatrix" loc:2
+"projectionMatrix" loc:0
+"viewMatrix" loc:1
+
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Deleting assets Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene0: 
+[INFO]: Loading assets Scene0: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Deleting assets Scene0: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene0: 
+[INFO]: Created Scene1g: 
+[INFO]: Loading assets Scene1g: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Deleting assets Scene1g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene1g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene0: 
+[INFO]: Loading assets Scene0: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Deleting assets Scene0: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene0: 
+[INFO]: Created Scene1g: 
+[INFO]: Loading assets Scene1g: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Deleting assets Scene1g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene1g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene2g: 
+[INFO]: Loading assets Scene2g: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"modelMatrix" loc:2
+"projectionMatrix" loc:0
+"viewMatrix" loc:1
+
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Deleting assets Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene0: 
+[INFO]: Loading assets Scene0: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Loading assets for Actor: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Deleting the SceneManager
+[INFO]: Deleting assets Scene0: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene0: 

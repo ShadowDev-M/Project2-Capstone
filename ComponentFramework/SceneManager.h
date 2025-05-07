@@ -18,9 +18,9 @@ private:
 		SCENE0p,
 		SCENE1g = 1,
 		SCENE2g = 2,
-		SCENE3,
-		SCENE4,
-		SCENE5,
+		SCENE3 = 3,
+		SCENE4 = 4,
+		SCENE5 = 5,
 		SCENE6
 	};
 
