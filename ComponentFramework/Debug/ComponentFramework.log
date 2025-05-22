@@ -3,5 +3,8 @@
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(135,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(136,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(259,62): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(259,54): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Scene2g.cpp(259,199): warning C4305: 'argument': truncation from 'double' to 'const float'
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\ExampleXML.h(64,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe

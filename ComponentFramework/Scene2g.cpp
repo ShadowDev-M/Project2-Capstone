@@ -185,7 +185,8 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 			else {
 				debugMoveSpeed += 0.25f;
 
-			}			std::cout << "debugMoveSpeed = " << debugMoveSpeed << std::endl;
+			}			
+			std::cout << "debugMoveSpeed = " << debugMoveSpeed << std::endl;
 			break;
 
 		}
@@ -194,9 +195,9 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 
 	case SDL_MOUSEBUTTONDOWN:
 		if (sdlEvent.button.button == SDL_BUTTON_RIGHT) {
-			mouseHeld = true;
+			/*mouseHeld = true;
 			lastX = sdlEvent.button.x;
-			lastY = sdlEvent.button.y;
+			lastY = sdlEvent.button.y;*/
 		}
 
 		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
@@ -207,7 +208,9 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 			//
 			//Vec3 startPos = camera->GetComponent<TransformComponent>()->GetPosition();
 			//Vec3 endPos = startPos + rayCast(0, 0, camera->GetProjectionMatrix(), camera->GetViewMatrix()) * 20;
-
+			mouseHeld = true;
+			lastX = sdlEvent.button.x;
+			lastY = sdlEvent.button.y;
 		}
 
 
@@ -220,6 +223,8 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 			mouseHeld = false;
 		}
 		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
+			mouseHeld = false;
+
 			lastX = sdlEvent.button.x;
 			lastY = sdlEvent.button.y;
 
@@ -230,6 +235,8 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 			Ref<Actor> raycastedActor = collisionSystem.PhysicsRaycast(startPos, endPos);
 
 			if (raycastedActor)  selectedAsset = raycastedActor;
+			else selectedAsset = nullptr;
+
 			//startPos.print();
 			//endPos.print();
 		}
@@ -237,6 +244,22 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 
 	case SDL_MOUSEMOTION:
 		if (mouseHeld) {
+
+			if (selectedAsset) {
+			//get direction vector of new vector of movement from old mouse pos and new mouse pos
+			
+			int deltaX = sdlEvent.motion.x - lastX;
+			int deltaY = sdlEvent.motion.y - lastY;
+			lastX = sdlEvent.motion.x;
+			lastY = sdlEvent.motion.y;
+
+			Ref<TransformComponent> transform = selectedAsset->GetComponent<TransformComponent>();
+			//transform->GetPosition() + Vec3(deltaX, deltaY, transform->GetPosition().z);
+				//apply vector to asset
+			Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * (camera->GetComponent<TransformComponent>()->GetPosition().z - transform->GetPosition().z) / 40 * 0.045;
+			transform->SetPos(vectorMove.x, vectorMove.y, transform->GetPosition().z);
+			 }
+
 			//int deltaX = sdlEvent.motion.x - lastX;
 			//int deltaY = sdlEvent.motion.y - lastY;
 			//lastX = sdlEvent.motion.x;
@@ -351,7 +374,7 @@ void Scene2g::Update(const float deltaTime) {
 
 	}
 	if (keys[SDL_SCANCODE_SPACE]) {
-		sceneGraph.GetActor("Mario")->GetComponent<TransformComponent>()->SetTransform(camera->GetComponent<TransformComponent>()->GetPosition(), (camera->GetComponent<TransformComponent>()->GetQuaternion()));
+		//sceneGraph.GetActor("Mario")->GetComponent<TransformComponent>()->SetTransform(camera->GetComponent<TransformComponent>()->GetPosition(), (camera->GetComponent<TransformComponent>()->GetQuaternion()));
 
 		
 	}
