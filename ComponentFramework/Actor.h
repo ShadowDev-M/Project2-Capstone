@@ -77,7 +77,7 @@ public:
 
 
 	//
-	Matrix4 GetModelMatrix();
+	Matrix4 GetModelMatrix(Ref<Actor> camera = Ref<Actor>());
 	
 
 };

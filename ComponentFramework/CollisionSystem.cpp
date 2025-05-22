@@ -1,5 +1,43 @@
 #include "CollisionSystem.h"
 
+Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
+
+	for (Ref<Actor> obj : collidingActors) {
+		//std::cout << obj->getActorName();
+		Vec3 dir = end - start;
+		
+		Ref<TransformComponent> transform = obj->GetComponent<TransformComponent>();
+		Ref<CollisionComponent> collider = obj->GetComponent<CollisionComponent>();
+
+		if (collider && transform && collider->colliderType == ColliderType::SPHERE) {
+
+			//make a sphere clickable construct
+			Sphere s1;
+			s1.center = transform->GetPosition();
+			s1.r = collider->radius;
+
+
+			Vec3 toPoint = s1.center - start;
+
+			float t = VMath::dot(toPoint, dir) / VMath::dot(dir, dir);  // projection scalar
+
+			Vec3 closestPoint = start + dir * t;
+
+			float distance = VMath::distance(s1.center, closestPoint);
+
+
+			//std::cout << distance << std::endl;
+			//std::cout << s1.r << std::endl;
+
+			if (distance < s1.r) { std::cout << "clicked" << std::endl; return obj; }
+
+			
+		}
+	}
+	return nullptr;
+}
+
+
 bool CollisionSystem::CollisionDetection(const Sphere& s1, const Sphere& s2) const
 {
 	// from semester 2 but also from the Real-Time Collision Detection book 4.5.1 "Sphere-swept Volume Intersection"

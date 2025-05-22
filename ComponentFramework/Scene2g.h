@@ -28,10 +28,11 @@ private:
 
 	Vec3 lightPos;
 
-	CameraActor* camera;
+	Ref<CameraActor> camera;
 
 	bool drawInWireMode;
-
+	Ref<Actor> selectedAsset;
+	float debugMoveSpeed = 0.5f;
 
 public:
 	explicit Scene2g();

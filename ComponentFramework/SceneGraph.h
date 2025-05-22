@@ -9,7 +9,8 @@
 #include "ShaderComponent.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
-
+#include "MMath.h"
+#include "CameraActor.h"
 
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
@@ -92,9 +93,13 @@ public:
 		Actors.clear();
 	}
 
+	/// <summary>
+	/// The update called to handle physics components
+	/// </summary>
+	/// <param name="deltaTime"></param>
 	void Update(const float deltaTime) {
 		for (auto& pair : Actors) {
-
+			
 			// get the second value from the pair (actor)
 			Ref<Actor> actor = pair.second;
 			// get the physics component from the actor
@@ -106,7 +111,7 @@ public:
 		}
 	}
 
-
+	
 	// all const
 	void Render() const {
 
@@ -121,7 +126,14 @@ public:
 
 			// if the actor has a shader, mesh, and mat component then render it
 			if (shader && mesh && material) {
-				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix());
+
+
+
+				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
+
+				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix(GetActor("camera")));
+
+
 				glBindTexture(GL_TEXTURE_2D, material->getTextureID());
 				mesh->Render(GL_TRIANGLES);
 				glBindTexture(GL_TEXTURE_2D, 0);

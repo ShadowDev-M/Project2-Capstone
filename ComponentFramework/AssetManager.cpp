@@ -1,10 +1,12 @@
 #include "AssetManager.h"
+#include <MMath.h>
 
 bool AssetManager::OnCreate() {
 	std::cout << "Initialzing all assets: " << std::endl;
 
     // SM: (Static) Mesh
     AddAsset<MeshComponent>("SM_Mario", nullptr, "meshes/Mario.obj");
+
     AddAsset<MeshComponent>("SM_Sphere", nullptr, "meshes/Sphere.obj");
     AddAsset<MeshComponent>("SM_Plane", nullptr, "meshes/Plane.obj");
     AddAsset<MeshComponent>("SM_Pawn", nullptr, "meshes/Pawn.obj");

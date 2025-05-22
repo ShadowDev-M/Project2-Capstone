@@ -9,6 +9,8 @@
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "ShaderComponent.h"
+#include "TransformComponent.h"
+
 
 class AssetManager
 {

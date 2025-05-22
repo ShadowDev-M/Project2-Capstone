@@ -19,6 +19,7 @@ private:
 	void AABBAABBCollisionResponse(Ref<Actor> bb1, Ref<Actor> bb2);
 	void SpherePlaneCollisionResponse(Ref<Actor> s1, Ref<Actor> p1);
 
+
 public:
 	/// This function will check the the actor being added is new and has the all proper components 
 	void AddActor(Ref<Actor> actor_) {
@@ -37,6 +38,8 @@ public:
 	bool CollisionDetection(const Sphere& s1, const Sphere& s2) const;
 	bool CollisionDetection(const AABB& bb1, const AABB& bb2) const;
 	bool CollisionDetection(const Sphere s1, const Plane p1) const;
+	Ref<Actor> PhysicsRaycast(Vec3 start, Vec3 end);
+	 
 	void Update(const float deltaTime);
 
 };

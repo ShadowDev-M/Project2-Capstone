@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "Debug.h"
 #include "TransformComponent.h"
+#include "CameraActor.h"
 
 Actor::Actor(Component* parent_):Component(parent_) {}
 
@@ -56,9 +57,13 @@ void Actor::ListComponents() const {
 }
 
 
-Matrix4 Actor::GetModelMatrix() {
+Matrix4 Actor::GetModelMatrix(Ref<Actor> camera_) {
+	Ref<CameraActor> camera = std::dynamic_pointer_cast<CameraActor>(camera_);
+
 	Ref<TransformComponent> transform = GetComponent<TransformComponent>();
 	
+	
+
 	if (transform) {
 		modelMatrix = transform->GetTransformMatrix();
 	}
@@ -66,7 +71,10 @@ Matrix4 Actor::GetModelMatrix() {
 		modelMatrix.loadIdentity();
 	}
 	if (parent) { 
-		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix() * modelMatrix;
+		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera) * modelMatrix;
+	}
+	else {
+		modelMatrix = MMath::translate(-camera->GetComponent<TransformComponent>()->GetPosition()) * modelMatrix;
 	}
 	return modelMatrix;
 }
