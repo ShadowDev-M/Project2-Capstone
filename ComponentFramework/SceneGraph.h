@@ -4,14 +4,14 @@
 #include <string>
 #include "Actor.h"
 #include "Debug.h"
-
 #include "PhysicsComponent.h"
 #include "ShaderComponent.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "MMath.h"
 #include "CameraActor.h"
-
+#include "AssetManager.h"
+//#include "Raycast.h"
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
 
@@ -23,9 +23,13 @@ class SceneGraph
 private:
 	std::unordered_map<std::string, Ref<Actor>> Actors;
 
+	 
 public:
 	SceneGraph() {}
 	~SceneGraph() { RemoveAllActors(); }
+
+	std::unordered_map<std::string,Ref<Actor>> debugSelectedAssets;
+
 
 	bool AddActor(Ref<Actor> actor) {
 		const std::string& name = actor->getActorName();
@@ -41,8 +45,33 @@ public:
 		return true;
 	}
 
+	void SaveFile(std::string name);
+
 	void LoadAllActorsFromFile(std::string name) {
 		
+	}
+
+	Ref<Actor> MeshRaycast(Vec3 start, Vec3 end) {
+		for (auto& actor : Actors) {
+			Ref<Actor> targetActor = actor.second;
+
+			Ref<TransformComponent> actorTransform = targetActor->GetComponent<TransformComponent>();
+			
+			Vec3 dir = VMath::normalize(end - start);
+
+			//skip to next if no transform
+			if (actorTransform == nullptr) { continue; }
+			
+			//if actor's origin isn't within a 30 degrees cone to the camera we can skip to make less expensive by assuming it's probably not intersecting (May have to be increased)
+			if (!Raycast::isInRayCone(actorTransform->GetPosition(), start, dir, 0.8660254f)) { continue; }
+
+			std::cout << targetActor->getActorName() << std::endl;
+
+			if (targetActor->GetIntersectTriangles(start, dir)) return targetActor;
+			
+			
+		}
+		return nullptr;
 	}
 
 	Ref<Actor> GetActor(const std::string& actorName) const {
@@ -130,9 +159,26 @@ public:
 
 
 				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
+				
+				Matrix4 modelMatrix = actor->GetModelMatrix(GetActor("camera"));
 
-				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix(GetActor("camera")));
+				//glDisable(GL_DEPTH_TEST);
+				//Matrix4 outlineModel = modelMatrix * MMath::scale(1.05, 1.05, 1.05); // Slightly larger
 
+				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, outlineModel);
+
+				//mesh->Render(GL_TRIANGLES);
+
+
+
+				glEnable(GL_DEPTH_TEST);
+				//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
+				
+				
+				if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getActorName()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
+				else glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
+
+				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 
 				glBindTexture(GL_TEXTURE_2D, material->getTextureID());
 				mesh->Render(GL_TRIANGLES);

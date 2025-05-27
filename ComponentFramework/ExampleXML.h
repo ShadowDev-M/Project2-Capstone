@@ -8,6 +8,7 @@
 #include "TransformComponent.h"  
 #include "SceneGraph.h"
 
+
 template <typename T>
 constexpr auto TypeName = static_cast<std::string>(typeid(T).name()).substr(6);
 
@@ -70,6 +71,8 @@ public:
         const char* id = path.c_str();
         XMLDocument doc;
 
+
+
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
@@ -82,9 +85,12 @@ public:
 
         XMLNode* cRoot = doc.RootElement();
 
+        
+
         XMLElement* actorList = cRoot->FirstChildElement("Actors");
 
-        if (!actorList) {
+        //std::cout << actorList->Name() << std::endl; 
+        if (!actorList ) {
             actorList = doc.NewElement("Actors");
 
             std::cout << "Creating Element: Actors" << std::endl;
@@ -93,12 +99,15 @@ public:
 
         const char* nameCStr = name.c_str();
 
+
         if (enabled) actorList->SetAttribute(nameCStr, nameCStr);
         else actorList->DeleteAttribute(nameCStr);
 
 
+
         cRoot->InsertEndChild(actorList);
 
+        doc.Print();
 
         XMLError eResultSave = doc.SaveFile(id);
 
@@ -107,7 +116,7 @@ public:
             return -1;
         }
 
-        std::cout << "Save game written to '" << filename << ".xml'\n";
+        std::cout << nameCStr << "obj Save game written to '" << filename << ".xml'\n";
 
         return 0;
 
@@ -333,3 +342,6 @@ public:
     //    return 0;
     //}
 };
+
+//Requires ExampleXML to exist
+

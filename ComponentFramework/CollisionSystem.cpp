@@ -26,10 +26,7 @@ Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
 			float distance = VMath::distance(s1.center, closestPoint);
 
 
-			//std::cout << distance << std::endl;
-			//std::cout << s1.r << std::endl;
-
-			if (distance < s1.r) { std::cout << "clicked" << std::endl; return obj; }
+			if (distance < s1.r) { return obj; }
 
 			
 		}

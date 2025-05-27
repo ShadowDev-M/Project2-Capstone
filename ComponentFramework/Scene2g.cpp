@@ -60,7 +60,6 @@ bool Scene2g::OnCreate() {
 	XMLObjectFile::writeCellFile("LevelTwo");
 	XMLObjectFile::writeActorToCell("LevelTwo", "Jeff", true);*/
 
-	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelOne");
 
 
 	/*std::cout <<
@@ -113,10 +112,10 @@ bool Scene2g::OnCreate() {
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<MaterialComponent>("M_Sphere"));
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
 	sphere->AddComponent<TransformComponent>(nullptr, Vec3(2.4f, -4.5f, 0.0f), QMath::toQuaternion(MMath::rotate(90.0f, Vec3(1.0f, 0.0f, 0.0f))), Vec3(1.5f, 1.5f, 1.5f));
-	//sphere->AddComponent<PhysicsComponent>(nullptr, 2.0f);
-	//sphere->AddComponent<CollisionComponent>(nullptr, 0.75f);
+	sphere->AddComponent<PhysicsComponent>(nullptr, 2.0f);
+	sphere->AddComponent<CollisionComponent>(nullptr, 0.75f);
 	//sphere->GetComponent<PhysicsComponent>()->setVel(Vec3(0.0f, 3.0f, 0.0f));
-	//collisionSystem.AddActor(sphere);
+	collisionSystem.AddActor(sphere);
 	sphere->OnCreate();
 	sceneGraph.AddActor(sphere);
 
@@ -126,29 +125,11 @@ bool Scene2g::OnCreate() {
 
 	//sceneGraph.RemoveActor("Sphere");
 	camera->fixCameraToTransform();
-	
+	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
+
 	return true;
 }
 
-Vec3 rayCast(double xpos, double ypos, Matrix4 projection, Matrix4 view) {
-	// converts a position from the 2d xpos, ypos to a normalized 3d direction
-	float x = (2.0f * xpos) / 1280 - 1.0f;
-	float y = 1.0f - (2.0f * ypos) / 720;
-	float z = 1.0f;
-	Vec3 ray_nds = Vec3(x, y, z);
-	Vec4 ray_clip = Vec4(ray_nds.x, ray_nds.y, -1.0f, 1.0f);
-	// eye space to clip we would multiply by projection so
-	// clip space to eye space is the inverse projection
-	Vec4 ray_eye = MMath::inverse(projection) * ray_clip;
-	// convert point to forwards
-	ray_eye = Vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
-	// world space to eye space is usually multiply by view so
-	// eye space to world space is inverse view
-	Vec4 inv_ray_wor = (MMath::inverse(view) * ray_eye);
-	Vec3 ray_wor = Vec3(inv_ray_wor.x, inv_ray_wor.y, inv_ray_wor.z);
-	ray_wor = VMath::normalize(ray_wor);
-	return ray_wor;
-}
 
 void Scene2g::OnDestroy() {
 	Debug::Info("Deleting assets Scene2g: ", __FILE__, __LINE__);
@@ -162,6 +143,9 @@ void Scene2g::OnDestroy() {
 }
 
 void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
+	const Uint8* keys = SDL_GetKeyboardState(NULL);
+
+
 	static bool mouseHeld = false;
 	static int lastX = 0, lastY = 0;
 	switch (sdlEvent.type) {
@@ -223,29 +207,48 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 			mouseHeld = false;
 		}
 		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
-			mouseHeld = false;
 
 			lastX = sdlEvent.button.x;
 			lastY = sdlEvent.button.y;
 
 
 			Vec3 startPos = camera->GetComponent<TransformComponent>()->GetPosition();
-			Vec3 endPos = startPos + rayCast(lastX, lastY, camera->GetProjectionMatrix(), camera->GetViewMatrix()) * 100;
+			Vec3 endPos = startPos + Raycast::screenRayCast(lastX, lastY, camera->GetProjectionMatrix(), camera->GetViewMatrix());
 
+			
+			//prepare for unintelligible logic for selecting 
 			Ref<Actor> raycastedActor = collisionSystem.PhysicsRaycast(startPos, endPos);
 
-			if (raycastedActor)  selectedAsset = raycastedActor;
-			else selectedAsset = nullptr;
+			//(Slightly) more expensive debug selector if nothing was selected with the ColliderComponent PhysicsRaycast
+			if (!raycastedActor) raycastedActor = sceneGraph.MeshRaycast(startPos, endPos);
+
+			//an object was clicked
+			if (raycastedActor) { 
+
+
+				if (!keys[SDL_SCANCODE_LCTRL] && !(sceneGraph.debugSelectedAssets.find(raycastedActor->getActorName()) != sceneGraph.debugSelectedAssets.end())) { sceneGraph.debugSelectedAssets.clear(); }
+
+				if (sceneGraph.debugSelectedAssets.find(raycastedActor->getActorName()) != sceneGraph.debugSelectedAssets.end() && keys[SDL_SCANCODE_LCTRL]) { sceneGraph.debugSelectedAssets.erase(raycastedActor->getActorName()); }
+
+				else sceneGraph.debugSelectedAssets.emplace(raycastedActor->getActorName(), raycastedActor); 
+
+			}
+			//no object was clicked, and left control isn't pressed (making sure the user didn't accidentally misclicked during multi object selection before clearing selection)
+			else if(!keys[SDL_SCANCODE_LCTRL])sceneGraph.debugSelectedAssets.clear();
+			
+
 
 			//startPos.print();
 			//endPos.print();
+			mouseHeld = false;
+
 		}
 		break;
 
 	case SDL_MOUSEMOTION:
 		if (mouseHeld) {
 
-			if (selectedAsset) {
+			if (!(sceneGraph.debugSelectedAssets.empty())) {
 			//get direction vector of new vector of movement from old mouse pos and new mouse pos
 			
 			int deltaX = sdlEvent.motion.x - lastX;
@@ -253,11 +256,17 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 			lastX = sdlEvent.motion.x;
 			lastY = sdlEvent.motion.y;
 
-			Ref<TransformComponent> transform = selectedAsset->GetComponent<TransformComponent>();
+			auto& debugGraph = sceneGraph.debugSelectedAssets;
+
+
+			for (const auto& obj  : debugGraph) {
+				Ref<TransformComponent> transform = obj.second->GetComponent<TransformComponent>();
+				Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * (camera->GetComponent<TransformComponent>()->GetPosition().z - transform->GetPosition().z) / 40 * 0.045;
+				transform->SetPos(vectorMove.x, vectorMove.y, transform->GetPosition().z);
+
+			}
 			//transform->GetPosition() + Vec3(deltaX, deltaY, transform->GetPosition().z);
 				//apply vector to asset
-			Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * (camera->GetComponent<TransformComponent>()->GetPosition().z - transform->GetPosition().z) / 40 * 0.045;
-			transform->SetPos(vectorMove.x, vectorMove.y, transform->GetPosition().z);
 			 }
 
 			//int deltaX = sdlEvent.motion.x - lastX;
@@ -314,10 +323,19 @@ void Scene2g::Update(const float deltaTime) {
 		inputVector += Vec3(0, 1, 0);
 		keyPressed = true;
 	}
-	if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
+
+	if (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_LCTRL] && !keyPressed) {
+		keyPressed = true;
+		sceneGraph.SaveFile("LevelThree");
+
+		
+
+	}
+	else if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
 		inputVector += Vec3(0, -1, 0);
 		keyPressed = true;
 	}
+
 	if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]) {
 		
 		inputVector += Vec3(-1, 0, 0);
@@ -343,8 +361,15 @@ void Scene2g::Update(const float deltaTime) {
 	}
 	if (keys[SDL_SCANCODE_F]) {
 
-		selectedAsset = nullptr;
+		//sceneGraph.debugSelectedAssets.clear();
 	}
+	if (keys[SDL_SCANCODE_M]) {
+
+		//just use f3
+		
+		// XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
+	}
+
 	if (keyPressed) {
 		Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
 		
@@ -358,11 +383,17 @@ void Scene2g::Update(const float deltaTime) {
 		//convert local direction into world coords 
 		Vec3 worldForward = QMath::rotate(inputVector, rotation) * debugMoveSpeed;
 
-		if (selectedAsset) {
-			selectedAsset->GetComponent<TransformComponent>()->SetTransform(
-				selectedAsset->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-				selectedAsset->GetComponent<TransformComponent>()->GetQuaternion()
-			);
+		if (!(sceneGraph.debugSelectedAssets.empty())) {
+			//auto& debugGraph = sceneGraph.debugSelectedAssets;
+
+
+			for (const auto& obj : sceneGraph.debugSelectedAssets) {
+
+				obj.second->GetComponent<TransformComponent>()->SetTransform(
+					obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
+					obj.second->GetComponent<TransformComponent>()->GetQuaternion()
+				);
+			}
 		}
 		else {
 			camera->GetComponent<TransformComponent>()->SetTransform(
@@ -375,6 +406,9 @@ void Scene2g::Update(const float deltaTime) {
 	}
 	if (keys[SDL_SCANCODE_SPACE]) {
 		//sceneGraph.GetActor("Mario")->GetComponent<TransformComponent>()->SetTransform(camera->GetComponent<TransformComponent>()->GetPosition(), (camera->GetComponent<TransformComponent>()->GetQuaternion()));
+
+
+		
 
 		
 	}
@@ -401,12 +435,19 @@ void Scene2g::Render() const {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
+	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
+
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, lightPos);
+
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
 
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("lightPos"), 1, lightPos);
 
+	
 	sceneGraph.Render();
 
 	glUseProgram(0);

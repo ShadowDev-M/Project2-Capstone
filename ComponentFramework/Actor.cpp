@@ -2,6 +2,7 @@
 #include "Debug.h"
 #include "TransformComponent.h"
 #include "CameraActor.h"
+#include "MeshComponent.h"
 
 Actor::Actor(Component* parent_):Component(parent_) {}
 
@@ -62,19 +63,55 @@ Matrix4 Actor::GetModelMatrix(Ref<Actor> camera_) {
 
 	Ref<TransformComponent> transform = GetComponent<TransformComponent>();
 	
-	
+	modelMatrix = transform ? transform->GetTransformMatrix() : Matrix4();
 
-	if (transform) {
-		modelMatrix = transform->GetTransformMatrix();
-	}
-	else {
-		modelMatrix.loadIdentity();
-	}
+
+
 	if (parent) { 
 		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera) * modelMatrix;
 	}
-	else {
+	else if(camera){
 		modelMatrix = MMath::translate(-camera->GetComponent<TransformComponent>()->GetPosition()) * modelMatrix;
 	}
 	return modelMatrix;
 }
+
+
+
+bool Actor::GetIntersectTriangles(Vec3 start, Vec3 dir) {
+
+	if (GetComponent<MeshComponent>() == nullptr) return false;
+	//std::cout << actorName << std::endl;
+	modelMatrix = GetModelMatrix();
+
+	std::vector<Vec3> vertices = GetComponent<MeshComponent>()->getMeshVertices();
+	for (size_t i = 0; i + 2 < vertices.size(); i += 3) {
+
+		//Vertices translated to have same transform as rendered
+		Vec3 v0 = Vec3(modelMatrix * Vec4(vertices[i], 1.0f));
+		Vec3 v1 = Vec3(modelMatrix * Vec4(vertices[i + 1], 1.0f));
+		Vec3 v2 = Vec3(modelMatrix * Vec4(vertices[i + 2], 1.0f));
+
+		Raycast::Triangle tri = { v0, v1, v2 };
+
+		//Eliminate triangles in lower cost function (cone)
+		if (!Raycast::isInRayCone(tri.getCenter(), start, dir, 0.98985)) continue;
+
+
+		//Eliminate triangles not facing the camera (something called Backfacing)
+		Vec3 normal = VMath::normalize(VMath::cross(v1 - v0, v2 - v0));
+		if (VMath::dot(normal, dir) > 0) {
+			continue; 
+		}
+		
+		//Check if intersecting (Expensive)
+		if (Raycast::intersectRayTri(tri, start, dir)) { return true; }
+
+		
+	}
+
+	return false;
+}
+
+
+	

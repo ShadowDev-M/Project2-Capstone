@@ -15,6 +15,8 @@ bool AssetManager::OnCreate() {
     AddAsset<MaterialComponent>("M_MarioN", nullptr, "textures/mario_main.png");
     AddAsset<MaterialComponent>("M_Sphere", nullptr, "textures/Black Chess Base Colour.png");
     AddAsset<MaterialComponent>("M_ChessBoard", nullptr, "textures/8x8_checkered_board.png");
+    AddAsset<ShaderComponent>("S_Outline", nullptr, "shaders/texturePhongVert.glsl", "shaders/outline.glsl");
+
 
     // S: Shader
     AddAsset<ShaderComponent>("S_Phong", nullptr, "shaders/texturePhongVert.glsl", "shaders/texturePhongFrag.glsl");

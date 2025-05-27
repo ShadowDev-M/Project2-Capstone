@@ -3,6 +3,7 @@
 #include <glew.h>
 #include <vector>
 #include "Vector.h"
+#include "Raycast.h"
 using namespace MATH;
 
 class MeshComponent : public Component {
@@ -33,5 +34,13 @@ public:
 	void Render() const;
 	void Render(GLenum drawmode) const;
 	
+	std::vector<Vec3> getMeshVertices() { 
+		
+		LoadModel(filename);
+		
+//		std::cout << vertices.size() << std::endl;
+		
+		return vertices; }
+
 };
 

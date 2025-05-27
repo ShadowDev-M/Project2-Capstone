@@ -11,6 +11,7 @@ private:
 	Vec3 pos;
 	Vec3 scale;
 	Quaternion orientation;
+
  
 public:
 	TransformComponent(Component* parent_);

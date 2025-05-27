@@ -101,6 +101,9 @@
     <ClInclude Include="tinyxml2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Raycast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\defaultFrag.glsl">
@@ -113,6 +116,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="shaders\texturePhongVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\outline.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\flatWhite.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -178,6 +187,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ExampleXML.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

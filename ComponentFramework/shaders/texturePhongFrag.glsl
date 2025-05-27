@@ -24,5 +24,7 @@ void main() {
 
 	float spec = max(dot(eyeDir, reflection), 0.0);
 	spec = pow(spec,14.0);
+
+
 	fragColor =  (ka + (diff * kd) + (spec * ks)) * kt;	
 }

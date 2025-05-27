@@ -137,6 +137,7 @@
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="PhysicsComponent.h" />
+    <ClInclude Include="Raycast.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Scene0g.h" />
     <ClInclude Include="Scene1g.h" />
@@ -153,6 +154,8 @@
   <ItemGroup>
     <None Include="shaders\defaultFrag.glsl" />
     <None Include="shaders\defaultVert.glsl" />
+    <None Include="shaders\flatWhite.glsl" />
+    <None Include="shaders\outline.glsl" />
     <None Include="shaders\texturePhongFrag.glsl" />
     <None Include="shaders\texturePhongVert.glsl" />
   </ItemGroup>
@@ -172,6 +175,7 @@
     <ClCompile Include="Scene0g.cpp" />
     <ClCompile Include="Scene1g.cpp" />
     <ClCompile Include="Scene2g.cpp" />
+    <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ShaderComponent.cpp" />
     <ClCompile Include="Timer.cpp" />

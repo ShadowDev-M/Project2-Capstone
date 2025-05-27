@@ -1,4 +1,4 @@
-Thu May 22 13:57:34 2025
+Mon May 26 22:49:12 2025
 [INFO]: Starting the SceneManager
 [INFO]: OpenGL version: 4.6.0 NVIDIA 546.92
 [INFO]: Graphics card vendor NVIDIA Corporation
@@ -14,17 +14,114 @@ Thu May 22 13:57:34 2025
 "viewMatrix" loc:4
 
 [INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
 "modelMatrix" loc:2
 "projectionMatrix" loc:0
 "viewMatrix" loc:1
 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[WARNING]: There is already an actor with the name: camera in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Board in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets Scene2g: 
 [INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene2g: 
+[INFO]: Loading assets Scene2g: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"modelMatrix" loc:2
+"projectionMatrix" loc:0
+"viewMatrix" loc:1
+
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
+[WARNING]: There is already an actor with the name: camera in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Board in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene2g: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Created Scene2g: 
+[INFO]: Loading assets Scene2g: 
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Uniforms:
+"modelMatrix" loc:2
+"projectionMatrix" loc:0
+"viewMatrix" loc:1
+
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
+[INFO]: Loading assets for Actor: 
+[WARNING]: There is already an actor with the name: camera in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Board in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 40
+[INFO]: Deleting assets for Actor: 
 [INFO]: Deleting the SceneManager
 [INFO]: Deleting assets Scene2g: 
 [INFO]: Deleting assets for Actor: 
@@ -33,11 +130,7 @@ Thu May 22 13:57:34 2025
 [INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
 [INFO]: Deleted Scene2g: 
+[INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 

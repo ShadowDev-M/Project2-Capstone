@@ -2,6 +2,7 @@
 #include <vector>
 #include <Matrix.h>
 #include <iostream>
+#include "Raycast.h"
 #include "Component.h"
 // transformcomponent
 using namespace MATH;
@@ -15,7 +16,6 @@ class Actor : public Component {
 protected:
 	std::vector<Ref<Component>> components;
 	Matrix4 modelMatrix;
-
 	// string will be used as a key for the unordered map in the scene
 	std::string actorName;
 
@@ -75,10 +75,12 @@ public:
 	void ListComponents() const;
 	void RemoveAllComponents();
 
-
 	//
-	Matrix4 GetModelMatrix(Ref<Actor> camera = Ref<Actor>());
+	Matrix4 GetModelMatrix(Ref<Actor> camera = nullptr);
 	
+	bool GetIntersectTriangles(Vec3 start, Vec3 dir);
+		
+
 
 };
 
