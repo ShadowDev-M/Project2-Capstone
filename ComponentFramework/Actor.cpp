@@ -78,7 +78,7 @@ Matrix4 Actor::GetModelMatrix(Ref<Actor> camera_) {
 
 
 
-bool Actor::GetIntersectTriangles(Vec3 start, Vec3 dir) {
+bool Actor::GetIntersectTriangles(Vec3 start, Vec3 dir, Vec3* intersectSpot) {
 
 	if (GetComponent<MeshComponent>() == nullptr) return false;
 	//std::cout << actorName << std::endl;
@@ -105,7 +105,16 @@ bool Actor::GetIntersectTriangles(Vec3 start, Vec3 dir) {
 		}
 		
 		//Check if intersecting (Expensive)
-		if (Raycast::intersectRayTri(tri, start, dir)) { return true; }
+		if (Raycast::intersectRayTri(tri, start, dir)) {
+
+			//if a pointer to intersectSpot is included, send over the intersected triangle
+			if (intersectSpot) {
+				intersectSpot->x = tri.getCenter().x;
+				intersectSpot->y = tri.getCenter().y;
+				intersectSpot->z = tri.getCenter().z;
+			}
+
+			return true; }
 
 		
 	}

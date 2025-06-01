@@ -13,8 +13,15 @@ Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
 
 			//make a sphere clickable construct
 			Sphere s1;
-			s1.center = transform->GetPosition();
+
+			//Get position is unreliable due to parenting altering the transform
+			//s1.center = transform->GetPosition();
 			s1.r = collider->radius;
+
+			Matrix4 modelMatrix = obj->GetModelMatrix();
+
+			// Apply transforms before checking, the origin should be 0,0,0 and must be the center
+			s1.center = Vec3(modelMatrix * Vec4(Vec3(0.0f,0.0f,0.0f), 1.0f));
 
 
 			Vec3 toPoint = s1.center - start;
@@ -24,8 +31,8 @@ Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
 			Vec3 closestPoint = start + dir * t;
 
 			float distance = VMath::distance(s1.center, closestPoint);
-
-
+			std::cout << obj->getActorName() << std::endl;
+			std::cout <<distance << " < " << s1.r << std::endl;
 			if (distance < s1.r) { return obj; }
 
 			

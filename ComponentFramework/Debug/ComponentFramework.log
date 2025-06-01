@@ -8,6 +8,15 @@ C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26
   (compiling source file 'Actor.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Actor.cpp(98,58): warning C4305: 'argument': truncation from 'double' to 'float'
+  AssetManager.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'AssetManager.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'AssetManager.cpp')
+  
   CameraActor.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
@@ -17,6 +26,9 @@ C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'CameraActor.cpp')
   
+  CollisionComponent.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
   CollisionSystem.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
@@ -83,6 +95,10 @@ C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'SceneManager.cpp')
   
+  TransformComponent.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\TransformComponent.cpp(21,12): warning C4553: '==': result of expression not used; did you intend '='?
   Generating Code...
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\ExampleXML.h(65,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\PhysicsComponent.cpp(41,1): warning C4715: 'PhysicsComponent::OnCreate': not all control paths return a value

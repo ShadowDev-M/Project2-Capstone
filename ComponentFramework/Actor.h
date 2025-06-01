@@ -78,8 +78,11 @@ public:
 	//
 	Matrix4 GetModelMatrix(Ref<Actor> camera = nullptr);
 	
-	bool GetIntersectTriangles(Vec3 start, Vec3 dir);
-		
+	/// <summary>
+	/// Determines whether a ray intersects with the mesh of the actor
+	/// </summary>
+	/// <param name="intersectSpot">Pointer to Vec3 value to be set to the triangle position the ray intersects with, if it does. </param>
+	bool GetIntersectTriangles(Vec3 start, Vec3 dir, Vec3* intersectSpot = nullptr);
 
 
 };

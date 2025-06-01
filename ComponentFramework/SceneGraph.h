@@ -52,6 +52,9 @@ public:
 	}
 
 	Ref<Actor> MeshRaycast(Vec3 start, Vec3 end) {
+		float minDistance = 0;
+		Ref<Actor> closestSelected = nullptr;
+
 		for (auto& actor : Actors) {
 			Ref<Actor> targetActor = actor.second;
 
@@ -65,12 +68,26 @@ public:
 			//if actor's origin isn't within a 30 degrees cone to the camera we can skip to make less expensive by assuming it's probably not intersecting (May have to be increased)
 			if (!Raycast::isInRayCone(actorTransform->GetPosition(), start, dir, 0.8660254f)) { continue; }
 
-			std::cout << targetActor->getActorName() << std::endl;
+		//	std::cout << targetActor->getActorName() << std::endl;
+			
+			Vec3 intersectSpot;
+			if (targetActor->GetIntersectTriangles(start, dir, &intersectSpot)) {
 
-			if (targetActor->GetIntersectTriangles(start, dir)) return targetActor;
-			
-			
+				float actorDistance = VMath::distance(start, intersectSpot);
+				std::cout << targetActor->getActorName() << " : " << actorDistance << std::endl;
+				if (actorDistance < minDistance || minDistance == 0) {
+					minDistance = actorDistance;
+					closestSelected = targetActor;
+				}
+			}
 		}
+
+		if (closestSelected) {
+			return closestSelected;
+		}
+
+		
+
 		return nullptr;
 	}
 
