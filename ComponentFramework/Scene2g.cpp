@@ -127,6 +127,9 @@ bool Scene2g::OnCreate() {
 	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
 
+
+
+
 	return true;
 }
 
@@ -304,6 +307,7 @@ void Scene2g::HandleEvents(const SDL_Event& sdlEvent) {
 	}
 }
 
+
 void Scene2g::Update(const float deltaTime) {
 
 
@@ -439,14 +443,19 @@ void Scene2g::Render() const {
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
 
+
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, lightPos);
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
 
+
+
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("lightPos"), 1, lightPos);
 
+
+	
 	
 	sceneGraph.Render();
 

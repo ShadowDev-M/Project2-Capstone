@@ -104,6 +104,9 @@
     <ClInclude Include="Raycast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Widget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\defaultFrag.glsl">
@@ -122,6 +125,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="shaders\flatWhite.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\selectionFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\selectionVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

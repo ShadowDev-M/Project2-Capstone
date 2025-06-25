@@ -149,6 +149,7 @@
     <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="tiny_obj_loader.h" />
     <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="Widget.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +157,8 @@
     <None Include="shaders\defaultVert.glsl" />
     <None Include="shaders\flatWhite.glsl" />
     <None Include="shaders\outline.glsl" />
+    <None Include="shaders\selectionFrag.glsl" />
+    <None Include="shaders\selectionVert.glsl" />
     <None Include="shaders\texturePhongFrag.glsl" />
     <None Include="shaders\texturePhongVert.glsl" />
   </ItemGroup>

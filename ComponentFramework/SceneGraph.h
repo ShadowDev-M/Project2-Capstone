@@ -23,7 +23,11 @@ class SceneGraph
 private:
 	std::unordered_map<std::string, Ref<Actor>> Actors;
 
-	 
+	GLuint selectionFBO = 0;
+	GLuint selectionColorTex = 0;
+	GLuint selectionDepthRBO = 0;
+	int fboWidth = 0, fboHeight = 0;  // Or match your window size
+	
 public:
 	SceneGraph() {}
 	~SceneGraph() { RemoveAllActors(); }
@@ -163,6 +167,7 @@ public:
 
 		// go through all actors
 		for (const auto& pair : Actors) {
+
 			Ref<Actor> actor = pair.second;
 
 			// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
@@ -201,6 +206,8 @@ public:
 				mesh->Render(GL_TRIANGLES);
 				glBindTexture(GL_TEXTURE_2D, 0);
 
+
+
 			}
 
 		}
@@ -208,6 +215,7 @@ public:
 	}
 
 	bool OnCreate() {
+		
 
 		// if an actor was setup wrong throw an error
 		for (auto& actor : Actors) {
@@ -215,6 +223,7 @@ public:
 				Debug::Error("Actor failed to initialize: " + actor.first, __FILE__, __LINE__);
 				return false;
 			}
+
 		}
 
 		return true;

@@ -18,7 +18,7 @@ protected:
 	Matrix4 modelMatrix;
 	// string will be used as a key for the unordered map in the scene
 	std::string actorName;
-
+	Vec3 selectionColour = Vec3(0.5f,0.5f,0.5f);
 public:
 	Actor(Component* parent_);
 
@@ -33,6 +33,8 @@ public:
 	virtual void OnDestroy() override;
 	virtual void Update(const float deltaTime) override;
 	virtual void Render() const override;
+
+	Vec3 getSelectionColour() { return selectionColour; }
 
 	template<typename ComponentTemplate>
 	void AddComponent(Ref<ComponentTemplate> component_) {
