@@ -107,6 +107,9 @@
     <ClInclude Include="Widget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Scene3GUI.h">
+      <Filter>Header Files\Scenes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\defaultFrag.glsl">
@@ -200,6 +203,9 @@
     </ClCompile>
     <ClCompile Include="SceneGraph.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene3GUI.cpp">
+      <Filter>Source Files\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

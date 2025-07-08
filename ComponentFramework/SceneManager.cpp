@@ -5,7 +5,7 @@
 #include "Scene0g.h"
 #include "Scene1g.h"
 #include "Scene2g.h"
-
+#include "Scene3GUI.h"
 
 
 SceneManager::SceneManager(): 
@@ -50,7 +50,7 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	}
 
 	/********************************   Default first scene   ***********************/
-	BuildNewScene(SCENE_NUMBER::SCENE2g);
+	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 	/********************************************************************************/
 	return true;
 }
@@ -99,6 +99,8 @@ void SceneManager::HandleEvents() {
 				break;
 
 			case SDL_SCANCODE_F4:
+				BuildNewScene(SCENE_NUMBER::SCENE3GUI);
+				break;
 			case SDL_SCANCODE_F5:
 
 			default:
@@ -136,6 +138,11 @@ bool SceneManager::BuildNewScene(SCENE_NUMBER scene) {
 
 	case SCENE_NUMBER::SCENE2g:
 		currentScene = new Scene2g();
+		status = currentScene->OnCreate();
+		break;
+
+	case SCENE_NUMBER::SCENE3GUI:
+		currentScene = new Scene3GUI();
 		status = currentScene->OnCreate();
 		break;
 
