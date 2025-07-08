@@ -1,6 +1,6 @@
 <Actor>
     <TransformComponent>
-        <position x="-12.469999" y="0.51000041" z="0"/>
+        <position x="-15.619995" y="-0.56999892" z="0"/>
         <rotation w="0.70710683" x="0.70710665" y="0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </TransformComponent>

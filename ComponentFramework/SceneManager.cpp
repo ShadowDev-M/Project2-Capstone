@@ -8,9 +8,9 @@
 #include "Scene3GUI.h"
 
 
-SceneManager::SceneManager(): 
-	currentScene{nullptr}, window{nullptr}, timer{nullptr},
-	fps(60), isRunning{false}, fullScreen{false} {
+SceneManager::SceneManager() :
+	currentScene{ nullptr }, window{ nullptr }, timer{ nullptr },
+	fps(60), isRunning{ false }, fullScreen{ false } {
 	Debug::Info("Starting the SceneManager", __FILE__, __LINE__);
 }
 
@@ -22,7 +22,7 @@ SceneManager::~SceneManager() {
 		delete currentScene;
 		currentScene = nullptr;
 	}
-	
+
 	if (timer) {
 		delete timer;
 		timer = nullptr;
@@ -32,7 +32,7 @@ SceneManager::~SceneManager() {
 		delete window;
 		window = nullptr;
 	}
-	
+
 }
 
 bool SceneManager::Initialize(std::string name_, int width_, int height_) {
@@ -64,7 +64,7 @@ void SceneManager::Run() {
 		timer->UpdateFrameTicks();
 		currentScene->Update(timer->GetDeltaTime());
 		currentScene->Render();
-		
+
 		SDL_GL_SwapWindow(window->getWindow());
 		SDL_Delay(timer->GetSleepTime(fps));
 	}
@@ -73,18 +73,21 @@ void SceneManager::Run() {
 void SceneManager::HandleEvents() {
 	SDL_Event sdlEvent;
 	while (SDL_PollEvent(&sdlEvent)) { /// Loop over all events in the SDL queue
+
+		ImGui_ImplSDL2_ProcessEvent(&sdlEvent); // Forward your event to backend
+
 		if (sdlEvent.type == SDL_EventType::SDL_QUIT) {
 			isRunning = false;
 			return;
 		}
 		else if (sdlEvent.type == SDL_KEYDOWN) {
 			switch (sdlEvent.key.keysym.scancode) {
-			[[fallthrough]]; /// C17 Prevents switch/case fallthrough warnings
+				[[fallthrough]]; /// C17 Prevents switch/case fallthrough warnings
 			case SDL_SCANCODE_ESCAPE:
 			case SDL_SCANCODE_Q:
 				isRunning = false;
 				return;
-				
+
 
 			case SDL_SCANCODE_F1:
 				BuildNewScene(SCENE_NUMBER::SCENE0g);
@@ -117,7 +120,7 @@ void SceneManager::HandleEvents() {
 }
 
 bool SceneManager::BuildNewScene(SCENE_NUMBER scene) {
-	bool status; 
+	bool status;
 
 	if (currentScene != nullptr) {
 		currentScene->OnDestroy();

@@ -49,7 +49,7 @@ void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttri
         if (attribute->Next()) addAttributeRecursive(sceneGraph, attribute->Next());   
     }
 
-void SceneGraph::SaveFile(std::string name) {
+void SceneGraph::SaveFile(std::string name) const {
     XMLObjectFile::writeCellFile(name);
 
     for (auto& obj : Actors) {

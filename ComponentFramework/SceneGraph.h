@@ -49,7 +49,7 @@ public:
 		return true;
 	}
 
-	void SaveFile(std::string name);
+	void SaveFile(std::string name) const;
 
 	void LoadAllActorsFromFile(std::string name) {
 		
@@ -106,6 +106,16 @@ public:
 			Debug::Error("Can't fint requested actor: ", __FILE__, __LINE__);
 			return nullptr;
 		}
+	}
+
+	std::vector<std::string> GetAllActorNames() const {
+		std::vector<std::string> allActorNames;
+		
+		for (auto& pair : Actors) {
+			allActorNames.push_back(pair.first);
+		}
+
+		return allActorNames;
 	}
 
 	bool RemoveActor(const std::string& actorName) {

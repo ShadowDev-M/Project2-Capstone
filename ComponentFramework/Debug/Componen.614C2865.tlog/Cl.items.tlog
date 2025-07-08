@@ -6,6 +6,14 @@ C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\CollisionSystem.cp
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Component.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\Component.obj
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\Debug.obj
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\ExampleXML.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui_demo.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui_demo.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui_draw.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui_draw.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui_impl_opengl3.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui_impl_opengl3.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui_impl_sdl2.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui_impl_sdl2.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui_stdlib.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui_stdlib.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui_tables.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui_tables.obj
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\IMGUI\imgui_widgets.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\imgui_widgets.obj
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Main.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\Main.obj
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\MaterialComponent.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\MaterialComponent.obj
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\MeshComponent.cpp;C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Debug\MeshComponent.obj

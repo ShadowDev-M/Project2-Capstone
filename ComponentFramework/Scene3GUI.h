@@ -34,6 +34,11 @@ private:
 	Ref<Actor> selectedAsset;
 	float debugMoveSpeed = 0.5f;
 
+	// Our state
+	mutable bool show_demo_window = true;
+	mutable bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 public:
 	explicit Scene3GUI();
 	virtual ~Scene3GUI();
