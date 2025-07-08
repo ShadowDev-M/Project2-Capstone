@@ -143,6 +143,9 @@
     <ClInclude Include="IMGUI\imgui_stdlib.h">
       <Filter>IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="SceneP0.h">
+      <Filter>Header Files\Scenes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\defaultFrag.glsl">
@@ -269,6 +272,9 @@
     </ClCompile>
     <ClCompile Include="IMGUI\imgui_stdlib.cpp">
       <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneP0.cpp">
+      <Filter>Source Files\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

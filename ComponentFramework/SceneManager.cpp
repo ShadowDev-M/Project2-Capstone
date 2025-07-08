@@ -6,6 +6,7 @@
 #include "Scene1g.h"
 #include "Scene2g.h"
 #include "Scene3GUI.h"
+#include "SceneP0.h"
 
 
 SceneManager::SceneManager() :
@@ -105,6 +106,8 @@ void SceneManager::HandleEvents() {
 				BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 				break;
 			case SDL_SCANCODE_F5:
+				BuildNewScene(SCENE_NUMBER::SCENEP0);
+				break;
 
 			default:
 				break;
@@ -146,6 +149,10 @@ bool SceneManager::BuildNewScene(SCENE_NUMBER scene) {
 
 	case SCENE_NUMBER::SCENE3GUI:
 		currentScene = new Scene3GUI();
+		status = currentScene->OnCreate();
+		break;
+	case SCENE_NUMBER::SCENEP0:
+		currentScene = new SceneP0();
 		status = currentScene->OnCreate();
 		break;
 

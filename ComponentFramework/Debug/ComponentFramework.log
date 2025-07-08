@@ -1,4 +1,52 @@
-﻿  Scene3GUI.cpp
+﻿  ExampleXML.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'ExampleXML.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'ExampleXML.cpp')
+  
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_impl_sdl2.cpp
+  imgui_stdlib.cpp
+  imgui_tables.cpp
+  imgui_widgets.cpp
+  Main.cpp
+  Scene0g.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene0g.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene0g.cpp')
+  
+  Scene1g.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene1g.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene1g.cpp')
+  
+  Scene2g.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene2g.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene2g.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene2g.cpp(267,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene2g.cpp(267,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene2g.cpp(267,200): warning C4305: 'argument': truncation from 'double' to 'const float'
+  Scene3GUI.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
@@ -10,5 +58,30 @@ C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): 
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(267,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(267,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(267,200): warning C4305: 'argument': truncation from 'double' to 'const float'
+  SceneManager.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'SceneManager.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'SceneManager.cpp')
+  
+  SceneP0.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'SceneP0.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'SceneP0.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneP0.cpp(267,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneP0.cpp(267,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneP0.cpp(267,200): warning C4305: 'argument': truncation from 'double' to 'const float'
+  Window.cpp
+  Generating Code...
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(65,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(65,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(65,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
   ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe

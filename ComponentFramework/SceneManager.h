@@ -15,7 +15,7 @@ public:
 private:
 	enum class SCENE_NUMBER {
 		SCENE0g = 0,
-		SCENE0p,
+		SCENEP0 = 4,
 		SCENE1g = 1,
 		SCENE2g = 2,
 		SCENE3GUI = 3,
