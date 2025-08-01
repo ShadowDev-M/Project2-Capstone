@@ -34,10 +34,38 @@ private:
 	Ref<Actor> selectedAsset;
 	float debugMoveSpeed = 0.5f;
 
-	// Our state
-	mutable bool show_demo_window = true;
-	mutable bool show_another_window = false;
+	// Window States
+	mutable bool show_demo_window = false;
+	mutable bool show_hierarchy_window = false;
+	mutable bool show_inspector_window = false;
+	mutable bool show_assetmanager_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	// Possibly move each unique window to its own class
+
+	//// Hierarchy window
+	void ShowHierarchyWindow(bool* p_open);
+	// recursive function for actually rendering/drawing the nodes
+	void DrawActorNode(const std::string& actorName, Ref<Actor> actor);
+	// recursive functions that help with selecting and searching for a child node
+	bool HasFilteredChild(Component* parent);
+	bool HasSelectedChild(Component* parent);
+
+	// refactored function to get a map of all child actors
+	std::unordered_map<std::string, Ref<Actor>> GetChildActors(Component* parent);
+	
+	mutable bool show_only_selected = false;
+
+	// text filter for the hierarchy window
+	ImGuiTextFilter filter;
+	////
+
+
+	//// Inspector Window
+
+
+
+	////
 
 public:
 	explicit Scene3GUI();

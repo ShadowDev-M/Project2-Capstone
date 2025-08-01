@@ -5,6 +5,9 @@
 #include <MMath.h>
 #include "Debug.h"
 #include "ExampleXML.h"
+
+using namespace ImGui;
+
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
 }
@@ -107,7 +110,7 @@ bool Scene3GUI::OnCreate() {
 	sceneGraph.AddActor(mario);
 
 	// sphere setup
-	Ref<Actor> sphere = std::make_shared<Actor>(board.get(), "Sphere");
+	Ref<Actor> sphere = std::make_shared<Actor>(mario.get(), "Sphere");
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<MeshComponent>("SM_Sphere"));
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<MaterialComponent>("M_Sphere"));
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
@@ -126,9 +129,6 @@ bool Scene3GUI::OnCreate() {
 	//sceneGraph.RemoveActor("Sphere");
 	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
-
-
-
 
 	return true;
 }
@@ -210,6 +210,12 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 			mouseHeld = false;
 		}
 		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
+
+			// makes it so ImGui handles the mouse click
+			if (GetIO().WantCaptureMouse) {
+				mouseHeld = false;
+				return;
+			}
 
 			lastX = sdlEvent.button.x;
 			lastY = sdlEvent.button.y;
@@ -444,79 +450,34 @@ void Scene3GUI::Render() const {
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
-	// Create ImGUI Windows
-	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	if (show_demo_window)
+	if (show_demo_window) {
 		ImGui::ShowDemoWindow(&show_demo_window);
-
-	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-	{
-		static float f = 0.0f;
-		static int counter = 0;
-
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		ImGui::Checkbox("Scene Graph", &show_another_window);
-
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
-
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
 	}
-
-	ImGui::Begin("Save File");
-
-	if (ImGui::Button("Save")) {
-		sceneGraph.SaveFile("LevelThree");
-	}
-	
-	ImGui::End();
-
-
-	ImGui::Begin("Reload Scene");
-
-	if (ImGui::Button("Reload")) {
-		
-	}
-
-	ImGui::End();
-		
-
-	// 3. Show another simple window.
-	if (show_another_window)
-	{
-		ImGui::Begin("Scene Graph", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Actors Currently In The Scene:");
-
-		std::vector<std::string> allActorNames = sceneGraph.GetAllActorNames();
-		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
-
-		if (ImGui::BeginTable("Scene Graph", 1, flags)) {
-			ImGui::TableSetupColumn("Actor Name");
-			ImGui::TableHeadersRow();
-
-			for (std::string& actorName : allActorNames) {
-				ImGui::TableNextRow();
-				ImGui::TableSetColumnIndex(0);
-				ImGui::Text("%s", actorName.c_str());
-			}
 			
-			ImGui::EndTable();
+	if (show_hierarchy_window) {
+		// ShowHierarchyWindow isn't a const function because I'm modifying the selection code, so I have to cast it
+		const_cast<Scene3GUI*>(this)->ShowHierarchyWindow(&show_hierarchy_window);
+	}
+
+	if (BeginMainMenuBar()) {
+		if (BeginMenu("File")) {
+			if (MenuItem("Save")) {
+				sceneGraph.SaveFile("LevelThree");
+			}
+			EndMenu();
 		}
 
-		if (ImGui::Button("Close Me"))
-			show_another_window = false;
-		ImGui::End();
-	}
+		if (BeginMenu("Windows")) {
+			MenuItem("Demo", nullptr, &show_demo_window);
+			MenuItem("Hierarchy", nullptr, &show_hierarchy_window);
+			MenuItem("Inspector", nullptr, &show_inspector_window);
+			MenuItem("Asset Manager", nullptr, &show_assetmanager_window);
 
+			EndMenu();
+		}
+		EndMainMenuBar();
+	}
+	
 
 	// Rendering
 	ImGui::Render();
@@ -545,3 +506,195 @@ void Scene3GUI::Render() const {
 
 	glUseProgram(0);
 }
+
+
+
+//// Functions related to the Hierarchy Window
+void Scene3GUI::ShowHierarchyWindow(bool* p_open)
+{
+
+	// Some of the stuff here will be changed after to just read off an XML file (like getting all the actors names and if they are parented/children)
+	// just doing it without XML stuff for now since I don't fully understand it yet
+
+	if (Begin("Hierarchy", &show_hierarchy_window, ImGuiWindowFlags_MenuBar)) {
+		
+		
+		if (BeginMenuBar()) {
+			if (BeginMenu("Options")) {
+
+				Checkbox("Show Only Selected", &show_only_selected);
+
+				if (MenuItem("Select All")) {
+					std::vector<std::string> allActorNames = sceneGraph.GetAllActorNames();
+					for (const auto& actorName : allActorNames) {
+						Ref<Actor> actor = sceneGraph.GetActor(actorName);
+
+						sceneGraph.debugSelectedAssets.emplace(actorName, actor);
+					}
+				}
+
+				if (MenuItem("Clear All Selected")) {
+					sceneGraph.debugSelectedAssets.clear();
+				}
+
+
+				EndMenu();
+			}
+			EndMenuBar();
+		}
+
+		/*if (IsWindowFocused()) {
+			SetKeyboardFocusHere();
+			filter.Clear();
+		}*/
+
+		filter.Draw("##HierarchyFilter", -1.0f);
+		Separator();
+
+		//// Most of this will be changed after to just read off an XML for the current actors in a cell
+
+		// create root actors map to store all actors with no parent
+		std::unordered_map<std::string, Ref<Actor>> rootActors;
+		
+		// store all actors names in the scene 
+		std::vector<std::string> allActorNames = sceneGraph.GetAllActorNames();
+
+		// sort the names
+		std::sort(allActorNames.begin(), allActorNames.end());
+
+		for (const std::string& actorName : allActorNames) {
+			Ref<Actor> actor = sceneGraph.GetActor(actorName);
+
+			// if actor is a root actor, add it to the map
+			if (actor && actor->isRootActor()) {
+				rootActors.emplace(actorName, actor);
+			}
+		}
+		///
+		
+
+		for (const auto& pair : rootActors) {
+			DrawActorNode(pair.first, pair.second);
+		}
+
+		
+	}
+	End();
+}
+
+void Scene3GUI::DrawActorNode(const std::string& actorName, Ref<Actor> actor)
+{
+	//
+	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(actor.get());
+
+	// imgui_demo.cpp Widgets/Tree Nodes/Advanced, with Selectable nodes
+	const bool is_selected = sceneGraph.debugSelectedAssets.find(actorName) != sceneGraph.debugSelectedAssets.end();
+
+	bool node_filter = filter.PassFilter(actorName.c_str()); 
+
+	// show selection if node is selected
+	bool show_selection = true;
+	if (show_only_selected) {
+		show_selection = is_selected || HasSelectedChild(actor.get());
+	}
+
+	// show if node appears in filter
+	bool show_filter = node_filter || HasFilteredChild(actor.get());
+
+	// draw node if it is selected and/or in filter
+	if (!show_selection || !show_filter) {
+		return;
+	}
+
+	// converting actor name to const char to create a unique ID for its node
+	PushID(actorName.c_str());
+
+	// default flags for the the tree nodes
+	ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth; // Standard opening mode as we are likely to want to add selection afterwards
+	base_flags |= ImGuiTreeNodeFlags_NavLeftJumpsToParent; // Enable pressing left to jump to parent
+
+	if (is_selected) {
+		// set flag to selected
+		base_flags |= ImGuiTreeNodeFlags_Selected;
+	}
+
+	if (childActors.empty()) {
+		base_flags |= ImGuiTreeNodeFlags_Leaf; 
+	}
+
+	bool node_open = TreeNodeEx(actorName.c_str(), base_flags, "%s", actorName.c_str());
+
+	if (IsItemClicked() && !IsItemToggledOpen()) {
+		// using joel's raycast code for selection of actors in the window
+		if (!GetIO().KeyCtrl && !(is_selected)) { sceneGraph.debugSelectedAssets.clear(); }
+
+		if (is_selected && GetIO().KeyCtrl) { sceneGraph.debugSelectedAssets.erase(actorName); }
+
+		else sceneGraph.debugSelectedAssets.emplace(actorName, actor);
+
+	}
+
+	if (node_open) {
+		for (const auto& child : childActors) {
+			DrawActorNode(child.first, child.second);
+		}
+		TreePop();
+	}
+
+	PopID();
+}
+
+bool Scene3GUI::HasFilteredChild(Component* parent)
+{
+	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
+
+	for (const auto& child : childActors) {
+		if (filter.PassFilter(child.first.c_str())) { return true; } //!
+
+		// recursive check to see if the child has children
+		if (HasFilteredChild(child.second.get())) { return true; }
+	}
+
+	return false;
+}
+
+bool Scene3GUI::HasSelectedChild(Component* parent)
+{
+	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
+
+	for (const auto& child : childActors) {
+		if (show_only_selected && sceneGraph.debugSelectedAssets.find(child.first) != sceneGraph.debugSelectedAssets.end()) { return true; } //==
+
+		// recursive check to see if the child has children
+		if (HasSelectedChild(child.second.get())) { return true; }
+	}
+
+	return false;
+}
+
+std::unordered_map<std::string, Ref<Actor>> Scene3GUI::GetChildActors(Component* parent)
+{
+	/// switch to reading XML file after
+	std::unordered_map<std::string, Ref<Actor>> childActors;
+
+	// store all actors names in the scene 
+	std::vector<std::string> allActorNames = sceneGraph.GetAllActorNames();
+
+	// sort the names
+	std::sort(allActorNames.begin(), allActorNames.end());
+
+	for (const std::string& actorName : allActorNames) {
+		Ref<Actor> actor = sceneGraph.GetActor(actorName);
+
+		// actor is a child actor
+		if (actor && actor->getParentActor() == parent) {
+			childActors.emplace(actorName, actor);
+		}
+	}
+	///
+
+	return childActors;
+}
+
+
+//// Functions related to the inspector window

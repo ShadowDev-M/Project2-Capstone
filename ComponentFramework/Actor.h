@@ -87,5 +87,19 @@ public:
 	bool GetIntersectTriangles(Vec3 start, Vec3 dir, Vec3* intersectSpot = nullptr);
 
 
+	// function to get the parent of an actor
+	Actor* getParentActor() const {
+		// if actor is not a root actor return parent
+		if (!isRootActor()) {
+			return dynamic_cast<Actor*>(parent);
+		}
+		else {
+			return nullptr;
+		}
+	}
+
+	bool isRootActor() const {
+		return parent == nullptr || dynamic_cast<Actor*>(parent) == nullptr;
+	}
 };
 
