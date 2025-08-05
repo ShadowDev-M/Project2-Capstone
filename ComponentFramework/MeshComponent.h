@@ -42,5 +42,11 @@ public:
 		
 		return vertices; }
 
+	
+	const char* getMeshName() const { return filename; }
+
+	size_t getVertices() const {
+		return dataLength;
+	}
 };
 

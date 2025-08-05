@@ -48,6 +48,10 @@ public:
 	void Render() const override;
 
 	inline GLuint GetProgram() const { return shaderID;}
+
+	// some new functions to help out with the displaying of information
+	const char* GetVertName() const { return vertFilename; }
+	const char* GetFragName() const { return fragFilename; }
 };
 
 

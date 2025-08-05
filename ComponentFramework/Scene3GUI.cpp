@@ -5,6 +5,7 @@
 #include <MMath.h>
 #include "Debug.h"
 #include "ExampleXML.h"
+#include <EMath.h>
 
 using namespace ImGui;
 
@@ -110,7 +111,7 @@ bool Scene3GUI::OnCreate() {
 	sceneGraph.AddActor(mario);
 
 	// sphere setup
-	Ref<Actor> sphere = std::make_shared<Actor>(mario.get(), "Sphere");
+	Ref<Actor> sphere = std::make_shared<Actor>(nullptr, "Sphere");
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<MeshComponent>("SM_Sphere"));
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<MaterialComponent>("M_Sphere"));
 	sphere->AddComponent(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
@@ -257,6 +258,12 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 	case SDL_MOUSEMOTION:
 		if (mouseHeld) {
 
+			// makes it so ImGui handles the mouse motion
+			if (GetIO().WantCaptureMouse) {
+				mouseHeld = false;
+				return;
+			}
+
 			if (!(sceneGraph.debugSelectedAssets.empty())) {
 			//get direction vector of new vector of movement from old mouse pos and new mouse pos
 			
@@ -401,7 +408,8 @@ void Scene3GUI::Update(const float deltaTime) {
 
 				obj.second->GetComponent<TransformComponent>()->SetTransform(
 					obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-					obj.second->GetComponent<TransformComponent>()->GetQuaternion()
+					obj.second->GetComponent<TransformComponent>()->GetQuaternion(), 
+					obj.second->GetComponent<TransformComponent>()->GetScale()
 				);
 			}
 		}
@@ -459,9 +467,13 @@ void Scene3GUI::Render() const {
 		const_cast<Scene3GUI*>(this)->ShowHierarchyWindow(&show_hierarchy_window);
 	}
 
+	if (show_inspector_window) {
+		const_cast<Scene3GUI*>(this)->ShowInspectorWindow(&show_inspector_window);
+	}
+
 	if (BeginMainMenuBar()) {
 		if (BeginMenu("File")) {
-			if (MenuItem("Save")) {
+			if (MenuItem("Save", "Ctrl+S")) {
 				sceneGraph.SaveFile("LevelThree");
 			}
 			EndMenu();
@@ -577,7 +589,7 @@ void Scene3GUI::ShowHierarchyWindow(bool* p_open)
 			DrawActorNode(pair.first, pair.second);
 		}
 
-		
+		// TODO: right click popup menu, create new, remove, rename 
 	}
 	End();
 }
@@ -698,3 +710,168 @@ std::unordered_map<std::string, Ref<Actor>> Scene3GUI::GetChildActors(Component*
 
 
 //// Functions related to the inspector window
+
+void Scene3GUI::ShowInspectorWindow(bool* p_open)
+{
+	if (Begin("Inspector"), &show_inspector_window) {
+		
+		// no actors selected
+		if (sceneGraph.debugSelectedAssets.empty()) {
+			Text("No Actor Selected");
+		}
+
+		// only 1 actor is selected
+		else if (sceneGraph.debugSelectedAssets.size() == 1) {
+			auto selectedActor = sceneGraph.debugSelectedAssets.begin();
+			
+			/// expand section later on for new features like actor renaming 
+			Text(selectedActor->first.c_str());
+			
+			Separator();
+
+			/// Components Section
+			// TODO: PhysicsComponent, CollisionComponent + CollisionSystem
+			
+
+			// transform
+			if (selectedActor->second->GetComponent<TransformComponent>()) {
+				DrawTransformComponent(selectedActor->second->GetComponent<TransformComponent>());
+				Separator();
+			}
+
+			// mesh
+			if (selectedActor->second->GetComponent<MeshComponent>()) {
+				DrawMeshComponent(selectedActor->second->GetComponent<MeshComponent>());
+				Separator();
+			}
+
+			// material
+			if (selectedActor->second->GetComponent<MaterialComponent>()) {
+				DrawMaterialComponent(selectedActor->second->GetComponent<MaterialComponent>());
+				Separator();
+			}
+
+			// shader
+			if (selectedActor->second->GetComponent<ShaderComponent>()) {
+				DrawShaderComponent(selectedActor->second->GetComponent<ShaderComponent>());
+				Separator();
+			}
+
+			// TODO: adding and removing components
+
+		}
+		
+		// more than 1 actor selected
+		else {
+			// TODO: multi-actor editing
+
+			if (CollapsingHeader("Selected Actors")) {
+				for (const auto& pair : sceneGraph.debugSelectedAssets) {
+					Text("%s", pair.first.c_str());
+				}
+			}
+		}
+	}
+
+
+	End();
+}
+
+void Scene3GUI::DrawTransformComponent(Ref<TransformComponent> transform)
+{
+	if (CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+		// Setting up right click popup menu, context sensitive to the header
+		if (IsItemHovered() && IsMouseClicked(1)) {
+			OpenPopup("##TransformPopup");
+		}
+
+		// Position
+		Vec3 pos = transform->GetPosition();
+		float position[3] = { pos.x, pos.y, pos.z };
+
+		Text("Position");
+		SameLine();
+		if (DragFloat3("##Position", position, 0.1f)) {
+			transform->SetPos(position[0], position[1], position[2]);
+		}
+
+		//Rotation
+		//TODO: fix gimbal lock, advanced rotation
+		
+		Euler quatEuler = EMath::toEuler(transform->GetQuaternion());
+
+		float rotation[3] = { quatEuler.xAxis, quatEuler.yAxis, quatEuler.zAxis };
+
+		Text("Rotation");
+		SameLine();
+
+		if (DragFloat3("##Rotation", rotation, 1.0f)) {
+			Quaternion rotX = QMath::angleAxisRotation(rotation[0], Vec3(1.0f, 0.0f, 0.0f));
+			Quaternion rotY = QMath::angleAxisRotation(rotation[1], Vec3(0.0f, 1.0f, 0.0f));
+			Quaternion rotZ = QMath::angleAxisRotation(rotation[2], Vec3(0.0f, 0.0f, 1.0f));
+
+			// euler
+			Quaternion finalRotation = rotZ * rotY * rotX;
+			transform->SetOrientation(QMath::normalize(finalRotation));
+		}
+
+
+		// Scale
+		Vec3 scaleVector = transform->GetScale();
+		float scale[3] = { scaleVector.x, scaleVector.y, scaleVector.z };
+
+		Text("Scale   ");
+		SameLine();
+		if (DragFloat3("##Scale", scale, 0.1f, 0.1f, 100.0f)) {
+			transform->SetTransform(Vec3(scale[0], scale[1], scale[2]));
+		}
+
+
+		// right click popup menu 
+		if (BeginPopup("##TransformPopup")) {
+			if (MenuItem("Reset")) {
+				transform->SetTransform(Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), Vec3(1.0f, 1.0f, 1.0f));
+			}
+			
+		
+
+			EndPopup();
+		}
+
+		
+	}
+}
+
+void Scene3GUI::DrawMeshComponent(Ref<MeshComponent> mesh)
+{
+	if (CollapsingHeader("Mesh")) {
+		// displaying some basic mesh information
+		TextWrapped("Mesh Name: %s", mesh->getMeshName());
+		TextWrapped("Mesh Vertices: %zu", mesh->getVertices());
+
+		//TODO: drag and drop
+	}
+}
+
+void Scene3GUI::DrawMaterialComponent(Ref<MaterialComponent> material)
+{
+	if (CollapsingHeader("Material")) {
+		TextWrapped("Texture ID: %u", material->getTextureID());
+
+		// display material thumbnail
+		if (material->getTextureID() != 0) {
+			Image(ImTextureID(material->getTextureID()), ImVec2(64, 64));
+		}
+	}
+}
+
+void Scene3GUI::DrawShaderComponent(Ref<ShaderComponent> shader)
+{
+	if (CollapsingHeader("Shader")) {
+		// displaying some basic shader information
+		TextWrapped("Shader Program ID: %u", shader->GetProgram());
+		TextWrapped("Shader Vert: %s", shader->GetVertName());
+		TextWrapped("Shader Frag: %s", shader->GetFragName());
+	}
+}
+

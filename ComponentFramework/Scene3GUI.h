@@ -62,9 +62,15 @@ private:
 
 
 	//// Inspector Window
+	void ShowInspectorWindow(bool* p_open);
+	
+	// component functions
+	void DrawTransformComponent(Ref<TransformComponent> transform);
+	void DrawMeshComponent(Ref<MeshComponent> mesh);
+	void DrawMaterialComponent(Ref<MaterialComponent> material);
+	void DrawShaderComponent(Ref<ShaderComponent> shader);
 
-
-
+	
 	////
 
 public:

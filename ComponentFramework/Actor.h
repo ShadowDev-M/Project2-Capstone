@@ -74,6 +74,26 @@ public:
 		return Ref<ComponentTemplate>(nullptr);
 	}
 
+
+	template<typename ComponentTemplate>
+	void RemoveComponent() {
+		/// check if the component exists
+		if (GetComponent<ComponentTemplate>().get() == nullptr) {
+#ifdef _DEBUG
+			std::cerr << "WARNING: Trying to remove a component type that does not exist - ignored\n";
+#endif
+			return;
+		}
+		/// Finish building the component and add the component to the list 
+		GetComponent<ComponentTemplate>()->OnDestroy();
+
+		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
+		if (it != components.end()) {
+			components.erase(it);
+		}
+	}
+
+
 	void ListComponents() const;
 	void RemoveAllComponents();
 

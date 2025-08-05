@@ -68,7 +68,25 @@ public:
 			return Ref<AssetTemplate>(nullptr);
 		}
 	}
+
+	std::vector<Ref<Component>> GetAllAssets() const {
+		std::vector<Ref<Component>> allAssets;
+
+		for (auto& pair : assetManager) {
+			allAssets.push_back(pair.second);
+		}
+		return allAssets;
+	}
 	
+	std::vector<std::string> GetAllAssetNames() const {
+		std::vector<std::string> allAssetNames;
+
+		for (auto& pair : assetManager) {
+			allAssetNames.push_back(pair.first);
+		}
+		return allAssetNames;
+	}
+
 	// lists assets
 	void ListAllAssets() const {
 		std::cout << "Asset Manager Currently Holds These Assets: " << std::endl;
