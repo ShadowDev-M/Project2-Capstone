@@ -131,6 +131,8 @@ bool Scene3GUI::OnCreate() {
 	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
 
+	
+
 	return true;
 }
 
@@ -471,6 +473,10 @@ void Scene3GUI::Render() const {
 		const_cast<Scene3GUI*>(this)->ShowInspectorWindow(&show_inspector_window);
 	}
 
+	if (show_assetmanager_window) {
+		const_cast<Scene3GUI*>(this)->ShowAssetManagerWindow(&show_assetmanager_window);
+	}
+
 	if (BeginMainMenuBar()) {
 		if (BeginMenu("File")) {
 			if (MenuItem("Save", "Ctrl+S")) {
@@ -760,12 +766,15 @@ void Scene3GUI::ShowInspectorWindow(bool* p_open)
 			// TODO: adding and removing components
 
 		}
+
+		// TODO: if an asset is selected in the assetbrowser it'll display some information about it in the inspector window
+
 		
 		// more than 1 actor selected
 		else {
 			// TODO: multi-actor editing
 
-			if (CollapsingHeader("Selected Actors")) {
+			if (CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
 				for (const auto& pair : sceneGraph.debugSelectedAssets) {
 					Text("%s", pair.first.c_str());
 				}
@@ -799,7 +808,6 @@ void Scene3GUI::DrawTransformComponent(Ref<TransformComponent> transform)
 		//TODO: fix gimbal lock, advanced rotation
 		
 		Euler quatEuler = EMath::toEuler(transform->GetQuaternion());
-
 		float rotation[3] = { quatEuler.xAxis, quatEuler.yAxis, quatEuler.zAxis };
 
 		Text("Rotation");
@@ -850,6 +858,8 @@ void Scene3GUI::DrawMeshComponent(Ref<MeshComponent> mesh)
 		TextWrapped("Mesh Vertices: %zu", mesh->getVertices());
 
 		//TODO: drag and drop
+		
+
 	}
 }
 
@@ -875,3 +885,117 @@ void Scene3GUI::DrawShaderComponent(Ref<ShaderComponent> shader)
 	}
 }
 
+
+
+//// Asset Manager
+void Scene3GUI::ShowAssetManagerWindow(bool* p_open)
+{
+	if (Begin("Asset Manager", &show_assetmanager_window, ImGuiWindowFlags_MenuBar)) {
+
+		if (BeginMenuBar()) {
+			if (BeginMenu("Options")) {
+				if (MenuItem("Refresh")) {
+					//
+				}
+
+				EndMenu();
+			}
+			EndMenuBar();
+		}
+
+
+		assetFilter.Draw("##AssetFilter", -1.0f);
+
+
+		std::vector<Ref<Component>> allAssets = AssetManager::getInstance().GetAllAssets();
+		std::vector<std::string> allAssetNames = AssetManager::getInstance().GetAllAssetNames();
+
+		//imgui_demo.cpp Asset Browser
+		if (BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
+
+			// calculating the layout for the assets
+			const float avail_width = GetContentRegionAvail().x;
+			int column_count = (avail_width / (thumbnail_size + padding));
+
+			// putting all the assets into columns to get a grid style layout
+			Columns(column_count, "##AssetGrid", false);
+
+			for (size_t i = 0; i < allAssets.size(); i++) {
+				const std::string& assetName = allAssetNames[i];
+				Ref<Component> asset = allAssets[i];
+
+				// if asset name isn't in the filter, add it
+				if (!assetFilter.PassFilter(assetName.c_str())) {
+					continue;
+				}
+
+				// create and draw the asset
+				DrawAssetThumbnail(assetName, asset);
+
+
+				// next asset
+				NextColumn();
+			}
+			//reset
+			Columns(1);
+
+		}
+		EndChild();
+
+	}
+	End();
+}
+
+void Scene3GUI::DrawAssetThumbnail(const std::string& assetName, Ref<Component> asset)
+{
+	//	
+	const ImVec2 button_size(thumbnail_size, thumbnail_size);
+
+	// giving each asset its own unique id
+	PushID(assetName.c_str());
+
+	
+	// TODO: possibly give meshes a 3d model thumbnail
+
+	// colors
+	ImVec4 mesh_color(0.4f, 0.4f, 0.4f, 1.0f);
+	ImVec4 shader_color(0.4f, 0.4f, 0.6f, 1.0f);
+
+	// pointers to assets
+	auto mesh = std::dynamic_pointer_cast<MeshComponent>(asset);
+	auto material = std::dynamic_pointer_cast<MaterialComponent>(asset);
+	auto shader = std::dynamic_pointer_cast<ShaderComponent>(asset);
+
+	//
+	ImDrawList* draw_list = GetWindowDrawList();
+	ImVec2 button_min = GetItemRectMin();
+	ImVec2 button_max = GetItemRectMax();
+	ImVec2 size = GetItemRectSize();
+	
+	/// I want to improve this section and remove the if statements, thinking of converting putting all the assets in the asset manger into an XML file which contains the already exisitng asset information + an easy way identify the type
+
+	if (mesh) {
+		ColorButton("##MeshAssetBtn", mesh_color, ImGuiColorEditFlags_NoTooltip, button_size);
+	}
+	else if (material) {
+		ImageButton("##MaterialAssetBtn", ImTextureID(material->getTextureID()), button_size);
+	}
+	else if (shader) {
+		ColorButton("##ShaderAssetBtn", shader_color, ImGuiColorEditFlags_NoTooltip, button_size);
+	}
+
+
+	// asset name under asset
+	PushTextWrapPos(GetCursorPosX() + thumbnail_size);
+	Text("%s", assetName.c_str());
+	PopTextWrapPos();
+
+
+
+	// 
+	/*if (IsItemClicked()) {
+		draw_list->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(255, 255, 0, 255), 0.0f, 0, 3.0f);
+	}*/
+
+	PopID();
+}

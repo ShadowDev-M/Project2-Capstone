@@ -16,6 +16,11 @@ constexpr auto TypeName = static_cast<std::string>(typeid(T).name()).substr(6);
 using namespace tinyxml2;
 
 class XMLObjectFile {
+    /// <summary>
+    /// recursivly adds the actor's from a cell file into the scene
+    /// </summary>
+    /// <param name="sceneGraph">scene you are loading actors to </param>
+    /// <param name="attribute">pointer to the current element you are adding </param>
     static void addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute);
 
 public:
@@ -57,6 +62,7 @@ public:
         XMLNode* cRoot = doc.RootElement();
 
         XMLElement* actorList = cRoot->FirstChildElement("Actors");
+        XMLElement* newElementList = actorList->NextSiblingElement("Test");
 
         if (actorList->FirstAttribute()) addAttributeRecursive(sceneGraph, actorList->FirstAttribute());;
         
@@ -64,7 +70,96 @@ public:
 
     }
 
-    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sceneGraph"></param>
+    /// <param name="filename"></param>
+    /// <returns></returns>
+    static int addComponentsFromFile(SceneGraph* sceneGraph, std::string filename) {
+        std::string path = "Cell Files/" + filename + ".xml";
+        const char* id = path.c_str();
+        XMLDocument doc;
+
+        //try loading the file into doc
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+            return eResult;
+        }
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* actorList = cRoot->FirstChildElement("Actors");
+       
+
+        if (actorList->FirstAttribute()) addAttributeRecursive(sceneGraph, actorList->FirstAttribute());;
+
+    }
+
+    static int writeComponentToCell(std::string filename, std::string name, bool enabled) {
+        std::string path = "Cell Files/" + filename + ".xml";
+        const char* id = path.c_str();
+        XMLDocument doc;
+
+
+
+        //try loading the file into doc
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+            return eResult;
+        }
+
+
+        std::cout << "Found file to write: " << filename << std::endl;
+
+        XMLNode* cRoot = doc.RootElement();
+        
+        XMLElement* actors = cRoot->FirstChildElement("Actors");
+        if (actors == nullptr) {
+            std::cerr << "Root element not found!" << std::endl;
+            return 1;
+        }
+
+
+        // Create the second element
+        XMLElement* componentList = doc.NewElement("Component");
+        cRoot->InsertEndChild(componentList);
+        
+
+        //std::cout << actorList->Name() << std::endl; 
+        if (!componentList) {
+            componentList = doc.NewElement("Components");
+
+            std::cout << "Creating Element: Actors" << std::endl;
+
+        }
+
+        const char* nameCStr = name.c_str();
+
+
+        if (enabled) componentList->SetAttribute(nameCStr, nameCStr);
+        else componentList->DeleteAttribute(nameCStr);
+
+
+
+        cRoot->InsertEndChild(componentList);
+
+        doc.Print();
+
+        XMLError eResultSave = doc.SaveFile(id);
+
+        if (eResultSave != XML_SUCCESS) {
+            std::cerr << "Error saving file: " << eResultSave << std::endl;
+            return -1;
+        }
+
+        std::cout << nameCStr << "obj Save game written to '" << filename << ".xml'\n";
+
+        return 0;
+
+    }
+
 
     static int writeActorToCell(std::string filename, std::string name, bool enabled) {
         std::string path = "Cell Files/" + filename + ".xml";

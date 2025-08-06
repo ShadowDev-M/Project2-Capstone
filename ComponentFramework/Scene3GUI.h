@@ -71,7 +71,13 @@ private:
 	void DrawShaderComponent(Ref<ShaderComponent> shader);
 
 	
-	////
+	//// Asset Manager
+	void ShowAssetManagerWindow(bool* p_open);
+	void DrawAssetThumbnail(const std::string& assetName, Ref<Component> asset);
+	ImGuiTextFilter assetFilter;
+	const int thumbnail_size = 64;
+	const int padding = 10;
+
 
 public:
 	explicit Scene3GUI();

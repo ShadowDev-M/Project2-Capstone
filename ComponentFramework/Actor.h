@@ -75,6 +75,9 @@ public:
 	}
 
 
+
+	// Added this function previously but realized since the components are shared if I remove a component and several actors share that component it just deletes the component, 
+	// However this function can still be used later on when components are created in the scene and need to be deleted
 	template<typename ComponentTemplate>
 	void RemoveComponent() {
 		/// check if the component exists
@@ -91,6 +94,21 @@ public:
 		if (it != components.end()) {
 			components.erase(it);
 		}
+	}
+
+	// function that replaces an actors shared component
+	template<typename ComponentTemplate>
+	void ReplaceComponent(Ref<ComponentTemplate> newComponent) {
+		for (auto& component : components) {
+			if (std::dynamic_pointer_cast<ComponentTemplate>(component)) {
+				component = newComponent;
+
+				return;
+			}
+		}
+
+		// if the component that is trying to be replaced doesn't exist, add it instead
+		AddComponent(newComponent);
 	}
 
 

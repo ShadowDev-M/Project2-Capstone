@@ -12,6 +12,27 @@
 #include "TransformComponent.h"
 
 
+struct AssetKey
+{
+	std::string name;
+	std::string componentType;
+
+	bool operator == (const AssetKey& other) const {
+		return name == other.name && componentType == other.componentType;
+	}
+};
+
+struct AssetKeyHasher {
+	std::size_t operator()(const AssetKey& key) const {
+		std::hash<std::string> hasherStr;
+		
+
+		return hasherStr(key.name) ^
+			(hasherStr(key.componentType) << 1);
+	}
+};
+
+
 class AssetManager
 {
 private:
@@ -25,7 +46,7 @@ private:
 	
 	// const char* creates an address for the name and shares it between same names
 	// std::string compares strings but costs more memory
-	std::unordered_map<std::string, Ref<Component>> assetManager;
+	std::unordered_map<AssetKey, Ref<Component>, AssetKeyHasher> assetManager;
 
 public:
 
@@ -39,23 +60,31 @@ public:
 
 	template<typename AssetTemplate, typename ... Args>
 	bool AddAsset(std::string name_, Args&& ... args_) { 
-		
+		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
+		AssetKey key = { name_, componentType };
+
+
+		Ref<AssetTemplate> asset = std::make_shared<AssetTemplate>(std::forward<Args>(args_)...);
+
+	
+
 		// check to see if theres already an asset in the assetmanager with the same name
-		auto it = assetManager.find(name_);
+		auto it = assetManager.find(key);
 		if (it != assetManager.end()) {
 			Debug::Warning("Asset: " + name_ + "| already exists.", __FILE__, __LINE__);
 			return false;
 		}
 
 		// add asset to assetmanager
-		Ref<AssetTemplate> asset = std::make_shared<AssetTemplate>(std::forward<Args>(args_)...);
-		assetManager[name_] = asset;
+		assetManager[key] = asset;
 		return true;
 	}
 
 	template<typename AssetTemplate>
-	Ref<AssetTemplate> GetAsset(const std::string& assetName_) const {
-		auto it = assetManager.find(assetName_);
+	Ref<AssetTemplate> GetAsset(const std::string& assetName_) {
+		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
+		AssetKey key = { assetName_, componentType };
+		auto it = assetManager.find(key);
 
 		// if asset is found return it
 		if (it != assetManager.end()) {
@@ -82,7 +111,7 @@ public:
 		std::vector<std::string> allAssetNames;
 
 		for (auto& pair : assetManager) {
-			allAssetNames.push_back(pair.first);
+			allAssetNames.push_back(pair.first.name);
 		}
 		return allAssetNames;
 	}
@@ -91,7 +120,7 @@ public:
 	void ListAllAssets() const {
 		std::cout << "Asset Manager Currently Holds These Assets: " << std::endl;
 		for (auto it = assetManager.begin(); it != assetManager.end(); it++) {
-			std::cout << it->first << std::endl;
+			std::cout << it->first.name << std::endl;
 		}
 		std::cout << "------------------------------------------" << std::endl;
 	}

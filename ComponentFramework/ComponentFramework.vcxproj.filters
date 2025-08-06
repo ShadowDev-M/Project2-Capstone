@@ -28,6 +28,9 @@
     <Filter Include="IMGUI">
       <UniqueIdentifier>{f735b250-e0b5-4dfd-90b6-a7462aa0030f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{54f91657-eeec-4c28-a336-a819b31bed18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="GameEngineLog.txt">
@@ -145,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="SceneP0.h">
       <Filter>Header Files\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="InspectorWindow.h">
+      <Filter>Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -275,6 +281,9 @@
     </ClCompile>
     <ClCompile Include="SceneP0.cpp">
       <Filter>Source Files\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="InspectorWindow.cpp">
+      <Filter>Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

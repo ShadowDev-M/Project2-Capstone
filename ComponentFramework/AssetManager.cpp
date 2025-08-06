@@ -6,7 +6,6 @@ bool AssetManager::OnCreate() {
 
     // SM: (Static) Mesh
     AddAsset<MeshComponent>("SM_Mario", nullptr, "meshes/Mario.obj");
-
     AddAsset<MeshComponent>("SM_Sphere", nullptr, "meshes/Sphere.obj");
     AddAsset<MeshComponent>("SM_Plane", nullptr, "meshes/Plane.obj");
     AddAsset<MeshComponent>("SM_Pawn", nullptr, "meshes/Pawn.obj");
@@ -27,7 +26,7 @@ bool AssetManager::OnCreate() {
     // if an asset was setup wrong throw an error
     for (auto& asset : assetManager) {
         if (!asset.second->OnCreate()) {
-            Debug::Error("Asset failed to initialize: " + asset.first, __FILE__, __LINE__);
+            Debug::Error("Asset failed to initialize: " + asset.first.name, __FILE__, __LINE__);
             return false;
         }
     }
