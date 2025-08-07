@@ -59,4 +59,12 @@ void SceneGraph::SaveFile(std::string name) const {
         obj.second->GetComponent<TransformComponent>()->GetPosition().print();
         XMLObjectFile::writeActorToCell(name, obj.first, true);
     }
+
+    for (auto& component_ : AssetManager::getInstance().GetAllAssetKeyPair()) {
+
+        XMLObjectFile::writeComponentToCell(name, component_.first, component_.second, true);
+
+    }
+
+
 }

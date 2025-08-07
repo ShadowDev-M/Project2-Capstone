@@ -1,3 +1,41 @@
 <CellFile>
     <Actors camera="camera" Mario="Mario" Board="Board" Sphere="Sphere"/>
+    <Components>
+        <MeshComponent>
+            <SM_Mario>
+                <Mesh path="meshes/Mario.obj"/>
+            </SM_Mario>
+            <SM_Sphere>
+                <Mesh path="meshes/Sphere.obj"/>
+            </SM_Sphere>
+            <SM_Plane>
+                <Mesh path="meshes/Plane.obj"/>
+            </SM_Plane>
+            <SM_Pawn>
+                <Mesh path="meshes/Pawn.obj"/>
+            </SM_Pawn>
+        </MeshComponent>
+        <MaterialComponent>
+            <M_Sphere>
+                <Texture path="textures/Black Chess Base Colour.png"/>
+            </M_Sphere>
+            <M_MarioN>
+                <Texture path="textures/mario_main.png"/>
+            </M_MarioN>
+            <M_ChessBoard>
+                <Texture path="textures/8x8_checkered_board.png"/>
+            </M_ChessBoard>
+        </MaterialComponent>
+        <ShaderComponent>
+            <S_Phong>
+                <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
+            </S_Phong>
+            <S_Default>
+                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
+            </S_Default>
+            <S_Outline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
+            </S_Outline>
+        </ShaderComponent>
+    </Components>
 </CellFile>
