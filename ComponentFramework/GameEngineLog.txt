@@ -1,6 +1,6 @@
-Thu Aug  7 19:29:22 2025
+Thu Aug  7 21:22:01 2025
 [INFO]: Starting the SceneManager
-[INFO]: OpenGL version: 4.6.0 NVIDIA 546.92
+[INFO]: OpenGL version: 4.6.0 NVIDIA 577.00
 [INFO]: Graphics card vendor NVIDIA Corporation
 [INFO]: Graphics card name NVIDIA GeForce RTX 3070 Ti Laptop GPU/PCIe/SSE2
 [INFO]: GLSL Version 4.60 NVIDIA
@@ -28,23 +28,11 @@ Thu Aug  7 19:29:22 2025
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: camera in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
+[WARNING]: There is already an actor with the name: camera in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
 [INFO]: Deleting assets for Actor: 
-[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
+[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
 [INFO]: Deleting assets for Actor: 
-[WARNING]: There is already an actor with the name: Board in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
+[WARNING]: There is already an actor with the name: Board in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
 [INFO]: Deleting assets for Actor: 
-[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting the SceneManager
-[INFO]: Deleting assets Scene3GUI: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleted Scene3GUI: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
+[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
 [INFO]: Deleting assets for Actor: 

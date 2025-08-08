@@ -70,8 +70,7 @@
               "RelativeToolTip": "ComponentFramework\\Scene3GUI.h",
               "ViewState": "AgIAADoAAAAAAAAAAADwv1AAAABGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-07-28T20:38:35.75Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-28T20:38:35.75Z"
             },
             {
               "$type": "Document",
@@ -96,8 +95,7 @@
               "RelativeToolTip": "ComponentFramework\\AssetManager.h",
               "ViewState": "AgIAABUAAAAAAAAAAAAAAHQAAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-05-05T16:41:27.45Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-05T16:41:27.45Z"
             },
             {
               "$type": "Document",
@@ -133,8 +131,7 @@
               "RelativeToolTip": "ComponentFramework\\Actor.h",
               "ViewState": "AgIAAFsAAAAAAAAAAAAAAGMAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-05-06T16:33:16.069Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-06T16:33:16.069Z"
             },
             {
               "$type": "Document",
@@ -182,7 +179,7 @@
       "FloatingWindowState": {
         "Id": "25cb1867-915a-443b-96c0-566346c0c3a1",
         "Display": 1,
-        "X": -1316,
+        "X": -5,
         "Y": 234,
         "Width": 1671,
         "Height": 757,
