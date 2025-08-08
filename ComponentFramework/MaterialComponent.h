@@ -12,6 +12,8 @@ public:
 	
 	inline GLuint getTextureID() const { return textureID; }
 
+	const char* getTextureName() const { return filename; }
+
 	///
 	bool LoadImage(const char* filename);
 

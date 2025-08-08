@@ -116,6 +116,15 @@ public:
 		return allAssetNames;
 	}
 
+	std::vector<std::pair<std::string, std::string>> GetAllAssetKeyPair() const {
+		std::vector<std::pair<std::string, std::string>> allAssetNames;
+
+		for (auto& pair : assetManager) {
+			allAssetNames.push_back(std::make_pair(pair.first.name, pair.first.componentType));
+		}
+		return allAssetNames;
+	}
+
 	// lists assets
 	void ListAllAssets() const {
 		std::cout << "Asset Manager Currently Holds These Assets: " << std::endl;
