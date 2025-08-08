@@ -74,6 +74,15 @@ private:
 	//// Asset Manager
 	void ShowAssetManagerWindow(bool* p_open);
 	void DrawAssetThumbnail(const std::string& assetName, Ref<Component> asset);
+	
+	
+	template<typename ComponentTemplate>
+	/// <summary>
+	/// helper function that gets all assets of a specific component type
+	/// </summary>
+	/// <returns></returns>
+	std::vector<std::string> GetAssetsOfType() const;
+	
 	ImGuiTextFilter assetFilter;
 	const int thumbnail_size = 64;
 	const int padding = 10;

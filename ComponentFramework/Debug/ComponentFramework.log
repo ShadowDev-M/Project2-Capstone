@@ -1,10 +1,19 @@
-﻿  ExampleXML.cpp
+﻿  Scene3GUI.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'ExampleXML.cpp')
+  (compiling source file 'Scene3GUI.cpp')
   
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'ExampleXML.cpp')
+  (compiling source file 'Scene3GUI.cpp')
   
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(282,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(282,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(282,200): warning C4305: 'argument': truncation from 'double' to 'const float'
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(894,112): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(894,96): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(981,21): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(1014,43): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Scene3GUI.cpp(1014,27): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\ExampleXML.h(71,1): warning C4715: 'XMLObjectFile::addActorsFromFile': not all control paths return a value
   ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe

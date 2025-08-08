@@ -763,7 +763,7 @@ void Scene3GUI::ShowInspectorWindow(bool* p_open)
 				Separator();
 			}
 
-			// TODO: adding and removing components
+			// TODO: adding and removing components, drop down selection for certain components
 
 		}
 
@@ -857,8 +857,32 @@ void Scene3GUI::DrawMeshComponent(Ref<MeshComponent> mesh)
 		TextWrapped("Mesh Name: %s", mesh->getMeshName());
 		TextWrapped("Mesh Vertices: %zu", mesh->getVertices());
 
-		//TODO: drag and drop
 		
+		Button("Drop New Asset Here ##Mesh");
+		if (BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = AcceptDragDropPayload("MESH_ASSET")) {
+				// store payload data		
+				const char* dropped_asset = (const char*)payload->Data;
+
+				// get a reference to the asset that has been dropped
+				Ref<MeshComponent> newMesh = AssetManager::getInstance().GetAsset<MeshComponent>(dropped_asset);
+				
+
+				// an extra check to make sure the new mesh is valid and that there is an actor selected
+				//if (newMesh && !sceneGraph.debugSelectedAssets.empty())
+				
+				// get the actor
+				for (const auto& pair : sceneGraph.debugSelectedAssets) {
+					Ref<Actor> actor = pair.second;
+
+					// replace the actors mesh
+					actor->ReplaceComponent<MeshComponent>(newMesh);
+				}
+			}
+			EndDragDropTarget();
+		}
+
+		// alternatively, a drop dowm menu that has a list of all meshes
 
 	}
 }
@@ -870,8 +894,30 @@ void Scene3GUI::DrawMaterialComponent(Ref<MaterialComponent> material)
 
 		// display material thumbnail
 		if (material->getTextureID() != 0) {
-			Image(ImTextureID(material->getTextureID()), ImVec2(64, 64));
+			ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnail_size, thumbnail_size));
 		}
+
+		if (BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = AcceptDragDropPayload("MATERIAL_ASSET")) {
+				// store payload data
+				const char* dropped_asset = (const char*)payload->Data;
+
+				// get a reference to the asset that has been dropped
+				Ref<MaterialComponent> newMaterial = AssetManager::getInstance().GetAsset<MaterialComponent>(dropped_asset);
+
+				// get the actor
+				for (const auto& pair : sceneGraph.debugSelectedAssets) {
+					Ref<Actor> actor = pair.second;
+					
+					// replace the actors material
+					actor->ReplaceComponent<MaterialComponent>(newMaterial);
+				}
+			}
+			EndDragDropTarget();
+		}
+
+
+
 	}
 }
 
@@ -882,6 +928,30 @@ void Scene3GUI::DrawShaderComponent(Ref<ShaderComponent> shader)
 		TextWrapped("Shader Program ID: %u", shader->GetProgram());
 		TextWrapped("Shader Vert: %s", shader->GetVertName());
 		TextWrapped("Shader Frag: %s", shader->GetFragName());
+
+
+		Button("Drop New Asset Here ##Shader");
+		if (BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = AcceptDragDropPayload("SHADER_ASSET")) {
+				// store the payload data
+				const char* dropped_asset = (const char*)payload->Data;
+
+				// get a reference to the asset that has been dropped
+				Ref<ShaderComponent> newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(dropped_asset);
+
+				// get the actor
+				for (const auto& pair : sceneGraph.debugSelectedAssets) {
+					Ref<Actor> actor = pair.second;
+
+					// replace the actors shader
+					actor->ReplaceComponent<ShaderComponent>(newShader);
+				}
+			}
+			EndDragDropTarget();
+		}
+
+
+
 	}
 }
 
@@ -903,7 +973,7 @@ void Scene3GUI::ShowAssetManagerWindow(bool* p_open)
 			EndMenuBar();
 		}
 
-
+		// render the filter
 		assetFilter.Draw("##AssetFilter", -1.0f);
 
 
@@ -948,13 +1018,13 @@ void Scene3GUI::ShowAssetManagerWindow(bool* p_open)
 
 void Scene3GUI::DrawAssetThumbnail(const std::string& assetName, Ref<Component> asset)
 {
-	//	
 	const ImVec2 button_size(thumbnail_size, thumbnail_size);
+
+	const char* payload_type = "";
 
 	// giving each asset its own unique id
 	PushID(assetName.c_str());
 
-	
 	// TODO: possibly give meshes a 3d model thumbnail
 
 	// colors
@@ -965,37 +1035,85 @@ void Scene3GUI::DrawAssetThumbnail(const std::string& assetName, Ref<Component> 
 	auto mesh = std::dynamic_pointer_cast<MeshComponent>(asset);
 	auto material = std::dynamic_pointer_cast<MaterialComponent>(asset);
 	auto shader = std::dynamic_pointer_cast<ShaderComponent>(asset);
-
-	//
-	ImDrawList* draw_list = GetWindowDrawList();
-	ImVec2 button_min = GetItemRectMin();
-	ImVec2 button_max = GetItemRectMax();
-	ImVec2 size = GetItemRectSize();
 	
 	/// I want to improve this section and remove the if statements, thinking of converting putting all the assets in the asset manger into an XML file which contains the already exisitng asset information + an easy way identify the type
 
 	if (mesh) {
-		ColorButton("##MeshAssetBtn", mesh_color, ImGuiColorEditFlags_NoTooltip, button_size);
+		// using a color button but disabling all of its functionalilty, just want to differentiate between assets
+		ColorButton("##MeshAssetBtn", mesh_color, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, button_size);
+		payload_type = "MESH_ASSET";
 	}
 	else if (material) {
 		ImageButton("##MaterialAssetBtn", ImTextureID(material->getTextureID()), button_size);
+		payload_type = "MATERIAL_ASSET";
 	}
 	else if (shader) {
-		ColorButton("##ShaderAssetBtn", shader_color, ImGuiColorEditFlags_NoTooltip, button_size);
+		ColorButton("##ShaderAssetBtn", shader_color, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, button_size);
+		payload_type = "SHADER_ASSET";
 	}
+	
 
+	// imgui_demo.cpp Widgets/Drag and drop
+	if (BeginDragDropSource(ImGuiDragDropFlags_None)) {
+		
+		// set payload to carry the index of the asset
+		SetDragDropPayload(payload_type, assetName.c_str(), assetName.length() + 1); // +1 because of null terminator
+
+		// display preview
+		Text("Dragging: %s", assetName.c_str());
+
+		EndDragDropSource();
+	}
+	
+	// tooltip to display some information about the asset that is selected
+	if (IsItemHovered() && !IsMouseDown(0)) {
+		BeginTooltip();
+		Text("Name: %s", assetName.c_str());
+
+		if (mesh) {
+			Text("Vertices: %zu", mesh->getVertices());
+		}
+		if (material) {
+			Text("Texture ID: %u", material->getTextureID());
+		}
+		if (shader) {
+			Text("Shader Program ID: %u", shader->GetProgram());
+			Text("Shader Vert: %s", shader->GetVertName());
+			Text("Shader Frag: %s", shader->GetFragName());
+		}
+
+		EndTooltip();
+	}
+ 
+	// adds an outline to a hovered asset (visual feedback)
+	ImDrawList* draw_list = GetWindowDrawList();
+	ImVec2 pos = GetItemRectMin();
+	ImVec2 size = GetItemRectSize();
+	if (IsItemHovered()) {
+		draw_list->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(255, 255, 0, 255), 0.0f, 0, 3.0f);
+	}
 
 	// asset name under asset
 	PushTextWrapPos(GetCursorPosX() + thumbnail_size);
 	Text("%s", assetName.c_str());
 	PopTextWrapPos();
-
-
-
-	// 
-	/*if (IsItemClicked()) {
-		draw_list->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(255, 255, 0, 255), 0.0f, 0, 3.0f);
-	}*/
+	
 
 	PopID();
+}
+
+template<typename ComponentTemplate>
+std::vector<std::string> Scene3GUI::GetAssetsOfType() const
+{
+	std::vector<std::string> allAssetNames = AssetManager::getInstance().GetAllAssetNames();
+	std::vector<std::string> assetComponents;
+
+	for (const std::string& assetName : allAssetNames) {
+		Ref<Component> asset = AssetManager::getInstance().GetAsset<Component>(assetName);
+		if (std::dynamic_pointer_cast<ComponentTemplate>(asset)) {
+			assetComponents.push_back(assetName);
+		}
+	}
+
+	return assetComponents;
 }
