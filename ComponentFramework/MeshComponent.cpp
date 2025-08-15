@@ -5,14 +5,13 @@ using namespace MATH;
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-MeshComponent::MeshComponent(Component *parent_, const char* filename_): Component(parent_) {
-	filename = filename_;
-}
+MeshComponent::MeshComponent(Component *parent_, const char* filename_): Component(parent_), filename(filename_) {}
+
 MeshComponent::~MeshComponent() {}
 
 bool MeshComponent::OnCreate() {
     if (isCreated == true) return true;
-	LoadModel(filename);
+	LoadModel(filename.c_str());
     StoreMeshData(GL_TRIANGLES);
     isCreated == true;
     return true;

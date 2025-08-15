@@ -67,8 +67,8 @@ bool ShaderComponent::CompileAttach(){
 	const char* geomText = nullptr;
 
 	try { 		
-		vertText = ReadTextFile(vertFilename);
-		fragText = ReadTextFile(fragFilename);
+		vertText = ReadTextFile(vertFilename.c_str());
+		fragText = ReadTextFile(fragFilename.c_str());
 		if (vertText == nullptr || fragText == nullptr) {
 			return false;
 		}

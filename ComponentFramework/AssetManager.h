@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include "Debug.h"
 
 #include "MaterialComponent.h"
@@ -11,6 +12,9 @@
 #include "ShaderComponent.h"
 #include "TransformComponent.h"
 
+// saving and loading of assets via XML
+#include "tinyxml2.h"
+using namespace tinyxml2;
 
 struct AssetKey
 {
@@ -44,9 +48,15 @@ private:
 	AssetManager& operator = (const AssetManager&) = delete;
 	AssetManager& operator = (AssetManager&&) = delete;
 	
-	// const char* creates an address for the name and shares it between same names
-	// std::string compares strings but costs more memory
+	// unordered map that stores all the assets names, component types, and filepaths
 	std::unordered_map<AssetKey, Ref<Component>, AssetKeyHasher> assetManager;
+
+	// asset database XML file name
+	std::string assetDatabasePath = "AssetDatabase";
+
+	// helper method that reads the asset database XML file for a specific type of asset (used in LoadAssetDatabaseXML to actually load the assets)
+	template<typename AssetTemplate>
+	bool LoadAssetTypeXML(XMLElement* assetElement_, const std::string& assetName_);
 
 public:
 
@@ -71,7 +81,7 @@ public:
 		// check to see if theres already an asset in the assetmanager with the same name
 		auto it = assetManager.find(key);
 		if (it != assetManager.end()) {
-			Debug::Warning("Asset: " + name_ + "| already exists.", __FILE__, __LINE__);
+			Debug::Warning("Asset: " + name_ + " already exists.", __FILE__, __LINE__);
 			return false;
 		}
 
@@ -93,7 +103,7 @@ public:
 
 		// if asset isnt found, throw error
 		else {
-			Debug::Error("Can't fint requested asset: ", __FILE__, __LINE__);
+			Debug::Error("Can't find requested asset: ", __FILE__, __LINE__);
 			return Ref<AssetTemplate>(nullptr);
 		}
 	}
@@ -131,7 +141,7 @@ public:
 		for (auto it = assetManager.begin(); it != assetManager.end(); it++) {
 			std::cout << it->first.name << std::endl;
 		}
-		std::cout << "------------------------------------------" << std::endl;
+		std::cout << "------------------------------" << std::endl;
 	}
 
 	// removes assets
@@ -142,5 +152,19 @@ public:
 
 	bool OnCreate();
 
-};
+	//
+	std::string GetAssetDatabasePath() { return assetDatabasePath; }
 
+	// save all assets to the asset database
+	bool SaveAssetDatabaseXML() const;
+
+	// removes an asset by name
+	template<typename AssetTemplate>
+	bool RemoveAsset(const std::string& assetName_);
+
+	// loads the asset database xml file
+	bool LoadAssetDatabaseXML();
+
+	// reloads all the assets
+	bool ReloadAssetsXML();
+};

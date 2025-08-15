@@ -13,7 +13,9 @@ class MeshComponent : public Component {
 	MeshComponent& operator = (MeshComponent&&) = delete;
 
 private:
-	const char* filename;
+	// const char* creates an address for the name and shares it between same names
+	// std::string compares strings but costs more memory
+	std::string filename;
 	std::vector<Vec3> vertices;
 	std::vector<Vec3> normals;
 	std::vector<Vec2> uvCoords;
@@ -36,14 +38,14 @@ public:
 	
 	std::vector<Vec3> getMeshVertices() { 
 		
-		LoadModel(filename);
+		LoadModel(filename.c_str());
 		
 //		std::cout << vertices.size() << std::endl;
 		
 		return vertices; }
 
 	
-	const char* getMeshName() const { return filename; }
+	const char* getMeshName() const { return filename.c_str(); }
 
 	size_t getVertices() const {
 		return dataLength;

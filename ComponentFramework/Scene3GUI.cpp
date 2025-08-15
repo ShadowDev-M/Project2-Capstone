@@ -5,7 +5,6 @@
 #include <MMath.h>
 #include "Debug.h"
 #include "ExampleXML.h"
-#include <EMath.h>
 
 using namespace ImGui;
 
@@ -22,6 +21,9 @@ bool Scene3GUI::OnCreate() {
 
 	AssetManager::getInstance().OnCreate();
 	
+	//AssetManager::getInstance().SaveAssetDatabaseXML();
+	//AssetManager::getInstance().LoadAssetDatabaseXML();
+	
 	AssetManager::getInstance().ListAllAssets();
 
 	camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
@@ -30,7 +32,7 @@ bool Scene3GUI::OnCreate() {
 	
 	camera->OnCreate();
 	
-	std::cout << sceneGraph.AddActor(camera) << std::endl;
+	sceneGraph.AddActor(camera);
 
 	//example.readDoc();
 
@@ -131,7 +133,11 @@ bool Scene3GUI::OnCreate() {
 	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
 
-	
+	// pass along the scene graph to the windows
+	hierarchyWindow = std::make_unique<HierarchyWindow>(&sceneGraph);
+	inspectorWindow = std::make_unique<InspectorWindow>(&sceneGraph);
+	assetManagerWindow = std::make_unique<AssetManagerWindow>(&sceneGraph);
+
 
 	return true;
 }
@@ -145,6 +151,13 @@ void Scene3GUI::OnDestroy() {
 	sceneGraph.RemoveAllActors();
 
 	camera->OnDestroy();
+
+	if (hierarchyWindow) {
+		hierarchyWindow->ClearFilter();
+	}
+	if (assetManagerWindow) {
+		assetManagerWindow->ClearFilter();
+	}
 
 }
 
@@ -465,16 +478,15 @@ void Scene3GUI::Render() const {
 	}
 			
 	if (show_hierarchy_window) {
-		// ShowHierarchyWindow isn't a const function because I'm modifying the selection code, so I have to cast it
-		const_cast<Scene3GUI*>(this)->ShowHierarchyWindow(&show_hierarchy_window);
+		hierarchyWindow->ShowHierarchyWindow(&show_hierarchy_window);
 	}
 
 	if (show_inspector_window) {
-		const_cast<Scene3GUI*>(this)->ShowInspectorWindow(&show_inspector_window);
+		inspectorWindow->ShowInspectorWindow(&show_inspector_window);
 	}
 
 	if (show_assetmanager_window) {
-		const_cast<Scene3GUI*>(this)->ShowAssetManagerWindow(&show_assetmanager_window);
+		assetManagerWindow->ShowAssetManagerWindow(&show_assetmanager_window);
 	}
 
 	if (BeginMainMenuBar()) {
@@ -523,597 +535,4 @@ void Scene3GUI::Render() const {
 	sceneGraph.Render();
 
 	glUseProgram(0);
-}
-
-
-
-//// Functions related to the Hierarchy Window
-void Scene3GUI::ShowHierarchyWindow(bool* p_open)
-{
-
-	// Some of the stuff here will be changed after to just read off an XML file (like getting all the actors names and if they are parented/children)
-	// just doing it without XML stuff for now since I don't fully understand it yet
-
-	if (Begin("Hierarchy", &show_hierarchy_window, ImGuiWindowFlags_MenuBar)) {
-		
-		
-		if (BeginMenuBar()) {
-			if (BeginMenu("Options")) {
-
-				Checkbox("Show Only Selected", &show_only_selected);
-
-				if (MenuItem("Select All")) {
-					std::vector<std::string> allActorNames = sceneGraph.GetAllActorNames();
-					for (const auto& actorName : allActorNames) {
-						Ref<Actor> actor = sceneGraph.GetActor(actorName);
-
-						sceneGraph.debugSelectedAssets.emplace(actorName, actor);
-					}
-				}
-
-				if (MenuItem("Clear All Selected")) {
-					sceneGraph.debugSelectedAssets.clear();
-				}
-
-
-				EndMenu();
-			}
-			EndMenuBar();
-		}
-
-		/*if (IsWindowFocused()) {
-			SetKeyboardFocusHere();
-			filter.Clear();
-		}*/
-
-		filter.Draw("##HierarchyFilter", -1.0f);
-		Separator();
-
-		//// Most of this will be changed after to just read off an XML for the current actors in a cell
-
-		// create root actors map to store all actors with no parent
-		std::unordered_map<std::string, Ref<Actor>> rootActors;
-		
-		// store all actors names in the scene 
-		std::vector<std::string> allActorNames = sceneGraph.GetAllActorNames();
-
-		// sort the names
-		std::sort(allActorNames.begin(), allActorNames.end());
-
-		for (const std::string& actorName : allActorNames) {
-			Ref<Actor> actor = sceneGraph.GetActor(actorName);
-
-			// if actor is a root actor, add it to the map
-			if (actor && actor->isRootActor()) {
-				rootActors.emplace(actorName, actor);
-			}
-		}
-		///
-		
-
-		for (const auto& pair : rootActors) {
-			DrawActorNode(pair.first, pair.second);
-		}
-
-		// TODO: right click popup menu, create new, remove, rename 
-	}
-	End();
-}
-
-void Scene3GUI::DrawActorNode(const std::string& actorName, Ref<Actor> actor)
-{
-	//
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(actor.get());
-
-	// imgui_demo.cpp Widgets/Tree Nodes/Advanced, with Selectable nodes
-	const bool is_selected = sceneGraph.debugSelectedAssets.find(actorName) != sceneGraph.debugSelectedAssets.end();
-
-	bool node_filter = filter.PassFilter(actorName.c_str()); 
-
-	// show selection if node is selected
-	bool show_selection = true;
-	if (show_only_selected) {
-		show_selection = is_selected || HasSelectedChild(actor.get());
-	}
-
-	// show if node appears in filter
-	bool show_filter = node_filter || HasFilteredChild(actor.get());
-
-	// draw node if it is selected and/or in filter
-	if (!show_selection || !show_filter) {
-		return;
-	}
-
-	// converting actor name to const char to create a unique ID for its node
-	PushID(actorName.c_str());
-
-	// default flags for the the tree nodes
-	ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth; // Standard opening mode as we are likely to want to add selection afterwards
-	base_flags |= ImGuiTreeNodeFlags_NavLeftJumpsToParent; // Enable pressing left to jump to parent
-
-	if (is_selected) {
-		// set flag to selected
-		base_flags |= ImGuiTreeNodeFlags_Selected;
-	}
-
-	if (childActors.empty()) {
-		base_flags |= ImGuiTreeNodeFlags_Leaf; 
-	}
-
-	bool node_open = TreeNodeEx(actorName.c_str(), base_flags, "%s", actorName.c_str());
-
-	if (IsItemClicked() && !IsItemToggledOpen()) {
-		// using joel's raycast code for selection of actors in the window
-		if (!GetIO().KeyCtrl && !(is_selected)) { sceneGraph.debugSelectedAssets.clear(); }
-
-		if (is_selected && GetIO().KeyCtrl) { sceneGraph.debugSelectedAssets.erase(actorName); }
-
-		else sceneGraph.debugSelectedAssets.emplace(actorName, actor);
-
-	}
-
-	if (node_open) {
-		for (const auto& child : childActors) {
-			DrawActorNode(child.first, child.second);
-		}
-		TreePop();
-	}
-
-	PopID();
-}
-
-bool Scene3GUI::HasFilteredChild(Component* parent)
-{
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
-
-	for (const auto& child : childActors) {
-		if (filter.PassFilter(child.first.c_str())) { return true; } //!
-
-		// recursive check to see if the child has children
-		if (HasFilteredChild(child.second.get())) { return true; }
-	}
-
-	return false;
-}
-
-bool Scene3GUI::HasSelectedChild(Component* parent)
-{
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
-
-	for (const auto& child : childActors) {
-		if (show_only_selected && sceneGraph.debugSelectedAssets.find(child.first) != sceneGraph.debugSelectedAssets.end()) { return true; } //==
-
-		// recursive check to see if the child has children
-		if (HasSelectedChild(child.second.get())) { return true; }
-	}
-
-	return false;
-}
-
-std::unordered_map<std::string, Ref<Actor>> Scene3GUI::GetChildActors(Component* parent)
-{
-	/// switch to reading XML file after
-	std::unordered_map<std::string, Ref<Actor>> childActors;
-
-	// store all actors names in the scene 
-	std::vector<std::string> allActorNames = sceneGraph.GetAllActorNames();
-
-	// sort the names
-	std::sort(allActorNames.begin(), allActorNames.end());
-
-	for (const std::string& actorName : allActorNames) {
-		Ref<Actor> actor = sceneGraph.GetActor(actorName);
-
-		// actor is a child actor
-		if (actor && actor->getParentActor() == parent) {
-			childActors.emplace(actorName, actor);
-		}
-	}
-	///
-
-	return childActors;
-}
-
-
-//// Functions related to the inspector window
-
-void Scene3GUI::ShowInspectorWindow(bool* p_open)
-{
-	if (Begin("Inspector"), &show_inspector_window) {
-		
-		// no actors selected
-		if (sceneGraph.debugSelectedAssets.empty()) {
-			Text("No Actor Selected");
-		}
-
-		// only 1 actor is selected
-		else if (sceneGraph.debugSelectedAssets.size() == 1) {
-			auto selectedActor = sceneGraph.debugSelectedAssets.begin();
-			
-			/// expand section later on for new features like actor renaming 
-			Text(selectedActor->first.c_str());
-			
-			Separator();
-
-			/// Components Section
-			// TODO: PhysicsComponent, CollisionComponent + CollisionSystem
-			
-
-			// transform
-			if (selectedActor->second->GetComponent<TransformComponent>()) {
-				DrawTransformComponent(selectedActor->second->GetComponent<TransformComponent>());
-				Separator();
-			}
-
-			// mesh
-			if (selectedActor->second->GetComponent<MeshComponent>()) {
-				DrawMeshComponent(selectedActor->second->GetComponent<MeshComponent>());
-				Separator();
-			}
-
-			// material
-			if (selectedActor->second->GetComponent<MaterialComponent>()) {
-				DrawMaterialComponent(selectedActor->second->GetComponent<MaterialComponent>());
-				Separator();
-			}
-
-			// shader
-			if (selectedActor->second->GetComponent<ShaderComponent>()) {
-				DrawShaderComponent(selectedActor->second->GetComponent<ShaderComponent>());
-				Separator();
-			}
-
-			// TODO: adding and removing components, drop down selection for certain components
-
-		}
-
-		// TODO: if an asset is selected in the assetbrowser it'll display some information about it in the inspector window
-
-		
-		// more than 1 actor selected
-		else {
-			// TODO: multi-actor editing
-
-			if (CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
-				for (const auto& pair : sceneGraph.debugSelectedAssets) {
-					Text("%s", pair.first.c_str());
-				}
-			}
-		}
-	}
-
-
-	End();
-}
-
-void Scene3GUI::DrawTransformComponent(Ref<TransformComponent> transform)
-{
-	if (CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-		// Setting up right click popup menu, context sensitive to the header
-		if (IsItemHovered() && IsMouseClicked(1)) {
-			OpenPopup("##TransformPopup");
-		}
-
-		// Position
-		Vec3 pos = transform->GetPosition();
-		float position[3] = { pos.x, pos.y, pos.z };
-
-		Text("Position");
-		SameLine();
-		if (DragFloat3("##Position", position, 0.1f)) {
-			transform->SetPos(position[0], position[1], position[2]);
-		}
-
-		//Rotation
-		//TODO: fix gimbal lock, advanced rotation
-		
-		Euler quatEuler = EMath::toEuler(transform->GetQuaternion());
-		float rotation[3] = { quatEuler.xAxis, quatEuler.yAxis, quatEuler.zAxis };
-
-		Text("Rotation");
-		SameLine();
-
-		if (DragFloat3("##Rotation", rotation, 1.0f)) {
-			Quaternion rotX = QMath::angleAxisRotation(rotation[0], Vec3(1.0f, 0.0f, 0.0f));
-			Quaternion rotY = QMath::angleAxisRotation(rotation[1], Vec3(0.0f, 1.0f, 0.0f));
-			Quaternion rotZ = QMath::angleAxisRotation(rotation[2], Vec3(0.0f, 0.0f, 1.0f));
-
-			// euler
-			Quaternion finalRotation = rotZ * rotY * rotX;
-			transform->SetOrientation(QMath::normalize(finalRotation));
-		}
-
-
-		// Scale
-		Vec3 scaleVector = transform->GetScale();
-		float scale[3] = { scaleVector.x, scaleVector.y, scaleVector.z };
-
-		Text("Scale   ");
-		SameLine();
-		if (DragFloat3("##Scale", scale, 0.1f, 0.1f, 100.0f)) {
-			transform->SetTransform(Vec3(scale[0], scale[1], scale[2]));
-		}
-
-
-		// right click popup menu 
-		if (BeginPopup("##TransformPopup")) {
-			if (MenuItem("Reset")) {
-				transform->SetTransform(Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), Vec3(1.0f, 1.0f, 1.0f));
-			}
-			
-		
-
-			EndPopup();
-		}
-
-		
-	}
-}
-
-void Scene3GUI::DrawMeshComponent(Ref<MeshComponent> mesh)
-{
-	if (CollapsingHeader("Mesh")) {
-		// displaying some basic mesh information
-		TextWrapped("Mesh Name: %s", mesh->getMeshName());
-		TextWrapped("Mesh Vertices: %zu", mesh->getVertices());
-
-		
-		Button("Drop New Asset Here ##Mesh");
-		if (BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = AcceptDragDropPayload("MESH_ASSET")) {
-				// store payload data		
-				const char* dropped_asset = (const char*)payload->Data;
-
-				// get a reference to the asset that has been dropped
-				Ref<MeshComponent> newMesh = AssetManager::getInstance().GetAsset<MeshComponent>(dropped_asset);
-				
-
-				// an extra check to make sure the new mesh is valid and that there is an actor selected
-				//if (newMesh && !sceneGraph.debugSelectedAssets.empty())
-				
-				// get the actor
-				for (const auto& pair : sceneGraph.debugSelectedAssets) {
-					Ref<Actor> actor = pair.second;
-
-					// replace the actors mesh
-					actor->ReplaceComponent<MeshComponent>(newMesh);
-				}
-			}
-			EndDragDropTarget();
-		}
-
-		// alternatively, a drop dowm menu that has a list of all meshes
-
-	}
-}
-
-void Scene3GUI::DrawMaterialComponent(Ref<MaterialComponent> material)
-{
-	if (CollapsingHeader("Material")) {
-		TextWrapped("Texture ID: %u", material->getTextureID());
-
-		// display material thumbnail
-		if (material->getTextureID() != 0) {
-			ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnail_size, thumbnail_size));
-		}
-
-		if (BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = AcceptDragDropPayload("MATERIAL_ASSET")) {
-				// store payload data
-				const char* dropped_asset = (const char*)payload->Data;
-
-				// get a reference to the asset that has been dropped
-				Ref<MaterialComponent> newMaterial = AssetManager::getInstance().GetAsset<MaterialComponent>(dropped_asset);
-
-				// get the actor
-				for (const auto& pair : sceneGraph.debugSelectedAssets) {
-					Ref<Actor> actor = pair.second;
-					
-					// replace the actors material
-					actor->ReplaceComponent<MaterialComponent>(newMaterial);
-				}
-			}
-			EndDragDropTarget();
-		}
-
-
-
-	}
-}
-
-void Scene3GUI::DrawShaderComponent(Ref<ShaderComponent> shader)
-{
-	if (CollapsingHeader("Shader")) {
-		// displaying some basic shader information
-		TextWrapped("Shader Program ID: %u", shader->GetProgram());
-		TextWrapped("Shader Vert: %s", shader->GetVertName());
-		TextWrapped("Shader Frag: %s", shader->GetFragName());
-
-
-		Button("Drop New Asset Here ##Shader");
-		if (BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = AcceptDragDropPayload("SHADER_ASSET")) {
-				// store the payload data
-				const char* dropped_asset = (const char*)payload->Data;
-
-				// get a reference to the asset that has been dropped
-				Ref<ShaderComponent> newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(dropped_asset);
-
-				// get the actor
-				for (const auto& pair : sceneGraph.debugSelectedAssets) {
-					Ref<Actor> actor = pair.second;
-
-					// replace the actors shader
-					actor->ReplaceComponent<ShaderComponent>(newShader);
-				}
-			}
-			EndDragDropTarget();
-		}
-
-
-
-	}
-}
-
-
-
-//// Asset Manager
-void Scene3GUI::ShowAssetManagerWindow(bool* p_open)
-{
-	if (Begin("Asset Manager", &show_assetmanager_window, ImGuiWindowFlags_MenuBar)) {
-
-		if (BeginMenuBar()) {
-			if (BeginMenu("Options")) {
-				if (MenuItem("Refresh")) {
-					//
-				}
-
-				EndMenu();
-			}
-			EndMenuBar();
-		}
-
-		// render the filter
-		assetFilter.Draw("##AssetFilter", -1.0f);
-
-
-		std::vector<Ref<Component>> allAssets = AssetManager::getInstance().GetAllAssets();
-		std::vector<std::string> allAssetNames = AssetManager::getInstance().GetAllAssetNames();
-
-		//imgui_demo.cpp Asset Browser
-		if (BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
-
-			// calculating the layout for the assets
-			const float avail_width = GetContentRegionAvail().x;
-			int column_count = (avail_width / (thumbnail_size + padding));
-
-			// putting all the assets into columns to get a grid style layout
-			Columns(column_count, "##AssetGrid", false);
-
-			for (size_t i = 0; i < allAssets.size(); i++) {
-				const std::string& assetName = allAssetNames[i];
-				Ref<Component> asset = allAssets[i];
-
-				// if asset name isn't in the filter, add it
-				if (!assetFilter.PassFilter(assetName.c_str())) {
-					continue;
-				}
-
-				// create and draw the asset
-				DrawAssetThumbnail(assetName, asset);
-
-
-				// next asset
-				NextColumn();
-			}
-			//reset
-			Columns(1);
-
-		}
-		EndChild();
-
-	}
-	End();
-}
-
-void Scene3GUI::DrawAssetThumbnail(const std::string& assetName, Ref<Component> asset)
-{
-	const ImVec2 button_size(thumbnail_size, thumbnail_size);
-
-	const char* payload_type = "";
-
-	// giving each asset its own unique id
-	PushID(assetName.c_str());
-
-	// TODO: possibly give meshes a 3d model thumbnail
-
-	// colors
-	ImVec4 mesh_color(0.4f, 0.4f, 0.4f, 1.0f);
-	ImVec4 shader_color(0.4f, 0.4f, 0.6f, 1.0f);
-
-	// pointers to assets
-	auto mesh = std::dynamic_pointer_cast<MeshComponent>(asset);
-	auto material = std::dynamic_pointer_cast<MaterialComponent>(asset);
-	auto shader = std::dynamic_pointer_cast<ShaderComponent>(asset);
-	
-	/// I want to improve this section and remove the if statements, thinking of converting putting all the assets in the asset manger into an XML file which contains the already exisitng asset information + an easy way identify the type
-
-	if (mesh) {
-		// using a color button but disabling all of its functionalilty, just want to differentiate between assets
-		ColorButton("##MeshAssetBtn", mesh_color, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, button_size);
-		payload_type = "MESH_ASSET";
-	}
-	else if (material) {
-		ImageButton("##MaterialAssetBtn", ImTextureID(material->getTextureID()), button_size);
-		payload_type = "MATERIAL_ASSET";
-	}
-	else if (shader) {
-		ColorButton("##ShaderAssetBtn", shader_color, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, button_size);
-		payload_type = "SHADER_ASSET";
-	}
-	
-
-	// imgui_demo.cpp Widgets/Drag and drop
-	if (BeginDragDropSource(ImGuiDragDropFlags_None)) {
-		
-		// set payload to carry the index of the asset
-		SetDragDropPayload(payload_type, assetName.c_str(), assetName.length() + 1); // +1 because of null terminator
-
-		// display preview
-		Text("Dragging: %s", assetName.c_str());
-
-		EndDragDropSource();
-	}
-	
-	// tooltip to display some information about the asset that is selected
-	if (IsItemHovered() && !IsMouseDown(0)) {
-		BeginTooltip();
-		Text("Name: %s", assetName.c_str());
-
-		if (mesh) {
-			Text("Vertices: %zu", mesh->getVertices());
-		}
-		if (material) {
-			Text("Texture ID: %u", material->getTextureID());
-		}
-		if (shader) {
-			Text("Shader Program ID: %u", shader->GetProgram());
-			Text("Shader Vert: %s", shader->GetVertName());
-			Text("Shader Frag: %s", shader->GetFragName());
-		}
-
-		EndTooltip();
-	}
- 
-	// adds an outline to a hovered asset (visual feedback)
-	ImDrawList* draw_list = GetWindowDrawList();
-	ImVec2 pos = GetItemRectMin();
-	ImVec2 size = GetItemRectSize();
-	if (IsItemHovered()) {
-		draw_list->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(255, 255, 0, 255), 0.0f, 0, 3.0f);
-	}
-
-	// asset name under asset
-	PushTextWrapPos(GetCursorPosX() + thumbnail_size);
-	Text("%s", assetName.c_str());
-	PopTextWrapPos();
-	
-
-	PopID();
-}
-
-template<typename ComponentTemplate>
-std::vector<std::string> Scene3GUI::GetAssetsOfType() const
-{
-	std::vector<std::string> allAssetNames = AssetManager::getInstance().GetAllAssetNames();
-	std::vector<std::string> assetComponents;
-
-	for (const std::string& assetName : allAssetNames) {
-		Ref<Component> asset = AssetManager::getInstance().GetAsset<Component>(assetName);
-		if (std::dynamic_pointer_cast<ComponentTemplate>(asset)) {
-			assetComponents.push_back(assetName);
-		}
-	}
-
-	return assetComponents;
 }

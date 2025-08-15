@@ -22,7 +22,7 @@ bool CameraActor::OnCreate()
 	//
 	if (tc != nullptr) {
 		viewMatrix = tc->GetTransformMatrix();
-		viewMatrix.print("View Matrix");
+		//viewMatrix.print("View Matrix");
 	}
 
 	return true;

@@ -1,11 +1,18 @@
-Thu Aug  7 21:22:01 2025
+Thu Aug 14 23:14:24 2025
 [INFO]: Starting the SceneManager
-[INFO]: OpenGL version: 4.6.0 NVIDIA 577.00
+[INFO]: OpenGL version: 4.6.0 NVIDIA 580.97
 [INFO]: Graphics card vendor NVIDIA Corporation
 [INFO]: Graphics card name NVIDIA GeForce RTX 3070 Ti Laptop GPU/PCIe/SSE2
 [INFO]: GLSL Version 4.60 NVIDIA
 [INFO]: Created Scene3GUI: 
 [INFO]: Loading assets Scene3GUI: 
+[INFO]: Succesfully loaded MaterialComponent: M_Sphere from: textures/Black Chess Base Colour.png
+[INFO]: Succesfully loaded MaterialComponent: M_MarioN from: textures/mario_main.png
+[INFO]: Succesfully loaded MaterialComponent: M_ChessBoard from: textures/8x8_checkered_board.png
+[INFO]: Succesfully loaded MeshComponent: SM_Mario from: meshes/Mario.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Sphere from: meshes/Sphere.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Plane from: meshes/Plane.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Pawn from: meshes/Pawn.obj
 [INFO]: Uniforms:
 "lightPos" loc:0
 "modelMatrix" loc:1
@@ -13,11 +20,13 @@ Thu Aug  7 21:22:01 2025
 "projectionMatrix" loc:3
 "viewMatrix" loc:4
 
+[INFO]: Succesfully loaded ShaderComponent: S_Phong (vert: shaders/texturePhongVert.glsl, frag: shaders/texturePhongFrag.glsl)
 [INFO]: Uniforms:
 "modelMatrix" loc:2
 "projectionMatrix" loc:0
 "viewMatrix" loc:1
 
+[INFO]: Succesfully loaded ShaderComponent: S_Default (vert: shaders/defaultVert.glsl, frag: shaders/defaultFrag.glsl)
 [INFO]: Uniforms:
 "lightPos" loc:0
 "modelMatrix" loc:1
@@ -25,6 +34,8 @@ Thu Aug  7 21:22:01 2025
 "projectionMatrix" loc:3
 "viewMatrix" loc:4
 
+[INFO]: Succesfully loaded ShaderComponent: S_Outline (vert: shaders/texturePhongVert.glsl, frag: shaders/outline.glsl)
+[INFO]: Loaded 10 assets, skipped 0 existing assets
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 

@@ -1,0 +1,18 @@
+<AssetDatabase>
+    <MaterialComponent>
+        <Asset name="M_Sphere" filepath="textures/Black Chess Base Colour.png"/>
+        <Asset name="M_MarioN" filepath="textures/mario_main.png"/>
+        <Asset name="M_ChessBoard" filepath="textures/8x8_checkered_board.png"/>
+    </MaterialComponent>
+    <MeshComponent>
+        <Asset name="SM_Mario" filepath="meshes/Mario.obj"/>
+        <Asset name="SM_Sphere" filepath="meshes/Sphere.obj"/>
+        <Asset name="SM_Plane" filepath="meshes/Plane.obj"/>
+        <Asset name="SM_Pawn" filepath="meshes/Pawn.obj"/>
+    </MeshComponent>
+    <ShaderComponent>
+        <Asset name="S_Phong" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/texturePhongFrag.glsl"/>
+        <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
+        <Asset name="S_Outline" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/outline.glsl"/>
+    </ShaderComponent>
+</AssetDatabase>

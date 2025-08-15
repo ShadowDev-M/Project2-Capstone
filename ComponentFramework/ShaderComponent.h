@@ -11,8 +11,8 @@ class ShaderComponent: public Component {
 	ShaderComponent& operator = (ShaderComponent&&) = delete;
 
 private:
-	const char* vertFilename;
-	const char* fragFilename;
+	std::string vertFilename;
+	std::string fragFilename;
 	const char* tessCtrlFilename;
 	const char* tessEvalFilename;
 	const char* geomFilename;
@@ -49,9 +49,12 @@ public:
 
 	inline GLuint GetProgram() const { return shaderID;}
 
-	// some new functions to help out with the displaying of information
-	const char* GetVertName() const { return vertFilename; }
-	const char* GetFragName() const { return fragFilename; }
+	// helper functions that return the name of all 
+	const char* GetVertName() const { return vertFilename.c_str(); }
+	const char* GetFragName() const { return fragFilename.c_str(); }
+	const char* GetTessCtrlName() const { return tessCtrlFilename; }
+	const char* GetTessEvalName() const { return tessEvalFilename; }
+	const char* GetGeomName() const { return geomFilename; }
 };
 
 

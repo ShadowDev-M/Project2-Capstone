@@ -15,6 +15,10 @@
 
 #include "AssetManager.h"
 
+#include "HierarchyWindow.h"
+#include "InspectorWindow.h"
+#include "AssetManagerWindow.h"
+
 using namespace MATH;
 
 /// Forward declarations 
@@ -40,52 +44,14 @@ private:
 	mutable bool show_inspector_window = false;
 	mutable bool show_assetmanager_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	// Possibly move each unique window to its own class
-
-	//// Hierarchy window
-	void ShowHierarchyWindow(bool* p_open);
-	// recursive function for actually rendering/drawing the nodes
-	void DrawActorNode(const std::string& actorName, Ref<Actor> actor);
-	// recursive functions that help with selecting and searching for a child node
-	bool HasFilteredChild(Component* parent);
-	bool HasSelectedChild(Component* parent);
-
-	// refactored function to get a map of all child actors
-	std::unordered_map<std::string, Ref<Actor>> GetChildActors(Component* parent);
 	
-	mutable bool show_only_selected = false;
-
-	// text filter for the hierarchy window
-	ImGuiTextFilter filter;
-	////
-
-
-	//// Inspector Window
-	void ShowInspectorWindow(bool* p_open);
-	
-	// component functions
-	void DrawTransformComponent(Ref<TransformComponent> transform);
-	void DrawMeshComponent(Ref<MeshComponent> mesh);
-	void DrawMaterialComponent(Ref<MaterialComponent> material);
-	void DrawShaderComponent(Ref<ShaderComponent> shader);
-
-	
-	//// Asset Manager
-	void ShowAssetManagerWindow(bool* p_open);
-	void DrawAssetThumbnail(const std::string& assetName, Ref<Component> asset);
+	// using unqiue pointers for automatic memory management
+	// could switch to shared pointers if we ever intend on having this window in multiple scenes
+	std::unique_ptr<HierarchyWindow> hierarchyWindow;
+	std::unique_ptr<InspectorWindow> inspectorWindow;
+	std::unique_ptr<AssetManagerWindow> assetManagerWindow;
 	
 	
-	template<typename ComponentTemplate>
-	/// <summary>
-	/// helper function that gets all assets of a specific component type
-	/// </summary>
-	/// <returns></returns>
-	std::vector<std::string> GetAssetsOfType() const;
-	
-	ImGuiTextFilter assetFilter;
-	const int thumbnail_size = 64;
-	const int padding = 10;
 
 
 public:
@@ -97,7 +63,7 @@ public:
 	virtual void Update(const float deltaTime) override;
 	virtual void Render() const override;
 	virtual void HandleEvents(const SDL_Event &sdlEvent) override;
-	
+
 };
 
 

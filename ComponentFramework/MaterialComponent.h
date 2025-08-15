@@ -1,10 +1,11 @@
 #pragma once
 #include <glew.h>
 #include "Component.h"
+#include <string>
 class MaterialComponent: public Component {
 private:
 	GLuint textureID;
-	const char* filename;
+	std::string filename;
 	///
 public:
 	MaterialComponent(Component* parent_,const char* filename_);
@@ -12,7 +13,7 @@ public:
 	
 	inline GLuint getTextureID() const { return textureID; }
 
-	const char* getTextureName() const { return filename; }
+	const char* getTextureName() const { return filename.c_str(); }
 
 	///
 	bool LoadImage(const char* filename);

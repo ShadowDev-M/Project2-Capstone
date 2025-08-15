@@ -10,7 +10,7 @@ MaterialComponent::~MaterialComponent() {
 bool MaterialComponent::OnCreate() {
 	if (isCreated == true) return true;
 	isCreated = true;
-	return LoadImage(filename);
+	return LoadImage(filename.c_str());
 }
 
 bool MaterialComponent::LoadImage(const char* filename) {
