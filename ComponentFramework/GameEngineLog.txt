@@ -1,4 +1,4 @@
-Thu Aug 14 23:14:24 2025
+Sun Aug 17 12:22:12 2025
 [INFO]: Starting the SceneManager
 [INFO]: OpenGL version: 4.6.0 NVIDIA 580.97
 [INFO]: Graphics card vendor NVIDIA Corporation
@@ -7,12 +7,15 @@ Thu Aug 14 23:14:24 2025
 [INFO]: Created Scene3GUI: 
 [INFO]: Loading assets Scene3GUI: 
 [INFO]: Succesfully loaded MaterialComponent: M_Sphere from: textures/Black Chess Base Colour.png
+[INFO]: Succesfully loaded MaterialComponent: M_MarioFire from: textures/mario_fire.png
 [INFO]: Succesfully loaded MaterialComponent: M_MarioN from: textures/mario_main.png
 [INFO]: Succesfully loaded MaterialComponent: M_ChessBoard from: textures/8x8_checkered_board.png
+[INFO]: Succesfully loaded MeshComponent: SM_Plane from: meshes/Plane.obj
 [INFO]: Succesfully loaded MeshComponent: SM_Mario from: meshes/Mario.obj
 [INFO]: Succesfully loaded MeshComponent: SM_Sphere from: meshes/Sphere.obj
-[INFO]: Succesfully loaded MeshComponent: SM_Plane from: meshes/Plane.obj
 [INFO]: Succesfully loaded MeshComponent: SM_Pawn from: meshes/Pawn.obj
+[INFO]: Succesfully loaded MeshComponent: SM_King from: meshes/King.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Rook from: meshes/Rook.obj
 [INFO]: Uniforms:
 "lightPos" loc:0
 "modelMatrix" loc:1
@@ -35,7 +38,7 @@ Thu Aug 14 23:14:24 2025
 "viewMatrix" loc:4
 
 [INFO]: Succesfully loaded ShaderComponent: S_Outline (vert: shaders/texturePhongVert.glsl, frag: shaders/outline.glsl)
-[INFO]: Loaded 10 assets, skipped 0 existing assets
+[INFO]: Loaded 13 assets, skipped 0 existing assets
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
 [INFO]: Loading assets for Actor: 
@@ -47,3 +50,54 @@ Thu Aug 14 23:14:24 2025
 [INFO]: Deleting assets for Actor: 
 [WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 44
 [INFO]: Deleting assets for Actor: 
+[INFO]: Succesfully loaded MaterialComponent: M_Sphere from: textures/Black Chess Base Colour.png
+[INFO]: Succesfully loaded MaterialComponent: M_MarioFire from: textures/mario_fire.png
+[INFO]: Succesfully loaded MaterialComponent: M_MarioN from: textures/mario_main.png
+[INFO]: Succesfully loaded MaterialComponent: M_ChessBoard from: textures/8x8_checkered_board.png
+[INFO]: Succesfully loaded MeshComponent: SM_Plane from: meshes/Plane.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Mario from: meshes/Mario.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Sphere from: meshes/Sphere.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Pawn from: meshes/Pawn.obj
+[INFO]: Succesfully loaded MeshComponent: SM_King from: meshes/King.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Rook from: meshes/Rook.obj
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Succesfully loaded ShaderComponent: S_Phong (vert: shaders/texturePhongVert.glsl, frag: shaders/texturePhongFrag.glsl)
+[INFO]: Uniforms:
+"modelMatrix" loc:2
+"projectionMatrix" loc:0
+"viewMatrix" loc:1
+
+[INFO]: Succesfully loaded ShaderComponent: S_Default (vert: shaders/defaultVert.glsl, frag: shaders/defaultFrag.glsl)
+[INFO]: Uniforms:
+"lightPos" loc:0
+"modelMatrix" loc:1
+"myTexture" loc:2
+"projectionMatrix" loc:3
+"viewMatrix" loc:4
+
+[INFO]: Succesfully loaded ShaderComponent: S_Outline (vert: shaders/texturePhongVert.glsl, frag: shaders/outline.glsl)
+[INFO]: Loaded 13 assets, skipped 0 existing assets
+[INFO]: Successfully saved 13 assets to: AssetDatabase.xml
+[INFO]: Asset already exists, skipped: M_Sphere. Type:MaterialComponent
+[INFO]: Asset already exists, skipped: M_MarioFire. Type:MaterialComponent
+[INFO]: Asset already exists, skipped: M_MarioN. Type:MaterialComponent
+[INFO]: Asset already exists, skipped: M_ChessBoard. Type:MaterialComponent
+[INFO]: Asset already exists, skipped: SM_Plane. Type:MeshComponent
+[INFO]: Asset already exists, skipped: SM_Mario. Type:MeshComponent
+[INFO]: Asset already exists, skipped: SM_Sphere. Type:MeshComponent
+[INFO]: Asset already exists, skipped: SM_Pawn. Type:MeshComponent
+[INFO]: Asset already exists, skipped: SM_King. Type:MeshComponent
+[INFO]: Asset already exists, skipped: SM_Rook. Type:MeshComponent
+[INFO]: Asset already exists, skipped: S_Phong. Type:ShaderComponent
+[INFO]: Asset already exists, skipped: S_Default. Type:ShaderComponent
+[INFO]: Asset already exists, skipped: S_Outline. Type:ShaderComponent
+[INFO]: Loaded 0 assets, skipped 13 existing assets
+[INFO]: Successfully saved 14 assets to: AssetDatabase.xml
+[INFO]: Succesfully loaded MeshComponent: SM_Hammer
+[INFO]: Removed asset: SM_Hammer (MeshComponent)

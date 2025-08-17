@@ -99,7 +99,17 @@ bool Actor::GetIntersectTriangles(Vec3 start, Vec3 dir, Vec3* intersectSpot) {
 
 
 		//Eliminate triangles not facing the camera (something called Backfacing)
-		Vec3 normal = VMath::normalize(VMath::cross(v1 - v0, v2 - v0));
+		// was having issues before where meshes with larger vertices would cause VMath's normailze to divide by zero, this should hopefully fix it
+		Vec3 edge1 = v1 - v0;
+		Vec3 edge2 = v2 - v0;
+		Vec3 crossProduct = VMath::cross(edge1, edge2);
+
+		float crossMag = VMath::mag(crossProduct);
+		if (crossMag < VERY_SMALL) {
+			continue;
+		}
+
+		Vec3 normal = crossProduct / crossMag;
 		if (VMath::dot(normal, dir) > 0) {
 			continue; 
 		}
@@ -114,7 +124,8 @@ bool Actor::GetIntersectTriangles(Vec3 start, Vec3 dir, Vec3* intersectSpot) {
 				intersectSpot->z = tri.getCenter().z;
 			}
 
-			return true; }
+			return true; 
+		}
 
 		
 	}

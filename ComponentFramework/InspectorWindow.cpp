@@ -3,9 +3,9 @@
 
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
 
-void InspectorWindow::ShowInspectorWindow(bool* p_open)
+void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 {
-	if (ImGui::Begin("Inspector", p_open)) {
+	if (ImGui::Begin("Inspector", pOpen)) {
 
 		// no actors selected
 		if (sceneGraph->debugSelectedAssets.empty()) {
@@ -148,10 +148,10 @@ void InspectorWindow::DrawMeshComponent(Ref<MeshComponent> mesh)
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MESH_ASSET")) {
 				// store payload data		
-				const char* dropped_asset = (const char*)payload->Data;
+				const char* droppedAsset = (const char*)payload->Data;
 
 				// get a reference to the asset that has been dropped
-				Ref<MeshComponent> newMesh = AssetManager::getInstance().GetAsset<MeshComponent>(dropped_asset);
+				Ref<MeshComponent> newMesh = AssetManager::getInstance().GetAsset<MeshComponent>(droppedAsset);
 
 
 				// an extra check to make sure the new mesh is valid and that there is an actor selected
@@ -180,16 +180,16 @@ void InspectorWindow::DrawMaterialComponent(Ref<MaterialComponent> material)
 
 		// display material thumbnail
 		if (material->getTextureID() != 0) {
-			ImGui::ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnail_size, thumbnail_size));
+			ImGui::ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnailSize, thumbnailSize));
 		}
 
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MATERIAL_ASSET")) {
 				// store payload data
-				const char* dropped_asset = (const char*)payload->Data;
+				const char* droppedAsset = (const char*)payload->Data;
 
 				// get a reference to the asset that has been dropped
-				Ref<MaterialComponent> newMaterial = AssetManager::getInstance().GetAsset<MaterialComponent>(dropped_asset);
+				Ref<MaterialComponent> newMaterial = AssetManager::getInstance().GetAsset<MaterialComponent>(droppedAsset);
 
 				// get the actor
 				for (const auto& pair : sceneGraph->debugSelectedAssets) {
@@ -220,10 +220,10 @@ void InspectorWindow::DrawShaderComponent(Ref<ShaderComponent> shader)
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SHADER_ASSET")) {
 				// store the payload data
-				const char* dropped_asset = (const char*)payload->Data;
+				const char* droppedAsset = (const char*)payload->Data;
 
 				// get a reference to the asset that has been dropped
-				Ref<ShaderComponent> newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(dropped_asset);
+				Ref<ShaderComponent> newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(droppedAsset);
 
 				// get the actor
 				for (const auto& pair : sceneGraph->debugSelectedAssets) {

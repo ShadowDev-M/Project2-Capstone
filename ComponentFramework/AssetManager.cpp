@@ -5,37 +5,42 @@
 bool AssetManager::OnCreate() {
 	std::cout << "Initialzing all assets: " << std::endl;
 
-    if (std::filesystem::create_directory("Asset Manager")) {};
+    if (std::filesystem::create_directory("Asset Manager"));
 
+    // load all the assets from the asset database
+    LoadAssetDatabaseXML();
+    
+
+    // this is no longer needed since all the assets get loaded from the xml now, but just incase something messes up, this is a backup
+    
+    /*
     // SM: (Static) Mesh
     AddAsset<MeshComponent>("SM_Mario", nullptr, "meshes/Mario.obj");
     AddAsset<MeshComponent>("SM_Sphere", nullptr, "meshes/Sphere.obj");
     AddAsset<MeshComponent>("SM_Plane", nullptr, "meshes/Plane.obj");
     AddAsset<MeshComponent>("SM_Pawn", nullptr, "meshes/Pawn.obj");
-
+    
     // M: Material
     AddAsset<MaterialComponent>("M_MarioN", nullptr, "textures/mario_main.png");
     AddAsset<MaterialComponent>("M_Sphere", nullptr, "textures/Black Chess Base Colour.png");
     AddAsset<MaterialComponent>("M_ChessBoard", nullptr, "textures/8x8_checkered_board.png");
-
-
+    
+    
     // S: Shader
     AddAsset<ShaderComponent>("S_Phong", nullptr, "shaders/texturePhongVert.glsl", "shaders/texturePhongFrag.glsl");
     AddAsset<ShaderComponent>("S_Default", nullptr, "shaders/defaultVert.glsl", "shaders/defaultFrag.glsl");
     AddAsset<ShaderComponent>("S_Outline", nullptr, "shaders/texturePhongVert.glsl", "shaders/outline.glsl");
+    */
+    
 
 
-
-    // call the oncreate for all the assets in the assetmanager (pre-xml)
+    // when loading the assets from the database, all the assets' OnCreate are called, this is just extra insurance to call any of the assets already in the assetmanagers oncreate
     for (auto& asset : assetManager) {
         if (!asset.second->OnCreate()) {
             Debug::Error("Asset failed to initialize: " + asset.first.name, __FILE__, __LINE__);
             return false;
         }
     }
-
-    //
-    //LoadAssetDatabaseXML();
 
     return true;
 }
@@ -105,7 +110,6 @@ bool AssetManager::SaveAssetDatabaseXML() const
 
     // save all the assets to the database
     XMLError result = doc.SaveFile(("Asset Manager/" + assetDatabasePath + ".xml").c_str());
-    // if assets didn't save, throw error
     if (result != XML_SUCCESS) {
         Debug::Error("Failed to save assets to database: " + assetDatabasePath, __FILE__, __LINE__);
         return false;
@@ -118,13 +122,11 @@ bool AssetManager::SaveAssetDatabaseXML() const
 
 bool AssetManager::LoadAssetDatabaseXML()
 {
-    // create xml doc + variable for the path to the asset database
     XMLDocument doc;
     std::string fullAssetDBPath = "Asset Manager/" + assetDatabasePath + ".xml"; // possibly make into private variable instead of local
 
     // try to load the asset database xml file
     XMLError result = doc.LoadFile(fullAssetDBPath.c_str());
-    // if the file didnt load, throw error
     if (result != XML_SUCCESS) {
         Debug::Error("Failed to load asset database: " + fullAssetDBPath, __FILE__, __LINE__);
         return false;
@@ -132,7 +134,6 @@ bool AssetManager::LoadAssetDatabaseXML()
 
     // get the root node for the xml file
     XMLNode* adbRoot = doc.RootElement();
-    // if no root is detected, throw error
     if (!adbRoot) {
         Debug::Error("No root element found in asset database: " + fullAssetDBPath, __FILE__, __LINE__);
         return false;
@@ -318,7 +319,7 @@ bool AssetManager::LoadAssetTypeXML(XMLElement* assetElement_, const std::string
 
 bool AssetManager::ReloadAssetsXML()
 {
-    // removes all the assets from the database and reloads them
+    // if for some reason the xml file has assets that the local assetmanager doesnt
     RemoveAllAssets();
     return LoadAssetDatabaseXML();
 }
@@ -326,11 +327,10 @@ bool AssetManager::ReloadAssetsXML()
 template<typename AssetTemplate>
 bool AssetManager::RemoveAsset(const std::string& assetName_)
 {
-    // find component type and create key
     std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
     AssetKey key = { assetName_, componentType };
 
-    // find the key, if found call its ondestroy and remove it from the assetmanager, return true
+    // finds the specific key and removes it
     auto it = assetManager.find(key);
     if (it != assetManager.end()) {
         it->second->OnDestroy();
@@ -339,7 +339,8 @@ bool AssetManager::RemoveAsset(const std::string& assetName_)
         return true;
     }
 
-    // if not found, print a warning, return false
     Debug::Warning("Attempted to remove non-existent asset: " + assetName_ + " (" + componentType + ")", __FILE__, __LINE__);
     return false;
 }
+
+

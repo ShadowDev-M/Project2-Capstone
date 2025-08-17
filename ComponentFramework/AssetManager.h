@@ -51,6 +51,9 @@ private:
 	// unordered map that stores all the assets names, component types, and filepaths
 	std::unordered_map<AssetKey, Ref<Component>, AssetKeyHasher> assetManager;
 
+	// TODO: XML is only temporary, its set up just to have a persistent database that can add and remove assets from the asset manager for basic engine functionality, 
+	// but in the long run it would be better to have a fully functional file browser similar to Unity
+	
 	// asset database XML file name
 	std::string assetDatabasePath = "AssetDatabase";
 
@@ -69,7 +72,7 @@ public:
 	~AssetManager() { RemoveAllAssets(); }
 
 	template<typename AssetTemplate, typename ... Args>
-	bool AddAsset(std::string name_, Args&& ... args_) { 
+	bool AddAsset(const std::string& name_, Args&& ... args_) { 
 		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
 		AssetKey key = { name_, componentType };
 
@@ -167,4 +170,36 @@ public:
 
 	// reloads all the assets
 	bool ReloadAssetsXML();
+
+	// adds, gets, and calls the oncreate of a specific asset used when creating an asset in scene
+	template<typename AssetTemplate, typename ... Args>
+	bool LoadAsset(const std::string& assetName_, Args&& ... args_) {
+		// get the typeID for a compontent and return its name
+		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
+
+		// add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
+		bool result = AddAsset<AssetTemplate>(assetName_, std::forward<Args>(args_)...);
+		if (!result) {
+			Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
+			return false;
+		}
+		auto asset = GetAsset<AssetTemplate>(assetName_);
+		if (!asset) {
+			Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__);
+			RemoveAsset<AssetTemplate>(assetName_);
+			return false;
+		}
+		if (!asset->OnCreate()) {
+			RemoveAsset<AssetTemplate>(assetName_);
+			Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
+			return false;
+		}
+
+		// TODO change this because it saves the entire database
+		SaveAssetDatabaseXML();
+
+		// if the asset manages to pass everything, then display an info debug message
+		Debug::Info("Succesfully loaded " + componentType + ": " + assetName_, __FILE__, __LINE__);
+		return true;
+	}
 };

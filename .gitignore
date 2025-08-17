@@ -30,3 +30,5 @@
 *.out
 *.app
 /ComponentFramework/Debug
+/.vs/ComponentFramework/v17/ipch/AutoPCH
+.vs/ComponentFramework/v17/Browse.VC.db

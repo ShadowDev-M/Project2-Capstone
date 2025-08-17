@@ -11,7 +11,7 @@ class HierarchyWindow
 	HierarchyWindow& operator = (HierarchyWindow&&) = delete;
 private:
 	// state to show selected actors
-	mutable bool show_only_selected = false;
+	mutable bool showOnlySelected = false;
 
 	// text filter for the hierarchy window
 	ImGuiTextFilter filter;
@@ -33,7 +33,7 @@ public:
 	explicit HierarchyWindow(SceneGraph* sceneGraph_);
 	~HierarchyWindow() {}
 
-	void ShowHierarchyWindow(bool* p_open);
+	void ShowHierarchyWindow(bool* pOpen);
 
 	/// <summary>
 	/// gets called when in a scenes on destroy to make sure the filter is cleared 

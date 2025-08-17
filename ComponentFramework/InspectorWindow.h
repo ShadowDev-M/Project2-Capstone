@@ -14,7 +14,7 @@ private:
 	SceneGraph* sceneGraph;
 
 	// thumbnail size, assetmanager also has this, possibly find a way to make it so they share the same thing incase I edit
-	const int thumbnail_size = 64;
+	const int thumbnailSize = 64;
 
 	// component functions
 	void DrawTransformComponent(Ref<TransformComponent> transform);
@@ -27,6 +27,6 @@ public:
 	explicit InspectorWindow(SceneGraph* sceneGraph_);
 	~InspectorWindow() {}
 
-	void ShowInspectorWindow(bool* p_open);
+	void ShowInspectorWindow(bool* pOpen);
 };
 

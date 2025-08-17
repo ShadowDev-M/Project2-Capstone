@@ -21,9 +21,6 @@ bool Scene3GUI::OnCreate() {
 
 	AssetManager::getInstance().OnCreate();
 	
-	//AssetManager::getInstance().SaveAssetDatabaseXML();
-	//AssetManager::getInstance().LoadAssetDatabaseXML();
-	
 	AssetManager::getInstance().ListAllAssets();
 
 	camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
@@ -146,6 +143,8 @@ bool Scene3GUI::OnCreate() {
 void Scene3GUI::OnDestroy() {
 	Debug::Info("Deleting assets Scene3GUI: ", __FILE__, __LINE__);
 
+	// save all the assets in the assetmanager to the xml file then remove them all locally
+	AssetManager::getInstance().SaveAssetDatabaseXML();
 	AssetManager::getInstance().RemoveAllAssets();
 
 	sceneGraph.RemoveAllActors();
