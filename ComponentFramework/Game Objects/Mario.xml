@@ -4,4 +4,7 @@
         <rotation w="0.70710683" x="0.70710665" y="0" z="0"/>
         <scale x="1.25" y="1.25" z="1.25"/>
     </TransformComponent>
+    <MeshComponent name="SM_Mario"/>
+    <MaterialComponent name="M_MarioN"/>
+    <ShaderComponent name="S_Phong"/>
 </Actor>

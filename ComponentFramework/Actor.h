@@ -25,8 +25,12 @@ public:
 	// constructer for setting the parent and the name of an actor (name is const because it doesn't need to be changed when its set)
 	Actor(Component* parent_, const std::string& actorName_);
 
+
+
 	// getter for the actor name
 	const std::string& getActorName() { return actorName; }
+
+
 
 	~Actor();
 	virtual bool OnCreate() override;

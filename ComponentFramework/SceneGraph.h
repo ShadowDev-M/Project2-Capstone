@@ -11,6 +11,8 @@
 #include "MMath.h"
 #include "CameraActor.h"
 #include "AssetManager.h"
+
+
 //#include "Raycast.h"
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
@@ -54,6 +56,12 @@ public:
 	void LoadAllActorsFromFile(std::string name) {
 		
 	}
+	
+	/// <summary>
+	/// Loads actor from file into scenegraph
+	/// </summary>
+	void LoadActor(const char* name_, Ref<Actor> parent = Ref<Actor>());
+
 
 	Ref<Actor> MeshRaycast(Vec3 start, Vec3 end) {
 		float minDistance = 0;

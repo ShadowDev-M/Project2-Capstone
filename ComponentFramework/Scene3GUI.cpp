@@ -88,16 +88,24 @@ bool Scene3GUI::OnCreate() {
 	lightPos = Vec3(1.0f, 2.0f, -10.0f);
 
 	// Board setup
-	Ref<Actor> board = std::make_shared<Actor>(nullptr, "Board");
+
+	sceneGraph.LoadActor("Board");
+
+
+	/*Ref<Actor> board = std::make_shared<Actor>(nullptr, "Board");
 	board->AddComponent(AssetManager::getInstance().GetAsset<MeshComponent>("SM_Plane"));
 	board->AddComponent(AssetManager::getInstance().GetAsset<MaterialComponent>("M_ChessBoard"));
 	board->AddComponent(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
 	board->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 	board->OnCreate();
-	sceneGraph.AddActor(board);
+	sceneGraph.AddActor(board);*/
 
 	// mario setup
-	Ref<Actor> mario = std::make_shared<Actor>(board.get(), "Mario");
+
+	sceneGraph.LoadActor("Mario", sceneGraph.GetActor("Board"));
+
+	
+	/*Ref<Actor> mario = std::make_shared<Actor>(board.get(), "Mario");
 	mario->AddComponent(AssetManager::getInstance().GetAsset<MeshComponent>("SM_Mario"));
 	mario->AddComponent(AssetManager::getInstance().GetAsset<MaterialComponent>("M_MarioN"));
 	mario->AddComponent(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
@@ -107,20 +115,37 @@ bool Scene3GUI::OnCreate() {
 	mario->GetComponent<PhysicsComponent>()->setVel(Vec3(0.0f, 0, 0.0f));
 	collisionSystem.AddActor(mario);
 	mario->OnCreate();
-	sceneGraph.AddActor(mario);
+	sceneGraph.AddActor(mario);*/
 
 	// sphere setup
-	Ref<Actor> sphere = std::make_shared<Actor>(nullptr, "Sphere");
-	sphere->AddComponent(AssetManager::getInstance().GetAsset<MeshComponent>("SM_Sphere"));
-	sphere->AddComponent(AssetManager::getInstance().GetAsset<MaterialComponent>("M_Sphere"));
-	sphere->AddComponent(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
-	sphere->AddComponent<TransformComponent>(nullptr, Vec3(2.4f, -4.5f, 0.0f), QMath::toQuaternion(MMath::rotate(90.0f, Vec3(1.0f, 0.0f, 0.0f))), Vec3(1.5f, 1.5f, 1.5f));
-	sphere->AddComponent<PhysicsComponent>(nullptr, 2.0f);
-	sphere->AddComponent<CollisionComponent>(nullptr, 0.75f);
+	//sphere->AddComponent(AssetManager::getInstance().GetAsset<MeshComponent>("SM_Sphere"));
+//	sphere->AddComponent(AssetManager::getInstance().GetAsset<MaterialComponent>("M_Sphere"));
+	//sphere->AddComponent(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
+	//sphere->AddComponent<TransformComponent>(nullptr, Vec3(2.4f, -4.5f, 0.0f), QMath::toQuaternion(MMath::rotate(90.0f, Vec3(1.0f, 0.0f, 0.0f))), Vec3(1.5f, 1.5f, 1.5f));
+
+	//Ref<Actor> sphere = std::make_shared<Actor>(nullptr, "Sphere");
+
+	sceneGraph.LoadActor("Sphere", sceneGraph.GetActor("Board"));
+
+
+
+	//sphere->AddComponent<MaterialComponent>(AssetManager::getInstance().GetAsset<MaterialComponent>(XMLObjectFile::getComponent<MaterialComponent>("Sphere")));
+	//sphere->AddComponent<ShaderComponent>(AssetManager::getInstance().GetAsset<ShaderComponent>(XMLObjectFile::getComponent<ShaderComponent>("Sphere")));
+	//sphere->AddComponent<MeshComponent>(AssetManager::getInstance().GetAsset<MeshComponent>(XMLObjectFile::getComponent<MeshComponent>("Sphere")));
+	//sphere->AddComponent<TransformComponent>(std::apply([](auto&&... args) {
+	//	return new TransformComponent(args...);
+	//	}, XMLObjectFile::getComponent<TransformComponent>("Sphere")));
+
+
+	//Ref<MeshComponent> test = XMLObjectFile::getComponent<MeshComponent>("Sphere");
+
+
+	//sphere->AddComponent<PhysicsComponent>(nullptr, 2.0f);
+	//sphere->AddComponent<CollisionComponent>(nullptr, 0.75f);
 	//sphere->GetComponent<PhysicsComponent>()->setVel(Vec3(0.0f, 3.0f, 0.0f));
-	collisionSystem.AddActor(sphere);
-	sphere->OnCreate();
-	sceneGraph.AddActor(sphere);
+	//collisionSystem.AddActor(sphere);
+	//sphere->OnCreate();
+	//sceneGraph.AddActor(sphere);
 
 	sceneGraph.OnCreate();
 

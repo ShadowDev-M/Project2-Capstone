@@ -55,10 +55,36 @@ void SceneGraph::SaveFile(std::string name) const {
     for (auto& obj : Actors) {
         
         XMLObjectFile::writeActor(obj.first);
-        XMLObjectFile::writeComponent<TransformComponent>(obj.first, obj.second->GetComponent<TransformComponent>().get());
+
+        XMLObjectFile::writeUniqueComponent<TransformComponent>(obj.first, obj.second->GetComponent<TransformComponent>().get());
+
+        AssetManager& assetMgr = AssetManager::getInstance();
+
+        std::cout << assetMgr.getAssetName(obj.second->GetComponent<MeshComponent>()) << std::endl;
+
+        if (obj.second->GetComponent<MeshComponent>())
+            XMLObjectFile::writeReferenceComponent<MeshComponent>(obj.first, obj.second->GetComponent<MeshComponent>());
+        
+        if (obj.second->GetComponent<MaterialComponent>())
+            XMLObjectFile::writeReferenceComponent<MaterialComponent>(obj.first, obj.second->GetComponent<MaterialComponent>());
+
+        if (obj.second->GetComponent<ShaderComponent>())
+            XMLObjectFile::writeReferenceComponent<ShaderComponent>(obj.first, obj.second->GetComponent<ShaderComponent>());
+
+
+        // [key.first/second] accesses the vector for the given key, if it doesn't exist it creates it
+
+       /* XMLObjectFile::writeComponent<MeshComponent>(obj.first, obj.second->GetComponent<MeshComponent>().get());
+
+        XMLObjectFile::writeComponent<MaterialComponent>(obj.first, obj.second->GetComponent<MaterialComponent>().get());
+
+        XMLObjectFile::writeComponent<ShaderComponent>(obj.first, obj.second->GetComponent<ShaderComponent>().get());*/
+
+
         obj.second->GetComponent<TransformComponent>()->GetPosition().print();
         XMLObjectFile::writeActorToCell(name, obj.first, true);
     }
+
 
     for (auto& component_ : AssetManager::getInstance().GetAllAssetKeyPair()) {
 

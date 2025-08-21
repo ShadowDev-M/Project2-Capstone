@@ -138,6 +138,18 @@ public:
 		return allAssetNames;
 	}
 
+	/// returns name of component
+	std::string getAssetName(const Ref<Component>& component_) {
+    for (auto& [key, value] : assetManager) {
+        if (value == component_) {
+            return key.name;
+        }
+    }
+
+    // Not found, handle better to not explode via nothing being returned :/
+    return {};
+}
+
 	// lists assets
 	void ListAllAssets() const {
 		std::cout << "Asset Manager Currently Holds These Assets: " << std::endl;

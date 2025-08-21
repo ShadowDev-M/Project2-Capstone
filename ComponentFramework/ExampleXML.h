@@ -68,6 +68,7 @@ public:
 
 
 
+
     }
 
     /// <summary>
@@ -342,6 +343,8 @@ public:
 
     }
 
+
+
     template<typename ComponentTemplate>
     static auto getComponent(std::string name) {
 
@@ -414,8 +417,28 @@ public:
             return args;
 
         }
+        else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent>) {
+
+            AssetManager& assetMgr = AssetManager::getInstance();
+            
+
+            
+                
+            //return the asset reference in AssetManager named in element
+            std::string assetName = component->FindAttribute("name")->Value();
+
+            const char* assetNameCStr = assetName.c_str();
+
+            auto args = assetName;
+            return args;
+
+
+
+        }
 
     }
+
+
 
     ///Simplify FindAttribute() implimentation for coding convenience
     static inline float GetAttrF(XMLElement* element, const char* name) {
@@ -423,7 +446,7 @@ public:
     }
 
     template<typename ComponentTemplate>
-    static int writeComponent(std::string name, Component* toWrite) {
+    static int writeUniqueComponent(std::string name, Component* toWrite) {
         std::string path = "Game Objects/" + name + ".xml";
         const char* id = path.c_str();
         XMLDocument doc;
@@ -497,12 +520,86 @@ public:
             componentElement->InsertEndChild(scale);
         }
         else {
+
             std::cout << "ComponentWriteError: " << componentType << " is not a supported component type" << std::endl;
         }
 
 
 
 
+
+
+
+        cRoot->InsertEndChild(componentElement);
+        doc.Print();
+
+        XMLError eResultSave = doc.SaveFile(id);
+
+        if (eResultSave != XML_SUCCESS) {
+            std::cerr << "Error saving file: " << eResultSave << std::endl;
+            return -1;
+        }
+
+        std::cout << "Save game written to '" << name << ".xml'\n";
+
+        return 0;
+    }
+
+
+
+    /// <summary>
+    /// Used to write the specific asset's name/key as an actor's used component in XML file. 
+    /// NOT USED FOR TRANSFORM COMPONENT OR PHYSICS COMPONENT, YOU ARE LOOKING FOR writeUniqueComponent()
+    /// </summary>
+    /// <typeparam name="ComponentTemplate"></typeparam>
+    /// <param name="name">name of the actor</param>
+    /// <param name="toWrite">component to be written</param>
+    /// <returns></returns>
+    template<typename ComponentTemplate>
+    static int writeReferenceComponent(std::string name, Ref<Component> toWrite) {
+        std::string path = "Game Objects/" + name + ".xml";
+        const char* id = path.c_str();
+
+
+
+        XMLDocument doc;
+
+        //try loading the file into doc
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+            return eResult;
+        }
+
+
+
+        std::cout << "Found file to write: " << name << std::endl;
+
+        XMLNode* cRoot = doc.RootElement();
+
+        std::string componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
+
+
+        XMLElement* componentElement = cRoot->FirstChildElement(componentType.c_str());
+        if (componentElement) {
+            std::cout << "Found component (Deleting): " << name << std::endl;
+
+            componentElement->DeleteChildren();
+        }
+        std::cout << "Creating Element: " << componentType << std::endl;
+
+        componentElement = doc.NewElement(componentType.c_str());
+
+
+        AssetManager& assetMgr = AssetManager::getInstance();
+
+
+        std::string assetStringName = assetMgr.getAssetName(toWrite);
+
+        const char* assetName = assetStringName.c_str();
+
+        //Add the cstr name as attribute
+        componentElement->SetAttribute("name", assetName);
 
 
 

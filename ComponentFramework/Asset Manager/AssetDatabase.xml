@@ -1,8 +1,8 @@
 <AssetDatabase>
     <MaterialComponent>
         <Asset name="M_Sphere" filepath="textures/Black Chess Base Colour.png"/>
-        <Asset name="M_MarioFire" filepath="textures/mario_fire.png"/>
         <Asset name="M_MarioN" filepath="textures/mario_main.png"/>
+        <Asset name="M_MarioFire" filepath="textures/mario_fire.png"/>
         <Asset name="M_ChessBoard" filepath="textures/8x8_checkered_board.png"/>
     </MaterialComponent>
     <MeshComponent>

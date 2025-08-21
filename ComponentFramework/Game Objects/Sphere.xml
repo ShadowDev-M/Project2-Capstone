@@ -4,4 +4,7 @@
         <rotation w="0.70710683" x="0.70710665" y="0" z="0"/>
         <scale x="1.5" y="1.5" z="1.5"/>
     </TransformComponent>
+    <MeshComponent name="SM_Sphere"/>
+    <MaterialComponent name="M_Sphere"/>
+    <ShaderComponent name="S_Phong"/>
 </Actor>
