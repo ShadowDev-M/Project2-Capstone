@@ -1,8 +1,8 @@
 <Actor>
     <TransformComponent>
-        <position x="2.4000001" y="-4.5" z="0"/>
-        <rotation w="0.70710683" x="0.70710665" y="0" z="0"/>
-        <scale x="1.5" y="1.5" z="1.5"/>
+        <position x="3.7800007" y="1.0350001" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
     </TransformComponent>
     <MeshComponent name="SM_Sphere"/>
     <MaterialComponent name="M_Sphere"/>

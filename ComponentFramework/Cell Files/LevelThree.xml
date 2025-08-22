@@ -1,16 +1,22 @@
 <CellFile>
-    <Actors camera="camera" Mario="Mario" Board="Board" Sphere="Sphere"/>
+    <Actors>
+        <camera/>
+        <Board>
+            <Mario/>
+            <Sphere/>
+        </Board>
+    </Actors>
     <Components>
         <MaterialComponent>
             <M_Sphere>
                 <Texture path="textures/Black Chess Base Colour.png"/>
             </M_Sphere>
-            <M_MarioN>
-                <Texture path="textures/mario_main.png"/>
-            </M_MarioN>
             <M_MarioFire>
                 <Texture path="textures/mario_fire.png"/>
             </M_MarioFire>
+            <M_MarioN>
+                <Texture path="textures/mario_main.png"/>
+            </M_MarioN>
             <M_ChessBoard>
                 <Texture path="textures/8x8_checkered_board.png"/>
             </M_ChessBoard>

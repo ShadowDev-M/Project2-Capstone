@@ -21,7 +21,14 @@ class XMLObjectFile {
     /// </summary>
     /// <param name="sceneGraph">scene you are loading actors to </param>
     /// <param name="attribute">pointer to the current element you are adding </param>
+    static void createActorFromElement(SceneGraph* sceneGraph, XMLElement* actorElement);
+
+    static XMLElement* writeActorRecursive(Actor* actor_, XMLElement* root_);
+
+    static void runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XMLElement* actorElement, XMLElement* rootElement = nullptr);
+
     static void addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute);
+
 
 public:
 
@@ -48,6 +55,7 @@ public:
         return 0;
     }
 
+    ///Adds actors from requested cell filename into sceneGraph
     static int addActorsFromFile(SceneGraph* sceneGraph, std::string filename) {
         std::string path = "Cell Files/" + filename + ".xml";
         const char* id = path.c_str();
@@ -64,7 +72,17 @@ public:
         XMLElement* actorList = cRoot->FirstChildElement("Actors");
         //XMLElement* newElementList = actorList->NextSiblingElement("Test");
 
-        if (actorList->FirstAttribute()) addAttributeRecursive(sceneGraph, actorList->FirstAttribute());;
+        
+        //Loop through each element and add it 
+
+        
+        runCreateActorsOfElementChildren(sceneGraph, actorList);
+
+
+        //deprecated 
+        //if (actorList->FirstAttribute()) addAttributeRecursive(sceneGraph, actorList->FirstAttribute());;
+        return 1;
+
 
 
 
@@ -287,7 +305,7 @@ public:
     }
 
 
-    static int writeActorToCell(std::string filename, std::string name, bool enabled) {
+    static int writeActorToCell(std::string filename, Ref<Actor> actor_, bool enabled) {
         std::string path = "Cell Files/" + filename + ".xml";
         const char* id = path.c_str();
         XMLDocument doc;
@@ -310,7 +328,7 @@ public:
 
         XMLElement* actorList = cRoot->FirstChildElement("Actors");
 
-        //std::cout << actorList->Name() << std::endl; 
+        //Create the Actors element if no actors were created previously before
         if (!actorList) {
             actorList = doc.NewElement("Actors");
 
@@ -318,15 +336,19 @@ public:
 
         }
 
-        const char* nameCStr = name.c_str();
-
-
-        if (enabled) actorList->SetAttribute(nameCStr, nameCStr);
-        else actorList->DeleteAttribute(nameCStr);
-
-
-
         cRoot->InsertEndChild(actorList);
+
+        //return shouldn't matter as its already attached.
+        writeActorRecursive(actor_.get(), actorList);
+
+ 
+
+        //string value for name as function return cannot be made into a cstr
+        std::string nameStr = actor_->getActorName();
+        //make cstr name to be set as name of element
+        const char* nameCStr = nameStr.c_str();
+
+        //If actor has a parent, call recursion for
 
         doc.Print();
 
@@ -342,7 +364,6 @@ public:
         return 0;
 
     }
-
 
 
     template<typename ComponentTemplate>
