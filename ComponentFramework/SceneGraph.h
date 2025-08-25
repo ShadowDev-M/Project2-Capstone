@@ -131,11 +131,30 @@ public:
 		
 		// if actor is found remove it, else throw warning
 		if (it != Actors.end()) {
+			Ref<Actor> actorToRemove = it->second;
+			
+			// if the actor that is being removed is parented or a parent, get all children
+			std::vector<std::string> childrenToRemove;
+			for (const auto& pair : Actors) {
+				if (pair.second->getParentActor() == actorToRemove.get()) {
+					childrenToRemove.push_back(pair.first);
+				}
+			}
+
+			// recursivly remove each child actor
+			for (const std::string& childName : childrenToRemove) {
+				RemoveActor(childName);
+			}
+
+			// also remove the actor from the debug
+			debugSelectedAssets.erase(actorName);
+
+			actorToRemove->OnDestroy();
 			Actors.erase(it);
 			return true;
 		}
 		else {
-			Debug::Warning("Actor: " + actorName + "| does not exist!", __FILE__, __LINE__);
+			Debug::Warning("Actor: " + actorName + " does not exist!", __FILE__, __LINE__);
 			return false;
 		}
 	}

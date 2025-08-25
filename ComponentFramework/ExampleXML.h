@@ -640,6 +640,36 @@ public:
         return 0;
     }
 
+    /// <summary>
+    /// Used to check if an actor has a specific type of component in their XML file
+    /// </summary>
+    /// <typeparam name="ComponentTemplate"></typeparam>
+    /// <param name="name">name of the actor</param>
+    /// <returns>true if the component type exists within the XML file</returns>
+    template<typename ComponentTemplate>
+    static bool hasComponent(std::string name) {
+        std::string path = "Game Objects/" + name + ".xml";
+        const char* id = path.c_str();
+
+        XMLDocument doc;
+        //try loading the file into doc
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+            return false;
+        }
+        
+        XMLNode* cRoot = doc.RootElement();
+        if (!cRoot) {
+            return false;
+        }
+
+        std::string componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
+        XMLElement* component = cRoot->FirstChildElement(componentType.c_str());
+
+        return (component != nullptr);
+    }
+
     //int readDoc() {
     //    XMLDocument doc;
 

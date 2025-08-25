@@ -22,6 +22,9 @@ private:
 	void DrawMaterialComponent(Ref<MaterialComponent> material);
 	void DrawShaderComponent(Ref<ShaderComponent> shader);
 
+	// right click popup menu
+	template <typename ComponentTemplate>
+	void RightClickContext(const char* popupName_, Ref<Actor> sceneActor_);
 
 public:
 	explicit InspectorWindow(SceneGraph* sceneGraph_);
@@ -30,3 +33,30 @@ public:
 	void ShowInspectorWindow(bool* pOpen);
 };
 
+template<typename ComponentTemplate>
+inline void InspectorWindow::RightClickContext(const char * popupName_, Ref<Actor> sceneActor_)
+{
+	if (ImGui::BeginPopupContextItem(popupName_)) {
+		if (ImGui::MenuItem("Reset")) {
+			if constexpr (std::is_same_v<ComponentTemplate, TransformComponent>) {
+				sceneActor_->GetComponent<TransformComponent>()->SetTransform(Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), Vec3(1.0f, 1.0f, 1.0f));
+			}
+			ImGui::Separator();
+		}
+
+		if (ImGui::MenuItem("Remove Component")) {
+			if constexpr (std::is_same_v<ComponentTemplate, MeshComponent>) {
+				sceneActor_->RemoveComponent<MeshComponent>();
+			}
+			if constexpr (std::is_same_v<ComponentTemplate, MaterialComponent>) {
+				sceneActor_->RemoveComponent<MaterialComponent>();
+			}
+			if constexpr (std::is_same_v<ComponentTemplate, ShaderComponent>) {
+				sceneActor_->RemoveComponent<ShaderComponent>();
+			}
+		}
+
+
+		ImGui::EndPopup();
+	}
+}

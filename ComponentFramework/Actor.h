@@ -29,7 +29,7 @@ public:
 
 	// getter for the actor name
 	const std::string& getActorName() { return actorName; }
-
+	void setActorName(const std::string& actorName_) { actorName = actorName_; }
 
 
 	~Actor();
@@ -83,7 +83,7 @@ public:
 	// Added this function previously but realized since the components are shared if I remove a component and several actors share that component it just deletes the component, 
 	// However this function can still be used later on when components are created in the scene and need to be deleted
 	template<typename ComponentTemplate>
-	void RemoveComponent() {
+	void DeleteComponent() {
 		/// check if the component exists
 		if (GetComponent<ComponentTemplate>().get() == nullptr) {
 #ifdef _DEBUG
@@ -93,6 +93,24 @@ public:
 		}
 		/// Finish building the component and add the component to the list 
 		GetComponent<ComponentTemplate>()->OnDestroy();
+
+		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
+		if (it != components.end()) {
+			components.erase(it);
+		}
+	}
+
+	// Removes the component from the actor
+	// DOES NOT CALL OnDestroy, USE THIS FUNCTION FOR SHARED COMPONENTS, USE DeleteComponent FOR EVERYTHING ELSE
+	template<typename ComponentTemplate>
+	void RemoveComponent() {
+		/// check if the component exists
+		if (GetComponent<ComponentTemplate>().get() == nullptr) {
+#ifdef _DEBUG
+			std::cerr << "WARNING: Trying to remove a component type that does not exist - ignored\n";
+#endif
+			return;
+		}
 
 		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
 		if (it != components.end()) {

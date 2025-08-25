@@ -28,28 +28,71 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			// transform
 			if (selectedActor->second->GetComponent<TransformComponent>()) {
 				DrawTransformComponent(selectedActor->second->GetComponent<TransformComponent>());
+				RightClickContext<TransformComponent>("##TransformPopup", selectedActor->second);
 				ImGui::Separator();
 			}
 
 			// mesh
 			if (selectedActor->second->GetComponent<MeshComponent>()) {
 				DrawMeshComponent(selectedActor->second->GetComponent<MeshComponent>());
+				RightClickContext<MeshComponent>("##MeshPopup", selectedActor->second);
 				ImGui::Separator();
 			}
 
 			// material
 			if (selectedActor->second->GetComponent<MaterialComponent>()) {
 				DrawMaterialComponent(selectedActor->second->GetComponent<MaterialComponent>());
+				RightClickContext<MaterialComponent>("##MaterialPopup", selectedActor->second);
 				ImGui::Separator();
 			}
 
 			// shader
 			if (selectedActor->second->GetComponent<ShaderComponent>()) {
 				DrawShaderComponent(selectedActor->second->GetComponent<ShaderComponent>());
+				RightClickContext<ShaderComponent>("##ShaderPopup", selectedActor->second);
 				ImGui::Separator();
 			}
 
-			// TODO: adding and removing components, drop down selection for certain components
+			if (ImGui::Button("Add Component##Button")) {
+				ImGui::OpenPopup("Add Component");
+			}
+
+			// sets the placement and size of the dialog box
+			const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 800, mainViewport->WorkPos.y - 600), ImGuiCond_Appearing);
+			ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
+
+			if (ImGui::BeginPopupModal("Add Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+				ImGui::Text("Select A Component");
+				// TODO search bar
+				ImGui::Separator();
+
+				if (ImGui::Selectable("Mesh Component")) {
+					if (!selectedActor->second->GetComponent<MeshComponent>()) {
+						selectedActor->second->AddComponent<MeshComponent>(nullptr, "");
+					}
+				}
+
+				if (ImGui::Selectable("Material Component")) {
+					if (!selectedActor->second->GetComponent<MaterialComponent>()) {
+						selectedActor->second->AddComponent<MaterialComponent>(nullptr, "");
+					}
+				}
+
+				if (ImGui::Selectable("Shader Component")) {
+					if (!selectedActor->second->GetComponent<ShaderComponent>()) {
+						selectedActor->second->AddComponent<ShaderComponent>(nullptr, "", "");
+					}
+				}
+
+				ImGui::Separator();
+
+				if (ImGui::Button("Cancel")) {
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
 
 		}
 
@@ -120,31 +163,22 @@ void InspectorWindow::DrawTransformComponent(Ref<TransformComponent> transform)
 			transform->SetTransform(Vec3(scale[0], scale[1], scale[2]));
 		}
 
-
-		// right click popup menu 
-		if (ImGui::BeginPopup("##TransformPopup")) {
-			if (ImGui::MenuItem("Reset")) {
-				transform->SetTransform(Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), Vec3(1.0f, 1.0f, 1.0f));
-			}
-
-
-
-			ImGui::EndPopup();
-		}
-
-
 	}
 }
 
 void InspectorWindow::DrawMeshComponent(Ref<MeshComponent> mesh)
 {
 	if (ImGui::CollapsingHeader("Mesh")) {
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+			ImGui::OpenPopup("##MeshPopup");
+		}
+
 		// displaying some basic mesh information
 		ImGui::TextWrapped("Mesh Name: %s", mesh->getMeshName());
 		ImGui::TextWrapped("Mesh Vertices: %zu", mesh->getVertices());
 
 
-		ImGui::Button("Drop New Asset Here ##Mesh");
+		ImGui::Button("Drop New Mesh Here");
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MESH_ASSET")) {
 				// store payload data		
@@ -168,6 +202,7 @@ void InspectorWindow::DrawMeshComponent(Ref<MeshComponent> mesh)
 			ImGui::EndDragDropTarget();
 		}
 
+
 		// alternatively, a drop dowm menu that has a list of all meshes
 
 	}
@@ -176,6 +211,9 @@ void InspectorWindow::DrawMeshComponent(Ref<MeshComponent> mesh)
 void InspectorWindow::DrawMaterialComponent(Ref<MaterialComponent> material)
 {
 	if (ImGui::CollapsingHeader("Material")) {
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+			ImGui::OpenPopup("##MaterialPopup");
+		}
 		ImGui::TextWrapped("Texture ID: %u", material->getTextureID());
 
 		// display material thumbnail
@@ -210,6 +248,9 @@ void InspectorWindow::DrawMaterialComponent(Ref<MaterialComponent> material)
 void InspectorWindow::DrawShaderComponent(Ref<ShaderComponent> shader)
 {
 	if (ImGui::CollapsingHeader("Shader")) {
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+			ImGui::OpenPopup("##ShaderPopup");
+		}
 		// displaying some basic shader information
 		ImGui::TextWrapped("Shader Program ID: %u", shader->GetProgram());
 		ImGui::TextWrapped("Shader Vert: %s", shader->GetVertName());

@@ -1,10 +1,1 @@
-﻿  ExampleXML.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'ExampleXML.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'ExampleXML.cpp')
-  
-  ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
+﻿

@@ -1,5 +1,6 @@
 #pragma once
 #include "imgui.h"
+#include "imgui_stdlib.h"
 #include "SceneGraph.h"
 
 class HierarchyWindow
@@ -18,6 +19,10 @@ private:
 
 	// pointer to scenegraph
 	SceneGraph* sceneGraph;
+
+	std::string newActorName = "";
+
+	bool showAddActorDialog = false;
 
 	// recursive function for actually rendering/drawing the nodes
 	void DrawActorNode(const std::string& actorName, Ref<Actor> actor);

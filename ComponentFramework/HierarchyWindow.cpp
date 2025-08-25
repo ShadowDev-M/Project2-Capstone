@@ -42,6 +42,51 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 		filter.Draw("##HierarchyFilter", -1.0f);
 		ImGui::Separator();
 
+		//
+		if (ImGui::BeginPopupContextWindow("##RightClickHierarchyWindow")) {
+			
+			if (ImGui::MenuItem("Create Empty Actor")) {
+				showAddActorDialog = true;
+			}
+			
+			ImGui::EndPopup();
+		}
+
+		if (showAddActorDialog) {
+			ImGui::OpenPopup("New Actor");
+			showAddActorDialog = false;
+		}
+
+		// sets the placement and size of the dialog box
+		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x - 200, mainViewport->WorkPos.y - 200), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
+
+		if (ImGui::BeginPopupModal("New Actor", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			ImGui::Text("Enter New Actor's Name:");
+			ImGui::InputText("##InputActorName", &newActorName);
+			ImGui::Separator();
+
+			if (ImGui::Button("Add Actor")) {
+				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
+				newActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
+				newActor->OnCreate();
+				sceneGraph->AddActor(newActor);
+				newActorName.clear();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel")) {
+				newActorName.clear();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+
 		//// Most of this will be changed after to just read off an XML for the current actors in a cell
 
 		// create root actors map to store all actors with no parent
@@ -125,6 +170,13 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName, Ref<Actor> act
 
 	}
 
+	if (ImGui::BeginPopupContextItem()) {
+		if (ImGui::MenuItem("Delete")) {
+			sceneGraph->RemoveActor(actorName);
+		}
+		ImGui::EndPopup();
+	}
+
 	if (nodeOpen) {
 		for (const auto& child : childActors) {
 			DrawActorNode(child.first, child.second);
@@ -154,7 +206,7 @@ bool HierarchyWindow::HasSelectedChild(Component* parent)
 	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
 
 	for (const auto& child : childActors) {
-		if (showOnlySelected && sceneGraph->debugSelectedAssets.find(child.first) != sceneGraph->debugSelectedAssets.end()) { return true; } //==
+		if (showOnlySelected && sceneGraph->debugSelectedAssets.find(child.first) != sceneGraph->debugSelectedAssets.end()) { return true; }
 
 		// recursive check to see if the child has children
 		if (HasSelectedChild(child.second.get())) { return true; }

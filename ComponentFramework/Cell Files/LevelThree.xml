@@ -5,6 +5,7 @@
             <Mario/>
             <Sphere/>
         </Board>
+        <Cube/>
     </Actors>
     <Components>
         <MaterialComponent>
@@ -20,6 +21,9 @@
             <M_ChessBoard>
                 <Texture path="textures/8x8_checkered_board.png"/>
             </M_ChessBoard>
+            <M_Skull>
+                <Texture path="textures/skull_texture.jpg"/>
+            </M_Skull>
         </MaterialComponent>
         <MeshComponent>
             <SM_Plane>
@@ -31,6 +35,9 @@
             <SM_Sphere>
                 <Mesh path="meshes/Sphere.obj"/>
             </SM_Sphere>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
@@ -43,17 +50,20 @@
             <SM_Hammer>
                 <Mesh path="meshes/Hammer.obj"/>
             </SM_Hammer>
+            <SM_Skull>
+                <Mesh path="meshes/Skull.obj"/>
+            </SM_Skull>
         </MeshComponent>
         <ShaderComponent>
+            <S_Outline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
+            </S_Outline>
             <S_Phong>
                 <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Phong>
             <S_Default>
                 <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
             </S_Default>
-            <S_Outline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
-            </S_Outline>
         </ShaderComponent>
     </Components>
 </CellFile>
