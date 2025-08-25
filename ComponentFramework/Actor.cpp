@@ -3,6 +3,7 @@
 #include "TransformComponent.h"
 #include "CameraActor.h"
 #include "MeshComponent.h"
+#include "InputManager.h"
 
 Actor::Actor(Component* parent_):Component(parent_) {}
 
@@ -33,6 +34,8 @@ void Actor::OnDestroy() {
 	Debug::Info("Deleting assets for Actor: ", __FILE__, __LINE__);
 	RemoveAllComponents();
 	isCreated = false;
+
+	
 }
 
 

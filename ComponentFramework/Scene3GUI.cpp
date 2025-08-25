@@ -5,6 +5,7 @@
 #include <MMath.h>
 #include "Debug.h"
 #include "ExampleXML.h"
+#include "InputManager.h"
 
 using namespace ImGui;
 
@@ -97,6 +98,7 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 
 
+
 	static bool mouseHeld = false;
 	static int lastX = 0, lastY = 0;
 	switch (sdlEvent.type) {
@@ -168,7 +170,7 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 			lastX = sdlEvent.button.x;
 			lastY = sdlEvent.button.y;
 
-
+			
 			Vec3 startPos = camera->GetComponent<TransformComponent>()->GetPosition();
 			Vec3 endPos = startPos + Raycast::screenRayCast(lastX, lastY, camera->GetProjectionMatrix(), camera->GetViewMatrix());
 
@@ -270,115 +272,7 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
 void Scene3GUI::Update(const float deltaTime) {
 
-
-
-	static float angle = 0.0f;
-	angle += 20.0f * deltaTime;
-
-
-	// makes board spin
-	//Matrix4 boardModel;
-	bool keyPressed = false;
-	const Uint8* keys = SDL_GetKeyboardState(NULL);
-
-	Vec3 inputVector = Vec3();
-
-	if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) {
-		inputVector += Vec3(0, 1, 0);
-		keyPressed = true;
-	}
-
-	if (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_LCTRL] && !keyPressed) {
-		keyPressed = true;
-		sceneGraph.SaveFile("LevelThree");
-
-		
-
-	}
-	else if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
-		inputVector += Vec3(0, -1, 0);
-		keyPressed = true;
-	}
-
-	if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]) {
-		
-		inputVector += Vec3(-1, 0, 0);
-		keyPressed = true;
-
-	}
-	if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) {
-		
-		inputVector += Vec3(1, 0, 0);
-		keyPressed = true;
-
-	}
-	if (keys[SDL_SCANCODE_R]) {
-
-		inputVector += Vec3(0, 0, 1);
-		keyPressed = true;
-
-	}
-	if (keys[SDL_SCANCODE_E]) {
-
-		inputVector += Vec3(0, 0, -1);
-		keyPressed = true;
-	}
-	if (keys[SDL_SCANCODE_F]) {
-
-		//sceneGraph.debugSelectedAssets.clear();
-	}
-	if (keys[SDL_SCANCODE_M]) {
-
-		//just use f3
-		
-		// XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
-	}
-
-	if (keyPressed) {
-		Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
-		
-		//inputVector.print();
-		
-		Quaternion rotation = (QMath::normalize(q));
-		camera->GetComponent<TransformComponent>()->GetPosition().print();
-
-
-		
-		//convert local direction into world coords 
-		Vec3 worldForward = QMath::rotate(inputVector, rotation) * debugMoveSpeed;
-
-		if (!(sceneGraph.debugSelectedAssets.empty())) {
-			//auto& debugGraph = sceneGraph.debugSelectedAssets;
-
-
-			for (const auto& obj : sceneGraph.debugSelectedAssets) {
-
-				obj.second->GetComponent<TransformComponent>()->SetTransform(
-					obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-					obj.second->GetComponent<TransformComponent>()->GetQuaternion(), 
-					obj.second->GetComponent<TransformComponent>()->GetScale()
-				);
-			}
-		}
-		else {
-			camera->GetComponent<TransformComponent>()->SetTransform(
-				camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-				q
-			);
-			camera->fixCameraToTransform();
-		}
-
-	}
-	if (keys[SDL_SCANCODE_SPACE]) {
-		//sceneGraph.GetActor("Mario")->GetComponent<TransformComponent>()->SetTransform(camera->GetComponent<TransformComponent>()->GetPosition(), (camera->GetComponent<TransformComponent>()->GetQuaternion()));
-
-
-		
-
-		
-	}
-
-	//if (boardModel) sceneGraph.GetActor("Board")->GetComponent<TransformComponent>()->SetOrientation(QMath::toQuaternion(boardModel));
+	InputManager::getInstance().update(deltaTime, &sceneGraph);
 	
 	collisionSystem.Update(deltaTime);
 

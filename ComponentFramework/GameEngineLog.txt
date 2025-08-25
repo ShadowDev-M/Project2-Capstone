@@ -1,6 +1,6 @@
-Mon Aug 25 11:34:12 2025
+Mon Aug 25 16:50:19 2025
 [INFO]: Starting the SceneManager
-[INFO]: OpenGL version: 4.6.0 NVIDIA 580.97
+[INFO]: OpenGL version: 4.6.0 NVIDIA 546.92
 [INFO]: Graphics card vendor NVIDIA Corporation
 [INFO]: Graphics card name NVIDIA GeForce RTX 3070 Ti Laptop GPU/PCIe/SSE2
 [INFO]: GLSL Version 4.60 NVIDIA
@@ -44,14 +44,29 @@ Mon Aug 25 11:34:12 2025
 [INFO]: Succesfully loaded ShaderComponent: S_Default (vert: shaders/defaultVert.glsl, frag: shaders/defaultFrag.glsl)
 [INFO]: Loaded 17 assets, skipped 0 existing assets
 [INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Board in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
+[WARNING]: There is already an actor with the name: Board in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
 [INFO]: Deleting assets for Actor: 
 [INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
+[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
 [INFO]: Deleting assets for Actor: 
 [INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
+[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
 [INFO]: Deleting assets for Actor: 
 [INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Cube in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
+[WARNING]: There is already an actor with the name: Cube in file: C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting the SceneManager
+[INFO]: Deleting assets Scene3GUI: 
+[INFO]: Successfully saved 17 assets to: AssetDatabase.xml
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleting assets for Actor: 
+[INFO]: Deleted Scene3GUI: 
 [INFO]: Deleting assets for Actor: 
