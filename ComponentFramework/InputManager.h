@@ -136,69 +136,72 @@ public:
 		//update keyboard object
 		keyboard.update(deltaTime);
 
-		//Mapping for controls
-		std::vector<std::pair<SDL_Scancode, Vec3>> inputMap = 
-		{ 
-			{SDL_SCANCODE_W, Vec3(0, 1, 0)}, 
-			{SDL_SCANCODE_S, Vec3(0, -1, 0)}, 
-			{SDL_SCANCODE_A, Vec3(-1, 0, 0)}, 
-			{SDL_SCANCODE_D, Vec3(1, 0, 0)} 
-		};
 		
 		//Check which scene debug vs playing
 		if (true) { //temp set to always true until we can define debug vs playable scenes
-			Ref<CameraActor> camera = std::dynamic_pointer_cast<CameraActor>(sceneGraph->GetActor("camera"));
-			if (camera) {
-				for (auto& keyPress : inputMap) {
 
-					if (keyboard.isPressed(keyPress.first)) {
-
-						//Put a slider here for stud based movement
-						Vec3 inputVector = keyPress.second * 0.5;
-
-
-						Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
-
-						Quaternion rotation = (QMath::normalize(q));
-						camera->GetComponent<TransformComponent>()->GetPosition().print();
-
-						//convert local direction into world coords 
-						Vec3 worldForward = QMath::rotate(inputVector, rotation);
-
-						if (!(sceneGraph->debugSelectedAssets.empty())) {
-							//auto& debugGraph = sceneGraph.debugSelectedAssets;
-
-
-							for (const auto& obj : sceneGraph->debugSelectedAssets) {
-
-								obj.second->GetComponent<TransformComponent>()->SetTransform(
-									obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-									obj.second->GetComponent<TransformComponent>()->GetQuaternion(),
-									obj.second->GetComponent<TransformComponent>()->GetScale()
-								);
-							}
-						}
-						else {
-							camera->GetComponent<TransformComponent>()->SetTransform(
-								camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-								q
-							);
-							camera->fixCameraToTransform();
-						}
-					}
-				}
-
-
-
-
-				
-			}
+			//translate selection based on input mapping
+			debugInputTranslation({
+				{SDL_SCANCODE_W, Vec3(0, 1, 0)},
+				{SDL_SCANCODE_S, Vec3(0, -1, 0)},
+				{SDL_SCANCODE_A, Vec3(-1, 0, 0)},
+				{SDL_SCANCODE_D, Vec3(1, 0, 0)}
+			}, sceneGraph);
 		}
 		
 
 	}
 
+	/// Allows for a KeyInput to be associated to a translation of a sceneGraph's debug selections
+	void debugInputTranslation(std::vector<std::pair<SDL_Scancode, Vec3>> inputMap, SceneGraph* sceneGraph) {
+		
+		Ref<CameraActor> camera = std::dynamic_pointer_cast<CameraActor>(sceneGraph->GetActor("camera"));
+		if (camera) {
+			for (auto& keyPress : inputMap) {
 
+				if (keyboard.isPressed(keyPress.first)) {
+
+					//Put a slider here for stud based movement
+					Vec3 inputVector = keyPress.second * 0.5; //<- slider multiplier here
+
+
+					Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
+
+					Quaternion rotation = (QMath::normalize(q));
+					//	camera->GetComponent<TransformComponent>()->GetPosition().print();
+
+						//convert local direction into world coords 
+					Vec3 worldForward = QMath::rotate(inputVector, rotation);
+
+					if (!(sceneGraph->debugSelectedAssets.empty())) {
+						//auto& debugGraph = sceneGraph.debugSelectedAssets;
+
+
+						for (const auto& obj : sceneGraph->debugSelectedAssets) {
+
+							obj.second->GetComponent<TransformComponent>()->SetTransform(
+								obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
+								obj.second->GetComponent<TransformComponent>()->GetQuaternion(),
+								obj.second->GetComponent<TransformComponent>()->GetScale()
+							);
+						}
+					}
+					else {
+						camera->GetComponent<TransformComponent>()->SetTransform(
+							camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
+							q
+						);
+						camera->fixCameraToTransform();
+					}
+				}
+			}
+
+
+
+
+
+		}
+	}
 
 	~InputManager() { }
 };
