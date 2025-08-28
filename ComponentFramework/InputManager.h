@@ -287,6 +287,9 @@ public:
 
 	
 	void update(float deltaTime, SceneGraph* sceneGraph) {
+		if (GetIO().WantCaptureKeyboard) {
+			return;
+		}
 
 		//update keyboard object
 		keyboard.update(deltaTime);

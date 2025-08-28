@@ -106,6 +106,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			if (ImGui::CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
 				for (const auto& pair : sceneGraph->debugSelectedAssets) {
 					ImGui::Text("%s", pair.first.c_str());
+					
 				}
 			}
 		}
@@ -156,11 +157,38 @@ void InspectorWindow::DrawTransformComponent(Ref<TransformComponent> transform)
 		// Scale
 		Vec3 scaleVector = transform->GetScale();
 		float scale[3] = { scaleVector.x, scaleVector.y, scaleVector.z };
+		Vec3 lastScale = scaleVector;
 
-		ImGui::Text("Scale   ");
+		ImGui::Text("Scale");
+		ImGui::SameLine();
+		if (ImGui::Checkbox("##Lock", &scaleLock));
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("##Scale", scale, 0.1f, 0.1f, 100.0f)) {
-			transform->SetTransform(Vec3(scale[0], scale[1], scale[2]));
+			if (scaleLock) {
+				float uniformScale = scale[0];
+
+				if (scale[0] != lastScale.x)
+				{
+					uniformScale = scale[0];
+				}
+				else if (scale[1] != lastScale.y)
+				{
+					uniformScale = scale[1];
+				}
+				else if (scale[2] != lastScale.z)
+				{
+					uniformScale = scale[2];
+				}
+
+				scale[0] = scale[1] = scale[2] = uniformScale;
+				transform->SetTransform(Vec3(uniformScale, uniformScale, uniformScale));
+				lastScale = Vec3(uniformScale, uniformScale, uniformScale);
+			}
+			else {
+				transform->SetTransform(Vec3(scale[0], scale[1], scale[2]));
+				lastScale = Vec3(scale[0], scale[1], scale[2]);
+			}
+			
 		}
 
 	}

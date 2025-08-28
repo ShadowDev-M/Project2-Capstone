@@ -16,6 +16,8 @@ private:
 	// thumbnail size, assetmanager also has this, possibly find a way to make it so they share the same thing incase I edit
 	const int thumbnailSize = 64;
 
+	bool scaleLock = false;
+
 	// component functions
 	void DrawTransformComponent(Ref<TransformComponent> transform);
 	void DrawMeshComponent(Ref<MeshComponent> mesh);

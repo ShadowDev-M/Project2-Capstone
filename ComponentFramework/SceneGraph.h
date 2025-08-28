@@ -168,14 +168,15 @@ public:
 		std::cout << "------------------------------------------" << std::endl;
 	}
 
+
 	void RemoveAllActors() {
 		std::cout << "Deleting All Actors In The Scene" << std::endl;
-		
+
 		// call the OnDestroy for each actor 
 		for (auto& pair : Actors) {
 			pair.second->OnDestroy();
 		}
-		
+
 		// clear the map
 		Actors.clear();
 	}

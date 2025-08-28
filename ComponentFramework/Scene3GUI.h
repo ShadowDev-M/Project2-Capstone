@@ -39,12 +39,19 @@ private:
 	float debugMoveSpeed = 0.5f;
 
 	// Window States
-	mutable bool show_demo_window = false;
-	mutable bool show_hierarchy_window = false;
-	mutable bool show_inspector_window = false;
-	mutable bool show_assetmanager_window = false;
+	mutable bool showDemoWindow = false;
+	mutable bool showHierarchyWindow = false;
+	mutable bool showInspectorWindow = false;
+	mutable bool showAssetmanagerWindow = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	
+	// save file dialog states (switch to own class)
+	mutable bool showSaveFileDialog = false;
+	mutable bool showLoadFileDialog = false;
+	std::string saveFileName = "";
+	void ShowSaveDialog();
+	void ShowLoadDialog();
+
 	// using unqiue pointers for automatic memory management
 	// could switch to shared pointers if we ever intend on having this window in multiple scenes
 	std::unique_ptr<HierarchyWindow> hierarchyWindow;

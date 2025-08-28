@@ -6,8 +6,90 @@
 #include "Debug.h"
 #include "ExampleXML.h"
 #include "InputManager.h"
+#include "imgui_stdlib.h"
 
 using namespace ImGui;
+
+void Scene3GUI::ShowSaveDialog()
+{
+	if (showSaveFileDialog) {
+		ImGui::OpenPopup("Save File");
+		showSaveFileDialog = false;
+	}
+
+	// sets the placement and size of the dialog box
+	const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x - 200, mainViewport->WorkPos.y - 200), ImGuiCond_Appearing);
+	ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
+
+	if (ImGui::BeginPopupModal("Save File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Enter The Name of The File You Want to Save:");
+		ImGui::InputText("##NameOfSaveFile", &saveFileName);
+		ImGui::Separator();
+
+		if (ImGui::Button("Save File ##Button")) {
+			sceneGraph.SaveFile(saveFileName);
+			saveFileName.clear();
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel")) {
+			saveFileName.clear();
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void Scene3GUI::ShowLoadDialog()
+{
+	if (showLoadFileDialog) {
+		ImGui::OpenPopup("Load File");
+		showLoadFileDialog = false;
+	}
+
+	// sets the placement and size of the dialog box
+	const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x - 200, mainViewport->WorkPos.y - 200), ImGuiCond_Appearing);
+	ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
+
+	if (ImGui::BeginPopupModal("Load File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Enter The Name of The File You Want to Load:");
+		ImGui::InputText("##NameOfLoadFile", &saveFileName);
+		ImGui::Separator();
+
+		if (ImGui::Button("Load File ##Button")) {
+			sceneGraph.RemoveAllActors();
+			XMLObjectFile::addActorsFromFile(&sceneGraph, saveFileName);
+
+			camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+
+			camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+
+			camera->OnCreate();
+
+			sceneGraph.AddActor(camera);
+
+			camera->fixCameraToTransform();
+
+			sceneGraph.OnCreate();
+			saveFileName.clear();
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel")) {
+			saveFileName.clear();
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+}
 
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -131,41 +213,48 @@ void Scene3GUI::Render() const {
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
-	if (show_demo_window) {
-		ImGui::ShowDemoWindow(&show_demo_window);
+	if (showDemoWindow) {
+		ImGui::ShowDemoWindow(&showDemoWindow);
 	}
 			
-	if (show_hierarchy_window) {
-		hierarchyWindow->ShowHierarchyWindow(&show_hierarchy_window);
+	if (showHierarchyWindow) {
+		hierarchyWindow->ShowHierarchyWindow(&showHierarchyWindow);
 	}
 
-	if (show_inspector_window) {
-		inspectorWindow->ShowInspectorWindow(&show_inspector_window);
+	if (showInspectorWindow) {
+		inspectorWindow->ShowInspectorWindow(&showInspectorWindow);
 	}
 
-	if (show_assetmanager_window) {
-		assetManagerWindow->ShowAssetManagerWindow(&show_assetmanager_window);
+	if (showAssetmanagerWindow) {
+		assetManagerWindow->ShowAssetManagerWindow(&showAssetmanagerWindow);
 	}
 
 	if (BeginMainMenuBar()) {
 		if (BeginMenu("File")) {
-			if (MenuItem("Save", "Ctrl+S")) {
-				sceneGraph.SaveFile("LevelThree");
+			if (MenuItem("Save File ##MenuItem", "Ctrl+S")) {
+				showSaveFileDialog = true;
+				
 			}
+			if (MenuItem("Load File ##MenuItem", "Ctrl+L")) {
+				showLoadFileDialog = true;
+			}
+
 			EndMenu();
 		}
 
 		if (BeginMenu("Windows")) {
-			MenuItem("Demo", nullptr, &show_demo_window);
-			MenuItem("Hierarchy", nullptr, &show_hierarchy_window);
-			MenuItem("Inspector", nullptr, &show_inspector_window);
-			MenuItem("Asset Manager", nullptr, &show_assetmanager_window);
+			MenuItem("Demo", nullptr, &showDemoWindow);
+			MenuItem("Hierarchy", nullptr, &showHierarchyWindow);
+			MenuItem("Inspector", nullptr, &showInspectorWindow);
+			MenuItem("Asset Manager", nullptr, &showAssetmanagerWindow);
 
 			EndMenu();
 		}
 		EndMainMenuBar();
 	}
 	
+	const_cast<Scene3GUI*>(this)->ShowSaveDialog();
+	const_cast<Scene3GUI*>(this)->ShowLoadDialog();
 
 	// Rendering
 	ImGui::Render();
