@@ -7,7 +7,16 @@ C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): 
 C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   (compiling source file 'InspectorWindow.cpp')
   
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(171,45): warning C4390: ';': empty controlled statement found; is this the intent?
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(256,118): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(256,103): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(172,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'InspectorWindow.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(172,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'InspectorWindow.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(172,202): warning C4305: 'argument': truncation from 'double' to 'const float'
+  (compiling source file 'InspectorWindow.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(175,45): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(260,118): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(260,103): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
   ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe

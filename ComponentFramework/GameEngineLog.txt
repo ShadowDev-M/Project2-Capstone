@@ -1,4 +1,4 @@
-Thu Aug 28 15:29:48 2025
+Fri Aug 29 13:54:52 2025
 [INFO]: Starting the SceneManager
 [INFO]: OpenGL version: 4.6.0 NVIDIA 580.97
 [INFO]: Graphics card vendor NVIDIA Corporation
@@ -7,14 +7,14 @@ Thu Aug 28 15:29:48 2025
 [INFO]: Created Scene3GUI: 
 [INFO]: Loading assets Scene3GUI: 
 [INFO]: Succesfully loaded MaterialComponent: M_Sphere from: textures/Black Chess Base Colour.png
-[INFO]: Succesfully loaded MaterialComponent: M_MarioFire from: textures/mario_fire.png
 [INFO]: Succesfully loaded MaterialComponent: M_MarioN from: textures/mario_main.png
+[INFO]: Succesfully loaded MaterialComponent: M_MarioFire from: textures/mario_fire.png
 [INFO]: Succesfully loaded MaterialComponent: M_ChessBoard from: textures/8x8_checkered_board.png
 [INFO]: Succesfully loaded MaterialComponent: M_Skull from: textures/skull_texture.jpg
 [INFO]: Succesfully loaded MeshComponent: SM_Plane from: meshes/Plane.obj
 [INFO]: Succesfully loaded MeshComponent: SM_Mario from: meshes/Mario.obj
-[INFO]: Succesfully loaded MeshComponent: SM_Sphere from: meshes/Sphere.obj
 [INFO]: Succesfully loaded MeshComponent: SM_Cube from: meshes/Cube.obj
+[INFO]: Succesfully loaded MeshComponent: SM_Sphere from: meshes/Sphere.obj
 [INFO]: Succesfully loaded MeshComponent: SM_Pawn from: meshes/Pawn.obj
 [INFO]: Succesfully loaded MeshComponent: SM_King from: meshes/King.obj
 [INFO]: Succesfully loaded MeshComponent: SM_Rook from: meshes/Rook.obj
@@ -54,43 +54,4 @@ Thu Aug 28 15:29:48 2025
 [INFO]: Deleting assets for Actor: 
 [INFO]: Loading assets for Actor: 
 [WARNING]: There is already an actor with the name: Cube in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Board in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
-[INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
-[INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Deleting assets for Actor: 
-[INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Board in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
-[INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Mario in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
-[INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Sphere in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
-[INFO]: Loading assets for Actor: 
-[WARNING]: There is already an actor with the name: Cube in file: C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\SceneGraph.h on line: 46
-[INFO]: Deleting assets for Actor: 
 [INFO]: Deleting assets for Actor: 

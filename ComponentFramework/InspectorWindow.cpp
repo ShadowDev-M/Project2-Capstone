@@ -1,4 +1,5 @@
 #include "InspectorWindow.h"
+#include "InputManager.h"
 #include <EMath.h>
 
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
@@ -19,6 +20,16 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			/// expand section later on for new features like actor renaming 
 			ImGui::Text(selectedActor->first.c_str());
 
+			ImGui::Separator();
+
+			// slider for increasing stud multiplier (in-scene movement with wasd)
+			float sliderMulti = InputManager::getInstance().GetStudMultiplier();
+			ImGui::Text("Stud Movement");
+			ImGui::SameLine();
+			if (ImGui::SliderFloat("##StudSlider", &sliderMulti, 0.0f, 10.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+				InputManager::getInstance().SetStudMultiplier(sliderMulti);
+			}
+			
 			ImGui::Separator();
 
 			/// Components Section
