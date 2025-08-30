@@ -1,13 +1,10 @@
-﻿  InspectorWindow.cpp
+﻿  CameraComponent.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'CameraComponent.cpp')
   
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'CameraComponent.cpp')
   
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(171,45): warning C4390: ';': empty controlled statement found; is this the intent?
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(256,118): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(256,103): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-  ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe
+  ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe

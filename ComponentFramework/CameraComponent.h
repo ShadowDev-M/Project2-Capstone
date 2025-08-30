@@ -1,6 +1,4 @@
 #pragma once
-
-#pragma once
 #include "Component.h"
 #include <Vector.h>
 #include <MMath.h>

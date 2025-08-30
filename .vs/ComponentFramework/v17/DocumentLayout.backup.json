@@ -1,34 +1,22 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\",
+  "WorkspaceRootPath": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\Scene3GUI.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\CameraComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\CameraComponent.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene3GUI.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\Scene3GUI.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\IMGUI\\imgui_demo.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\IMGUI\\imgui_demo.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\InspectorWindow.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\InspectorWindow.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\InspectorWindow.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\InspectorWindow.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\Scene3GUI.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene3GUI.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\Scene3GUI.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\HierarchyWindow.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\HierarchyWindow.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\HierarchyWindow.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\HierarchyWindow.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\IMGUI\\imgui_demo.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{614C2865-E38B-423B-8A72-E9D57BC43A73}|ComponentFramework\\ComponentFramework.vcxproj|solutionrelative:ComponentFramework\\IMGUI\\imgui_demo.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,68 +26,32 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
-              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "InspectorWindow.h",
-              "DocumentMoniker": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\InspectorWindow.h",
-              "RelativeDocumentMoniker": "ComponentFramework\\InspectorWindow.h",
-              "ToolTip": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\InspectorWindow.h",
-              "RelativeToolTip": "ComponentFramework\\InspectorWindow.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "CameraComponent.h",
+              "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\CameraComponent.h",
+              "RelativeDocumentMoniker": "ComponentFramework\\CameraComponent.h",
+              "ToolTip": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\CameraComponent.h*",
+              "RelativeToolTip": "ComponentFramework\\CameraComponent.h*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-08-28T16:19:20.16Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "InspectorWindow.cpp",
-              "DocumentMoniker": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\InspectorWindow.cpp",
-              "RelativeDocumentMoniker": "ComponentFramework\\InspectorWindow.cpp",
-              "ToolTip": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\InspectorWindow.cpp",
-              "RelativeToolTip": "ComponentFramework\\InspectorWindow.cpp",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAYwHIAAAAGAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-08-28T16:15:41.762Z",
+              "WhenOpened": "2025-08-30T19:23:22.784Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "HierarchyWindow.h",
-              "DocumentMoniker": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\HierarchyWindow.h",
-              "RelativeDocumentMoniker": "ComponentFramework\\HierarchyWindow.h",
-              "ToolTip": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\HierarchyWindow.h",
-              "RelativeToolTip": "ComponentFramework\\HierarchyWindow.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-08-28T15:28:58.823Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "HierarchyWindow.cpp",
-              "DocumentMoniker": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\HierarchyWindow.cpp",
-              "RelativeDocumentMoniker": "ComponentFramework\\HierarchyWindow.cpp",
-              "ToolTip": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\HierarchyWindow.cpp",
-              "RelativeToolTip": "ComponentFramework\\HierarchyWindow.cpp",
-              "ViewState": "AgIAAC8AAAAAAAAAAAAawDkAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-08-28T15:24:02.074Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "Scene3GUI.h",
-              "DocumentMoniker": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\Scene3GUI.h",
+              "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene3GUI.h",
               "RelativeDocumentMoniker": "ComponentFramework\\Scene3GUI.h",
-              "ToolTip": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\Scene3GUI.h",
+              "ToolTip": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene3GUI.h",
               "RelativeToolTip": "ComponentFramework\\Scene3GUI.h",
               "ViewState": "AgIAAA8AAAAAAAAAAAAAADMAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
@@ -107,16 +59,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Scene3GUI.cpp",
-              "DocumentMoniker": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\Scene3GUI.cpp",
+              "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene3GUI.cpp",
               "RelativeDocumentMoniker": "ComponentFramework\\Scene3GUI.cpp",
-              "ToolTip": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\Scene3GUI.cpp",
+              "ToolTip": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\Scene3GUI.cpp",
               "RelativeToolTip": "ComponentFramework\\Scene3GUI.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEUAAABIAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAACgAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-08-28T15:18:34.699Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-28T15:18:34.699Z"
             }
           ]
         }
@@ -127,10 +78,10 @@
       "VerticalTabListWidth": 256,
       "FloatingWindowState": {
         "Id": "e9b40174-b096-463d-8779-a24f1b8aa98d",
-        "Display": 1,
+        "Display": 0,
         "X": 1,
         "Y": 1,
-        "Width": 1918,
+        "Width": 1724,
         "Height": 1078,
         "WindowState": 0
       },
@@ -141,11 +92,11 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "imgui_demo.cpp",
-              "DocumentMoniker": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\IMGUI\\imgui_demo.cpp",
+              "DocumentMoniker": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\IMGUI\\imgui_demo.cpp",
               "RelativeDocumentMoniker": "ComponentFramework\\IMGUI\\imgui_demo.cpp",
-              "ToolTip": "C:\\Users\\joshu\\Documents\\Project2-Capstone\\ComponentFramework\\IMGUI\\imgui_demo.cpp",
+              "ToolTip": "C:\\Users\\joel\\Documents\\GitHub\\Project2-Capstone\\ComponentFramework\\IMGUI\\imgui_demo.cpp",
               "RelativeToolTip": "ComponentFramework\\IMGUI\\imgui_demo.cpp",
               "ViewState": "AgIAAMYKAAAAAAAAAAAgwOIKAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
