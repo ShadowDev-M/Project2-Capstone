@@ -138,7 +138,7 @@ public:
 	void RemoveAllComponents();
 
 	//
-	Matrix4 GetModelMatrix(Ref<Actor> camera = nullptr);
+	Matrix4 GetModelMatrix(Ref<Component> camera = nullptr);
 	
 	/// <summary>
 	/// Determines whether a ray intersects with the mesh of the actor

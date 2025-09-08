@@ -13,7 +13,6 @@
 #include "imgui.h"
 #include "CollisionSystem.h"
 
-
 using namespace ImGui;
 
 
@@ -104,10 +103,10 @@ public:
 				lastX = sdlEvent.button.x;
 				lastY = sdlEvent.button.y;
 
-				Ref<CameraActor> camera = std::dynamic_pointer_cast<CameraActor>(sceneGraph->GetActor("camera"));
+				Ref<Actor> cameraActor_ = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
 
-				Vec3 startPos = camera->GetComponent<TransformComponent>()->GetPosition();
-				Vec3 endPos = startPos + Raycast::screenRayCast(lastX, lastY, camera->GetProjectionMatrix(), camera->GetViewMatrix());
+				Vec3 startPos = cameraActor_->GetComponent<TransformComponent>()->GetPosition();
+				Vec3 endPos = startPos + Raycast::screenRayCast(lastX, lastY, sceneGraph->getUsedCamera()->GetProjectionMatrix(), sceneGraph->getUsedCamera()->GetViewMatrix());
 
 
 				//prepare for unintelligible logic for selecting 
@@ -164,7 +163,7 @@ public:
 					lastY = sdlEvent.motion.y;
 
 					auto& debugGraph = sceneGraph->debugSelectedAssets;
-					Ref<CameraActor> camera = std::dynamic_pointer_cast<CameraActor>(sceneGraph->GetActor("camera"));
+					Ref<Actor> camera = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
 
 
 					for (const auto& obj : debugGraph) {
@@ -305,15 +304,37 @@ public:
 				{SDL_SCANCODE_A, Vec3(-1, 0, 0)},
 				{SDL_SCANCODE_D, Vec3(1, 0, 0)}
 			}, sceneGraph);
+
+			//bind keypress to camera and test for swap
+			debugInputCamSwap({
+				{SDL_SCANCODE_X, sceneGraph->GetActor("cameraActor")->GetComponent<CameraComponent>()},
+				{SDL_SCANCODE_C, sceneGraph->GetActor("cameraActor2")->GetComponent<CameraComponent>()}
+				}, sceneGraph);
+
 		}
 		
 
 	}
 
+
+	void debugInputCamSwap(std::vector<std::pair<SDL_Scancode, Ref<CameraComponent>>> inputMap, SceneGraph* sceneGraph) {
+		
+		for (auto& keyPress : inputMap) {
+			//key is pressed
+			if (keyboard.isPressed(keyPress.first)) {
+	
+				//set active camera to keypress's binded camera
+				if (keyPress.second) {
+					sceneGraph->setUsedCamera(keyPress.second);
+				}
+			}
+		}
+	}
+
 	/// Allows for a KeyInput to be associated to a translation of a sceneGraph's debug selections
 	void debugInputTranslation(std::vector<std::pair<SDL_Scancode, Vec3>> inputMap, SceneGraph* sceneGraph) {
 		
-		Ref<CameraActor> camera = std::dynamic_pointer_cast<CameraActor>(sceneGraph->GetActor("camera"));
+		Ref<Actor> camera = (sceneGraph->getUsedCamera()->GetUserActor());
 		if (camera) {
 			for (auto& keyPress : inputMap) {
 				
@@ -349,7 +370,7 @@ public:
 							camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
 							q
 						);
-						camera->fixCameraToTransform();
+						camera->GetComponent<CameraComponent>()->fixCameraToTransform();
 					}
 				}
 			}

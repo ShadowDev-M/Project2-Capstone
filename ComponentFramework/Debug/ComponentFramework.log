@@ -1,10 +1,39 @@
-﻿  CameraComponent.cpp
+﻿  Actor.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'CameraComponent.cpp')
+  (compiling source file 'Actor.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'CameraComponent.cpp')
+  (compiling source file 'Actor.cpp')
   
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(171,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Actor.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(171,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Actor.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(171,202): warning C4305: 'argument': truncation from 'double' to 'const float'
+  (compiling source file 'Actor.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Actor.cpp(103,58): warning C4305: 'argument': truncation from 'double' to 'float'
+  Scene3GUI.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(171,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(171,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(171,202): warning C4305: 'argument': truncation from 'double' to 'const float'
+  (compiling source file 'Scene3GUI.cpp')
+  
+  Generating Code...
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe

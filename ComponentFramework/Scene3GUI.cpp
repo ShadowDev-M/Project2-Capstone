@@ -7,7 +7,7 @@
 #include "ExampleXML.h"
 #include "InputManager.h"
 #include "imgui_stdlib.h"
-
+#include "CameraComponent.h"
 using namespace ImGui;
 
 void Scene3GUI::ShowSaveDialog()
@@ -65,15 +65,34 @@ void Scene3GUI::ShowLoadDialog()
 			sceneGraph.RemoveAllActors();
 			XMLObjectFile::addActorsFromFile(&sceneGraph, saveFileName);
 
-			camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+			cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-			camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			cameraActor->OnCreate();
 
-			camera->OnCreate();
+			sceneGraph.AddActor(cameraActor);
 
-			sceneGraph.AddActor(camera);
+			sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
 
-			camera->fixCameraToTransform();
+			cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
+
+			//Create second camera as a test
+
+
+			Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+			cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+
+			cameraActorTwo->OnCreate();
+
+			sceneGraph.AddActor(cameraActorTwo);
+
+			//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
+
+
+			cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
+
 
 			sceneGraph.OnCreate();
 			saveFileName.clear();
@@ -114,9 +133,32 @@ bool Scene3GUI::OnCreate() {
 	
 	sceneGraph.AddActor(camera);
 
+	Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+	cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+	cameraActor->OnCreate();
+	sceneGraph.AddActor(cameraActor);
+
+	cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	cameraActor->GetComponent<CameraComponent>()->OnCreate();
+	cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
+
+	sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
 	//example.readDoc();
 
 	camera->fixCameraToTransform();
+
+	Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+	cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+
+	cameraActorTwo->OnCreate();
+
+	sceneGraph.AddActor(cameraActorTwo);
+
+	//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
+
+
+	cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
 	
 	// Light Pos
 	lightPos = Vec3(1.0f, 2.0f, -10.0f);
@@ -263,17 +305,17 @@ void Scene3GUI::Render() const {
 	glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	
-
+	
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetViewMatrix());
 
 
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, lightPos);
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("viewMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetViewMatrix());
 
 
 

@@ -11,8 +11,7 @@
 #include "MMath.h"
 #include "CameraActor.h"
 #include "AssetManager.h"
-
-
+#include "CameraComponent.h"
 //#include "Raycast.h"
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
@@ -30,12 +29,19 @@ private:
 	GLuint selectionDepthRBO = 0;
 	int fboWidth = 0, fboHeight = 0;  // Or match your window size
 	
+	Ref<CameraComponent> usedCamera;
+
 public:
 	SceneGraph() {}
 	~SceneGraph() { RemoveAllActors(); }
 
 	std::unordered_map<std::string,Ref<Actor>> debugSelectedAssets;
+	
+	void setUsedCamera(Ref<CameraComponent> newCam) {
+		usedCamera = newCam;
+	}
 
+	Ref<CameraComponent> getUsedCamera() const { return usedCamera; }
 
 	bool AddActor(Ref<Actor> actor) {
 		const std::string& name = actor->getActorName();
@@ -220,7 +226,7 @@ public:
 
 				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
 				
-				Matrix4 modelMatrix = actor->GetModelMatrix(GetActor("camera"));
+				Matrix4 modelMatrix = actor->GetModelMatrix(usedCamera);
 
 				//glDisable(GL_DEPTH_TEST);
 				//Matrix4 outlineModel = modelMatrix * MMath::scale(1.05, 1.05, 1.05); // Slightly larger
