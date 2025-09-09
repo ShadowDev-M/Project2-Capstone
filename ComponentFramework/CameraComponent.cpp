@@ -18,7 +18,10 @@ CameraComponent::~CameraComponent()
 
 
 
-void CameraComponent::OnDestroy() {}
+void CameraComponent::OnDestroy() {
+	std::cout << "deleting cam's actor pointer" << std::endl;
+	parentActor = nullptr;
+}
 
 void CameraComponent::Update(const float deltaTime) {
 	std::cout << "Hello from Update " << deltaTime << '\n';

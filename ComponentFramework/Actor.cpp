@@ -47,6 +47,10 @@ void Actor::Update(const float deltaTime) {
 void Actor::Render()const {}
 
 void Actor::RemoveAllComponents() {
+
+	if (GetComponent<CameraActor>()) {
+		GetComponent<CameraActor>()->OnDestroy();
+	}
 	components.clear();
 }
 

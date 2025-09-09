@@ -1,6 +1,27 @@
 #include "SceneGraph.h"
 #include "ExampleXML.h"
 
+void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
+	usedCamera = newCam;
+
+	//If camera component is non existent, or if intentionally left blank, try to get the next random camera
+	if (newCam) {
+		//Set camera to first camera found in loop so it doesn't crash
+		for (auto& pair : Actors) {
+			Ref<CameraComponent> cam = pair.second->GetComponent<CameraComponent>();
+			if (cam) {
+				usedCamera = cam;
+				return;
+			}
+		}
+		//If it doesn't return, then it will probably crash 
+		//TODO: handle camera if there ends up no valid camera to use
+
+		
+	}
+}
+
+
 void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 	
 	Ref<Actor> actor_ = std::make_shared<Actor>(parent.get(), name_);

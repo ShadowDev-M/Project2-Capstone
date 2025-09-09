@@ -71,6 +71,7 @@ private:
 public:
 
 	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph, CollisionSystem* collisionSystem) {
+
 		if (GetIO().WantCaptureMouse) {
 			return;
 		}
@@ -83,6 +84,8 @@ public:
 
 		switch (sdlEvent.type) {
 		case SDL_MOUSEBUTTONDOWN:
+
+
 			toggleKeyPress(sdlEvent.button.button);
 			std::cout << static_cast<int>(sdlEvent.button.button) << " is Pressed!" << std::endl;
 
@@ -286,6 +289,8 @@ public:
 
 	
 	void update(float deltaTime, SceneGraph* sceneGraph) {
+		sceneGraph->checkValidCamera();
+
 		if (GetIO().WantCaptureKeyboard) {
 			return;
 		}
@@ -305,11 +310,11 @@ public:
 				{SDL_SCANCODE_D, Vec3(1, 0, 0)}
 			}, sceneGraph);
 
-			//bind keypress to camera and test for swap
-			debugInputCamSwap({
-				{SDL_SCANCODE_X, sceneGraph->GetActor("cameraActor")->GetComponent<CameraComponent>()},
-				{SDL_SCANCODE_C, sceneGraph->GetActor("cameraActor2")->GetComponent<CameraComponent>()}
-				}, sceneGraph);
+			////bind keypress to camera and test for swap
+			//debugInputCamSwap({
+			//	{SDL_SCANCODE_X, sceneGraph->GetActor("cameraActor")->GetComponent<CameraComponent>()},
+			//	{SDL_SCANCODE_C, sceneGraph->GetActor("cameraActor2")->GetComponent<CameraComponent>()}
+			//	}, sceneGraph);
 
 		}
 		
@@ -320,12 +325,14 @@ public:
 	void debugInputCamSwap(std::vector<std::pair<SDL_Scancode, Ref<CameraComponent>>> inputMap, SceneGraph* sceneGraph) {
 		
 		for (auto& keyPress : inputMap) {
-			//key is pressed
-			if (keyboard.isPressed(keyPress.first)) {
-	
-				//set active camera to keypress's binded camera
-				if (keyPress.second) {
-					sceneGraph->setUsedCamera(keyPress.second);
+			if (keyPress.second) {
+				//key is pressed
+				if (keyboard.isPressed(keyPress.first)) {
+
+					//set active camera to keypress's binded camera
+					if (keyPress.second) {
+						sceneGraph->setUsedCamera(keyPress.second);
+					}
 				}
 			}
 		}
@@ -383,6 +390,7 @@ public:
 	}
 
 	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph, CollisionSystem* collisionSystem) {
+		sceneGraph->checkValidCamera();
 
 		mouse.HandleEvents(sdlEvent, sceneGraph, collisionSystem);
 

@@ -94,6 +94,7 @@ public:
 		/// Finish building the component and add the component to the list 
 		GetComponent<ComponentTemplate>()->OnDestroy();
 
+
 		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
 		if (it != components.end()) {
 			components.erase(it);
@@ -104,6 +105,9 @@ public:
 	// DOES NOT CALL OnDestroy, USE THIS FUNCTION FOR SHARED COMPONENTS, USE DeleteComponent FOR EVERYTHING ELSE
 	template<typename ComponentTemplate>
 	void RemoveComponent() {
+
+		
+
 		/// check if the component exists
 		if (GetComponent<ComponentTemplate>().get() == nullptr) {
 #ifdef _DEBUG
@@ -111,6 +115,8 @@ public:
 #endif
 			return;
 		}
+
+
 
 		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
 		if (it != components.end()) {

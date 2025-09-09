@@ -11,6 +11,7 @@ using namespace MATH;
 class CameraComponent : public Component {
 private:
 	
+
 	Ref<Actor> parentActor;
 
 	Matrix4 projectionMatrix;

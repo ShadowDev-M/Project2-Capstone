@@ -220,6 +220,8 @@ void Scene3GUI::OnDestroy() {
 
 void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
+	//sceneGraph.checkValidCamera();
+
 	InputManager::getInstance().HandleEvents(sdlEvent, &sceneGraph, &collisionSystem);
 
 	
