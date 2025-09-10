@@ -3,7 +3,6 @@
 #include "Timer.h"
 #include "Window.h"
 #include "Scene3GUI.h"
-#include "SceneP0.h"
 
 
 SceneManager::SceneManager() :
