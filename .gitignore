@@ -33,3 +33,6 @@
 /.vs/ComponentFramework/v17/ipch/AutoPCH
 .vs/ComponentFramework/v17/Browse.VC.db
 /.vs/ComponentFramework/FileContentIndex
+Debug/ComponentFramework.pdb
+ComponentFramework/GameEngineLog.txt
+.vs/ComponentFramework/v17/DocumentLayout.backup.json

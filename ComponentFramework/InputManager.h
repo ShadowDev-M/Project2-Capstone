@@ -277,6 +277,7 @@ private:
 	keyboardInputMap keyboard;
 	mouseInputMap mouse;
 
+	float studMultiplier = 0.5f;
 
 public:
 	
@@ -321,6 +322,11 @@ public:
 
 	}
 
+	// getter and setter for stud multipler (used in slider)
+	float GetStudMultiplier() { return studMultiplier; }
+	void SetStudMultiplier(float studMulti_) { studMultiplier = studMulti_; }
+
+
 
 	void debugInputCamSwap(std::vector<std::pair<SDL_Scancode, Ref<CameraComponent>>> inputMap, SceneGraph* sceneGraph) {
 		
@@ -348,7 +354,7 @@ public:
 				if (keyboard.isPressed(keyPress.first)) {
 
 					//Put a slider here for stud based movement
-					Vec3 inputVector = keyPress.second * 0.5; //<- slider multiplier here
+					Vec3 inputVector = keyPress.second * studMultiplier; //<- slider multiplier here
 
 
 					Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
