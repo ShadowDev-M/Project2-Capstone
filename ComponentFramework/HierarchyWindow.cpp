@@ -176,7 +176,8 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName, Ref<Actor> act
 
 	if (ImGui::BeginPopupContextItem()) {
 		if (ImGui::MenuItem("Delete")) {
-			sceneGraph->GetActor(actorName)->DeleteComponent<CameraComponent>();
+			sceneGraph->GetActor(actorName)->DeleteComponent<
+				Component>();
 			sceneGraph->RemoveActor(actorName);
 			sceneGraph->checkValidCamera();
 

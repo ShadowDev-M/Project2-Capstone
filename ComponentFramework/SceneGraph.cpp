@@ -5,7 +5,7 @@ void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
 	usedCamera = newCam;
 
 	//If camera component is non existent, or if intentionally left blank, try to get the next random camera
-	if (newCam) {
+	if (!newCam) {
 		//Set camera to first camera found in loop so it doesn't crash
 		for (auto& pair : Actors) {
 			Ref<CameraComponent> cam = pair.second->GetComponent<CameraComponent>();
@@ -57,12 +57,18 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			}
 		}
 	}
+
+	
 	
 	actor_->AddComponent<TransformComponent>(std::apply([](auto&&... args) {
 		return new TransformComponent(args...);
 		}, XMLObjectFile::getComponent<TransformComponent>(name_)));
+	
 
-
+	if (XMLObjectFile::hasComponent<CameraComponent>(name_)) {
+		std::cout << "Has a Camera" << std::endl; 
+		actor_->AddComponent<CameraComponent>(actor_, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	}
 
 	actor_->OnCreate();
 	AddActor(actor_);

@@ -72,6 +72,7 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, Ref<Acto
 	
 		if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
 			if (ImGui::MenuItem("Use Camera")) {
+				std::cout << "USING CAMERA BUTTON" << std::endl;
 				sceneGraph->setUsedCamera(sceneActor_->GetComponent<CameraComponent>());
 			}
 		}
