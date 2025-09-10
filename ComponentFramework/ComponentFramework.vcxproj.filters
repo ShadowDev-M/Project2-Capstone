@@ -116,9 +116,6 @@
     <ClInclude Include="Scene3GUI.h">
       <Filter>Header Files\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="SceneP0.h">
-      <Filter>Header Files\Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="AssetManagerWindow.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
@@ -250,9 +247,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene3GUI.cpp">
-      <Filter>Source Files\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneP0.cpp">
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="InspectorWindow.cpp">

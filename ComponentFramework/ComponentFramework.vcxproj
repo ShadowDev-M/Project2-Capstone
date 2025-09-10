@@ -158,7 +158,6 @@
     <ClInclude Include="Scene3GUI.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="SceneManager.h" />
-    <ClInclude Include="SceneP0.h" />
     <ClInclude Include="ShaderComponent.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="tinyxml2.h" />
@@ -205,7 +204,6 @@
     <ClCompile Include="Scene3GUI.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="SceneManager.cpp" />
-    <ClCompile Include="SceneP0.cpp" />
     <ClCompile Include="ShaderComponent.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="tinyxml2.cpp" />
