@@ -1,5 +1,6 @@
 #include "InspectorWindow.h"
 #include "InputManager.h"
+#include "imgui_stdlib.h"
 #include <EMath.h>
 
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
@@ -17,8 +18,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 		else if (sceneGraph->debugSelectedAssets.size() == 1) {
 			auto selectedActor = sceneGraph->debugSelectedAssets.begin();
 
-			/// expand section later on for new features like actor renaming 
-			ImGui::Text(selectedActor->first.c_str());
+			DrawActorHeader(selectedActor->second);
 
 			ImGui::Separator();
 
@@ -138,6 +138,18 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 	}
 
 	ImGui::End();
+}
+
+void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
+{
+	actorName = actor_->getActorName();
+
+	ImGui::InputText("##ActorHeader", &actorName);
+
+	if (ImGui::IsItemDeactivatedAfterEdit()) {
+
+	}
+
 }
 
 void InspectorWindow::DrawTransformComponent(Ref<TransformComponent> transform)

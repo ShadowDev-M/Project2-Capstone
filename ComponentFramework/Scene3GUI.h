@@ -40,9 +40,9 @@ private:
 
 	// Window States
 	mutable bool showDemoWindow = false;
-	mutable bool showHierarchyWindow = false;
-	mutable bool showInspectorWindow = false;
-	mutable bool showAssetmanagerWindow = false;
+	mutable bool showHierarchyWindow = true;
+	mutable bool showInspectorWindow = true;
+	mutable bool showAssetmanagerWindow = true;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	
 	// save file dialog states (switch to own class)

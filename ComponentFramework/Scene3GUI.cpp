@@ -257,6 +257,11 @@ void Scene3GUI::Render() const {
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
+	//_DEBUG
+	// toolset
+
+	//ImGui::DockSpaceOverViewport(ImGuiDockNodeFlags_PassthruCentralNode);
+
 	if (showDemoWindow) {
 		ImGui::ShowDemoWindow(&showDemoWindow);
 	}
