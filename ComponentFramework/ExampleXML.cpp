@@ -44,6 +44,9 @@ void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttri
 
             );
         }
+
+
+
         sceneGraph->AddActor(std::make_shared<Actor>(nullptr, attribute->Value()));
 
         if (attribute->Next()) addAttributeRecursive(sceneGraph, attribute->Next());   
@@ -225,6 +228,10 @@ void SceneGraph::SaveFile(std::string name) const {
         XMLObjectFile::writeActor(obj.first);
 
         XMLObjectFile::writeUniqueComponent<TransformComponent>(obj.first, obj.second->GetComponent<TransformComponent>().get());
+        
+        if (obj.second->GetComponent<CameraComponent>())
+            XMLObjectFile::writeUniqueComponent<CameraComponent>(obj.first, obj.second->GetComponent<CameraComponent>().get());
+
 
         AssetManager& assetMgr = AssetManager::getInstance();
 

@@ -6,6 +6,8 @@
 #include "Component.h"
 #include <tuple>
 #include "TransformComponent.h"  
+#include "CameraComponent.h"  
+
 #include "SceneGraph.h"
 
 
@@ -264,7 +266,7 @@ public:
 
                     }
 
-
+                    
 
 
                 };
@@ -539,6 +541,9 @@ public:
             scale->SetAttribute("z", scaleVector.z);
 
             componentElement->InsertEndChild(scale);
+        }
+        else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
+        
         }
         else {
 
