@@ -79,6 +79,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
