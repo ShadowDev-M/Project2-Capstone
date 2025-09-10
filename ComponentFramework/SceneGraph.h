@@ -11,8 +11,7 @@
 #include "MMath.h"
 #include "CameraActor.h"
 #include "AssetManager.h"
-
-
+#include "CameraComponent.h"
 //#include "Raycast.h"
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
@@ -30,12 +29,52 @@ private:
 	GLuint selectionDepthRBO = 0;
 	int fboWidth = 0, fboHeight = 0;  // Or match your window size
 	
+	Ref<CameraComponent> usedCamera;
+
 public:
 	SceneGraph() {}
 	~SceneGraph() { RemoveAllActors(); }
 
 	std::unordered_map<std::string,Ref<Actor>> debugSelectedAssets;
+	
+	void setUsedCamera(Ref<CameraComponent> newCam);
 
+	Ref<CameraComponent> getUsedCamera() const { 
+		if (!usedCamera || !usedCamera->GetUserActor()) {
+
+			for (auto& pair : Actors) {
+				if (pair.second->GetComponent<CameraComponent>()) {
+					Ref<CameraComponent> newCamera = pair.second->GetComponent<CameraComponent>();
+
+
+					if (newCamera && newCamera->GetUserActor()) {
+						std::cout << "new camera used" << std::endl;
+
+						return newCamera; 
+					}
+				}
+			}
+			std::cout << "ERROR: NO CAMERA EXISTS IN SCENEGRAPH" << std::endl;
+		}
+	
+
+		return usedCamera; }
+
+	void checkValidCamera() {
+		if (!usedCamera || !usedCamera->GetUserActor()) {
+			std::cout << "usedCamera is invalid" << std::endl;
+
+			for (auto& pair : Actors) {
+				if (pair.second->GetComponent<CameraComponent>()) {
+					Ref<CameraComponent> newCamera = pair.second->GetComponent<CameraComponent>();
+
+					std::cout << "new camera used" << std::endl;
+
+					if (newCamera && newCamera->GetUserActor()) usedCamera = newCamera;
+				}
+			}
+		}
+	}
 
 	bool AddActor(Ref<Actor> actor) {
 		const std::string& name = actor->getActorName();
@@ -127,12 +166,19 @@ public:
 	}
 
 	bool RemoveActor(const std::string& actorName) {
+
 		auto it = Actors.find(actorName);
 		
 		// if actor is found remove it, else throw warning
 		if (it != Actors.end()) {
 			Ref<Actor> actorToRemove = it->second;
-			
+			actorToRemove->DeleteComponent<CameraComponent>();
+
+			if (actorToRemove->GetComponent<CameraActor>()) {
+				actorToRemove->GetComponent<CameraActor>()->OnDestroy();
+			}
+
+
 			// if the actor that is being removed is parented or a parent, get all children
 			std::vector<std::string> childrenToRemove;
 			for (const auto& pair : Actors) {
@@ -186,8 +232,18 @@ public:
 	/// </summary>
 	/// <param name="deltaTime"></param>
 	void Update(const float deltaTime) {
+		checkValidCamera();
+	//	std::cout << usedCamera << std::endl;
+
+		
+
+		
+
 		for (auto& pair : Actors) {
 			
+			
+				
+
 			// get the second value from the pair (actor)
 			Ref<Actor> actor = pair.second;
 			// get the physics component from the actor
@@ -197,11 +253,16 @@ public:
 				PC->UpdateP(deltaTime, actor);
 			}
 		}
+		/*if (!(usedCamera == nullptr)) {
+			setUsedCamera();
+		}*/
 	}
 
 	
 	// all const
 	void Render() const {
+
+	
 
 		// go through all actors
 		for (const auto& pair : Actors) {
@@ -220,7 +281,7 @@ public:
 
 				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
 				
-				Matrix4 modelMatrix = actor->GetModelMatrix(GetActor("camera"));
+				Matrix4 modelMatrix = actor->GetModelMatrix(getUsedCamera());
 
 				//glDisable(GL_DEPTH_TEST);
 				//Matrix4 outlineModel = modelMatrix * MMath::scale(1.05, 1.05, 1.05); // Slightly larger

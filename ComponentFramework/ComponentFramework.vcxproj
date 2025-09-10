@@ -130,6 +130,7 @@
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManagerWindow.h" />
     <ClInclude Include="CameraActor.h" />
+    <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="CollisionComponent.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Component.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManagerWindow.cpp" />
     <ClCompile Include="CameraActor.cpp" />
+    <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="CollisionComponent.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Component.cpp" />

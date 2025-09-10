@@ -1,7 +1,7 @@
 #include "Actor.h"
 #include "Debug.h"
 #include "TransformComponent.h"
-#include "CameraActor.h"
+
 #include "MeshComponent.h"
 #include "InputManager.h"
 
@@ -47,6 +47,10 @@ void Actor::Update(const float deltaTime) {
 void Actor::Render()const {}
 
 void Actor::RemoveAllComponents() {
+
+	if (GetComponent<CameraActor>()) {
+		GetComponent<CameraActor>()->OnDestroy();
+	}
 	components.clear();
 }
 
@@ -61,20 +65,22 @@ void Actor::ListComponents() const {
 }
 
 
-Matrix4 Actor::GetModelMatrix(Ref<Actor> camera_) {
-	Ref<CameraActor> camera = std::dynamic_pointer_cast<CameraActor>(camera_);
+Matrix4 Actor::GetModelMatrix(Ref<Component> camera_) {
+
+	Ref<CameraComponent> cameraComponent_ = std::dynamic_pointer_cast<CameraComponent>(camera_);
 
 	Ref<TransformComponent> transform = GetComponent<TransformComponent>();
 	
+
 	modelMatrix = transform ? transform->GetTransformMatrix() : Matrix4();
 
 
 
 	if (parent) { 
-		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera) * modelMatrix;
+		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera_) * modelMatrix;
 	}
-	else if(camera){
-		modelMatrix = MMath::translate(-camera->GetComponent<TransformComponent>()->GetPosition()) * modelMatrix;
+	else if(camera_){
+		modelMatrix = MMath::translate(-cameraComponent_->GetUserActor()->GetComponent<TransformComponent>()->GetPosition()) * modelMatrix;
 	}
 	return modelMatrix;
 }
