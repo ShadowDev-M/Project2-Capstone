@@ -23,8 +23,6 @@ private:
 	Vec4 spec;
 	Vec4 diff;
 	float intensity;
-	const char* shader = "S_MultiPhong";
-	const char* outlineShader = "S_Outline";
 public:
 	LightActor(Component* parent_, LightType type_, Vec3 pos_, Vec4 spec_, Vec4 diff_, float intensity_): 
 		Actor(parent_), type(type_), pos(pos_), spec(spec_), diff(diff_), intensity(intensity_){}

@@ -1,13 +1,15 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
-#define MAX_LIGHTS 4
 
+//shaders/MultiPhongFrag.glsl
+
+const int MAX_LIGHTS = 4;
 
 layout (location = 0) in vec3 vertNormal;
 layout (location = 1) in vec3 eyeDir;
 layout (location = 2) in vec2 fragTexCoords;
-layout (location = 3) in vec3 lightDir[MAX_LIGHTS];
-layout (location = 4) in vec3 fragPos;
+layout (location = 3) in vec4 lightDir[MAX_LIGHTS];
+layout (location = 10) in vec3 fragPos;
 
 uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec4 diffuse[MAX_LIGHTS];

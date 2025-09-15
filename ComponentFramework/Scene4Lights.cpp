@@ -118,8 +118,21 @@ bool Scene4Lights::OnCreate() {
 
 	camera->fixCameraToTransform();
 	
+	LightActor* light1 = new LightActor(nullptr,
+		Vec3(1.0f, 2.0f, -10.0f),
+		Vec4(0.0f, 1.0f, 1.0f, 1.0f),
+		Vec4(0.4f, 0.4f, 0.4f, 1.0f),
+		40.0f);
+
+	LightActor* light2 = new LightActor(nullptr,
+		Vec3(-1.0f, -2.0f, -10.0f),
+		Vec4(1.0f, 0.0f, 0.0f, 1.0f),
+		Vec4(0.4f, 0.4f, 0.4f, 1.0f),
+		40.0f);
+
 	// Light Pos
-	lightPos = Vec3(1.0f, 2.0f, -10.0f);
+	lights.push_back(light1);
+	lights.push_back(light2);
 
 	// Board setup
 
@@ -173,6 +186,11 @@ void Scene4Lights::OnDestroy() {
 	if (assetManagerWindow) {
 		assetManagerWindow->ClearFilter();
 	}
+	for (int i = 0; i < lights.size(); ++i) {
+		lights[i]->OnDestroy();
+		delete lights[i];
+	}
+
 
 }
 
@@ -269,16 +287,23 @@ void Scene4Lights::Render() const {
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
 
 	for (int i = 0; i < lights.size(); ++i) {
-		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("pos"), 1, lights->getPos()[i]);
+		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("pos"), 1, lights[i]->getPos());
 	}
 
-	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
+	//glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetProgram());
+	//glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
+	//glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
 
-	for (int i = 0; i < lights.size(); ++i) {
-		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("lightPos"), 1, lightPos);
-	}
+	//for (int i = 0; i < lights.size(); ++i) {
+	//	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("lightPos"), i + 1, lights[i]->getPos());
+	//	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("diffuse"), i + 1, lights[i]->getDiff());
+	//	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("specular"), i + 1, lights[i]->getSpec());
+	//	glUniform1f(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("intensity"), lights[i]->getIntensity());
+	//}
+	//glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("ambient"), 1, Vec4(0.1f, 0.1f, 0.1f, 1.0f));
+
+	//glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("numLights"), lights.size());
+
 
 	
 	
