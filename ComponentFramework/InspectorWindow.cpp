@@ -1,4 +1,6 @@
 #include "InspectorWindow.h"
+#include "InputManager.h"
+#include "imgui_stdlib.h"
 #include <EMath.h>
 
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
@@ -16,9 +18,18 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 		else if (sceneGraph->debugSelectedAssets.size() == 1) {
 			auto selectedActor = sceneGraph->debugSelectedAssets.begin();
 
-			/// expand section later on for new features like actor renaming 
-			ImGui::Text(selectedActor->first.c_str());
+			DrawActorHeader(selectedActor->second);
 
+			ImGui::Separator();
+
+			// slider for increasing stud multiplier (in-scene movement with wasd)
+			float sliderMulti = InputManager::getInstance().GetStudMultiplier();
+			ImGui::Text("Stud Movement");
+			ImGui::SameLine();
+			if (ImGui::SliderFloat("##StudSlider", &sliderMulti, 0.0f, 10.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+				InputManager::getInstance().SetStudMultiplier(sliderMulti);
+			}
+			
 			ImGui::Separator();
 
 			/// Components Section
@@ -31,6 +42,14 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				RightClickContext<TransformComponent>("##TransformPopup", selectedActor->second);
 				ImGui::Separator();
 			}
+
+			// camera
+			if (selectedActor->second->GetComponent<CameraComponent>()) {
+				DrawCameraComponent(selectedActor->second->GetComponent<CameraComponent>());
+				RightClickContext<CameraComponent>("##CameraPopup", selectedActor->second);
+				ImGui::Separator();
+			}
+
 
 			// mesh
 			if (selectedActor->second->GetComponent<MeshComponent>()) {
@@ -85,6 +104,12 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					}
 				}
 
+				if (ImGui::Selectable("Camera Component")) {
+					if (!selectedActor->second->GetComponent<CameraComponent>()) {
+						selectedActor->second->AddComponent<CameraComponent>(selectedActor->second, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+					}
+				}
+
 				ImGui::Separator();
 
 				if (ImGui::Button("Cancel")) {
@@ -113,6 +138,18 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 	}
 
 	ImGui::End();
+}
+
+void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
+{
+	actorName = actor_->getActorName();
+
+	ImGui::InputText("##ActorHeader", &actorName);
+
+	if (ImGui::IsItemDeactivatedAfterEdit()) {
+
+	}
+
 }
 
 void InspectorWindow::DrawTransformComponent(Ref<TransformComponent> transform)
@@ -268,6 +305,25 @@ void InspectorWindow::DrawMaterialComponent(Ref<MaterialComponent> material)
 			ImGui::EndDragDropTarget();
 		}
 
+
+
+	}
+}
+
+void InspectorWindow::DrawCameraComponent(Ref<CameraComponent> camera)
+{
+	if (ImGui::CollapsingHeader("Camera")) {
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+			ImGui::OpenPopup("##CameraPopup");
+		}
+		ImGui::TextWrapped("Camera ID: %u", camera.get());
+
+		// display material thumbnail
+		/*if (material->getTextureID() != 0) {
+			ImGui::ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnailSize, thumbnailSize));
+		}*/
+
+		
 
 
 	}

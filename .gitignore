@@ -13,7 +13,6 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -23,7 +22,6 @@
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
@@ -33,3 +31,12 @@
 /.vs/ComponentFramework/v17/ipch/AutoPCH
 .vs/ComponentFramework/v17/Browse.VC.db
 /.vs/ComponentFramework/FileContentIndex
+Debug/ComponentFramework.pdb
+ComponentFramework/GameEngineLog.txt
+.vs/ComponentFramework/v17/DocumentLayout.backup.json
+ComponentFramework/Debug/ComponentFramework.log
+.vs/ComponentFramework/v17/DocumentLayout.backup.json
+.vs/ComponentFramework/v17/DocumentLayout.json
+ComponentFramework/GameEngineLog.txt
+ComponentFramework/Debug/ComponentFramework.log
+ComponentFramework/Debug/ComponentFramework.Build.CppClean.log

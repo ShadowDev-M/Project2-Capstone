@@ -2,12 +2,7 @@
 #include "SceneManager.h"
 #include "Timer.h"
 #include "Window.h"
-#include "Scene0g.h"
-#include "Scene1g.h"
-#include "Scene2g.h"
 #include "Scene3GUI.h"
-#include "Scene4Lights.h"
-#include "SceneP0.h"
 
 
 SceneManager::SceneManager() :
@@ -52,7 +47,7 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	}
 
 	/********************************   Default first scene   ***********************/
-	BuildNewScene(SCENE_NUMBER::SCENE4LIGHTS);
+	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 	/********************************************************************************/
 	return true;
 }
@@ -90,29 +85,8 @@ void SceneManager::HandleEvents() {
 				isRunning = false;
 				return;
 
-
 			case SDL_SCANCODE_F1:
-				BuildNewScene(SCENE_NUMBER::SCENE0g);
-				break;
-
-			case SDL_SCANCODE_F2:
-				BuildNewScene(SCENE_NUMBER::SCENE1g);
-				break;
-
-			case SDL_SCANCODE_F3:
-				BuildNewScene(SCENE_NUMBER::SCENE2g);
-				break;
-
-			case SDL_SCANCODE_F4:
 				BuildNewScene(SCENE_NUMBER::SCENE3GUI);
-				break;
-
-			case SDL_SCANCODE_F5:
-				BuildNewScene(SCENE_NUMBER::SCENEP0);
-				break;
-
-			case SDL_SCANCODE_F6:
-				BuildNewScene(SCENE_NUMBER::SCENE4LIGHTS);
 				break;
 
 			default:
@@ -138,33 +112,8 @@ bool SceneManager::BuildNewScene(SCENE_NUMBER scene) {
 	}
 
 	switch (scene) {
-	case SCENE_NUMBER::SCENE0g:
-		currentScene = new Scene0g();
-		status = currentScene->OnCreate();
-		break;
-
-	case SCENE_NUMBER::SCENE1g:
-		currentScene = new Scene1g();
-		status = currentScene->OnCreate();
-		break;
-
-	case SCENE_NUMBER::SCENE2g:
-		currentScene = new Scene2g();
-		status = currentScene->OnCreate();
-		break;
-
 	case SCENE_NUMBER::SCENE3GUI:
 		currentScene = new Scene3GUI();
-		status = currentScene->OnCreate();
-		break;
-	
-	case SCENE_NUMBER::SCENEP0:
-		currentScene = new SceneP0();
-		status = currentScene->OnCreate();
-		break;
-	
-	case SCENE_NUMBER::SCENE4LIGHTS:
-		currentScene = new Scene4Lights();
 		status = currentScene->OnCreate();
 		break;
 
