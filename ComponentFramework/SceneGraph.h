@@ -29,17 +29,11 @@ private:
 	GLuint selectionDepthRBO = 0;
 	int fboWidth = 0, fboHeight = 0;  // Or match your window size
 	
-	Ref<Actor> debugCamera;
-
 	Ref<CameraComponent> usedCamera;
 
 public:
 	SceneGraph() {}
 	~SceneGraph() { RemoveAllActors(); }
-
-	void useDebugCamera(){
-		usedCamera = debugCamera->GetComponent<CameraComponent>();
-	}
 
 	std::unordered_map<std::string,Ref<Actor>> debugSelectedAssets;
 	
@@ -48,10 +42,18 @@ public:
 	Ref<CameraComponent> getUsedCamera() const { 
 		if (!usedCamera || !usedCamera->GetUserActor()) {
 
-			
-			return debugCamera->GetComponent<CameraComponent>();
+			for (auto& pair : Actors) {
+				if (pair.second->GetComponent<CameraComponent>()) {
+					Ref<CameraComponent> newCamera = pair.second->GetComponent<CameraComponent>();
 
 
+					if (newCamera && newCamera->GetUserActor()) {
+						std::cout << "new camera used" << std::endl;
+
+						return newCamera; 
+					}
+				}
+			}
 			std::cout << "ERROR: NO CAMERA EXISTS IN SCENEGRAPH" << std::endl;
 		}
 	
@@ -59,36 +61,18 @@ public:
 		return usedCamera; }
 
 	void checkValidCamera() {
-
 		if (!usedCamera || !usedCamera->GetUserActor()) {
 			std::cout << "usedCamera is invalid" << std::endl;
 
-			
+			for (auto& pair : Actors) {
+				if (pair.second->GetComponent<CameraComponent>()) {
+					Ref<CameraComponent> newCamera = pair.second->GetComponent<CameraComponent>();
 
-			std::cout << "try debugCam" << std::endl;
+					std::cout << "new camera used" << std::endl;
 
-			if (debugCamera && debugCamera->GetComponent<CameraComponent>()) {
-				std::cout << "DebugCam is found" << std::endl;
+					if (newCamera && newCamera->GetUserActor()) usedCamera = newCamera;
+				}
 			}
-			else{
-
-				std::cout << "DebugCam is invalid" << std::endl;
-				debugCamera = std::make_shared<Actor>(nullptr, "cameraDebugOne");
-				debugCamera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
-				debugCamera->OnCreate();
-
-				//doesn't need to be added to the sceneGraph
-				//sceneGraph.AddActor(debugCamera);
-
-				debugCamera->AddComponent<CameraComponent>(debugCamera, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-				debugCamera->GetComponent<CameraComponent>()->OnCreate();
-				debugCamera->GetComponent<CameraComponent>()->fixCameraToTransform();
-
-				setUsedCamera(debugCamera->GetComponent<CameraComponent>());
-			}
-			usedCamera = debugCamera->GetComponent<CameraComponent>();
-
-
 		}
 	}
 
@@ -330,7 +314,6 @@ public:
 	}
 
 	bool OnCreate() {
-		
 		
 
 		// if an actor was setup wrong throw an error

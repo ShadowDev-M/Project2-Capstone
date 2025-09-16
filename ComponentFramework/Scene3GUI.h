@@ -32,7 +32,6 @@ private:
 
 	Vec3 lightPos;
 
-
 	Ref<CameraActor> camera;
 
 	bool drawInWireMode;

@@ -33,8 +33,6 @@ void Scene3GUI::ShowSaveDialog()
 			ImGui::CloseCurrentPopup();
 		}
 
-
-
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel")) {
@@ -67,37 +65,33 @@ void Scene3GUI::ShowLoadDialog()
 			sceneGraph.RemoveAllActors();
 			XMLObjectFile::addActorsFromFile(&sceneGraph, saveFileName);
 
-			//Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
-			//cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-			//cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+			cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-			//cameraActor->OnCreate();
+			cameraActor->OnCreate();
 
-			//sceneGraph.AddActor(cameraActor);
+			sceneGraph.AddActor(cameraActor);
 
-			//sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
+			sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
 
-			//cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
+			cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
 
-			////Create second camera as a test
+			//Create second camera as a test
 
 
-			//Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
-			//cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-			//cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+			cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-			//cameraActorTwo->OnCreate();
+			cameraActorTwo->OnCreate();
 
-			//sceneGraph.AddActor(cameraActorTwo);
+			sceneGraph.AddActor(cameraActorTwo);
 
 			//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
 
 
-			//cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
-
-			sceneGraph.setUsedCamera(0);
-			sceneGraph.checkValidCamera();
-
+			cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
 
 
 			sceneGraph.OnCreate();
@@ -131,17 +125,15 @@ bool Scene3GUI::OnCreate() {
 	
 	AssetManager::getInstance().ListAllAssets();
 
+	camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
 	
+	camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse( Quaternion()));
+	
+	camera->OnCreate();
+	
+	sceneGraph.AddActor(camera);
 
-	//camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-	////
-	//camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse( Quaternion()));
-	////
-	//camera->OnCreate();
-	//
-	//sceneGraph.AddActor(camera);
-
-	/*Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+	Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
 	cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 	cameraActor->OnCreate();
 	sceneGraph.AddActor(cameraActor);
@@ -150,26 +142,23 @@ bool Scene3GUI::OnCreate() {
 	cameraActor->GetComponent<CameraComponent>()->OnCreate();
 	cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
 
-	sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());*/
-	
-	sceneGraph.checkValidCamera();
-	
+	sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
 	//example.readDoc();
 
-	//camera->fixCameraToTransform();
+	camera->fixCameraToTransform();
 
-	//Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
-	//cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-	//cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+	Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+	cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-	//cameraActorTwo->OnCreate();
+	cameraActorTwo->OnCreate();
 
-	//sceneGraph.AddActor(cameraActorTwo);
+	sceneGraph.AddActor(cameraActorTwo);
 
-	////sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
+	//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
 
 
-	//cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
+	cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
 	
 	// Light Pos
 	lightPos = Vec3(1.0f, 2.0f, -10.0f);
@@ -188,7 +177,7 @@ bool Scene3GUI::OnCreate() {
 
 	//sceneGraph.LoadActor("Sphere", sceneGraph.GetActor("Board"));
 
-	
+
 
 
 	sceneGraph.OnCreate();
@@ -196,7 +185,7 @@ bool Scene3GUI::OnCreate() {
 	sceneGraph.ListAllActors();
 
 	//sceneGraph.RemoveActor("Sphere");
-//	camera->fixCameraToTransform();
+	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
 
 	// pass along the scene graph to the windows
@@ -218,7 +207,7 @@ void Scene3GUI::OnDestroy() {
 
 	sceneGraph.RemoveAllActors();
 
-	//camera->OnDestroy();
+	camera->OnDestroy();
 
 	if (hierarchyWindow) {
 		hierarchyWindow->ClearFilter();
@@ -310,13 +299,6 @@ void Scene3GUI::Render() const {
 
 			EndMenu();
 		}
-		if (BeginMenu("Tools")) {
-			if (MenuItem("Change Camera to Default ##MenuItem", "Ctrl+M")) {
-				const_cast<Scene3GUI*>(this)->sceneGraph.useDebugCamera();
-			}
-			EndMenu();
-		}
-
 		EndMainMenuBar();
 	}
 	

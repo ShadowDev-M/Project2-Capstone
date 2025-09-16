@@ -22,8 +22,6 @@ enum class InputState {
 	Held // For continuous input checks
 };
 
-typedef std::vector<SDL_Scancode> KeyBinding;
-
 
 class InputMap {
 protected:
@@ -94,18 +92,6 @@ public:
 			lastX = sdlEvent.button.x;
 			lastY = sdlEvent.button.y;
 
-
-
-
-			break;
-		case SDL_MOUSEBUTTONUP:
-			
-			toggleKeyRelease(sdlEvent.button.button);
-			std::cout << static_cast<int>(sdlEvent.button.button) << " is Released!" << std::endl;
-
-			lastX = sdlEvent.button.x;
-			lastY = sdlEvent.button.y;
-
 			if (sdlEvent.button.button == SDL_BUTTON_RIGHT) {
 				mouseHeld = false;
 			}
@@ -157,8 +143,13 @@ public:
 
 
 			break;
+		case SDL_MOUSEBUTTONUP:
+			toggleKeyRelease(sdlEvent.button.button);
+			std::cout << static_cast<int>(sdlEvent.button.button) << " is Released!" << std::endl;
+
+			break;
 		case SDL_MOUSEMOTION:
-			if (isHeld(SDL_BUTTON_LEFT) || isPressed(SDL_BUTTON_LEFT)) {
+			if (isHeld(sdlEvent.button.button) || isPressed(sdlEvent.button.button)) {
 
 				// makes it so ImGui handles the mouse motion
 				if (GetIO().WantCaptureMouse) {
@@ -166,20 +157,16 @@ public:
 					return;
 				}
 
-				int deltaX = sdlEvent.motion.x - lastX;
-				int deltaY = sdlEvent.motion.y - lastY;
-				lastX = sdlEvent.motion.x;
-				lastY = sdlEvent.motion.y;
-
-				Ref<Actor> camera = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
-
-
 				if (!(sceneGraph->debugSelectedAssets.empty())) {
 					//get direction vector of new vector of movement from old mouse pos and new mouse pos
 
-					
+					int deltaX = sdlEvent.motion.x - lastX;
+					int deltaY = sdlEvent.motion.y - lastY;
+					lastX = sdlEvent.motion.x;
+					lastY = sdlEvent.motion.y;
 
 					auto& debugGraph = sceneGraph->debugSelectedAssets;
+					Ref<Actor> camera = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
 
 
 					for (const auto& obj : debugGraph) {
@@ -188,35 +175,9 @@ public:
 						transform->SetPos(vectorMove.x, vectorMove.y, transform->GetPosition().z);
 
 					}
-					
-					
-				}
-			}
-
-			if (isHeld(SDL_BUTTON_RIGHT) || isPressed(SDL_BUTTON_RIGHT)) {
-
-				// makes it so ImGui handles the mouse motion
-				if (GetIO().WantCaptureMouse) {
-					toggleKeyPress(sdlEvent.button.button);
-					return;
 				}
 
-				int deltaX = sdlEvent.motion.x - lastX;
-				int deltaY = sdlEvent.motion.y - lastY;
-				lastX = sdlEvent.motion.x;
-				lastY = sdlEvent.motion.y;
 
-				Ref<Actor> camera = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
-
-
-					//std::cout << "trerst" << std::endl;
-				Ref<TransformComponent> transform = camera->GetComponent<TransformComponent>();
-
-				float speedDrag = 1;
-
-				Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * -speedDrag * 0.045;
-				transform->SetPos(vectorMove.x, vectorMove.y, transform->GetPosition().z);
-				
 
 			}
 			break;
@@ -343,24 +304,12 @@ public:
 		if (true) { //temp set to always true until we can define debug vs playable scenes
 
 			//translate selection based on input mapping
-			
-
-			if (!debugTapInputTranslation({
-				{{SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, Vec3(0, 1, 0)},
-				{{SDL_SCANCODE_S, SDL_SCANCODE_LCTRL }, Vec3(0, -1, 0)},
-				{{SDL_SCANCODE_A, SDL_SCANCODE_LCTRL }, Vec3(-1, 0, 0)},
-				{{SDL_SCANCODE_D, SDL_SCANCODE_LCTRL }, Vec3(1, 0, 0)}
-				}, sceneGraph)	
-			) {
-
-
-				debugCamInputTranslation({
-					{{SDL_SCANCODE_W}, Vec3(0, 1, 0)},
-					{{SDL_SCANCODE_S}, Vec3(0, -1, 0)},
-					{{SDL_SCANCODE_A}, Vec3(-1, 0, 0) },
-					{{SDL_SCANCODE_D}, Vec3(1, 0, 0)}
-					}, sceneGraph);
-			}
+			debugInputTranslation({
+				{SDL_SCANCODE_W, Vec3(0, 1, 0)},
+				{SDL_SCANCODE_S, Vec3(0, -1, 0)},
+				{SDL_SCANCODE_A, Vec3(-1, 0, 0)},
+				{SDL_SCANCODE_D, Vec3(1, 0, 0)}
+			}, sceneGraph);
 
 			////bind keypress to camera and test for swap
 			//debugInputCamSwap({
@@ -396,106 +345,54 @@ public:
 	}
 
 	/// Allows for a KeyInput to be associated to a translation of a sceneGraph's debug selections
-	bool debugTapInputTranslation(std::vector<std::pair<KeyBinding, Vec3>> inputMap, SceneGraph* sceneGraph) {
+	void debugInputTranslation(std::vector<std::pair<SDL_Scancode, Vec3>> inputMap, SceneGraph* sceneGraph) {
 		
 		Ref<Actor> camera = (sceneGraph->getUsedCamera()->GetUserActor());
-
-		bool hasMoved = false;
 		if (camera) {
 			for (auto& keyPress : inputMap) {
 				
+				if (keyboard.isPressed(keyPress.first)) {
 
-				bool binding_condition_failed = false;
-
-				//First in the binding should be tapped not held
-				if (!keyboard.isPressed(keyPress.first[0])) {
-					continue;
-				}
-
-				//Check if other keys are active (first one just checked beforehand to give the tap effect, while other keycodes in binding act as 'requirements' such as CTRL)
-				for (SDL_Scancode& keyBind : keyPress.first) {
-					//if any of the keys in the binding are not pressed, then binding condition is not met, so move on to the next binding test
-					if (!keyboard.isActive(keyBind)) binding_condition_failed = true;
-				}
-
-				if (binding_condition_failed) continue;
+					//Put a slider here for stud based movement
+					Vec3 inputVector = keyPress.second * studMultiplier; //<- slider multiplier here
 
 
-				
+					Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
 
-				//Put a slider here for stud based movement
-				Vec3 inputVector = keyPress.second * studMultiplier; //<- slider multiplier here
+					Quaternion rotation = (QMath::normalize(q));
+					//	camera->GetComponent<TransformComponent>()->GetPosition().print();
 
-				Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
+						//convert local direction into world coords 
+					Vec3 worldForward = QMath::rotate(inputVector, rotation);
 
-				Quaternion rotation = (QMath::normalize(q));
-				//	camera->GetComponent<TransformComponent>()->GetPosition().print();
-
-					//convert local direction into world coords 
-				Vec3 worldForward = QMath::rotate(inputVector, rotation);
-
-				if (!(sceneGraph->debugSelectedAssets.empty())) {
-					//auto& debugGraph = sceneGraph.debugSelectedAssets;
+					if (!(sceneGraph->debugSelectedAssets.empty())) {
+						//auto& debugGraph = sceneGraph.debugSelectedAssets;
 
 
-					for (const auto& obj : sceneGraph->debugSelectedAssets) {
+						for (const auto& obj : sceneGraph->debugSelectedAssets) {
 
-						obj.second->GetComponent<TransformComponent>()->SetTransform(
-							obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-							obj.second->GetComponent<TransformComponent>()->GetQuaternion(),
-							obj.second->GetComponent<TransformComponent>()->GetScale()
-						);
-						hasMoved = true;
-
+							obj.second->GetComponent<TransformComponent>()->SetTransform(
+								obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
+								obj.second->GetComponent<TransformComponent>()->GetQuaternion(),
+								obj.second->GetComponent<TransformComponent>()->GetScale()
+							);
+						}
 					}
-				}				
-			}
-		}
-		return hasMoved;
-	}
-
-	bool debugCamInputTranslation(std::vector<std::pair<KeyBinding, Vec3>> inputMap, SceneGraph* sceneGraph) {
-
-		Ref<Actor> camera = (sceneGraph->getUsedCamera()->GetUserActor());
-		if (camera) {
-			for (auto& keyPress : inputMap) {
-
-
-				bool binding_condition_failed = false;
-
-				for (SDL_Scancode& keyBind : keyPress.first) {
-					//if any of the keys in the binding are not pressed, then binding condition is not met, so move on to the next binding test
-					if (!keyboard.isPressed(keyBind)) binding_condition_failed = true;
+					else {
+						camera->GetComponent<TransformComponent>()->SetTransform(
+							camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
+							q
+						);
+						camera->GetComponent<CameraComponent>()->fixCameraToTransform();
+					}
 				}
-
-				if (binding_condition_failed) continue;
-
-
-
-
-				//Put a slider here for stud based movement
-				Vec3 inputVector = keyPress.second * studMultiplier; //<- slider multiplier here
-
-				Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
-
-				Quaternion rotation = (QMath::normalize(q));
-				//	camera->GetComponent<TransformComponent>()->GetPosition().print();
-
-					//convert local direction into world coords 
-				Vec3 worldForward = QMath::rotate(inputVector, rotation);
-
-
-				//no condition needed in this case
-				camera->GetComponent<TransformComponent>()->SetTransform(
-					camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-					q
-				);
-				camera->GetComponent<CameraComponent>()->fixCameraToTransform();
-				
-				return true;
 			}
+
+
+
+
+
 		}
-		return false;
 	}
 
 	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph, CollisionSystem* collisionSystem) {
