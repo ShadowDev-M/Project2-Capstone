@@ -55,7 +55,7 @@ public:
 
 	std::unordered_map<std::string,Ref<Actor>> debugSelectedAssets;
 	
-	mutable std::string cellFileName = "";
+	mutable std::string cellFileName = "LevelThree";
 
 	void setUsedCamera(Ref<CameraComponent> newCam);
 
