@@ -12,6 +12,9 @@
 #include "CameraActor.h"
 #include "imgui.h"
 #include "CollisionSystem.h"
+#include <functional>
+#include <tuple>
+#include <utility>
 
 using namespace ImGui;
 
@@ -23,6 +26,18 @@ enum class InputState {
 };
 
 typedef std::vector<SDL_Scancode> KeyBinding;
+
+/// <summary>
+/// Struct to define data for functions called by inputs called in updatex
+/// </summary>
+/// <typeparam name="...Args">Args of custom function</typeparam>
+template<typename... Args>
+struct functionKeyBinding {
+	KeyBinding keyb;
+
+	std::function<bool(std::vector<std::pair<KeyBinding, std::tuple<Args...>>>, SceneGraph*)> function;
+};
+
 
 
 class InputMap {
@@ -228,6 +243,8 @@ public:
 
 	void update(const float deltaTime) override {
 		
+
+
 		
 		
 		for (auto& keyCode : keyStates) {
@@ -342,15 +359,27 @@ public:
 		//Check which scene debug vs playing
 		if (true) { //temp set to always true until we can define debug vs playable scenes
 
-			//translate selection based on input mapping
+			functionKeyBinding<Vec3> test;
+
+			test.function = std::bind(&InputManager::debugTapInputTranslation, this,
+				std::placeholders::_1, std::placeholders::_2);
+
 			
 
-			if (!debugTapInputTranslation({
+			/*test.function({
 				{{SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, Vec3(0, 1, 0)},
 				{{SDL_SCANCODE_S, SDL_SCANCODE_LCTRL }, Vec3(0, -1, 0)},
 				{{SDL_SCANCODE_A, SDL_SCANCODE_LCTRL }, Vec3(-1, 0, 0)},
 				{{SDL_SCANCODE_D, SDL_SCANCODE_LCTRL }, Vec3(1, 0, 0)}
-				}, sceneGraph)	
+				}, sceneGraph);*/
+
+
+			if (!test.function({
+				{{SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, Vec3(0, 1, 0)},
+				{{SDL_SCANCODE_S, SDL_SCANCODE_LCTRL }, Vec3(0, -1, 0)},
+				{{SDL_SCANCODE_A, SDL_SCANCODE_LCTRL }, Vec3(-1, 0, 0)},
+				{{SDL_SCANCODE_D, SDL_SCANCODE_LCTRL }, Vec3(1, 0, 0)}
+				}, sceneGraph)
 			) {
 
 
@@ -396,14 +425,16 @@ public:
 	}
 
 	/// Allows for a KeyInput to be associated to a translation of a sceneGraph's debug selections
-	bool debugTapInputTranslation(std::vector<std::pair<KeyBinding, Vec3>> inputMap, SceneGraph* sceneGraph) {
+	bool debugTapInputTranslation(std::vector<std::pair<KeyBinding, std::tuple<Vec3>>> inputMap, SceneGraph* sceneGraph) {
 		
 		Ref<Actor> camera = (sceneGraph->getUsedCamera()->GetUserActor());
+
 
 		bool hasMoved = false;
 		if (camera) {
 			for (auto& keyPress : inputMap) {
-				
+				Vec3 keyPressVector = std::get<0>(keyPress.second);
+
 
 				bool binding_condition_failed = false;
 
@@ -424,7 +455,7 @@ public:
 				
 
 				//Put a slider here for stud based movement
-				Vec3 inputVector = keyPress.second * studMultiplier; //<- slider multiplier here
+				Vec3 inputVector = keyPressVector * studMultiplier; //<- slider multiplier here
 
 				Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
 
