@@ -26,8 +26,6 @@ union SDL_Event;
 
 class Scene3GUI : public Scene {
 private:
-	
-	SceneGraph sceneGraph;
 	CollisionSystem collisionSystem;
 
 	Vec3 lightPos;
@@ -49,7 +47,6 @@ private:
 	// save file dialog states (switch to own class)
 	mutable bool showSaveFileDialog = false;
 	mutable bool showLoadFileDialog = false;
-	std::string saveFileName = "";
 	void ShowSaveDialog();
 	void ShowLoadDialog();
 

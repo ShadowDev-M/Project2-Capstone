@@ -33,7 +33,19 @@ private:
 
 	Ref<CameraComponent> usedCamera;
 
+	// delete copy and move constructers
+	SceneGraph(const SceneGraph&) = delete;
+	SceneGraph(SceneGraph&&) = delete;
+	SceneGraph& operator = (const SceneGraph&) = delete;
+	SceneGraph& operator = (SceneGraph&&) = delete;
+
 public:
+	// Meyers Singleton (from JPs class)
+	static SceneGraph& getInstance() {
+		static SceneGraph instance;
+		return instance;
+	}
+
 	SceneGraph() {}
 	~SceneGraph() { RemoveAllActors(); }
 
@@ -43,6 +55,8 @@ public:
 
 	std::unordered_map<std::string,Ref<Actor>> debugSelectedAssets;
 	
+	mutable std::string cellFileName = "";
+
 	void setUsedCamera(Ref<CameraComponent> newCam);
 
 	Ref<CameraComponent> getUsedCamera() const { 

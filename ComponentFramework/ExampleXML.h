@@ -42,7 +42,7 @@ public:
         XMLNode* cRoot = doc.NewElement("Actor");
         doc.InsertFirstChild(cRoot);
 
-        doc.SaveFile(("Game Objects/" + name + ".xml").c_str());
+        doc.SaveFile(("Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml").c_str());
         return 0;
     }
 
@@ -381,7 +381,7 @@ public:
 
         */
 
-        std::string path = "Game Objects/" + name + ".xml";
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
 
         const char* id = path.c_str();
 
@@ -470,7 +470,7 @@ public:
 
     template<typename ComponentTemplate>
     static int writeUniqueComponent(std::string name, Component* toWrite) {
-        std::string path = "Game Objects/" + name + ".xml";
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
         const char* id = path.c_str();
         XMLDocument doc;
 
@@ -583,7 +583,7 @@ public:
     /// <returns></returns>
     template<typename ComponentTemplate>
     static int writeReferenceComponent(std::string name, Ref<Component> toWrite) {
-        std::string path = "Game Objects/" + name + ".xml";
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
         const char* id = path.c_str();
 
 
@@ -653,7 +653,7 @@ public:
     /// <returns>true if the component type exists within the XML file</returns>
     template<typename ComponentTemplate>
     static bool hasComponent(std::string name) {
-        std::string path = "Game Objects/" + name + ".xml";
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
         const char* id = path.c_str();
 
         XMLDocument doc;
