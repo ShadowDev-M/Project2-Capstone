@@ -1,24 +1,23 @@
 <CellFile>
     <Actors>
-        <camera/>
         <Board>
             <Mario/>
             <Sphere/>
         </Board>
-        <CamTest/>
         <Cube/>
+        <CamTest/>
     </Actors>
     <Components>
         <MaterialComponent>
             <M_Sphere>
                 <Texture path="textures/Black Chess Base Colour.png"/>
             </M_Sphere>
-            <M_MarioN>
-                <Texture path="textures/mario_main.png"/>
-            </M_MarioN>
             <M_MarioFire>
                 <Texture path="textures/mario_fire.png"/>
             </M_MarioFire>
+            <M_MarioN>
+                <Texture path="textures/mario_main.png"/>
+            </M_MarioN>
             <M_ChessBoard>
                 <Texture path="textures/8x8_checkered_board.png"/>
             </M_ChessBoard>
@@ -33,12 +32,12 @@
             <SM_Mario>
                 <Mesh path="meshes/Mario.obj"/>
             </SM_Mario>
-            <SM_Cube>
-                <Mesh path="meshes/Cube.obj"/>
-            </SM_Cube>
             <SM_Sphere>
                 <Mesh path="meshes/Sphere.obj"/>
             </SM_Sphere>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
