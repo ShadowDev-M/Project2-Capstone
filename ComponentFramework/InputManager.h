@@ -15,6 +15,8 @@
 #include <functional>
 #include <tuple>
 #include <utility>
+#include <thread>
+#include <chrono>
 
 using namespace ImGui;
 
@@ -27,17 +29,107 @@ enum class InputState {
 
 typedef std::vector<SDL_Scancode> KeyBinding;
 
-/// <summary>
-/// Struct to define data for functions called by inputs called in updatex
-/// </summary>
-/// <typeparam name="...Args">Args of custom function</typeparam>
-template<typename... Args>
-struct functionKeyBinding {
+
+template <auto FUNCTION, typename T>
+auto BINDFUNCTION(T* obj) {
+	return std::bind(FUNCTION, obj, std::placeholders::_1, std::placeholders::_2);
+}
+
+
+///Base form of functionKeyBinding without the function (The function size is dependant on arguments, so this should be used as a wrapper)
+struct FunctionKeyBindingWrapper {
+	
 	KeyBinding keyb;
 
-	std::function<bool(std::vector<std::pair<KeyBinding, std::tuple<Args...>>>, SceneGraph*)> function;
+	virtual ~FunctionKeyBindingWrapper() = default;
+
+
+	virtual void call() = 0;
+
 };
 
+///Structure to store a keybinding to a function
+template<typename... Args>
+struct FunctionKeyBinding : FunctionKeyBindingWrapper {
+public:
+
+	KeyBinding keyb;
+
+	//storage for internal function 
+	std::function<bool(std::pair<KeyBinding, std::tuple<Args...>>, SceneGraph*)> function;
+	
+	//unique arguments for the internal function to be called
+	std::tuple<Args...> reqArguments;
+
+	//constructor
+	FunctionKeyBinding(KeyBinding k, std::function<bool(std::pair<KeyBinding, std::tuple<Args...>>, SceneGraph*)> f, std::tuple<Args... > rA)
+        : keyb(k), function(f), reqArguments(rA) {}
+
+
+	///Calls the function associated with the binding
+	void call() override {
+		for (auto& keypress : keyb) {
+
+		}
+		function({ keyb, reqArguments }, &SceneGraph::getInstance());
+	};
+};
+
+///We can't store functionKeyBinding in a 
+struct PoolBindObject {
+
+	//ptr to object
+	FunctionKeyBindingWrapper* bindingPtr;
+
+	bool flagUsedThisFrame = false;
+
+	bool call();
+
+	//remove ptr
+	void Reset() { delete bindingPtr; };
+
+	//If item is destroyed, delete its ptr
+	~PoolBindObject() { delete bindingPtr;}
+
+};
+
+
+
+///an object pool structure
+struct keyBindingObjectPool {
+	std::vector<PoolBindObject> bindingPool;
+	
+	///return all poolObjects that share the parametre's keybinding
+	std::vector<PoolBindObject*> getBindings(KeyBinding keybinding) {
+
+		std::vector<PoolBindObject*> bindings;
+
+		//go through the pool and push any objects that use the keybinding
+		for (PoolBindObject obj : bindingPool) {
+			if (obj.bindingPtr) {
+				if (keybinding == obj.bindingPtr->keyb) {
+					bindings.push_back(&obj);
+				}
+			}
+		}
+
+		return bindings;
+	}
+
+	///call all poolObjects that share the parametre's keybinding
+	void call(KeyBinding keybinding) {
+
+		//go through the pool and call any objects that use the keybinding
+		for (PoolBindObject obj : bindingPool) {
+			if (obj.bindingPtr) {
+				if (keybinding == obj.bindingPtr->keyb) {
+					obj.bindingPtr->call();
+				}
+			}
+		}
+	}
+
+};
 
 
 class InputMap {
@@ -45,7 +137,7 @@ protected:
 
 	//mapping a keyCode with it's current state
 	std::map<int, InputState> keyStates;
-
+	
 public:
 	virtual bool isActive(int keyCode) {
 		//Active == both pressed and held
@@ -86,6 +178,7 @@ private:
 
 
 public:
+
 
 	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph, CollisionSystem* collisionSystem) {
 
@@ -322,8 +415,36 @@ public:
 class InputManager
 {
 private:
-	InputManager() {};
+	InputManager() {
+		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+		//FunctionKeyBinding<Vec3> test = { { SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(0,1,0) };
 
+		pool.bindingPool[0].bindingPtr = new FunctionKeyBinding<Vec3> { { SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(0,1,0) };
+		pool.bindingPool[1].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_S, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(0,-1,0) };
+		pool.bindingPool[2].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_A, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(-1,0,0) };
+		pool.bindingPool[3].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_D, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(1,0,0) };
+
+		pool.bindingPool[4].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_W }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(0,1,0) };
+		pool.bindingPool[5].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_S }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(0,-1,0) };
+		pool.bindingPool[6].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_A }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(-1,0,0) };
+		pool.bindingPool[7].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_D }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(1,0,0) };
+
+		/*debugCamInputTranslation({
+					{{SDL_SCANCODE_W}, Vec3(0, 1, 0)},
+					{{SDL_SCANCODE_S}, Vec3(0, -1, 0)},
+					{{SDL_SCANCODE_A}, Vec3(-1, 0, 0) },
+					{{SDL_SCANCODE_D}, Vec3(1, 0, 0)}
+			}, sceneGraph);*/
+
+
+	}
 	// delete copy and move constructers
 	InputManager(const InputManager&) = delete;
 	InputManager(InputManager&&) = delete;
@@ -335,8 +456,13 @@ private:
 
 	float studMultiplier = 0.5f;
 
+	keyBindingObjectPool pool;
+
 public:
 	
+	keyboardInputMap* getKeyboardMap() { return &keyboard; }
+
+
 
 	// Meyers Singleton (from JPs class)
 	static InputManager& getInstance() {
@@ -359,12 +485,30 @@ public:
 		//Check which scene debug vs playing
 		if (true) { //temp set to always true until we can define debug vs playable scenes
 
-			functionKeyBinding<Vec3> test;
 
-			test.function = std::bind(&InputManager::debugTapInputTranslation, this,
-				std::placeholders::_1, std::placeholders::_2);
+			// IDEA:
+			//Store a pool of threads for each function, and then 
 
-			
+
+
+			/*test.function = std::bind(&InputManager::debugTapInputTranslation, this,
+				std::placeholders::_1, std::placeholders::_2);*/
+		
+			/*FunctionKeyBinding<Vec3> test = {{ SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(0,1,0)};
+
+			test.call();*/
+
+			for (auto& obj : pool.bindingPool) {
+				obj.bindingPtr->call();
+			}
+
+			//pool.bindingPool.push_back(PoolBindObject());
+			/*test.keyb = { SDL_SCANCODE_W, SDL_SCANCODE_LCTRL };
+			test.function = BINDFUNCTION<&InputManager::debugTapInputTranslation>(this);*/
+
+			//pool.bindingPool.push_back(&test);
+
+
 
 			/*test.function({
 				{{SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, Vec3(0, 1, 0)},
@@ -374,22 +518,19 @@ public:
 				}, sceneGraph);*/
 
 
-			if (!test.function({
-				{{SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, Vec3(0, 1, 0)},
-				{{SDL_SCANCODE_S, SDL_SCANCODE_LCTRL }, Vec3(0, -1, 0)},
-				{{SDL_SCANCODE_A, SDL_SCANCODE_LCTRL }, Vec3(-1, 0, 0)},
-				{{SDL_SCANCODE_D, SDL_SCANCODE_LCTRL }, Vec3(1, 0, 0)}
-				}, sceneGraph)
+			/*if (!test.function({{SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, Vec3(0, 1, 0)}, sceneGraph) && 
+				!test.function({{SDL_SCANCODE_S, SDL_SCANCODE_LCTRL }, Vec3(0, -1, 0)}, sceneGraph) &&
+				!test.function({{SDL_SCANCODE_A, SDL_SCANCODE_LCTRL }, Vec3(-1, 0, 0)}, sceneGraph) &&
+				!test.function({{SDL_SCANCODE_D, SDL_SCANCODE_LCTRL }, Vec3(1, 0, 0)}, sceneGraph)
 			) {
-
-
+				
 				debugCamInputTranslation({
 					{{SDL_SCANCODE_W}, Vec3(0, 1, 0)},
 					{{SDL_SCANCODE_S}, Vec3(0, -1, 0)},
 					{{SDL_SCANCODE_A}, Vec3(-1, 0, 0) },
 					{{SDL_SCANCODE_D}, Vec3(1, 0, 0)}
 					}, sceneGraph);
-			}
+			}*/
 
 			////bind keypress to camera and test for swap
 			//debugInputCamSwap({
@@ -425,31 +566,30 @@ public:
 	}
 
 	/// Allows for a KeyInput to be associated to a translation of a sceneGraph's debug selections
-	bool debugTapInputTranslation(std::vector<std::pair<KeyBinding, std::tuple<Vec3>>> inputMap, SceneGraph* sceneGraph) {
+	bool debugTapInputTranslation(std::pair<KeyBinding, std::tuple<Vec3>> inputMap, SceneGraph* sceneGraph) {
 		
 		Ref<Actor> camera = (sceneGraph->getUsedCamera()->GetUserActor());
 
 
 		bool hasMoved = false;
 		if (camera) {
-			for (auto& keyPress : inputMap) {
-				Vec3 keyPressVector = std::get<0>(keyPress.second);
+				Vec3 keyPressVector = std::get<0>(inputMap.second);
 
 
 				bool binding_condition_failed = false;
 
 				//First in the binding should be tapped not held
-				if (!keyboard.isPressed(keyPress.first[0])) {
-					continue;
+				if (!keyboard.isPressed(inputMap.first[0])) {
+					return 0;
 				}
 
 				//Check if other keys are active (first one just checked beforehand to give the tap effect, while other keycodes in binding act as 'requirements' such as CTRL)
-				for (SDL_Scancode& keyBind : keyPress.first) {
+				for (SDL_Scancode& keyBind : inputMap.first) {
 					//if any of the keys in the binding are not pressed, then binding condition is not met, so move on to the next binding test
 					if (!keyboard.isActive(keyBind)) binding_condition_failed = true;
 				}
 
-				if (binding_condition_failed) continue;
+				if (binding_condition_failed) return 0;
 
 
 				
@@ -480,32 +620,28 @@ public:
 
 					}
 				}				
-			}
+			
 		}
 		return hasMoved;
 	}
 
-	bool debugCamInputTranslation(std::vector<std::pair<KeyBinding, Vec3>> inputMap, SceneGraph* sceneGraph) {
+	bool debugCamInputTranslation(std::pair<KeyBinding, std::tuple<Vec3>> inputMap, SceneGraph* sceneGraph) {
 
 		Ref<Actor> camera = (sceneGraph->getUsedCamera()->GetUserActor());
+
+		Vec3 keyPressVector = std::get<0>(inputMap.second);
+
 		if (camera) {
-			for (auto& keyPress : inputMap) {
 
 
-				bool binding_condition_failed = false;
-
-				for (SDL_Scancode& keyBind : keyPress.first) {
-					//if any of the keys in the binding are not pressed, then binding condition is not met, so move on to the next binding test
-					if (!keyboard.isPressed(keyBind)) binding_condition_failed = true;
-				}
-
-				if (binding_condition_failed) continue;
+					
+				if (!keyboard.isPressed(inputMap.first[0]) || keyboard.isActive(SDL_SCANCODE_LCTRL)) return 0;
 
 
 
 
 				//Put a slider here for stud based movement
-				Vec3 inputVector = keyPress.second * studMultiplier; //<- slider multiplier here
+				Vec3 inputVector = keyPressVector * studMultiplier; //<- slider multiplier here
 
 				Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
 
@@ -524,7 +660,7 @@ public:
 				camera->GetComponent<CameraComponent>()->fixCameraToTransform();
 				
 				return true;
-			}
+			
 		}
 		return false;
 	}
@@ -540,3 +676,5 @@ public:
 
 	~InputManager() { }
 };
+
+
