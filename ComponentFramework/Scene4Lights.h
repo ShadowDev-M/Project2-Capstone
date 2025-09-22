@@ -5,7 +5,6 @@
 #include <Matrix.h>
 #include "Actor.h"
 #include "CameraActor.h"
-#include "LightActor.h"
 #include <vector>
 
 #include "SceneGraph.h"
@@ -56,10 +55,6 @@ private:
 	std::unique_ptr<HierarchyWindow> hierarchyWindow;
 	std::unique_ptr<InspectorWindow> inspectorWindow;
 	std::unique_ptr<AssetManagerWindow> assetManagerWindow;
-	
-	//Light array
-	std::vector<LightActor*> lights;
-	
 
 public:
 	explicit Scene4Lights();

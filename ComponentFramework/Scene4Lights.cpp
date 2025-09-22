@@ -65,15 +65,34 @@ void Scene4Lights::ShowLoadDialog()
 			sceneGraph.RemoveAllActors();
 			XMLObjectFile::addActorsFromFile(&sceneGraph, saveFileName);
 
-			camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+			cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-			camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			cameraActor->OnCreate();
 
-			camera->OnCreate();
+			sceneGraph.AddActor(cameraActor);
 
-			sceneGraph.AddActor(camera);
+			sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
 
-			camera->fixCameraToTransform();
+			cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
+
+			//Create second camera as a test
+
+
+			Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+			cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+
+			cameraActorTwo->OnCreate();
+
+			sceneGraph.AddActor(cameraActorTwo);
+
+			//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
+
+
+			cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
+
 
 			sceneGraph.OnCreate();
 			saveFileName.clear();
@@ -100,39 +119,46 @@ Scene4Lights::~Scene4Lights() {
 }
 
 bool Scene4Lights::OnCreate() {
-	Debug::Info("Loading assets Scene4Lights: ", __FILE__, __LINE__);
+	Debug::Info("Loading assets Scene3GUI: ", __FILE__, __LINE__);
 
 	AssetManager::getInstance().OnCreate();
-	
+
 	AssetManager::getInstance().ListAllAssets();
 
 	camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-	
-	camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse( Quaternion()));
-	
+
+	camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+
 	camera->OnCreate();
-	
+
 	sceneGraph.AddActor(camera);
 
+	Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+	cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+	cameraActor->OnCreate();
+	sceneGraph.AddActor(cameraActor);
+
+	cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	cameraActor->GetComponent<CameraComponent>()->OnCreate();
+	cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
+
+	sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
 	//example.readDoc();
 
 	camera->fixCameraToTransform();
-	
-	LightActor* light1 = new LightActor(nullptr,
-		Vec3(1.0f, 2.0f, -10.0f),
-		Vec4(0.0f, 1.0f, 1.0f, 1.0f),
-		Vec4(0.4f, 0.4f, 0.4f, 1.0f),
-		40.0f);
 
-	LightActor* light2 = new LightActor(nullptr,
-		Vec3(-1.0f, -2.0f, -10.0f),
-		Vec4(1.0f, 0.0f, 0.0f, 1.0f),
-		Vec4(0.4f, 0.4f, 0.4f, 1.0f),
-		40.0f);
+	Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+	cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-	// Light Pos
-	lights.push_back(light1);
-	lights.push_back(light2);
+	cameraActorTwo->OnCreate();
+
+	sceneGraph.AddActor(cameraActorTwo);
+
+	//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
+
+
+	cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
 
 	// Board setup
 
@@ -185,10 +211,6 @@ void Scene4Lights::OnDestroy() {
 	}
 	if (assetManagerWindow) {
 		assetManagerWindow->ClearFilter();
-	}
-	for (int i = 0; i < lights.size(); ++i) {
-		lights[i]->OnDestroy();
-		delete lights[i];
 	}
 
 
@@ -286,25 +308,34 @@ void Scene4Lights::Render() const {
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
 
-	for (int i = 0; i < lights.size(); ++i) {
-		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("pos"), 1, lights[i]->getPos());
-	}
+	//for (int i = 0; i < lights.size(); ++i) {
+		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, Vec3(1.0f, 2.0f, -10.0f));
+	//}
 
-	//glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetProgram());
-	//glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
-	//glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
+		//LightActor* light1 = new LightActor()
+		// pos	Vec3(1.0f, 2.0f, -10.0f),
+		// spec	Vec4(0.0f, 1.0f, 1.0f, 1.0f),
+		// diff	Vec4(0.4f, 0.4f, 0.4f, 1.0f),
+		// int	4000.0f);
+
+	//lights[0]->getPos()
+	//lights[0]->getDiff()
+	//lights[0]->getSpec()
+	//lights[0]->getIntensity()
+
+	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetViewMatrix());
 
 	//for (int i = 0; i < lights.size(); ++i) {
-	//	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("lightPos"), i + 1, lights[i]->getPos());
-	//	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("diffuse"), i + 1, lights[i]->getDiff());
-	//	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("specular"), i + 1, lights[i]->getSpec());
-	//	glUniform1f(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("intensity"), lights[i]->getIntensity());
+		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos"), 1, sceneGraph.GetActor("Sphere")->GetComponent<TransformComponent>()->GetPosition());
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse"), 1, Vec4(0.0f, 1.0f, 1.0f, 1.0f));
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular"), 1, Vec4(0.4f, 0.4f, 0.4f, 1.0f));
+		glUniform1f(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity"), 20.0f);
 	//}
-	//glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("ambient"), 1, Vec4(0.1f, 0.1f, 0.1f, 1.0f));
+	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(1.0f, 0.1f, 0.1f, 1.0f));
 
-	//glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_MultiPhong")->GetUniformID("numLights"), lights.size());
-
-
+	glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), 1);
 	
 	
 	sceneGraph.Render();

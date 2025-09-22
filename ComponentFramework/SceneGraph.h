@@ -12,6 +12,7 @@
 #include "CameraActor.h"
 #include "AssetManager.h"
 #include "CameraComponent.h"
+#include "LightComponent.h"
 //#include "Raycast.h"
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
@@ -30,6 +31,8 @@ private:
 	int fboWidth = 0, fboHeight = 0;  // Or match your window size
 	
 	Ref<CameraComponent> usedCamera;
+
+	//std::vector<LightComponent> ;
 
 public:
 	SceneGraph() {}
@@ -74,6 +77,10 @@ public:
 				}
 			}
 		}
+	}
+
+	bool AddLight(Ref<Actor> actor) {
+		if (actor->GetComponent<LightComponent>()){}
 	}
 
 	bool AddActor(Ref<Actor> actor) {
@@ -297,7 +304,16 @@ public:
 				
 				
 				if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getActorName()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-				else glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
+				else { 
+					if (pair.second->GetComponent<ShaderComponent>()) {
+						glUseProgram(pair.second->GetComponent<ShaderComponent>()->GetProgram());
+					}
+					else continue;
+
+					//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
+
+				}
+				//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
 
 				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 

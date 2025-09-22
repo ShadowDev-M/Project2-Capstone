@@ -167,5 +167,11 @@ public:
 	bool isRootActor() const {
 		return parent == nullptr || dynamic_cast<Actor*>(parent) == nullptr;
 	}
+
+	bool ValidateLight() {
+		//if (GetComponent<LightComponent>() && GetComponent<TransformComponent>()) {
+		//	//SceneGraph::GetInstance();
+		//}
+	}
 };
 
