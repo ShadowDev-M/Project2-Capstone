@@ -1,0 +1,75 @@
+<CellFile>
+    <Actors>
+        <camera/>
+        <cameraActor2/>
+        <cameraActor/>
+        <Board>
+            <Mario/>
+            <Sphere/>
+        </Board>
+        <CamTest/>
+        <Cube/>
+    </Actors>
+    <Components>
+        <MaterialComponent>
+            <M_Sphere>
+                <Texture path="textures/Black Chess Base Colour.png"/>
+            </M_Sphere>
+            <M_MarioN>
+                <Texture path="textures/mario_main.png"/>
+            </M_MarioN>
+            <M_MarioFire>
+                <Texture path="textures/mario_fire.png"/>
+            </M_MarioFire>
+            <M_ChessBoard>
+                <Texture path="textures/8x8_checkered_board.png"/>
+            </M_ChessBoard>
+            <M_Skull>
+                <Texture path="textures/skull_texture.jpg"/>
+            </M_Skull>
+        </MaterialComponent>
+        <MeshComponent>
+            <SM_Plane>
+                <Mesh path="meshes/Plane.obj"/>
+            </SM_Plane>
+            <SM_Mario>
+                <Mesh path="meshes/Mario.obj"/>
+            </SM_Mario>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
+            <SM_Sphere>
+                <Mesh path="meshes/Sphere.obj"/>
+            </SM_Sphere>
+            <SM_Pawn>
+                <Mesh path="meshes/Pawn.obj"/>
+            </SM_Pawn>
+            <SM_King>
+                <Mesh path="meshes/King.obj"/>
+            </SM_King>
+            <SM_Rook>
+                <Mesh path="meshes/Rook.obj"/>
+            </SM_Rook>
+            <SM_Hammer>
+                <Mesh path="meshes/Hammer.obj"/>
+            </SM_Hammer>
+            <SM_Skull>
+                <Mesh path="meshes/Skull.obj"/>
+            </SM_Skull>
+        </MeshComponent>
+        <ShaderComponent>
+            <S_Multi>
+                <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
+            </S_Multi>
+            <S_Outline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
+            </S_Outline>
+            <S_Phong>
+                <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
+            </S_Phong>
+            <S_Default>
+                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
+            </S_Default>
+        </ShaderComponent>
+    </Components>
+</CellFile>

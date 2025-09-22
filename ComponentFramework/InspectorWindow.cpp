@@ -49,6 +49,13 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				RightClickContext<CameraComponent>("##CameraPopup", selectedActor->second);
 				ImGui::Separator();
 			}
+			
+			// light
+			if (selectedActor->second->GetComponent<LightComponent>()) {
+				DrawLightComponent(selectedActor->second->GetComponent<LightComponent>());
+				RightClickContext<LightComponent>("##LightPopup", selectedActor->second);
+				ImGui::Separator();
+			}
 
 
 			// mesh
@@ -107,6 +114,12 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				if (ImGui::Selectable("Camera Component")) {
 					if (!selectedActor->second->GetComponent<CameraComponent>()) {
 						selectedActor->second->AddComponent<CameraComponent>(selectedActor->second, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+					}
+				}
+
+				if (ImGui::Selectable("Light Component")) {
+					if (!selectedActor->second->GetComponent<LightComponent>()) {
+						selectedActor->second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 20.0f);
 					}
 				}
 
@@ -324,6 +337,25 @@ void InspectorWindow::DrawCameraComponent(Ref<CameraComponent> camera)
 		}*/
 
 		
+
+
+	}
+}
+
+void InspectorWindow::DrawLightComponent(Ref<LightComponent> light)
+{
+	if (ImGui::CollapsingHeader("Light")) {
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+			ImGui::OpenPopup("##LightPopup");
+		}
+		ImGui::TextWrapped("Light ID: %u", light.get());
+
+		// display material thumbnail
+		/*if (material->getTextureID() != 0) {
+			ImGui::ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnailSize, thumbnailSize));
+		}*/
+
+
 
 
 	}

@@ -1,9 +1,10 @@
 #include "Actor.h"
 #include "Debug.h"
 #include "TransformComponent.h"
-
+#include "LightComponent.h"
 #include "MeshComponent.h"
 #include "InputManager.h"
+#include "SceneGraph.h"
 
 Actor::Actor(Component* parent_):Component(parent_) {}
 
@@ -45,6 +46,35 @@ void Actor::Update(const float deltaTime) {
 }
 
 void Actor::Render()const {}
+
+bool Actor::ValidateLight()
+{
+	if (GetComponent<LightComponent>() && GetComponent<TransformComponent>()) {
+		SceneGraph& sg = SceneGraph::getInstance();
+
+
+		return true;
+	}
+	return false;
+}
+
+bool Actor::InitalizeLight()
+{
+	if (!SceneGraph::getInstance().GetLightExist(SceneGraph::getInstance().GetActor(actorName))) {
+		SceneGraph::getInstance().AddLight(SceneGraph::getInstance().GetActor(actorName));
+	}
+
+	return false;
+}
+
+bool Actor::DeinitalizeLight()
+{
+	if (SceneGraph::getInstance().GetLightExist(SceneGraph::getInstance().GetActor(actorName))) {
+		SceneGraph::getInstance().RemoveLight(SceneGraph::getInstance().GetActor(actorName));
+	}
+
+	return false;
+}
 
 void Actor::RemoveAllComponents() {
 

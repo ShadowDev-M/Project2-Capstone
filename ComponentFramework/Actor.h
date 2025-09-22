@@ -63,8 +63,12 @@ public:
 		} 
 		/// Finish building the component and add the component to the list 
 		components.push_back(std::make_shared<ComponentTemplate>(std::forward<Args>(args_)...));
+		if (typeid(ComponentTemplate).name() == "LightComponent" && typeid(ComponentTemplate).name() == "TransformComponent") {
+			if (ValidateLight()) {
+				InitalizeLight();
+			}
+		}
 	}
-
 
 	template<typename ComponentTemplate>
 	Ref<ComponentTemplate> GetComponent() const {
@@ -78,12 +82,21 @@ public:
 		return Ref<ComponentTemplate>(nullptr);
 	}
 
+	bool ValidateLight();
 
+	bool InitalizeLight();
+
+	bool DeinitalizeLight();
 
 	// Added this function previously but realized since the components are shared if I remove a component and several actors share that component it just deletes the component, 
 	// However this function can still be used later on when components are created in the scene and need to be deleted
 	template<typename ComponentTemplate>
 	void DeleteComponent() {
+		if (typeid(ComponentTemplate).name() == "LightComponent") {
+			if (ValidateLight()) {
+				DeinitalizeLight();
+			}
+		}
 		/// check if the component exists
 		if (GetComponent<ComponentTemplate>().get() == nullptr) {
 #ifdef _DEBUG
@@ -99,14 +112,18 @@ public:
 		if (it != components.end()) {
 			components.erase(it);
 		}
+		
 	}
-
 	// Removes the component from the actor
 	// DOES NOT CALL OnDestroy, USE THIS FUNCTION FOR SHARED COMPONENTS, USE DeleteComponent FOR EVERYTHING ELSE
 	template<typename ComponentTemplate>
 	void RemoveComponent() {
 
-		
+		if (typeid(ComponentTemplate).name() == "LightComponent") {
+			if (ValidateLight()) {
+				DeinitalizeLight();
+			}
+		}
 
 		/// check if the component exists
 		if (GetComponent<ComponentTemplate>().get() == nullptr) {
@@ -166,12 +183,6 @@ public:
 
 	bool isRootActor() const {
 		return parent == nullptr || dynamic_cast<Actor*>(parent) == nullptr;
-	}
-
-	bool ValidateLight() {
-		//if (GetComponent<LightComponent>() && GetComponent<TransformComponent>()) {
-		//	//SceneGraph::GetInstance();
-		//}
 	}
 };
 

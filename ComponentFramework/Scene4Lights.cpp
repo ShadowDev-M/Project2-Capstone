@@ -183,7 +183,7 @@ bool Scene4Lights::OnCreate() {
 
 	//sceneGraph.RemoveActor("Sphere");
 	camera->fixCameraToTransform();
-	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
+	XMLObjectFile::addActorsFromFile(&sceneGraph, "Lights");
 
 	// pass along the scene graph to the windows
 	hierarchyWindow = std::make_unique<HierarchyWindow>(&sceneGraph);

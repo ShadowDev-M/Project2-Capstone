@@ -12,6 +12,7 @@
 #include "CameraActor.h"
 #include "AssetManager.h"
 #include "CameraComponent.h"
+#include "LightComponent.h"
 //#include "Raycast.h"
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
@@ -32,6 +33,8 @@ private:
 	Ref<Actor> debugCamera;
 
 	Ref<CameraComponent> usedCamera;
+
+	std::vector<Ref<Actor>> lightActors;
 
 	// delete copy and move constructers
 	SceneGraph(const SceneGraph&) = delete;
@@ -105,6 +108,36 @@ public:
 
 
 		}
+	}
+
+	void ValidateAllLights() {
+		for (std::vector<Ref<Actor>>::iterator it; it != lightActors.end(); ++it) {
+			if (!(*it)->ValidateLight()) lightActors.erase(it);
+		}
+	}
+
+	bool AddLight(Ref<Actor> actor) {
+		if (!actor->ValidateLight()) return false;
+		
+		lightActors.push_back(actor); 
+		return true;
+	}
+
+	bool GetLightExist(Ref<Actor> actor) {
+		auto it = std::find(lightActors.begin(), lightActors.end(), actor);
+
+		if (it != lightActors.end()) {
+			// Element found
+			return true;
+		}
+		
+		return false;
+	}
+
+	bool RemoveLight(Ref<Actor> actor) {
+		lightActors.erase(std::remove(lightActors.begin(), lightActors.end(), actor), lightActors.end());
+
+		return false;
 	}
 
 	bool AddActor(Ref<Actor> actor) {

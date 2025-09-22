@@ -1,5 +1,5 @@
 #pragma once
-#include "Actor.h"
+#include "Component.h"
 #include "glew.h"
 #include "AssetManager.h"
 
@@ -10,7 +10,7 @@ enum class LightType {
 	Spot
 };
 
-class LightComponent : public Actor
+class LightComponent : public Component
 {
 	LightComponent(const LightComponent&) = delete;
 	LightComponent(LightComponent&&) = delete;
@@ -23,18 +23,21 @@ private:
 	Vec4 diff;
 	float intensity;
 public:
-	LightComponent(Component* parent_, LightType type_, Vec3 pos_, Vec4 spec_, Vec4 diff_, float intensity_) :
-		Actor(parent_), type(type_),  spec(spec_), diff(diff_), intensity(intensity_) {}
+	LightComponent(Component* parent_, LightType type_, Vec4 spec_, Vec4 diff_, float intensity_) :
+		Component(parent_), type(type_),  spec(spec_), diff(diff_), intensity(intensity_) {}
 
-	LightComponent(Component* parent_, Vec3 pos_, Vec4 spec_, Vec4 diff_, float intensity_) :
-		Actor(parent_), spec(spec_), diff(diff_), intensity(intensity_) {
+	LightComponent(Component* parent_, Vec4 spec_, Vec4 diff_, float intensity_) :
+		Component(parent_), spec(spec_), diff(diff_), intensity(intensity_) {
 		type = LightType::Point;
 	}
 
-	~LightComponent() {
+	 ~LightComponent() {}
 
-	}
-
+	 bool OnCreate();
+	 void OnDestroy() {}
+	 void Update(const float deltaTime_) {}
+	 void Render() const {}
+	 
 	Vec4 getSpec() { return spec; }
 	Vec4 getDiff() { return diff; }
 	float getIntensity() { return intensity; }
