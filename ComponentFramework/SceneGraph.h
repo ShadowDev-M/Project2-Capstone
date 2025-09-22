@@ -12,6 +12,7 @@
 #include "CameraActor.h"
 #include "AssetManager.h"
 #include "CameraComponent.h"
+#include "LightComponent.h"
 //#include "Raycast.h"
 // this class is very similar to the assetmanager pre-singleton just inline
 // I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
@@ -28,10 +29,12 @@ private:
 	GLuint selectionColorTex = 0;
 	GLuint selectionDepthRBO = 0;
 	int fboWidth = 0, fboHeight = 0;  // Or match your window size
-	
+
 	Ref<Actor> debugCamera;
 
 	Ref<CameraComponent> usedCamera;
+
+	std::vector<Ref<Actor>> lightActors;
 
 	// delete copy and move constructers
 	SceneGraph(const SceneGraph&) = delete;
@@ -49,42 +52,43 @@ public:
 	SceneGraph() {}
 	~SceneGraph() { RemoveAllActors(); }
 
-	void useDebugCamera(){
+	void useDebugCamera() {
 		usedCamera = debugCamera->GetComponent<CameraComponent>();
 	}
 
-	std::unordered_map<std::string,Ref<Actor>> debugSelectedAssets;
-	
+	std::unordered_map<std::string, Ref<Actor>> debugSelectedAssets;
+
 	mutable std::string cellFileName = "LevelThree";
 
 	void setUsedCamera(Ref<CameraComponent> newCam);
 
-	Ref<CameraComponent> getUsedCamera() const { 
+	Ref<CameraComponent> getUsedCamera() const {
 		if (!usedCamera || !usedCamera->GetUserActor()) {
 
-			
+
 			return debugCamera->GetComponent<CameraComponent>();
 
 
 			std::cout << "ERROR: NO CAMERA EXISTS IN SCENEGRAPH" << std::endl;
 		}
-	
 
-		return usedCamera; }
+
+		return usedCamera;
+	}
 
 	void checkValidCamera() {
 
 		if (!usedCamera || !usedCamera->GetUserActor()) {
 			std::cout << "usedCamera is invalid" << std::endl;
 
-			
+
 
 			std::cout << "try debugCam" << std::endl;
 
 			if (debugCamera && debugCamera->GetComponent<CameraComponent>()) {
 				std::cout << "DebugCam is found" << std::endl;
 			}
-			else{
+			else {
 
 				std::cout << "DebugCam is invalid" << std::endl;
 				debugCamera = std::make_shared<Actor>(nullptr, "cameraDebugOne");
@@ -106,6 +110,36 @@ public:
 		}
 	}
 
+	void ValidateAllLights() {
+		for (std::vector<Ref<Actor>>::iterator it; it != lightActors.end(); ++it) {
+			if (!(*it)->ValidateLight()) lightActors.erase(it);
+		}
+	}
+
+	bool AddLight(Ref<Actor> actor) {
+		if (!actor->ValidateLight()) return false;
+		
+		lightActors.push_back(actor); 
+		return true;
+	}
+
+	bool GetLightExist(Ref<Actor> actor) {
+		auto it = std::find(lightActors.begin(), lightActors.end(), actor);
+
+		if (it != lightActors.end()) {
+			// Element found
+			return true;
+		}
+		
+		return false;
+	}
+
+	bool RemoveLight(Ref<Actor> actor) {
+		lightActors.erase(std::remove(lightActors.begin(), lightActors.end(), actor), lightActors.end());
+
+		return false;
+	}
+
 	bool AddActor(Ref<Actor> actor) {
 		const std::string& name = actor->getActorName();
 		auto it = Actors.find(name);
@@ -115,7 +149,7 @@ public:
 			Debug::Warning("There is already an actor with the name: " + name, __FILE__, __LINE__);
 			return false;
 		}
-		
+
 		Actors[name] = actor;
 		return true;
 	}
@@ -123,9 +157,9 @@ public:
 	void SaveFile(std::string name) const;
 
 	void LoadAllActorsFromFile(std::string name) {
-		
+
 	}
-	
+
 	/// <summary>
 	/// Loads actor from file into scenegraph
 	/// </summary>
@@ -140,17 +174,17 @@ public:
 			Ref<Actor> targetActor = actor.second;
 
 			Ref<TransformComponent> actorTransform = targetActor->GetComponent<TransformComponent>();
-			
+
 			Vec3 dir = VMath::normalize(end - start);
 
 			//skip to next if no transform
 			if (actorTransform == nullptr) { continue; }
-			
+
 			//if actor's origin isn't within a 30 degrees cone to the camera we can skip to make less expensive by assuming it's probably not intersecting (May have to be increased)
 			if (!Raycast::isInRayCone(actorTransform->GetPosition(), start, dir, 0.8660254f)) { continue; }
 
-		//	std::cout << targetActor->getActorName() << std::endl;
-			
+			//	std::cout << targetActor->getActorName() << std::endl;
+
 			Vec3 intersectSpot;
 			if (targetActor->GetIntersectTriangles(start, dir, &intersectSpot)) {
 
@@ -167,14 +201,14 @@ public:
 			return closestSelected;
 		}
 
-		
+
 
 		return nullptr;
 	}
 
 	Ref<Actor> GetActor(const std::string& actorName) const {
 		auto it = Actors.find(actorName);
-		
+
 		// if actor is found return it, else throw error
 		if (it != Actors.end()) {
 			return it->second;
@@ -187,7 +221,7 @@ public:
 
 	std::vector<std::string> GetAllActorNames() const {
 		std::vector<std::string> allActorNames;
-		
+
 		for (auto& pair : Actors) {
 			allActorNames.push_back(pair.first);
 		}
@@ -198,7 +232,7 @@ public:
 	bool RemoveActor(const std::string& actorName) {
 
 		auto it = Actors.find(actorName);
-		
+
 		// if actor is found remove it, else throw warning
 		if (it != Actors.end()) {
 			Ref<Actor> actorToRemove = it->second;
@@ -263,16 +297,16 @@ public:
 	/// <param name="deltaTime"></param>
 	void Update(const float deltaTime) {
 		checkValidCamera();
-	//	std::cout << usedCamera << std::endl;
+		//	std::cout << usedCamera << std::endl;
 
-		
 
-		
+
+
 
 		for (auto& pair : Actors) {
-			
-			
-				
+
+
+
 
 			// get the second value from the pair (actor)
 			Ref<Actor> actor = pair.second;
@@ -288,11 +322,11 @@ public:
 		}*/
 	}
 
-	
+
 	// all const
 	void Render() const {
 
-	
+
 
 		// go through all actors
 		for (const auto& pair : Actors) {
@@ -310,7 +344,7 @@ public:
 
 
 				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
-				
+
 				Matrix4 modelMatrix = actor->GetModelMatrix(getUsedCamera());
 
 				//glDisable(GL_DEPTH_TEST);
@@ -324,10 +358,18 @@ public:
 
 				glEnable(GL_DEPTH_TEST);
 				//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
-				
-				
+
+
 				if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getActorName()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-				else glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
+				else {
+					if (pair.second->GetComponent<ShaderComponent>()) {
+						glUseProgram(pair.second->GetComponent<ShaderComponent>()->GetProgram());
+					}
+					else continue;
+
+					//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
+
+				}
 
 				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 
@@ -344,8 +386,8 @@ public:
 	}
 
 	bool OnCreate() {
-		
-		
+
+
 
 		// if an actor was setup wrong throw an error
 		for (auto& actor : Actors) {
