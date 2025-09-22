@@ -72,7 +72,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 				newActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 				
 				// default shader
-				//newActor->AddComponent<ShaderComponent>(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
+				newActor->AddComponent<ShaderComponent>(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
 				
 				newActor->OnCreate();
 				sceneGraph->AddActor(newActor);

@@ -1,11 +1,11 @@
 <CellFile>
     <Actors>
-        <camera/>
         <Board>
             <Mario/>
             <Sphere/>
         </Board>
         <Cube/>
+        <CamTest/>
     </Actors>
     <Components>
         <MaterialComponent>

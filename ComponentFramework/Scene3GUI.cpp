@@ -8,6 +8,7 @@
 #include "InputManager.h"
 #include "imgui_stdlib.h"
 #include "CameraComponent.h"
+#include <filesystem>
 using namespace ImGui;
 
 void Scene3GUI::ShowSaveDialog()
@@ -24,19 +25,24 @@ void Scene3GUI::ShowSaveDialog()
 
 	if (ImGui::BeginPopupModal("Save File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Enter The Name of The File You Want to Save:");
-		ImGui::InputText("##NameOfSaveFile", &saveFileName);
+		ImGui::InputText("##NameOfSaveFile", &SceneGraph::getInstance().cellFileName);
 		ImGui::Separator();
 
 		if (ImGui::Button("Save File ##Button")) {
-			sceneGraph.SaveFile(saveFileName);
-			saveFileName.clear();
+			std::filesystem::create_directory("Game Objects/" + SceneGraph::getInstance().cellFileName);
+			std::cout << SceneGraph::getInstance().cellFileName;
+			
+			SceneGraph::getInstance().SaveFile(SceneGraph::getInstance().cellFileName);
+			SceneGraph::getInstance().cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
+
+
 
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel")) {
-			saveFileName.clear();
+			SceneGraph::getInstance().cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -58,51 +64,55 @@ void Scene3GUI::ShowLoadDialog()
 
 	if (ImGui::BeginPopupModal("Load File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Enter The Name of The File You Want to Load:");
-		ImGui::InputText("##NameOfLoadFile", &saveFileName);
+		ImGui::InputText("##NameOfLoadFile", &SceneGraph::getInstance().cellFileName);
 		ImGui::Separator();
 
 		if (ImGui::Button("Load File ##Button")) {
-			sceneGraph.RemoveAllActors();
-			XMLObjectFile::addActorsFromFile(&sceneGraph, saveFileName);
+			SceneGraph::getInstance().RemoveAllActors();
+			XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), SceneGraph::getInstance().cellFileName);
 
-			Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
-			cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-			cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			//Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+			//cameraActor->AddComponent<CameraComponent>(cameraActor, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			//cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-			cameraActor->OnCreate();
+			//cameraActor->OnCreate();
 
-			sceneGraph.AddActor(cameraActor);
+			//sceneGraph.AddActor(cameraActor);
 
-			sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
+			//sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
 
-			cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
+			//cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
 
-			//Create second camera as a test
+			////Create second camera as a test
 
 
-			Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
-			cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-			cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			//Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+			//cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			//cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-			cameraActorTwo->OnCreate();
+			//cameraActorTwo->OnCreate();
 
-			sceneGraph.AddActor(cameraActorTwo);
+			//sceneGraph.AddActor(cameraActorTwo);
 
 			//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
 
 
-			cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
+			//cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
+
+			SceneGraph::getInstance().setUsedCamera(0);
+			SceneGraph::getInstance().checkValidCamera();
 
 
-			sceneGraph.OnCreate();
-			saveFileName.clear();
+
+			SceneGraph::getInstance().OnCreate();
+			SceneGraph::getInstance().cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel")) {
-			saveFileName.clear();
+			SceneGraph::getInstance().cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -125,15 +135,17 @@ bool Scene3GUI::OnCreate() {
 	
 	AssetManager::getInstance().ListAllAssets();
 
-	camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
 	
-	camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse( Quaternion()));
-	
-	camera->OnCreate();
-	
-	sceneGraph.AddActor(camera);
 
-	Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
+	//camera = std::make_shared<CameraActor>(nullptr, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	////
+	//camera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse( Quaternion()));
+	////
+	//camera->OnCreate();
+	//
+	//sceneGraph.AddActor(camera);
+
+	/*Ref<Actor> cameraActor = std::make_shared<Actor>(nullptr, "cameraActor");
 	cameraActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 	cameraActor->OnCreate();
 	sceneGraph.AddActor(cameraActor);
@@ -142,23 +154,26 @@ bool Scene3GUI::OnCreate() {
 	cameraActor->GetComponent<CameraComponent>()->OnCreate();
 	cameraActor->GetComponent<CameraComponent>()->fixCameraToTransform();
 
-	sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());
+	sceneGraph.setUsedCamera(cameraActor->GetComponent<CameraComponent>());*/
+	
+	SceneGraph::getInstance().checkValidCamera();
+	
 	//example.readDoc();
 
-	camera->fixCameraToTransform();
+	//camera->fixCameraToTransform();
 
-	Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
-	cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-	cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+	//Ref<Actor> cameraActorTwo = std::make_shared<Actor>(nullptr, "cameraActor2");
+	//cameraActorTwo->AddComponent<CameraComponent>(cameraActorTwo, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	//cameraActorTwo->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 
-	cameraActorTwo->OnCreate();
+	//cameraActorTwo->OnCreate();
 
-	sceneGraph.AddActor(cameraActorTwo);
+	//sceneGraph.AddActor(cameraActorTwo);
 
-	//sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
+	////sceneGraph.setUsedCamera(cameraActorTwo->GetComponent<CameraComponent>());
 
 
-	cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
+	//cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
 	
 	// Light Pos
 	lightPos = Vec3(1.0f, 2.0f, -10.0f);
@@ -177,21 +192,21 @@ bool Scene3GUI::OnCreate() {
 
 	//sceneGraph.LoadActor("Sphere", sceneGraph.GetActor("Board"));
 
+	
 
 
+	SceneGraph::getInstance().OnCreate();
 
-	sceneGraph.OnCreate();
-
-	sceneGraph.ListAllActors();
+	SceneGraph::getInstance().ListAllActors();
 
 	//sceneGraph.RemoveActor("Sphere");
-	camera->fixCameraToTransform();
-	XMLObjectFile::addActorsFromFile(&sceneGraph, "LevelThree");
+//	camera->fixCameraToTransform();
+	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
 	// pass along the scene graph to the windows
-	hierarchyWindow = std::make_unique<HierarchyWindow>(&sceneGraph);
-	inspectorWindow = std::make_unique<InspectorWindow>(&sceneGraph);
-	assetManagerWindow = std::make_unique<AssetManagerWindow>(&sceneGraph);
+	hierarchyWindow = std::make_unique<HierarchyWindow>(&SceneGraph::getInstance());
+	inspectorWindow = std::make_unique<InspectorWindow>(&SceneGraph::getInstance());
+	assetManagerWindow = std::make_unique<AssetManagerWindow>(&SceneGraph::getInstance());
 
 
 	return true;
@@ -205,9 +220,9 @@ void Scene3GUI::OnDestroy() {
 	AssetManager::getInstance().SaveAssetDatabaseXML();
 	AssetManager::getInstance().RemoveAllAssets();
 
-	sceneGraph.RemoveAllActors();
+	SceneGraph::getInstance().RemoveAllActors();
 
-	camera->OnDestroy();
+	//camera->OnDestroy();
 
 	if (hierarchyWindow) {
 		hierarchyWindow->ClearFilter();
@@ -222,7 +237,7 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
 	//sceneGraph.checkValidCamera();
 
-	InputManager::getInstance().HandleEvents(sdlEvent, &sceneGraph, &collisionSystem);
+	InputManager::getInstance().HandleEvents(sdlEvent, &SceneGraph::getInstance(), &collisionSystem);
 
 	
 }
@@ -230,11 +245,11 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
 void Scene3GUI::Update(const float deltaTime) {
 
-	InputManager::getInstance().update(deltaTime, &sceneGraph);
+	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
 	collisionSystem.Update(deltaTime);
 
-	sceneGraph.Update(deltaTime);
+	SceneGraph::getInstance().Update(deltaTime);
 }
 
 void Scene3GUI::Render() const {
@@ -299,6 +314,13 @@ void Scene3GUI::Render() const {
 
 			EndMenu();
 		}
+		if (BeginMenu("Tools")) {
+			if (MenuItem("Change Camera to Default ##MenuItem", "Ctrl+M")) {
+				SceneGraph::getInstance().useDebugCamera();
+			}
+			EndMenu();
+		}
+
 		EndMainMenuBar();
 	}
 	
@@ -314,21 +336,21 @@ void Scene3GUI::Render() const {
 	
 	
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetViewMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
 
 
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, lightPos);
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("viewMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetViewMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
 
 
 
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetUniformID("lightPos"), 1, lightPos);
 	
-	sceneGraph.Render();
+	SceneGraph::getInstance().Render();
 
 	glUseProgram(0);
 }
