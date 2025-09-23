@@ -6,9 +6,11 @@
 #include "InputManager.h"
 #include "SceneGraph.h"
 
-Actor::Actor(Component* parent_):Component(parent_) {}
+static uint32_t idCounter = 1;
 
-Actor::Actor(Component* parent_, const std::string& actorName_): Component(parent_), actorName(actorName_) {}
+Actor::Actor(Component* parent_) :Component(parent_) { id = idCounter++; }
+
+Actor::Actor(Component* parent_, const std::string& actorName_): Component(parent_), actorName(actorName_) { id = idCounter++; }
 
 
 bool Actor::OnCreate() {

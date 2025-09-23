@@ -169,6 +169,8 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\colourPickFrag.glsl" />
+    <None Include="shaders\colourPickVert.glsl" />
     <None Include="shaders\defaultFrag.glsl" />
     <None Include="shaders\defaultVert.glsl" />
     <None Include="shaders\flatWhite.glsl" />

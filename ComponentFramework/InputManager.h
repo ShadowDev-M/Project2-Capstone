@@ -233,12 +233,19 @@ public:
 				Vec3 startPos = cameraActor_->GetComponent<TransformComponent>()->GetPosition();
 				Vec3 endPos = startPos + Raycast::screenRayCast(lastX, lastY, sceneGraph->getUsedCamera()->GetProjectionMatrix(), sceneGraph->getUsedCamera()->GetViewMatrix());
 
+				if (sdlEvent.type == SDL_MOUSEBUTTONDOWN) {
+					Ref<Actor> pickobj = SceneGraph::getInstance().pickColour(sdlEvent.button.x, sdlEvent.button.y);
+
+					if (pickobj)pickobj->ListComponents();
+				}
 
 				//prepare for unintelligible logic for selecting 
-				Ref<Actor> raycastedActor = collisionSystem->PhysicsRaycast(startPos, endPos);
+				Ref<Actor> raycastedActor = sceneGraph->pickColour(sdlEvent.button.x, sdlEvent.button.y);
+
+				//if (!raycastedActor) raycastedActor = collisionSystem->PhysicsRaycast(startPos, endPos);
 
 				//(Slightly) more expensive debug selector if nothing was selected with the ColliderComponent PhysicsRaycast
-				if (!raycastedActor) raycastedActor = sceneGraph->MeshRaycast(startPos, endPos);
+				//if (!raycastedActor) raycastedActor = sceneGraph->MeshRaycast(startPos, endPos);
 
 				//an object was clicked
 				if (raycastedActor) {
