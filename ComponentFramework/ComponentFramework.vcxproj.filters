@@ -165,10 +165,10 @@
       <Filter>include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="LightComponent.h">
-      <Filter>Header Files\Components</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Scene4Lights.h">
-      <Filter>Header Files\Scenes</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -298,10 +298,10 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LightComponent.cpp">
-      <Filter>Source Files\Components</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene4Lights.cpp">
-      <Filter>Source Files\Scenes</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
