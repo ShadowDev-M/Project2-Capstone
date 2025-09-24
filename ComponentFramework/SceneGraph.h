@@ -425,8 +425,6 @@ public:
 
 		//rgb pixel data
 		unsigned char pixel[3];
-
-		std::cout << "w / h: " << w << ", " << h << "\n"; 
 		
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 
