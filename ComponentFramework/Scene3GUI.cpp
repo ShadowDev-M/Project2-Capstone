@@ -239,7 +239,6 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
 	InputManager::getInstance().HandleEvents(sdlEvent, &SceneGraph::getInstance(), &collisionSystem);
 
-	
 }
 
 

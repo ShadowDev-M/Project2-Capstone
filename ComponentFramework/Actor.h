@@ -13,6 +13,14 @@ class Actor : public Component {
 	Actor& operator= (const Actor&) = delete;
 	Actor& operator=(Actor&&) = delete;
 
+	static uint32_t getNextID() {
+		static uint32_t nextID = 1; // start at 1; 0 = "no actor"
+		return nextID++;
+	}
+	
+	uint32_t id;  // unique per actor
+
+
 protected:
 	std::vector<Ref<Component>> components;
 	Matrix4 modelMatrix;
@@ -20,6 +28,22 @@ protected:
 	std::string actorName;
 	Vec3 selectionColour = Vec3(0.5f,0.5f,0.5f);
 public:
+
+
+	uint32_t getId() { return id; }
+
+	//For colour picker 
+	inline static Vec3 encodeID(uint32_t id) {
+		uint8_t r = (id & 0x000000FF);
+		uint8_t g = (id & 0x0000FF00) >> 8;
+		uint8_t b = (id & 0x00FF0000) >> 16;
+		return Vec3(r, g, b) / 255.0f;
+	}
+
+	inline static uint32_t decodeID(uint8_t r, uint8_t g, uint8_t b) {
+		return r | (g << 8) | (b << 16);
+	}
+
 	Actor(Component* parent_);
 
 	// constructer for setting the parent and the name of an actor (name is const because it doesn't need to be changed when its set)

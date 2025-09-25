@@ -24,6 +24,14 @@ class SceneGraph
 	friend class XMLObjectFile;
 private:
 	std::unordered_map<std::string, Ref<Actor>> Actors;
+	
+	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
+
+	GLuint pickingFBO = 0;
+	GLuint pickingTexture = 0;
+	GLuint pickingDepth = 0;
+
+	int pickingFBOWidth, pickingFBOHeight;
 
 	GLuint selectionFBO = 0;
 	GLuint selectionColorTex = 0;
@@ -49,8 +57,23 @@ public:
 		return instance;
 	}
 
-	SceneGraph() {}
-	~SceneGraph() { RemoveAllActors(); }
+	SceneGraph() {
+	
+		int w, h;
+
+		SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+		createFBOPicking(w,h);
+
+		pickerShader->OnCreate();
+	}
+	~SceneGraph() { RemoveAllActors();
+	pickerShader->OnDestroy();
+	glDeleteFramebuffers(1, &pickingFBO);
+	glDeleteRenderbuffers(1, &pickingDepth);
+	glDeleteTextures(1, &pickingTexture);
+
+
+	}
 
 	void useDebugCamera() {
 		usedCamera = debugCamera->GetComponent<CameraComponent>();
@@ -323,6 +346,107 @@ public:
 	}
 
 
+	//values for picking framebuffer
+
+
+	//create colour picker fbo
+	void createFBOPicking(int w, int h) {
+
+		//create depth buffer
+		glGenRenderbuffers(1, &pickingDepth);
+		glBindRenderbuffer(GL_RENDERBUFFER, pickingDepth);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+		//create picking buffer
+		glGenFramebuffers(1, &pickingFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+
+		//create texture buffer
+		glGenTextures(1, &pickingTexture);
+		glBindTexture(GL_TEXTURE_2D, pickingTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pickingTexture, 0);
+
+		// magic sauce :>
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,      // 1. fbo target: GL_FRAMEBUFFER
+								  GL_DEPTH_ATTACHMENT, // 2. attachment point
+								  GL_RENDERBUFFER,     // 3. rbo target: GL_RENDERBUFFER
+								  pickingDepth);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cerr << "Framebuffer is not complete!" << std::endl;
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	
+	}
+
+	Ref<Actor> pickColour(int mouseX, int mouseY) {
+
+		int w, h;
+		SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+
+
+		//use the picking buffer so it is seperated
+		glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+		glViewport(0, 0, w, h);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		
+
+		//get the special shader for picking and set its uniforms
+		glUseProgram(pickerShader->GetProgram());
+		glUniformMatrix4fv(pickerShader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
+		glUniformMatrix4fv(pickerShader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
+
+		for (auto& actor : Actors) {
+
+			if (!actor.second->GetComponent<MeshComponent>()) {continue;}//no meshcomponent for actor
+
+			//set matrix with its camera (i forgot to put in camera parametre and spent 5 hours why it was coming back as completely black)
+			glUniformMatrix4fv(pickerShader->GetUniformID("uModel"), 1, GL_FALSE, actor.second->GetModelMatrix(getUsedCamera()));
+			
+			//encode the id of the actor as rgb
+			Vec3 idColor = Actor::encodeID(actor.second->getId());
+
+			//send over the rbg to the shader to use as its rendered colour
+			glUniform3fv(pickerShader->GetUniformID("uIDColor"), 1, &idColor.x); 
+
+			glBindTexture(GL_TEXTURE_2D, 0);
+			actor.second->GetComponent<MeshComponent>()->Render();
+		}
+
+		//rgb pixel data
+		unsigned char pixel[3];
+		
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+		//get the mouse click's rgb pixel data
+		glReadPixels(mouseX, h - mouseY, 1, 1,
+			GL_RGB, GL_UNSIGNED_BYTE, pixel);
+		
+		//reverse selected pixel's rgb and decode into an id
+		uint32_t pickedID = Actor::decodeID(pixel[0], pixel[1], pixel[2]);
+
+		//unbind framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, w, h);
+
+		//check if the clicked pixel's colour id is the same as any of the actors
+		for (auto& actor : Actors) {
+			if (actor.second->getId() == pickedID) return actor.second;
+		}
+
+		return nullptr; // nothing clicked
+	}
+
 	// all const
 	void Render() const {
 
@@ -363,13 +487,20 @@ public:
 				if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getActorName()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
 				else {
 					if (pair.second->GetComponent<ShaderComponent>()) {
-						glUseProgram(pair.second->GetComponent<ShaderComponent>()->GetProgram());
+						glUseProgram(shader->GetProgram());
 					}
 					else continue;
 
 					//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
 
 				}
+
+				///glUseProgram(pickerShader->GetProgram());
+
+				//Vec3 idColor = Actor::encodeID(actor->id);
+				
+
+
 
 				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 
