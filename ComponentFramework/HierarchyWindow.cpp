@@ -52,6 +52,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 			ImGui::EndPopup();
 		}
 
+
 		if (showAddActorDialog) {
 			ImGui::OpenPopup("New Actor");
 			showAddActorDialog = false;
@@ -115,6 +116,12 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 
 		for (const auto& pair : rootActors) {
 			DrawActorNode(pair.first, pair.second);
+		}
+
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup)) {
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && !ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
+				sceneGraph->debugSelectedAssets.clear();
+			}
 		}
 
 		// TODO: right click popup menu, create new, remove, rename 
