@@ -136,6 +136,7 @@
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="DockingWindow.h" />
     <ClInclude Include="ExampleXML.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="DockingWindow.cpp" />
     <ClCompile Include="ExampleXML.cpp" />
     <ClCompile Include="HierarchyWindow.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />

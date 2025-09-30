@@ -288,6 +288,11 @@ void Scene3GUI::Render() const {
 		inspectorWindow->ShowInspectorWindow(&showInspectorWindow);
 	}
 
+	if (showDockingWindow) {
+		dockingWindow->ShowDockingWindow(&showDockingWindow);
+
+	}
+
 	if (showAssetmanagerWindow) {
 		assetManagerWindow->ShowAssetManagerWindow(&showAssetmanagerWindow);
 	}
@@ -309,6 +314,8 @@ void Scene3GUI::Render() const {
 			MenuItem("Demo", nullptr, &showDemoWindow);
 			MenuItem("Hierarchy", nullptr, &showHierarchyWindow);
 			MenuItem("Inspector", nullptr, &showInspectorWindow);
+			MenuItem("Docking", nullptr, &showDockingWindow);
+
 			MenuItem("Asset Manager", nullptr, &showAssetmanagerWindow);
 
 			EndMenu();

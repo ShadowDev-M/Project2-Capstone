@@ -18,6 +18,7 @@
 #include "HierarchyWindow.h"
 #include "InspectorWindow.h"
 #include "AssetManagerWindow.h"
+#include "DockingWindow.h"
 
 using namespace MATH;
 
@@ -40,6 +41,7 @@ private:
 	// Window States
 	mutable bool showDemoWindow = false;
 	mutable bool showHierarchyWindow = true;
+	mutable bool showDockingWindow = true;
 	mutable bool showInspectorWindow = true;
 	mutable bool showAssetmanagerWindow = true;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -55,7 +57,8 @@ private:
 	std::unique_ptr<HierarchyWindow> hierarchyWindow;
 	std::unique_ptr<InspectorWindow> inspectorWindow;
 	std::unique_ptr<AssetManagerWindow> assetManagerWindow;
-	
+	std::unique_ptr<DockingWindow> dockingWindow;
+
 	
 
 

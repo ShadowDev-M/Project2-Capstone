@@ -179,11 +179,25 @@ private:
 
 public:
 
+	bool dockingHovered = 0;
+	bool dockingClicked = 0;
+	ImVec2 dockingPos;   // top-left corner
+	ImVec2 dockingSize;  // width/height
+
+	float frameHeight = 0;
 
 	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph, CollisionSystem* collisionSystem) {
 
-		if (GetIO().WantCaptureMouse) {
+		//std::cout << dockingClicked << std
+
+		//Just checking if the title bar is clicked, just for convenience.
+		if (!dockingHovered || (sdlEvent.motion.y >= dockingPos.y && sdlEvent.motion.y <= (dockingPos.y + frameHeight))) {
+			
+			//if (dockingClicked) { std::cout << "eee \n"; }
+
+
 			return;
+
 		}
 		static int lastX = 0, lastY = 0;
 		const Uint8* keys = SDL_GetKeyboardState(NULL);
@@ -220,7 +234,7 @@ public:
 			if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
 
 				// makes it so ImGui handles the mouse click
-				if (GetIO().WantCaptureMouse) {
+				if (!dockingHovered) {
 					mouseHeld = false;
 					return;
 				}
@@ -276,7 +290,7 @@ public:
 			if (isHeld(SDL_BUTTON_LEFT) || isPressed(SDL_BUTTON_LEFT)) {
 
 				// makes it so ImGui handles the mouse motion
-				if (GetIO().WantCaptureMouse) {
+				if ( !dockingHovered) {
 					toggleKeyPress(sdlEvent.button.button);
 					return;
 				}
@@ -311,7 +325,7 @@ public:
 			if (isHeld(SDL_BUTTON_RIGHT) || isPressed(SDL_BUTTON_RIGHT)) {
 
 				// makes it so ImGui handles the mouse motion
-				if (GetIO().WantCaptureMouse) {
+				if (!dockingHovered) {
 					toggleKeyPress(sdlEvent.button.button);
 					return;
 				}
@@ -461,15 +475,21 @@ private:
 	keyboardInputMap keyboard;
 	mouseInputMap mouse;
 
+
+
 	float studMultiplier = 0.5f;
 
 	keyBindingObjectPool pool;
+
+	bool dockingFocused = false;
 
 public:
 	
 	keyboardInputMap* getKeyboardMap() { return &keyboard; }
 
+	mouseInputMap* getMouseMap() { return &mouse; }
 
+	void updateDockingFocused(bool state) { dockingFocused = state; }
 
 	// Meyers Singleton (from JPs class)
 	static InputManager& getInstance() {
@@ -480,14 +500,14 @@ public:
 	
 	void update(float deltaTime, SceneGraph* sceneGraph) {
 		sceneGraph->checkValidCamera();
+		mouse.update(deltaTime);
 
-		if (GetIO().WantCaptureKeyboard) {
+		if (GetIO().WantCaptureKeyboard && !dockingFocused) {
 			return;
 		}
 
 		//update keyboard object
 		keyboard.update(deltaTime);
-		mouse.update(deltaTime);
 		
 		//Check which scene debug vs playing
 		if (true) { //temp set to always true until we can define debug vs playable scenes
