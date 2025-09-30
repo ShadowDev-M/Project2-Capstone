@@ -3,6 +3,7 @@
         <camera/>
         <cameraActor2/>
         <cameraActor/>
+        <Light_Orb/>
         <Board>
             <Mario/>
             <Sphere/>
@@ -15,6 +16,9 @@
             <M_Sphere>
                 <Texture path="textures/Black Chess Base Colour.png"/>
             </M_Sphere>
+            <M_Moon>
+                <Texture path="textures/moon.jpg"/>
+            </M_Moon>
             <M_MarioN>
                 <Texture path="textures/mario_main.png"/>
             </M_MarioN>
@@ -28,6 +32,17 @@
                 <Texture path="textures/skull_texture.jpg"/>
             </M_Skull>
         </MaterialComponent>
+        <ShaderComponent>
+            <S_Multi>
+                <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
+            </S_Multi>
+            <S_Default>
+                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
+            </S_Default>
+            <S_Outline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
+            </S_Outline>
+        </ShaderComponent>
         <MeshComponent>
             <SM_Plane>
                 <Mesh path="meshes/Plane.obj"/>
@@ -57,19 +72,5 @@
                 <Mesh path="meshes/Skull.obj"/>
             </SM_Skull>
         </MeshComponent>
-        <ShaderComponent>
-            <S_Multi>
-                <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
-            </S_Multi>
-            <S_Outline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
-            </S_Outline>
-            <S_Phong>
-                <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
-            </S_Phong>
-            <S_Default>
-                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
-            </S_Default>
-        </ShaderComponent>
     </Components>
 </CellFile>

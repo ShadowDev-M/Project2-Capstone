@@ -3,6 +3,7 @@
 #include "Timer.h"
 #include "Window.h"
 #include "Scene3GUI.h"
+#include "Scene4Lights.h"
 
 
 SceneManager::SceneManager() :
@@ -47,7 +48,7 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	}
 
 	/********************************   Default first scene   ***********************/
-	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
+	BuildNewScene(SCENE_NUMBER::SCENE4LIGHTS);
 	/********************************************************************************/
 	return true;
 }
@@ -89,6 +90,10 @@ void SceneManager::HandleEvents() {
 				BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 				break;
 
+			case SDL_SCANCODE_F2:
+				BuildNewScene(SCENE_NUMBER::SCENE4LIGHTS);
+				break;
+
 			default:
 				break;
 			}
@@ -114,6 +119,11 @@ bool SceneManager::BuildNewScene(SCENE_NUMBER scene) {
 	switch (scene) {
 	case SCENE_NUMBER::SCENE3GUI:
 		currentScene = new Scene3GUI();
+		status = currentScene->OnCreate();
+		break;
+
+	case SCENE_NUMBER::SCENE4LIGHTS:
+		currentScene = new Scene4Lights();
 		status = currentScene->OnCreate();
 		break;
 

@@ -6,8 +6,6 @@
 enum class LightType {
 	Direction,
 	Point,
-	Environment,
-	Spot
 };
 
 class LightComponent : public Component
@@ -22,6 +20,7 @@ private:
 	Vec4 spec;
 	Vec4 diff;
 	float intensity;
+	
 public:
 	LightComponent(Component* parent_, LightType type_, Vec4 spec_, Vec4 diff_, float intensity_) :
 		Component(parent_), type(type_),  spec(spec_), diff(diff_), intensity(intensity_) {}
@@ -34,11 +33,12 @@ public:
 	 ~LightComponent() {}
 
 	 bool OnCreate();
-	 void OnDestroy() {}
+	 void OnDestroy();
 	 void Update(const float deltaTime_) {}
 	 void Render() const {}
 	 
 	Vec4 getSpec() { return spec; }
 	Vec4 getDiff() { return diff; }
-	float getIntensity() { return intensity; }
+	GLfloat getIntensity() { return intensity; }
+	LightType getType() { return type; }
 };

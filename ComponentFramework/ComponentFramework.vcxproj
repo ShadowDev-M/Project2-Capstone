@@ -150,12 +150,14 @@
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="InspectorWindow.h" />
+    <ClInclude Include="LightComponent.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Scene3GUI.h" />
+    <ClInclude Include="Scene4Lights.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ShaderComponent.h" />
@@ -170,6 +172,8 @@
     <None Include="shaders\defaultFrag.glsl" />
     <None Include="shaders\defaultVert.glsl" />
     <None Include="shaders\flatWhite.glsl" />
+    <None Include="shaders\MultiPhongFrag.glsl" />
+    <None Include="shaders\MultiPhongVert.glsl" />
     <None Include="shaders\outline.glsl" />
     <None Include="shaders\selectionFrag.glsl" />
     <None Include="shaders\selectionVert.glsl" />
@@ -197,11 +201,13 @@
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="InspectorWindow.cpp" />
+    <ClCompile Include="LightComponent.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="Scene3GUI.cpp" />
+    <ClCompile Include="Scene4Lights.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ShaderComponent.cpp" />

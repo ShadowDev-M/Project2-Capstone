@@ -15,10 +15,11 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 // lights
-uniform vec3 lightPos; // array
-uniform vec4 diffuse; // array
-uniform vec4 specular; // array
-uniform float intensity; // array
+uniform vec3 lightPos[MAX_LIGHTS];
+uniform vec4 diffuse[MAX_LIGHTS];
+uniform vec4 specular[MAX_LIGHTS];
+uniform float intensity[MAX_LIGHTS];
+uniform uint lightType[MAX_LIGHTS];
 uniform vec4 ambient;
 uniform uint numLights;
 
@@ -26,8 +27,9 @@ uniform uint numLights;
 layout (location = 0) out vec3 vertNormal;
 layout (location = 1) out vec3 eyeDir;
 layout (location = 2) out vec2 textureCoords;
-layout (location = 3) out vec3 lightDir; // array
-layout (location = 10) out vec3 fragPos;
+layout (location = 3) out vec3 fragPos;
+layout (location = 4) out vec3 lightDir[MAX_LIGHTS];
+
  
 
 void main() {
@@ -40,14 +42,14 @@ void main() {
 	vec3 vertDir = normalize(vertPos);
 	eyeDir = -vertDir;
 
-	fragPos = vec3(modelMatrix * vVertex);
+	fragPos = vertPos;
 
 	/// Light position from the point-of-view of each vertex
-	vec3 lightLocFromVertex; // array
-	//for(int i =0; i < numLights; i++){
-		lightLocFromVertex = vec3(lightPos) - vertPos; // array
-		lightDir = normalize(lightLocFromVertex); /// Create the light direction. // array
-	//}
+	vec3 lightLocFromVertex[MAX_LIGHTS];
+	for(uint i = 0u; i < numLights; i++){
+		lightLocFromVertex[i] = vec3(lightPos[i]) - vertPos;
+		lightDir[i] = normalize(lightLocFromVertex[i]); /// Create the light direction.
+	}
 	
 	gl_Position =  projectionMatrix * viewMatrix * modelMatrix * vVertex; 
 }
