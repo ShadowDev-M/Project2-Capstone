@@ -156,7 +156,6 @@ public:
 		for (auto it = assetManager.begin(); it != assetManager.end(); it++) {
 			std::cout << it->first.name << std::endl;
 		}
-		std::cout << "------------------------------" << std::endl;
 	}
 
 	// removes assets

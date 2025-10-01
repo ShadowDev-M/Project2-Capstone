@@ -265,11 +265,11 @@ public:
 				if (raycastedActor) {
 
 
-					if (!keys[SDL_SCANCODE_LCTRL] && !(sceneGraph->debugSelectedAssets.find(raycastedActor->getActorName()) != sceneGraph->debugSelectedAssets.end())) { sceneGraph->debugSelectedAssets.clear(); }
+					if (!keys[SDL_SCANCODE_LCTRL] && !(sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end())) { sceneGraph->debugSelectedAssets.clear(); }
 
-					if (sceneGraph->debugSelectedAssets.find(raycastedActor->getActorName()) != sceneGraph->debugSelectedAssets.end() && keys[SDL_SCANCODE_LCTRL]) { sceneGraph->debugSelectedAssets.erase(raycastedActor->getActorName()); }
+					if (sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end() && keys[SDL_SCANCODE_LCTRL]) { sceneGraph->debugSelectedAssets.erase(raycastedActor->getId()); }
 
-					else sceneGraph->debugSelectedAssets.emplace(raycastedActor->getActorName(), raycastedActor);
+					else sceneGraph->debugSelectedAssets.emplace(raycastedActor->getId(), raycastedActor);
 
 				}
 				//no object was clicked, and left control isn't pressed (making sure the user didn't accidentally misclicked during multi object selection before clearing selection)

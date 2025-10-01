@@ -1,9 +1,13 @@
 #include "InspectorWindow.h"
 #include "InputManager.h"
+#include "EditorManager.h"
 #include "imgui_stdlib.h"
 #include <EMath.h>
 
-InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
+
+InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
+	EditorManager::getInstance().RegisterWindow("Inspector", true);
+}
 
 void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 {
@@ -19,6 +23,9 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			auto selectedActor = sceneGraph->debugSelectedAssets.begin();
 
 			DrawActorHeader(selectedActor->second);
+			
+			ImGui::SameLine();
+			ImGui::Text("ID: %i", selectedActor->first);
 
 			ImGui::Separator();
 
@@ -57,7 +64,6 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				ImGui::Separator();
 			}
 
-
 			// mesh
 			if (selectedActor->second->GetComponent<MeshComponent>()) {
 				DrawMeshComponent(selectedActor->second->GetComponent<MeshComponent>());
@@ -79,7 +85,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				ImGui::Separator();
 			}
 
-			if (ImGui::Button("Add Component##Button")) {
+			if (ImGui::Button("Add Component##Button", ImVec2(-1, 0))) {
 				ImGui::OpenPopup("Add Component");
 			}
 
@@ -119,7 +125,9 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 
 				if (ImGui::Selectable("Light Component")) {
 					if (!selectedActor->second->GetComponent<LightComponent>()) {
-						selectedActor->second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 20.0f);
+						selectedActor->second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 200.0f);
+						sceneGraph->AddLight(selectedActor->second);
+						
 					}
 				}
 
@@ -143,8 +151,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 
 			if (ImGui::CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
 				for (const auto& pair : sceneGraph->debugSelectedAssets) {
-					ImGui::Text("%s", pair.first.c_str());
-					
+					ImGui::Text("%s", pair.second->getActorName().c_str());
 				}
 			}
 		}
@@ -155,12 +162,19 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 
 void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 {
-	actorName = actor_->getActorName();
+	if (oldActorName != actor_->getActorName()) {
+		oldActorName = actor_->getActorName();
+		newActorName = oldActorName;
+	}
 
-	ImGui::InputText("##ActorHeader", &actorName);
+	ImGui::InputText("##ActorHeader", &newActorName);
 
+	// passes the rename inforamtion over to the editor manager (editor manager then passes it to the hierarchy window) 
 	if (ImGui::IsItemDeactivatedAfterEdit()) {
-
+		if (!newActorName.empty() && newActorName != oldActorName) {
+			EditorManager::getInstance().RequestActorRename(oldActorName, newActorName);
+			oldActorName = newActorName;
+		}
 	}
 
 }
@@ -256,27 +270,26 @@ void InspectorWindow::DrawMeshComponent(Ref<MeshComponent> mesh)
 		ImGui::TextWrapped("Mesh Vertices: %zu", mesh->getVertices());
 
 
-		ImGui::Button("Drop New Mesh Here");
+		ImGui::Button("Drop New Mesh Here", ImVec2(-1, 0));
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MESH_ASSET")) {
-				// store payload data		
-				const char* droppedAsset = (const char*)payload->Data;
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MESH_ASSET");
 
+			if (payload) {
+				// store payload data
+				const char* droppedAssetName = static_cast<const char*>(payload->Data);
+				
 				// get a reference to the asset that has been dropped
-				Ref<MeshComponent> newMesh = AssetManager::getInstance().GetAsset<MeshComponent>(droppedAsset);
-
-
-				// an extra check to make sure the new mesh is valid and that there is an actor selected
-				//if (newMesh && !sceneGraph.debugSelectedAssets.empty())
+				Ref<MeshComponent> newMesh = AssetManager::getInstance().GetAsset<MeshComponent>(droppedAssetName);
 
 				// get the actor
-				for (const auto& pair : sceneGraph->debugSelectedAssets) {
-					Ref<Actor> actor = pair.second;
-
-					// replace the actors mesh
-					actor->ReplaceComponent<MeshComponent>(newMesh);
+				if (newMesh) {
+					for (const auto& pair : sceneGraph->debugSelectedAssets) {
+						// replace the actors material
+						pair.second->ReplaceComponent<MeshComponent>(newMesh);
+					}
 				}
 			}
+
 			ImGui::EndDragDropTarget();
 		}
 
@@ -296,29 +309,32 @@ void InspectorWindow::DrawMaterialComponent(Ref<MaterialComponent> material)
 
 		// display material thumbnail
 		if (material->getTextureID() != 0) {
-			ImGui::ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnailSize, thumbnailSize));
+			ImGui::ImageButton("##MaterialThumbnail", ImTextureID(material->getTextureID()),
+				ImVec2(thumbnailSize, thumbnailSize));
+		}
+		else {
+			ImGui::Button("Material", ImVec2(thumbnailSize, thumbnailSize));
 		}
 
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MATERIAL_ASSET")) {
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MATERIAL_ASSET");
+			if (payload) {
 				// store payload data
-				const char* droppedAsset = (const char*)payload->Data;
-
+				const char* droppedAssetName = static_cast<const char*>(payload->Data);
+				
 				// get a reference to the asset that has been dropped
-				Ref<MaterialComponent> newMaterial = AssetManager::getInstance().GetAsset<MaterialComponent>(droppedAsset);
-
+				Ref<MaterialComponent> newMaterial = AssetManager::getInstance().GetAsset<MaterialComponent>(droppedAssetName);
+				
 				// get the actor
-				for (const auto& pair : sceneGraph->debugSelectedAssets) {
-					Ref<Actor> actor = pair.second;
-
-					// replace the actors material
-					actor->ReplaceComponent<MaterialComponent>(newMaterial);
+				if (newMaterial) {
+					for (const auto& pair : sceneGraph->debugSelectedAssets) {
+						// replace the actors material
+						pair.second->ReplaceComponent<MaterialComponent>(newMaterial);
+					}
 				}
 			}
 			ImGui::EndDragDropTarget();
 		}
-
-
 
 	}
 }
@@ -373,27 +389,26 @@ void InspectorWindow::DrawShaderComponent(Ref<ShaderComponent> shader)
 		ImGui::TextWrapped("Shader Frag: %s", shader->GetFragName());
 
 
-		ImGui::Button("Drop New Asset Here ##Shader");
+		ImGui::Button("Drop New Shader Here");
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SHADER_ASSET")) {
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SHADER_ASSET");
+			if (payload) {
 				// store the payload data
-				const char* droppedAsset = (const char*)payload->Data;
-
+				const char* droppedAssetName = static_cast<const char*>(payload->Data);
+				
 				// get a reference to the asset that has been dropped
-				Ref<ShaderComponent> newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(droppedAsset);
-
+				Ref<ShaderComponent> newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(droppedAssetName);
+				
 				// get the actor
-				for (const auto& pair : sceneGraph->debugSelectedAssets) {
-					Ref<Actor> actor = pair.second;
-
-					// replace the actors shader
-					actor->ReplaceComponent<ShaderComponent>(newShader);
+				if (newShader) {
+					for (const auto& pair : sceneGraph->debugSelectedAssets) {
+						// replace the actors shader
+						pair.second->ReplaceComponent<ShaderComponent>(newShader);
+					}
 				}
 			}
 			ImGui::EndDragDropTarget();
 		}
-
-
 
 	}
 }

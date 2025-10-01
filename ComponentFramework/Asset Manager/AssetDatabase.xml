@@ -1,6 +1,7 @@
 <AssetDatabase>
     <MaterialComponent>
         <Asset name="M_Sphere" filepath="textures/Black Chess Base Colour.png"/>
+        <Asset name="M_Moon" filepath="textures/moon.jpg"/>
         <Asset name="M_MarioFire" filepath="textures/mario_fire.png"/>
         <Asset name="M_MarioN" filepath="textures/mario_main.png"/>
         <Asset name="M_ChessBoard" filepath="textures/8x8_checkered_board.png"/>
@@ -19,8 +20,8 @@
     </MeshComponent>
     <ShaderComponent>
         <Asset name="S_Multi" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>
+        <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
         <Asset name="S_Outline" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/outline.glsl"/>
         <Asset name="S_Phong" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/texturePhongFrag.glsl"/>
-        <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
     </ShaderComponent>
 </AssetDatabase>

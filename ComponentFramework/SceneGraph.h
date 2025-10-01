@@ -14,11 +14,7 @@
 #include "CameraComponent.h"
 #include "LightComponent.h"
 
-//#include "Raycast.h"
-// this class is very similar to the assetmanager pre-singleton just inline
-// I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
-
-// Thoughts on making the scenegraph a singleton: It would allow me to preload certain actors and just place them in any scene later on, (I.E unity prefabs), only issue with this is if in one scene I edited an object, those same values would carry over to another scene
+#include "Raycast.h"
 
 class SceneGraph
 {
@@ -27,7 +23,13 @@ class SceneGraph
 	//I don't want anything else to really touch the docking FBOs yet, so may as well give DockingWindow access to the private members of SceneGraph
 	friend class DockingWindow;
 private:
-	std::unordered_map<std::string, Ref<Actor>> Actors;
+	// main actor map, replaced old name lookup system with new id lookup system (this makes things more optimized and better in the longrun when we expand the engine)
+	// mainly did this because renaming was annoying and this system makes things so easy
+	std::unordered_map<uint32_t, Ref<Actor>> Actors;
+
+	// seconday actor map, this acts as an inbetween the original name key to actor lookup and the new id key 
+	// this way we can still look up actors by name but it'll still be optimized with the actor ids
+	std::unordered_map<std::string, uint32_t> ActorNameToId;
 	
 	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
 
@@ -61,6 +63,14 @@ private:
 	SceneGraph(SceneGraph&&) = delete;
 	SceneGraph& operator = (const SceneGraph&) = delete;
 	SceneGraph& operator = (SceneGraph&&) = delete;
+
+	// helper function for renaming an actor
+	void UpdateActorNameMap(uint32_t actorID_, const std::string& oldName_, const std::string& newName_) {
+		if (!oldName_.empty()) {
+			ActorNameToId.erase(oldName_);
+		}
+		ActorNameToId[newName_] = actorID_;
+	}
 
 public:
 	// Meyers Singleton (from JPs class)
@@ -97,7 +107,9 @@ public:
 		usedCamera = debugCamera->GetComponent<CameraComponent>();
 	}
 
-	std::unordered_map<std::string, Ref<Actor>> debugSelectedAssets;
+	// changing this to use actor ids as well
+	// pretty much all of the code stays the same (just instead of getting actor name get id) but some code actually got cut down cause of this which is nice
+	std::unordered_map<uint32_t, Ref<Actor>> debugSelectedAssets;
 
 	mutable std::string cellFileName = "LevelThree";
 
@@ -152,19 +164,36 @@ public:
 	}
 
 	void ValidateAllLights() {
-		for (std::vector<Ref<Actor>>::iterator it; it != lightActors.end(); ++it) {
-			if (!(*it)->ValidateLight()) lightActors.erase(it);
+		if (lightActors.size() != 0) {
+			for (std::vector<Ref<Actor>>::iterator it; it != lightActors.end(); ++it) {
+				if (!(*it)->ValidateLight()) { 
+					
+					lightActors.erase(it);
+				
+				}
+			}
 		}
 	}
 
 	bool AddLight(Ref<Actor> actor) {
 		if (!actor->ValidateLight()) return false;
-		
+
 		lightActors.push_back(actor); 
 		return true;
 	}
 
+	std::vector<Vec3> GetLightsPos() const {
+		std::vector<Vec3> lightPositions;
+
+		for (auto& obj : lightActors) {
+			lightPositions.push_back(obj->GetComponent<TransformComponent>()->GetPosition());
+		}
+
+		return lightPositions;
+	}
+
 	bool GetLightExist(Ref<Actor> actor) {
+		if (lightActors.size() == 0) return false;
 		auto it = std::find(lightActors.begin(), lightActors.end(), actor);
 
 		if (it != lightActors.end()) {
@@ -175,23 +204,76 @@ public:
 		return false;
 	}
 
+	std::vector<Ref<Actor>> GetLightActors() { return lightActors; }
+
 	bool RemoveLight(Ref<Actor> actor) {
 		lightActors.erase(std::remove(lightActors.begin(), lightActors.end(), actor), lightActors.end());
 
 		return false;
 	}
 
+	// now uses ID
 	bool AddActor(Ref<Actor> actor) {
-		const std::string& name = actor->getActorName();
-		auto it = Actors.find(name);
-
-		// check to see if there is already an actor with the same name in the map
-		if (it != Actors.end()) {
-			Debug::Warning("There is already an actor with the name: " + name, __FILE__, __LINE__);
+		if (!actor) {
+			Debug::Error("Attempted to add null actor", __FILE__, __LINE__);
 			return false;
 		}
 
-		Actors[name] = actor;
+		const std::string& name = actor->getActorName();
+		uint32_t id = actor->getId();
+
+		// check if an actor with this ID already exists
+		auto it = Actors.find(id);
+		if (it != Actors.end()) {
+			Debug::Warning("An actor with ID " + std::to_string(id) + " already exists", __FILE__, __LINE__);
+			return false;
+		}
+
+		// check to see if there is already an actor with the same name in the map
+		auto nameIt = ActorNameToId.find(name);
+		if (nameIt != ActorNameToId.end() && nameIt->second != id) {
+			Debug::Warning("An actor named: " + name + " already exists", __FILE__, __LINE__);
+			return false;
+		}
+
+		// add the actor using ID as key
+		Actors[id] = actor;
+		ActorNameToId[name] = id;
+
+		return true;
+	}
+
+	// 
+	bool RenameActor(const std::string& oldName_, const std::string& newName_) {
+		if (oldName_ == newName_) return true;
+		if (newName_.empty()) {
+			Debug::Warning("Cannot rename actor to empty name", __FILE__, __LINE__);
+			return false;
+		}
+
+		// check if new name is already taken
+		auto nameIt = ActorNameToId.find(newName_);
+		if (nameIt != ActorNameToId.end()) {
+			Debug::Warning("An actor named: " + newName_ + " already exists", __FILE__, __LINE__);
+			return false;
+		}
+
+		// find the actor by old name
+		auto oldNameIt = ActorNameToId.find(oldName_);
+		if (oldNameIt == ActorNameToId.end()) {
+			Debug::Error("Cannot find actor named: " + oldName_, __FILE__, __LINE__);
+			return false;
+		}
+
+		uint32_t actorId = oldNameIt->second;
+		Ref<Actor> actor = Actors[actorId];
+
+		// update the actor's internal name
+		actor->setActorName(newName_);
+
+		// update the name lookup map
+		UpdateActorNameMap(actorId, oldName_, newName_);
+
 		return true;
 	}
 
@@ -248,77 +330,96 @@ public:
 	}
 
 	Ref<Actor> GetActor(const std::string& actorName) const {
-		auto it = Actors.find(actorName);
+        // try to find the actor by name
+		auto nameIt = ActorNameToId.find(actorName);
+        if (nameIt == ActorNameToId.end()) {
+            Debug::Error("Can't find requested actor: " + actorName, __FILE__, __LINE__);
+            return nullptr;
+        }
 
-		// if actor is found return it, else throw error
-		if (it != Actors.end()) {
-			return it->second;
-		}
-		else {
-			Debug::Error("Can't fint requested actor: ", __FILE__, __LINE__);
-			return nullptr;
-		}
+		// try to find actor by ID
+        uint32_t actorId = nameIt->second;
+        auto actorIt = Actors.find(actorId);
+
+        if (actorIt != Actors.end()) {
+            return actorIt->second;
+        }
+
+		// if the actor can't be found by name or by ID
+        Debug::Error("Can't find requested actor: " + actorName, __FILE__, __LINE__);
+        return nullptr;
+    }
+
+	Ref<Actor> GetActorById(uint32_t actorId) const {
+		auto it = Actors.find(actorId);
+		return (it != Actors.end()) ? it->second : nullptr; // conditional operator (if actor found by id return it, otherwise return nullptr)
 	}
 
 	std::vector<std::string> GetAllActorNames() const {
 		std::vector<std::string> allActorNames;
+		allActorNames.reserve(Actors.size());
 
-		for (auto& pair : Actors) {
-			allActorNames.push_back(pair.first);
+		for (const auto& pair : Actors) {
+			allActorNames.push_back(pair.second->getActorName());
 		}
 
 		return allActorNames;
 	}
 
 	bool RemoveActor(const std::string& actorName) {
-
-		auto it = Actors.find(actorName);
-
-		// if actor is found remove it, else throw warning
-		if (it != Actors.end()) {
-			Ref<Actor> actorToRemove = it->second;
-			actorToRemove->DeleteComponent<CameraComponent>();
-
-			if (actorToRemove->GetComponent<CameraActor>()) {
-				actorToRemove->GetComponent<CameraActor>()->OnDestroy();
-			}
-
-
-			// if the actor that is being removed is parented or a parent, get all children
-			std::vector<std::string> childrenToRemove;
-			for (const auto& pair : Actors) {
-				if (pair.second->getParentActor() == actorToRemove.get()) {
-					childrenToRemove.push_back(pair.first);
-				}
-			}
-
-			// recursivly remove each child actor
-			for (const std::string& childName : childrenToRemove) {
-				RemoveActor(childName);
-			}
-
-			// also remove the actor from the debug
-			debugSelectedAssets.erase(actorName);
-
-			actorToRemove->OnDestroy();
-			Actors.erase(it);
-			return true;
-		}
-		else {
+		auto nameIt = ActorNameToId.find(actorName);
+		if (nameIt == ActorNameToId.end()) {
 			Debug::Warning("Actor: " + actorName + " does not exist!", __FILE__, __LINE__);
 			return false;
 		}
+
+		uint32_t actorId = nameIt->second;
+		auto actorIt = Actors.find(actorId);
+
+		if (actorIt == Actors.end()) {
+			Debug::Error("Actor: " + actorName + " ID does not exist!", __FILE__, __LINE__);
+			return false;
+		}
+
+		Ref<Actor> actorToRemove = actorIt->second;
+		actorToRemove->DeleteComponent<CameraComponent>();
+
+		if (actorToRemove->GetComponent<CameraActor>()) {
+			actorToRemove->GetComponent<CameraActor>()->OnDestroy();
+		}
+
+		// if the actor that is being removed is parented or a parent, get all children
+		std::vector<std::string> childrenToRemove;
+		for (const auto& pair : Actors) {
+			if (pair.second->getParentActor() == actorToRemove.get()) {
+				childrenToRemove.push_back(pair.second->getActorName());
+			}
+		}
+
+		// recursivly remove each child actor
+		for (const std::string& childName : childrenToRemove) {
+			RemoveActor(childName);
+		}
+
+		// also remove the actor from the debug
+		debugSelectedAssets.erase(actorId);
+
+		actorToRemove->OnDestroy();
+
+		// remove from both maps
+		Actors.erase(actorId);
+		ActorNameToId.erase(actorName);
+
+		return true;
 	}
 
-	// lists all actors in the map
+	// lists all actors name and ID
 	void ListAllActors() const {
 		std::cout << "All actors in the scene: " << std::endl;
-		for (auto it = Actors.begin(); it != Actors.end(); it++) {
-			std::cout << it->first << std::endl;
+		for (const auto& pair : Actors) {
+			std::cout << pair.second->getActorName() << " (ID: " << pair.first << ")" << std::endl;
 		}
-		std::cout << "------------------------------------------" << std::endl;
 	}
-
 
 	void RemoveAllActors() {
 		std::cout << "Deleting All Actors In The Scene" << std::endl;
@@ -328,8 +429,10 @@ public:
 			pair.second->OnDestroy();
 		}
 
-		// clear the map
+		// clear the maps
 		Actors.clear();
+		ActorNameToId.clear();
+		debugSelectedAssets.clear();
 	}
 
 	/// <summary>
@@ -452,6 +555,41 @@ public:
 
 		if (!RENDERMAINSCREEN) {
 
+		std::vector<Vec3> lightPos;
+		std::vector<Vec4> lightSpec;
+		std::vector<Vec4> lightDiff;
+		std::vector<float> lightIntensity;
+		std::vector<GLuint> lightTypes;
+		if (!lightActors.empty()) {
+			for (auto& light : lightActors) {
+				lightPos.push_back(light->GetPositionFromHierarchy(getUsedCamera()));
+				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
+				lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
+				lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
+				lightTypes.push_back(static_cast<int>(light->GetComponent<LightComponent>()->getType()));
+			}
+
+			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
+			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
+			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+		}
+		else {
+
+		}
+		
+		/*
+		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
+			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
+			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+		*/
+
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(0.45f, 0.55f, 0.60f, 1.00f));
+
+		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
 
 			//use the picking buffer so it is seperated
 			glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
@@ -495,7 +633,7 @@ public:
 				//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
 
 
-				if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getActorName()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
+				if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
 				else {
 					if (pair.second->GetComponent<ShaderComponent>()) {
 						glUseProgram(shader->GetProgram());
@@ -533,13 +671,10 @@ public:
 	}
 
 	bool OnCreate() {
-
-
-
 		// if an actor was setup wrong throw an error
 		for (auto& actor : Actors) {
 			if (!actor.second->OnCreate()) {
-				Debug::Error("Actor failed to initialize: " + actor.first, __FILE__, __LINE__);
+				Debug::Error("Actor failed to initialize: " + actor.second->getActorName(), __FILE__, __LINE__);
 				return false;
 			}
 

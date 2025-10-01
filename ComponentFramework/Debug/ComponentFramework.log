@@ -1,29 +1,10 @@
-﻿  DockingWindow.cpp
+﻿  HierarchyWindow.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
+  (compiling source file 'HierarchyWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
+  (compiling source file 'HierarchyWindow.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(316,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(316,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(316,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\DockingWindow.cpp(67,1): warning C4715: 'getClickInteraction': not all control paths return a value
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe

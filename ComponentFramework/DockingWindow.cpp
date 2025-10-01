@@ -1,13 +1,16 @@
 #include "DockingWindow.h"
 #include "InputManager.h"
+#include "EditorManager.h"
 
-DockingWindow::DockingWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
+DockingWindow::DockingWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
+    EditorManager::getInstance().RegisterWindow("Scene", true);
+}
 
 void DockingWindow::ShowDockingWindow(bool* pOpen)
 {
 
     
-	if (ImGui::Begin("Scene Dock", pOpen, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+	if (ImGui::Begin("Scene", pOpen, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 		
 
 		/*ImVec2 size = ImGui::GetContentRegionAvail();

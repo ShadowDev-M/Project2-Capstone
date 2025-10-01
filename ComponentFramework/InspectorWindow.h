@@ -18,7 +18,9 @@ private:
 
 	bool scaleLock = false;
 
-	std::string actorName = "";
+	// rename variables
+	std::string oldActorName = "";
+	std::string newActorName = "";
 
 	// header for renaming, isactive
 	void DrawActorHeader(Ref<Actor> actor_);
@@ -27,11 +29,8 @@ private:
 	void DrawTransformComponent(Ref<TransformComponent> transform);
 	void DrawMeshComponent(Ref<MeshComponent> mesh);
 	void DrawMaterialComponent(Ref<MaterialComponent> material);
-
 	void DrawCameraComponent(Ref<CameraComponent> camera);
-
 	void DrawLightComponent(Ref<LightComponent> light);
-
 	void DrawShaderComponent(Ref<ShaderComponent> shader);
 
 	// right click popup menu
@@ -70,6 +69,7 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, Ref<Acto
 				sceneActor_->DeleteComponent<CameraComponent>();
 			}
 			if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
+				sceneGraph->RemoveLight(sceneActor_);
 				sceneActor_->DeleteComponent<LightComponent>();
 			}
 		}

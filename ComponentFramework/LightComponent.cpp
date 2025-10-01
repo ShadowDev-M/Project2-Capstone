@@ -6,3 +6,12 @@ bool LightComponent::OnCreate()
 
     return true;
 }
+
+void LightComponent::OnDestroy()
+{
+
+    SceneGraph::getInstance().ValidateAllLights();
+
+}
+
+

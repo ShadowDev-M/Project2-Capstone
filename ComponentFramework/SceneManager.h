@@ -2,16 +2,16 @@
 #define SCENEMANAGER_H
 
 #include <string>
-class SceneManager  {
+class SceneManager {
 public:
-	
+
 	SceneManager();
 	~SceneManager();
 	void Run();
 	bool Initialize(std::string name_, int width_, int height_);
 	void HandleEvents();
-	
-	
+
+
 private:
 	enum class SCENE_NUMBER {
 		SCENE0g = 0,
@@ -19,6 +19,7 @@ private:
 		SCENE1g = 1,
 		SCENE2g = 2,
 		SCENE3GUI = 3,
+		SCENE4LIGHTS = 6,
 		SCENE4,
 		SCENE5,
 		SCENE6

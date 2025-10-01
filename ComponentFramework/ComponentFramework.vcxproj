@@ -137,6 +137,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DockingWindow.h" />
+    <ClInclude Include="EditorManager.h" />
     <ClInclude Include="ExampleXML.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
@@ -170,18 +171,6 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\colourPickFrag.glsl" />
-    <None Include="shaders\colourPickVert.glsl" />
-    <None Include="shaders\defaultFrag.glsl" />
-    <None Include="shaders\defaultVert.glsl" />
-    <None Include="shaders\flatWhite.glsl" />
-    <None Include="shaders\outline.glsl" />
-    <None Include="shaders\selectionFrag.glsl" />
-    <None Include="shaders\selectionVert.glsl" />
-    <None Include="shaders\texturePhongFrag.glsl" />
-    <None Include="shaders\texturePhongVert.glsl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManagerWindow.cpp" />
@@ -192,6 +181,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="DockingWindow.cpp" />
+    <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="ExampleXML.cpp" />
     <ClCompile Include="HierarchyWindow.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
@@ -218,6 +208,22 @@
     <ClCompile Include="tinyxml2.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\colourPickFrag.glsl" />
+    <None Include="shaders\colourPickVert.glsl" />
+    <None Include="shaders\defaultFrag.glsl" />
+    <None Include="shaders\defaultVert.glsl" />
+    <None Include="shaders\flatWhite.glsl" />
+    <None Include="shaders\MultiPhongFrag.glsl" />
+    <None Include="shaders\MultiPhongVert.glsl" />
+    <None Include="shaders\outline.glsl" />
+    <None Include="shaders\phongFrag.glsl" />
+    <None Include="shaders\phongVert.glsl" />
+    <None Include="shaders\selectionFrag.glsl" />
+    <None Include="shaders\selectionVert.glsl" />
+    <None Include="shaders\texturePhongFrag.glsl" />
+    <None Include="shaders\texturePhongVert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -223,28 +223,28 @@ XMLElement* XMLObjectFile::writeActorRecursive(Actor* actor_, XMLElement* root_)
 void SceneGraph::SaveFile(std::string name) const {
     XMLObjectFile::writeCellFile(name);
 
-    for (auto& obj : Actors) {
+    for (auto& obj : ActorNameToId) {
 
         XMLObjectFile::writeActor(obj.first);
 
-        XMLObjectFile::writeUniqueComponent<TransformComponent>(obj.first, obj.second->GetComponent<TransformComponent>().get());
-        
-        if (obj.second->GetComponent<CameraComponent>())
-            XMLObjectFile::writeUniqueComponent<CameraComponent>(obj.first, obj.second->GetComponent<CameraComponent>().get());
+        XMLObjectFile::writeUniqueComponent<TransformComponent>(obj.first, GetActor(obj.first)->GetComponent<TransformComponent>().get());
+
+        if (GetActor(obj.first)->GetComponent<CameraComponent>())
+            XMLObjectFile::writeUniqueComponent<CameraComponent>(obj.first, GetActor(obj.first)->GetComponent<CameraComponent>().get());
 
 
         AssetManager& assetMgr = AssetManager::getInstance();
 
-        std::cout << assetMgr.getAssetName(obj.second->GetComponent<MeshComponent>()) << std::endl;
+        std::cout << assetMgr.getAssetName(GetActor(obj.first)->GetComponent<MeshComponent>()) << std::endl;
 
-        if (obj.second->GetComponent<MeshComponent>())
-            XMLObjectFile::writeReferenceComponent<MeshComponent>(obj.first, obj.second->GetComponent<MeshComponent>());
+        if (GetActor(obj.first)->GetComponent<MeshComponent>())
+            XMLObjectFile::writeReferenceComponent<MeshComponent>(obj.first, GetActor(obj.first)->GetComponent<MeshComponent>());
 
-        if (obj.second->GetComponent<MaterialComponent>())
-            XMLObjectFile::writeReferenceComponent<MaterialComponent>(obj.first, obj.second->GetComponent<MaterialComponent>());
+        if (GetActor(obj.first)->GetComponent<MaterialComponent>())
+            XMLObjectFile::writeReferenceComponent<MaterialComponent>(obj.first, GetActor(obj.first)->GetComponent<MaterialComponent>());
 
-        if (obj.second->GetComponent<ShaderComponent>())
-            XMLObjectFile::writeReferenceComponent<ShaderComponent>(obj.first, obj.second->GetComponent<ShaderComponent>());
+        if (GetActor(obj.first)->GetComponent<ShaderComponent>())
+            XMLObjectFile::writeReferenceComponent<ShaderComponent>(obj.first, GetActor(obj.first)->GetComponent<ShaderComponent>());
 
 
         // [key.first/second] accesses the vector for the given key, if it doesn't exist it creates it
@@ -256,8 +256,8 @@ void SceneGraph::SaveFile(std::string name) const {
         XMLObjectFile::writeComponent<ShaderComponent>(obj.first, obj.second->GetComponent<ShaderComponent>().get());*/
 
 
-        obj.second->GetComponent<TransformComponent>()->GetPosition().print();
-        XMLObjectFile::writeActorToCell(name, obj.second, true);
+        GetActor(obj.first)->GetComponent<TransformComponent>()->GetPosition().print();
+        XMLObjectFile::writeActorToCell(name, GetActor(obj.first), true);
     }
 
 

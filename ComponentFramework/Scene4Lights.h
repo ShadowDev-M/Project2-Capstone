@@ -50,6 +50,10 @@ private:
 	void ShowSaveDialog();
 	void ShowLoadDialog();
 
+	Ref<Actor> lightOrb;
+	Ref<Actor> lightOrb2;
+	std::vector<Ref<Actor>> lights;
+
 	// using unqiue pointers for automatic memory management
 	// could switch to shared pointers if we ever intend on having this window in multiple scenes
 	std::unique_ptr<HierarchyWindow> hierarchyWindow;
