@@ -5,6 +5,7 @@
 #include "Scene3GUI.h"
 #include "EditorManager.h"
 #include "SceneGraph.h"
+#include "Scene4Lights.h"
 
 SceneManager::SceneManager() :
 	currentScene{ nullptr }, window{ nullptr }, timer{ nullptr },
@@ -108,6 +109,10 @@ void SceneManager::HandleEvents() {
 				BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 				break;
 
+			case SDL_SCANCODE_F2:
+				BuildNewScene(SCENE_NUMBER::SCENE4LIGHTS);
+				break;
+
 			default:
 				break;
 			}
@@ -133,6 +138,11 @@ bool SceneManager::BuildNewScene(SCENE_NUMBER scene) {
 	switch (scene) {
 	case SCENE_NUMBER::SCENE3GUI:
 		currentScene = new Scene3GUI();
+		status = currentScene->OnCreate();
+		break;
+
+	case SCENE_NUMBER::SCENE4LIGHTS:
+		currentScene = new Scene4Lights();
 		status = currentScene->OnCreate();
 		break;
 

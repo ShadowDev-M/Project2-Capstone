@@ -69,6 +69,7 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, Ref<Acto
 				sceneActor_->DeleteComponent<CameraComponent>();
 			}
 			if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
+				sceneGraph->RemoveLight(sceneActor_);
 				sceneActor_->DeleteComponent<LightComponent>();
 			}
 		}

@@ -80,9 +80,11 @@ bool Actor::DeinitalizeLight()
 
 void Actor::RemoveAllComponents() {
 
+	//SceneGraph::getInstance().RemoveLight()
 	if (GetComponent<CameraActor>()) {
 		GetComponent<CameraActor>()->OnDestroy();
 	}
+	DeinitalizeLight();
 	components.clear();
 }
 
@@ -115,6 +117,26 @@ Matrix4 Actor::GetModelMatrix(Ref<Component> camera_) {
 		modelMatrix = MMath::translate(-cameraComponent_->GetUserActor()->GetComponent<TransformComponent>()->GetPosition()) * modelMatrix;
 	}
 	return modelMatrix;
+}
+
+Vec3 Actor::GetPositionFromHierarchy(Ref<Component> camera_)
+{
+	Ref<CameraComponent> cameraComponent_ = std::dynamic_pointer_cast<CameraComponent>(camera_);
+
+	Ref<TransformComponent> transform = GetComponent<TransformComponent>();
+
+
+	Vec3 rPos = transform ? transform->GetPosition() : Vec3();
+
+
+
+	if (parent) {
+		rPos = dynamic_cast<Actor*>(parent)->GetPositionFromHierarchy(camera_) + rPos;
+	}
+	else if (camera_) {
+		rPos = -cameraComponent_->GetUserActor()->GetComponent<TransformComponent>()->GetPosition() + rPos;
+	}
+	return rPos;
 }
 
 

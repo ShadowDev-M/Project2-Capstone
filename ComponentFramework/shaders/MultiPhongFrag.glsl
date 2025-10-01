@@ -6,13 +6,15 @@
 layout (location = 0) in vec3 vertNormal;
 layout (location = 1) in vec3 eyeDir;
 layout (location = 2) in vec2 textureCoords;
-layout (location = 3) in vec3 lightDir;
-layout (location = 10) in vec3 fragPos;
+layout (location = 3) in vec3 fragPos;
+layout (location = 4) in vec3 lightDir[MAX_LIGHTS];
 
-uniform vec3 lightPos; // needs array
-uniform vec4 diffuse; // needs array
-uniform vec4 specular; // needs array
-uniform float intensity; // needs array
+
+uniform vec3 lightPos[MAX_LIGHTS]; 
+uniform vec4 diffuse[MAX_LIGHTS]; 
+uniform vec4 specular[MAX_LIGHTS]; 
+uniform float intensity[MAX_LIGHTS]; 
+uniform uint lightType[MAX_LIGHTS]; // 0 is directional, 1 is point
 uniform vec4 ambient;
 uniform uint numLights;
 
@@ -20,32 +22,33 @@ layout (location = 0) out vec4 fragColor;
 
 uniform sampler2D myTexture; 
 
-void main() { 
-	vec3 reflection; // needs array
-	float spec; // needs array
-	float diff; // needs array
+void main() {
+	vec3 reflection; 
+	float spec; 
+	float diff; 
 	vec4 ka = ambient;
 	vec4 kt = texture(myTexture,textureCoords);
 	vec4 phongResult = vec4(0.0,0.0,0.0,0.0);
 
 	phongResult += ka * kt;
 
-	//for(uint i = 0; i < 1; i++){
+	for(uint i = 0u; i < numLights; i++){
+		float intense = intensity[i];
 		// Lighting Spec + Diff + Reflect
-		vec4 ks = specular;	// needs array
-		vec4 kd = diffuse; // needs array 
-		diff = max(dot(vertNormal, lightDir), 0.0); // needs array
-		reflection = normalize(reflect(-lightDir, vertNormal)); // needs array
-		spec = max(dot(eyeDir, reflection), 0.0); // needs array
-		spec = pow(spec,14.0); // needs array
-		float scale;
+		vec4 ks = specular[i];	
+		vec4 kd = diffuse[i]; 
+		diff = max(dot(vertNormal, lightDir[i]), 0.0); 
+		reflection = normalize(reflect(-lightDir[i], vertNormal)); 
+		spec = max(dot(eyeDir, reflection), 0.0); 
+		spec = pow(spec,14.0); 
 		// Attenuation (fall off)
-		float dist = length(lightPos.xyz - fragPos); // needs array
-		float attenuation = (1/dist) * intensity; // needs array
+		vec4 light;
+		
+		float dist = length(lightPos[i].xyz - fragPos.xyz);
+		float attenuation = (1/dist) * intense; 
 
-		vec4 light = ((diff * kd) + (spec * ks)) * kt * attenuation; // needs 2 array
-
+		light = ((diff * kd) + (spec * ks)) * kt * attenuation;
 		phongResult += light;
-	//}
+	}
 	fragColor = phongResult;
 } 

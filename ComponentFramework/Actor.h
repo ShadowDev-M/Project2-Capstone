@@ -117,9 +117,7 @@ public:
 	template<typename ComponentTemplate>
 	void DeleteComponent() {
 		if (typeid(ComponentTemplate).name() == "LightComponent") {
-			if (ValidateLight()) {
-				DeinitalizeLight();
-			}
+			DeinitalizeLight();
 		}
 		/// check if the component exists
 		if (GetComponent<ComponentTemplate>().get() == nullptr) {
@@ -186,6 +184,8 @@ public:
 
 	//
 	Matrix4 GetModelMatrix(Ref<Component> camera = nullptr);
+
+	Vec3 GetPositionFromHierarchy(Ref<Component> camera = nullptr);
 	
 	/// <summary>
 	/// Determines whether a ray intersects with the mesh of the actor

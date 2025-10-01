@@ -164,19 +164,36 @@ public:
 	}
 
 	void ValidateAllLights() {
-		for (std::vector<Ref<Actor>>::iterator it; it != lightActors.end(); ++it) {
-			if (!(*it)->ValidateLight()) lightActors.erase(it);
+		if (lightActors.size() != 0) {
+			for (std::vector<Ref<Actor>>::iterator it; it != lightActors.end(); ++it) {
+				if (!(*it)->ValidateLight()) { 
+					
+					lightActors.erase(it);
+				
+				}
+			}
 		}
 	}
 
 	bool AddLight(Ref<Actor> actor) {
 		if (!actor->ValidateLight()) return false;
-		
+
 		lightActors.push_back(actor); 
 		return true;
 	}
 
+	std::vector<Vec3> GetLightsPos() const {
+		std::vector<Vec3> lightPositions;
+
+		for (auto& obj : lightActors) {
+			lightPositions.push_back(obj->GetComponent<TransformComponent>()->GetPosition());
+		}
+
+		return lightPositions;
+	}
+
 	bool GetLightExist(Ref<Actor> actor) {
+		if (lightActors.size() == 0) return false;
 		auto it = std::find(lightActors.begin(), lightActors.end(), actor);
 
 		if (it != lightActors.end()) {
@@ -186,6 +203,8 @@ public:
 		
 		return false;
 	}
+
+	std::vector<Ref<Actor>> GetLightActors() { return lightActors; }
 
 	bool RemoveLight(Ref<Actor> actor) {
 		lightActors.erase(std::remove(lightActors.begin(), lightActors.end(), actor), lightActors.end());
@@ -536,6 +555,32 @@ public:
 
 		if (!RENDERMAINSCREEN) {
 
+		std::vector<Vec3> lightPos;
+		std::vector<Vec4> lightSpec;
+		std::vector<Vec4> lightDiff;
+		std::vector<float> lightIntensity;
+		std::vector<GLuint> lightTypes;
+		if (!lightActors.empty()) {
+			for (auto& light : lightActors) {
+				lightPos.push_back(light->GetPositionFromHierarchy(getUsedCamera()));
+				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
+				lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
+				lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
+				lightTypes.push_back(static_cast<int>(light->GetComponent<LightComponent>()->getType()));
+			}
+		}
+		else {
+
+		}
+		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
+		glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
+		glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(0.45f, 0.55f, 0.60f, 1.00f));
+
+		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
 
 			//use the picking buffer so it is seperated
 			glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
@@ -615,8 +660,6 @@ public:
 		}
 
 	}
-
-	// Ghost erorr...
 
 	bool OnCreate() {
 		// if an actor was setup wrong throw an error
