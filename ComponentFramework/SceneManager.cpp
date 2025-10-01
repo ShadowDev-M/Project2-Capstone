@@ -3,7 +3,8 @@
 #include "Timer.h"
 #include "Window.h"
 #include "Scene3GUI.h"
-
+#include "EditorManager.h"
+#include "SceneGraph.h"
 
 SceneManager::SceneManager() :
 	currentScene{ nullptr }, window{ nullptr }, timer{ nullptr },
@@ -13,6 +14,10 @@ SceneManager::SceneManager() :
 
 SceneManager::~SceneManager() {
 	Debug::Info("Deleting the SceneManager", __FILE__, __LINE__);
+
+	if (EditorManager::getInstance().IsInitialized()) {
+		EditorManager::getInstance().Shutdown();
+	}
 
 	if (currentScene) {
 		currentScene->OnDestroy();
@@ -49,6 +54,13 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	/********************************   Default first scene   ***********************/
 	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 	/********************************************************************************/
+	
+	EditorManager& editor = EditorManager::getInstance();
+	if (!editor.Initialize(window->getWindow(), window->getContext(), &SceneGraph::getInstance())) {
+		Debug::FatalError("Failed to initialize EditorManager", __FILE__, __LINE__);
+		return false;
+	}
+
 	return true;
 }
 
@@ -56,11 +68,16 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 void SceneManager::Run() {
 	timer->Start();
 	isRunning = true;
+
+	EditorManager& editor = EditorManager::getInstance();
+
 	while (isRunning) {
 		HandleEvents();
 		timer->UpdateFrameTicks();
 		currentScene->Update(timer->GetDeltaTime());
 		currentScene->Render();
+
+		editor.RenderEditorUI();
 
 		SDL_GL_SwapWindow(window->getWindow());
 		SDL_Delay(timer->GetSleepTime(fps));
@@ -68,10 +85,12 @@ void SceneManager::Run() {
 }
 
 void SceneManager::HandleEvents() {
+	EditorManager& editor = EditorManager::getInstance();
+
 	SDL_Event sdlEvent;
 	while (SDL_PollEvent(&sdlEvent)) { /// Loop over all events in the SDL queue
 
-		ImGui_ImplSDL2_ProcessEvent(&sdlEvent); // Forward your event to backend
+		editor.HandleEvents(sdlEvent);
 
 		if (sdlEvent.type == SDL_EventType::SDL_QUIT) {
 			isRunning = false;

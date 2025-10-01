@@ -30,7 +30,7 @@ protected:
 public:
 
 
-	uint32_t getId() { return id; }
+	uint32_t getId() const { return id; }
 
 	//For colour picker 
 	inline static Vec3 encodeID(uint32_t id) {
@@ -203,6 +203,14 @@ public:
 		else {
 			return nullptr;
 		}
+	}
+
+	void setParentActor(Actor* parent_) {
+		parent = parent_;
+	}
+
+	void unparent() {
+		parent = nullptr;
 	}
 
 	bool isRootActor() const {

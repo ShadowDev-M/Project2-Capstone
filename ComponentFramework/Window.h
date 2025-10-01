@@ -8,10 +8,6 @@
 #include <iostream>
 #include "Debug.h"
 
-#include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_opengl3.h"
-
 class Window {
 private:
 	int width, height;
@@ -32,6 +28,7 @@ public:
 	int getWidth() const { return width; }
 	int getHeight() const { return height; }
 	SDL_Window* getWindow() const { return window; }
+	SDL_GLContext getContext() const { return context; }
 
 private: /// internal tools OpenGl versions. 
 	void setAttributes(int major_, int minor_);

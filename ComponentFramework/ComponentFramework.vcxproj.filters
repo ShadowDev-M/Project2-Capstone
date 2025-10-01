@@ -173,6 +173,9 @@
     <ClInclude Include="DockingWindow.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="EditorManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\defaultFrag.glsl">
@@ -314,6 +317,9 @@
     </ClCompile>
     <ClCompile Include="DockingWindow.cpp">
       <Filter>Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorManager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

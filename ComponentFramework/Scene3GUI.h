@@ -15,11 +15,6 @@
 
 #include "AssetManager.h"
 
-#include "HierarchyWindow.h"
-#include "InspectorWindow.h"
-#include "AssetManagerWindow.h"
-#include "DockingWindow.h"
-
 using namespace MATH;
 
 /// Forward declarations 
@@ -28,39 +23,9 @@ union SDL_Event;
 class Scene3GUI : public Scene {
 private:
 	CollisionSystem collisionSystem;
-
 	Vec3 lightPos;
-
-
 	Ref<CameraActor> camera;
-
 	bool drawInWireMode;
-	Ref<Actor> selectedAsset;
-	float debugMoveSpeed = 0.5f;
-
-	// Window States
-	mutable bool showDemoWindow = false;
-	mutable bool showHierarchyWindow = true;
-	mutable bool showDockingWindow = true;
-	mutable bool showInspectorWindow = true;
-	mutable bool showAssetmanagerWindow = true;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	
-	// save file dialog states (switch to own class)
-	mutable bool showSaveFileDialog = false;
-	mutable bool showLoadFileDialog = false;
-	void ShowSaveDialog();
-	void ShowLoadDialog();
-
-	// using unqiue pointers for automatic memory management
-	// could switch to shared pointers if we ever intend on having this window in multiple scenes
-	std::unique_ptr<HierarchyWindow> hierarchyWindow;
-	std::unique_ptr<InspectorWindow> inspectorWindow;
-	std::unique_ptr<AssetManagerWindow> assetManagerWindow;
-	std::unique_ptr<DockingWindow> dockingWindow;
-
-	
-
 
 public:
 	explicit Scene3GUI();

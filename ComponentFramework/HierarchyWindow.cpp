@@ -1,12 +1,17 @@
 #include "HierarchyWindow.h"
+#include "EditorManager.h"
 
-HierarchyWindow::HierarchyWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
+HierarchyWindow::HierarchyWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
+	EditorManager::getInstance().RegisterWindow("Hierarchy", true);
+}
 
 void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 {
-
-	// Some of the stuff here will be changed after to just read off an XML file (like getting all the actors names and if they are parented/children)
-	// just doing it without XML stuff for now since I don't fully understand it yet
+	// check editor manager for pending rename
+	if (EditorManager::getInstance().HasPendingRename()) {
+		auto [oldName, newName] = EditorManager::getInstance().ConsumePendingRename();
+		sceneGraph->RenameActor(oldName, newName);
+	}
 
 	if (ImGui::Begin("Hierarchy", pOpen, ImGuiWindowFlags_MenuBar)) {
 
@@ -19,8 +24,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 					std::vector<std::string> allActorNames = sceneGraph->GetAllActorNames();
 					for (const auto& actorName : allActorNames) {
 						Ref<Actor> actor = sceneGraph->GetActor(actorName);
-
-						sceneGraph->debugSelectedAssets.emplace(actorName, actor);
+						sceneGraph->debugSelectedAssets.emplace(actor->getId(), actor);
 					}
 				}
 
@@ -34,65 +38,28 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 			ImGui::EndMenuBar();
 		}
 
-		/*if (IsWindowFocused()) {
-			SetKeyboardFocusHere();
-			filter.Clear();
-		} */
-
 		filter.Draw("##HierarchyFilter", -1.0f);
 		ImGui::Separator();
 
-		//
+		// empty space right click
 		if (ImGui::BeginPopupContextWindow("##RightClickHierarchyWindow")) {
 			
 			if (ImGui::MenuItem("Create Empty Actor")) {
-				showAddActorDialog = true;
+				std::string newActorName = "Actor";
+				int counter = 1;
+				while (sceneGraph->GetActor(newActorName) != nullptr) {
+					newActorName = "Actor_" + std::to_string(counter++) + "_E"; // can't end or start with a special character or number and there can't be a space at all, XML breaks...
+				}
+
+				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
+				newActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 0.0f),
+					Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
+				newActor->OnCreate();
+				sceneGraph->AddActor(newActor);
 			}
 			
 			ImGui::EndPopup();
 		}
-
-
-		if (showAddActorDialog) {
-			ImGui::OpenPopup("New Actor");
-			showAddActorDialog = false;
-		}
-
-		// sets the placement and size of the dialog box
-		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x - 200, mainViewport->WorkPos.y - 200), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
-
-		if (ImGui::BeginPopupModal("New Actor", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::Text("Enter New Actor's Name:");
-			ImGui::InputText("##InputActorName", &newActorName);
-			ImGui::Separator();
-
-			if (ImGui::Button("Add Actor")) {
-				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
-				newActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
-				
-				// default shader
-				//newActor->AddComponent<ShaderComponent>(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong"));
-				
-				newActor->OnCreate();
-				sceneGraph->AddActor(newActor);
-				newActorName.clear();
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::SameLine();
-
-			if (ImGui::Button("Cancel")) {
-				newActorName.clear();
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
-		}
-
-
-		//// Most of this will be changed after to just read off an XML for the current actors in a cell
 
 		// create root actors map to store all actors with no parent
 		std::unordered_map<std::string, Ref<Actor>> rootActors;
@@ -111,11 +78,47 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 				rootActors.emplace(actorName, actor);
 			}
 		}
-		///
 
-
+		// draw the actual hierarchy tree
 		for (const auto& pair : rootActors) {
 			DrawActorNode(pair.first, pair.second);
+		}
+
+		// prepare the actor drag and drop
+		if (const ImGuiPayload* payload = ImGui::GetDragDropPayload()) {
+			
+			if (payload->IsDataType("ACTOR_NODE") && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
+
+				// check for empty window space
+				if (!ImGui::IsAnyItemHovered()) {
+					
+					// so two options here: 
+					// first, I have a button that appears when an actor is being dragging and use that to unparent, not fun but "shouldnt" break ImGui::Button("Unparent", ImVec2(-1, 0))
+					// OR the fun approach, make it so the empty space below all the actors unparents (only issue with this is that if there are too many actors there won't be any empty space... but that wont happen surely)
+					
+					ImVec2 availSpace = ImGui::GetContentRegionAvail();
+					if (availSpace.y > 0) {
+						ImGui::Dummy(availSpace);
+
+						if (ImGui::BeginDragDropTarget()) {
+							const ImGuiPayload* acceptedPayload = ImGui::AcceptDragDropPayload("ACTOR_NODE");
+
+							if (acceptedPayload) {
+								const char* draggedActorName = static_cast<const char*>(acceptedPayload->Data);
+								Ref<Actor> draggedActor = sceneGraph->GetActor(draggedActorName);
+
+								if (draggedActor && !draggedActor->isRootActor()) {
+									draggedActor->unparent();
+								}
+							}
+
+							ImGui::EndDragDropTarget();
+						}
+					}
+
+
+				}
+			}
 		}
 
 		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup)) {
@@ -124,41 +127,36 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 			}
 		}
 
-		// TODO: right click popup menu, create new, remove, rename 
 	}
 	ImGui::End();
 }
 
-void HierarchyWindow::DrawActorNode(const std::string& actorName, Ref<Actor> actor)
+void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> actor_)
 {
-	//
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(actor.get());
+	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(actor_.get());
 
 	// imgui_demo.cpp Widgets/Tree Nodes/Advanced, with Selectable nodes
-	const bool isSelected = sceneGraph->debugSelectedAssets.find(actorName) != sceneGraph->debugSelectedAssets.end();
+	const bool isSelected = sceneGraph->debugSelectedAssets.find(actor_->getId()) != sceneGraph->debugSelectedAssets.end();
 
-	bool nodeFilter = filter.PassFilter(actorName.c_str());
+	bool nodeFilter = filter.PassFilter(actorName_.c_str());
 
 	// show selection if node is selected
 	bool showSelection = true;
 	if (showOnlySelected) {
-		showSelection = isSelected || HasSelectedChild(actor.get());
+		showSelection = isSelected || HasSelectedChild(actor_.get());
 	}
 
 	// show if node appears in filter
-	bool showFilter = nodeFilter || HasFilteredChild(actor.get());
+	bool showFilter = nodeFilter || HasFilteredChild(actor_.get());
 
 	// draw node if it is selected and/or in filter
 	if (!showSelection || !showFilter) {
 		return;
 	}
 
-	// converting actor name to const char to create a unique ID for its node
-	ImGui::PushID(actorName.c_str());
-
 	// default flags for the the tree nodes
-	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth; // Standard opening mode as we are likely to want to add selection afterwards
-	baseFlags |= ImGuiTreeNodeFlags_NavLeftJumpsToParent; // Enable pressing left to jump to parent
+	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | 
+								   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_NavLeftJumpsToParent;
 
 	if (isSelected) {
 		// set flag to selected
@@ -169,25 +167,35 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName, Ref<Actor> act
 		baseFlags |= ImGuiTreeNodeFlags_Leaf;
 	}
 
-	bool nodeOpen = ImGui::TreeNodeEx(actorName.c_str(), baseFlags, "%s", actorName.c_str());
+	// converting actor name to const char to create a unique ID for its node
+	ImGui::PushID(actorName_.c_str());
+
+	bool nodeOpen = ImGui::TreeNodeEx(actorName_.c_str(), baseFlags, "%s", actorName_.c_str());
 
 	if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 		// using joel's raycast code for selection of actors in the window
-		if (!ImGui::GetIO().KeyCtrl && !(isSelected)) { sceneGraph->debugSelectedAssets.clear(); }
+		if (!ImGui::GetIO().KeyCtrl && !isSelected) {
+			sceneGraph->debugSelectedAssets.clear();
+		}
 
-		if (isSelected && ImGui::GetIO().KeyCtrl) { sceneGraph->debugSelectedAssets.erase(actorName); }
-
-		else sceneGraph->debugSelectedAssets.emplace(actorName, actor);
-
+		if (isSelected && ImGui::GetIO().KeyCtrl) {
+			sceneGraph->debugSelectedAssets.erase(actor_->getId());
+		}
+		else {
+			sceneGraph->debugSelectedAssets.emplace(actor_->getId(), actor_);
+		}
 	}
 
-	if (ImGui::BeginPopupContextItem()) {
-		if (ImGui::MenuItem("Delete")) {
-			sceneGraph->GetActor(actorName)->DeleteComponent<
-				Component>();
-			sceneGraph->RemoveActor(actorName);
-			sceneGraph->checkValidCamera();
+	HandleDragDrop(actorName_, actor_);
 
+	if (ImGui::BeginPopupContextItem("##ActorContext")) {
+		if (ImGui::MenuItem("Duplicate")) {
+			DuplicateActor(actor_);
+		}
+		ImGui::Separator();
+		if (ImGui::MenuItem("Delete")) {
+			sceneGraph->RemoveActor(actorName_);
+			sceneGraph->checkValidCamera();
 		}
 		ImGui::EndPopup();
 	}
@@ -202,12 +210,136 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName, Ref<Actor> act
 	ImGui::PopID();
 }
 
+void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
+	if (!original_) return;
+
+	std::string newName = GenerateDuplicateName(original_->getActorName());
+	Ref<Actor> duplicate = DeepCopyActor(newName, original_);
+
+	if (duplicate) {
+		duplicate->OnCreate();
+		sceneGraph->AddActor(duplicate);
+	}
+}
+
+Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor> original_) {
+	if (!original_) return nullptr;
+
+	Ref<Actor> copy = std::make_shared<Actor>(original_->getParentActor(), newName_);
+
+	if (auto transform = original_->GetComponent<TransformComponent>()) {
+		copy->AddComponent<TransformComponent>(nullptr,
+			transform->GetPosition(),
+			transform->GetQuaternion(),
+			transform->GetScale());
+	}
+
+	if (auto mesh = original_->GetComponent<MeshComponent>()) {
+		copy->AddComponent<MeshComponent>(mesh);
+	}
+
+	if (auto material = original_->GetComponent<MaterialComponent>()) {
+		copy->AddComponent<MaterialComponent>(material);
+	}
+
+	if (auto shader = original_->GetComponent<ShaderComponent>()) {
+		copy->AddComponent<ShaderComponent>(shader);
+	}
+
+	if (auto camera = original_->GetComponent<CameraComponent>()) {
+		copy->AddComponent<CameraComponent>(copy, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	}
+
+	if (auto light = original_->GetComponent<LightComponent>()) {
+		copy->AddComponent<LightComponent>(light);
+	}
+
+	return copy;
+}
+
+std::string HierarchyWindow::GenerateDuplicateName(const std::string& originalName) {
+	std::string baseName = originalName;
+	int counter = 1;
+
+	// this whole thing just makes it so that if you are duplicating an actor like Cube_3D, it wont do Cube_3D_1D and it'll make sure its Cube_4D
+	
+	// find the start of the duplicated name
+	size_t start = originalName.find_last_of('_');
+	
+	// make sure that its not the end of the string
+	if (start != std::string::npos) {
+
+		// find the end of the duplicated name
+		size_t end = originalName.find_last_of('D');
+		
+		// get whats inbetween
+		if (end == originalName.length() - 1) {
+			baseName = originalName.substr(0, start);
+		}
+	}
+
+	std::string newName;
+	do {
+		newName = baseName + "_" + std::to_string(counter++) + "D"; // can't end or start with a special character, XML breaks so no ( )
+	} while (sceneGraph->GetActor(newName) != nullptr);
+
+	return newName;
+}
+
+void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> actor_) {
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+		
+		// set the payload to carry the actor's name
+		ImGui::SetDragDropPayload("ACTOR_NODE", actorName_.c_str(), actorName_.length() + 1);
+
+		// show the actors name while dragging
+		ImGui::Text("Dragging: %s", actorName_.c_str());
+
+		ImGui::EndDragDropSource();
+	}
+
+	if (ImGui::BeginDragDropTarget()) {
+		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ACTOR_NODE");
+
+		if (payload) {
+			// store payload data
+			const char* draggedActorName = static_cast<const char*>(payload->Data);
+
+			// make sure that a parent cant parent itself
+			if (draggedActorName != actorName_) {
+				Ref<Actor> draggedActor = sceneGraph->GetActor(draggedActorName);
+
+				// check to make sure theres no circular dependency (don't parent an actor to one of its own children)
+				bool wouldCreateCycle = false;
+				Actor* checkParent = actor_.get();
+				while (checkParent != nullptr) {
+					if (checkParent == draggedActor.get()) {
+						wouldCreateCycle = true;
+						break;
+					}
+					checkParent = checkParent->getParentActor();
+				}
+
+				// wont create cycle, so its okay to parent
+				if (!wouldCreateCycle && draggedActor) {
+					draggedActor->setParentActor(actor_.get());
+				}
+				else if (wouldCreateCycle) {
+					Debug::Warning("Cannot parent actor to its own child", __FILE__, __LINE__);
+				}
+			}
+		}
+
+		ImGui::EndDragDropTarget();
+	}
+}
+
 bool HierarchyWindow::HasFilteredChild(Component* parent)
 {
 	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
 
 	for (const auto& child : childActors) {
-		if (filter.PassFilter(child.first.c_str())) { return true; } //!
+		if (filter.PassFilter(child.first.c_str())) { return true; } 
 
 		// recursive check to see if the child has children
 		if (HasFilteredChild(child.second.get())) { return true; }
@@ -221,7 +353,7 @@ bool HierarchyWindow::HasSelectedChild(Component* parent)
 	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
 
 	for (const auto& child : childActors) {
-		if (showOnlySelected && sceneGraph->debugSelectedAssets.find(child.first) != sceneGraph->debugSelectedAssets.end()) { return true; }
+		if (sceneGraph->debugSelectedAssets.find(child.second->getId()) != sceneGraph->debugSelectedAssets.end()) { return true; }
 
 		// recursive check to see if the child has children
 		if (HasSelectedChild(child.second.get())) { return true; }
@@ -232,7 +364,6 @@ bool HierarchyWindow::HasSelectedChild(Component* parent)
 
 std::unordered_map<std::string, Ref<Actor>> HierarchyWindow::GetChildActors(Component* parent)
 {
-	/// switch to reading XML file after
 	std::unordered_map<std::string, Ref<Actor>> childActors;
 
 	// store all actors names in the scene 
@@ -249,7 +380,6 @@ std::unordered_map<std::string, Ref<Actor>> HierarchyWindow::GetChildActors(Comp
 			childActors.emplace(actorName, actor);
 		}
 	}
-	///
-
+	
 	return childActors;
 }

@@ -1,6 +1,9 @@
 #include "AssetManagerWindow.h"
+#include "EditorManager.h"
 
-AssetManagerWindow::AssetManagerWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {}
+AssetManagerWindow::AssetManagerWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
+	EditorManager::getInstance().RegisterWindow("AssetManager", true);
+}
 
 void AssetManagerWindow::ShowAssetManagerWindow(bool* pOpen)
 {
@@ -44,7 +47,7 @@ void AssetManagerWindow::ShowAssetManagerWindow(bool* pOpen)
 
 			// calculating the layout for the assets
 			const float availWidth = ImGui::GetContentRegionAvail().x;
-			int columnCount = (availWidth / (thumbnailSize + padding));
+			int columnCount = std::max(1, static_cast<int>(availWidth / (thumbnailSize + padding)));
 
 			// putting all the assets into columns to get a grid style layout
 			ImGui::Columns(columnCount, "##AssetGrid", false);
@@ -90,8 +93,7 @@ void AssetManagerWindow::ShowAddAssetDialog()
 	ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x - 200, mainViewport->WorkPos.y - 200), ImGuiCond_Appearing);
 	ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
 
-	// a popup modal makes it so you *can't interact with other things in the scene
-	// TODO* going to make the scene a window so that it actually blocks input
+	// a popup modal makes it so you can't interact with other things in the scene
 	if (ImGui::BeginPopupModal("Add New Asset", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		
 		// TODO: more asset types go here
@@ -111,11 +113,14 @@ void AssetManagerWindow::ShowAddAssetDialog()
 
 		// saves whatever is inputted into the box to the asset path string
 		ImGui::Text("File Path:");
-		if (selectedAssetType == 0) {
+
+		if (selectedAssetType == 0) { // Mesh
 			ImGui::InputText("##MeshPath", &newAssetPath);
+			ImGui::TextWrapped("Example: meshes/Mesh.obj");
 		}
 		else if (selectedAssetType == 1) {
 			ImGui::InputText("##MaterialPath", &newAssetPath);
+			ImGui::TextWrapped("Example: textures/Texture.png");
 		}
 		else if (selectedAssetType == 2) {
 			ImGui::Text("Vertex Shader:");
@@ -124,15 +129,25 @@ void AssetManagerWindow::ShowAddAssetDialog()
 			ImGui::Text("Fragment Shader:");
 			ImGui::InputText("##FragmentPath", &newFragShaderPath);
 			
+			ImGui::TextWrapped("Example: shaders/Shader.vert & .frag");
+
 			//TODO: rest of the shader types
 		}
 		
 		ImGui::Separator();
 
 		// checks to see if all the InputText fields are empty
-		bool canAdd = !newAssetName.empty() && !newAssetPath.empty();
-		if (selectedAssetType == 2) {
-			canAdd = !newVertShaderPath.empty() && !newFragShaderPath.empty();
+		bool canAdd = !newAssetName.empty();
+		if (selectedAssetType == 0 || selectedAssetType == 1) {
+			canAdd = canAdd && !newAssetPath.empty();
+		}
+		else if (selectedAssetType == 2) {
+			canAdd = canAdd && !newVertShaderPath.empty() && !newFragShaderPath.empty();
+		}
+
+		// disables button if empty
+		if (!canAdd) {
+			ImGui::BeginDisabled();
 		}
 
 		// if the asset can be added, clear all input fields and load the asset
@@ -140,6 +155,10 @@ void AssetManagerWindow::ShowAddAssetDialog()
 			if (AddNewAssetToDatabase()) {
 				ResetInput();
 			}
+		}
+
+		if (!canAdd) {
+			ImGui::EndDisabled();
 		}
 
 		ImGui::SameLine();
@@ -171,20 +190,34 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 {
 	// exception handling so that the scene doesn't blow up if something goes wrong when trying to load an asset 
 	try {
+		bool success = false;
+
 		switch (selectedAssetType) {
-		case 0:
-			return AssetManager::getInstance().LoadAsset<MeshComponent>(newAssetName, nullptr, newAssetPath.c_str());
+		case 0: // Mesh Component
+			success = AssetManager::getInstance().LoadAsset<MeshComponent>(
+				newAssetName, nullptr, newAssetPath.c_str());
+			break;
 
-		case 1: 
-			return AssetManager::getInstance().LoadAsset<MaterialComponent>(newAssetName, nullptr, newAssetPath.c_str());
+		case 1: // Material Component
+			success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
+				newAssetName, nullptr, newAssetPath.c_str());
+			break;
 
-		case 2:
-			return AssetManager::getInstance().LoadAsset<ShaderComponent>(newAssetName, nullptr, newVertShaderPath.c_str(), newFragShaderPath.c_str());
+		case 2: // Shader Component
+			success = AssetManager::getInstance().LoadAsset<ShaderComponent>(
+				newAssetName, nullptr, newVertShaderPath.c_str(), newFragShaderPath.c_str());
+			break;
 
-		//TODO more asset types
 		default:
+			Debug::Error("Unknown asset type selected", __FILE__, __LINE__);
 			return false;
 		}
+
+		if (success) {
+			Debug::Info("Successfully added asset: " + newAssetName, __FILE__, __LINE__);
+		}
+
+		return success;
 	}
 	catch (const std::exception& e) {
 		Debug::Error("Error adding new asset: " + std::string(e.what()), __FILE__, __LINE__);
