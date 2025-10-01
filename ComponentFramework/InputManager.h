@@ -310,10 +310,36 @@ public:
 
 					auto& debugGraph = sceneGraph->debugSelectedAssets;
 
+					int w, h;
+
+					SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+
+					float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
+
+
+					ImVec2 scaledTexture;
+
+					// Calculate scaled dimensions based on aspect ratio
+					if (dockingSize.x / aspectRatio <= dockingSize.y)
+					{
+						scaledTexture.x = dockingSize.x;
+						scaledTexture.y = dockingSize.x / aspectRatio;
+					}
+					else
+					{
+						scaledTexture.y = dockingSize.y;
+						scaledTexture.x = dockingSize.y * aspectRatio;
+					}
+
 
 					for (const auto& obj : debugGraph) {
 						Ref<TransformComponent> transform = obj.second->GetComponent<TransformComponent>();
-						Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * (camera->GetComponent<TransformComponent>()->GetPosition().z - transform->GetPosition().z) / 40 * 0.045;
+						Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * (camera->GetComponent<TransformComponent>()->GetPosition().z - transform->GetPosition().z) / 40 * 0.045 * (  h / scaledTexture.y);
+
+
+
+
+
 						transform->SetPos(vectorMove.x, vectorMove.y, transform->GetPosition().z);
 
 					}

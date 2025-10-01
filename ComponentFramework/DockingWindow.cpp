@@ -10,7 +10,7 @@ void DockingWindow::ShowDockingWindow(bool* pOpen)
 {
 
     
-	if (ImGui::Begin("Scene", pOpen)) {
+	if (ImGui::Begin("Scene", pOpen, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 		
 
 		/*ImVec2 size = ImGui::GetContentRegionAvail();
@@ -38,7 +38,7 @@ void DockingWindow::ShowDockingWindow(bool* pOpen)
         }
 
         // Center the image if there's empty space
-        ImVec2 imagePos = ImVec2((windowSize.x - scaledTexture.x) * 0.5f, (windowSize.y - scaledTexture.y) * 0.5f);
+        ImVec2 imagePos = ImVec2((windowSize.x - scaledTexture.x) * 0.5f,( (windowSize.y - scaledTexture.y) * 0.5f) + ImGui::GetFrameHeight());
 
         // Display the image with calculated dimensions
         ImGui::SetCursorPos(imagePos);
@@ -50,7 +50,7 @@ void DockingWindow::ShowDockingWindow(bool* pOpen)
 
         InputManager::getInstance().getMouseMap()->frameHeight = ImGui::GetFrameHeight();
 
-        InputManager::getInstance().getMouseMap()->dockingPos = ImGui::GetWindowPos();
+        InputManager::getInstance().getMouseMap()->dockingPos = ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetFrameHeight());
         InputManager::getInstance().getMouseMap()->dockingSize = ImGui::GetWindowSize();
 
         InputManager::getInstance().getMouseMap()->dockingHovered = ImGui::IsWindowHovered();

@@ -12,6 +12,9 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
+
+	//io.IniFilename = nullptr; // if this error (Assertion failed: DockContextFindNodeByID(ctx, id) == 0) ever shows up again uncoment this line 
+
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch

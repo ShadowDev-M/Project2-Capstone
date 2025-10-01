@@ -14,11 +14,7 @@
 #include "CameraComponent.h"
 #include "LightComponent.h"
 
-//#include "Raycast.h"
-// this class is very similar to the assetmanager pre-singleton just inline
-// I created this class pretty much as a helper class just to hold all the actors and a bunch of functions that would simplify the process of dealing with multiple actors 
-
-// Thoughts on making the scenegraph a singleton: It would allow me to preload certain actors and just place them in any scene later on, (I.E unity prefabs), only issue with this is if in one scene I edited an object, those same values would carry over to another scene
+#include "Raycast.h"
 
 class SceneGraph
 {
