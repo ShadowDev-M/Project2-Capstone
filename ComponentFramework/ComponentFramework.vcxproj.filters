@@ -178,38 +178,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\defaultFrag.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\defaultVert.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\texturePhongFrag.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\texturePhongVert.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\outline.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\flatWhite.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\selectionFrag.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\selectionVert.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\colourPickFrag.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\colourPickVert.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -321,5 +289,49 @@
     <ClCompile Include="EditorManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\colourPickFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\colourPickVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\defaultFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\defaultVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\flatWhite.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\MultiPhongFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\MultiPhongVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\outline.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\phongFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\phongVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\selectionFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\selectionVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\texturePhongFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\texturePhongVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
