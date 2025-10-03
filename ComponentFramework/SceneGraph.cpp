@@ -83,7 +83,8 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 	//Width of SDL Window
 	int w, h;
-	SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+	w = SCENEWIDTH;
+	h = SCENEHEIGHT;
 
 	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
 
@@ -176,4 +177,171 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 	}
 
 	return nullptr; // nothing clicked
+}
+
+void SceneGraph::Render() const
+{
+
+	int w, h;
+	//SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+	w = SCENEWIDTH;
+	h = SCENEHEIGHT;
+
+	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
+
+	//size of the imgui window used for docking
+	Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
+
+
+	//pos of top left corner of docking window
+	GLint xPos = InputManager::getInstance().getMouseMap()->dockingPos.x;
+	GLint yPos = InputManager::getInstance().getMouseMap()->dockingPos.y;
+
+	GLsizei xSize;
+	GLsizei ySize;
+
+
+
+
+	// Calculate scaled dimensions based on aspect ratio
+	if (windowSize.x / aspectRatio <= windowSize.y)
+	{
+		xSize = windowSize.x;
+		ySize = windowSize.x / aspectRatio;
+	}
+	else
+	{
+		ySize = windowSize.y;
+		xSize = windowSize.y * aspectRatio;
+	}
+
+
+	//Add to the position to move to where the image is centred (non used space in the window would be counted otherwise)
+	ImVec2 imagePos = ImVec2((windowSize.x - xSize) * 0.5f, (windowSize.y - ySize) * 0.5f);
+	xPos += imagePos.x;
+	yPos += imagePos.y;
+
+	//proper height 
+	GLint glY = h - (yPos + ySize);
+
+
+	//use the picking buffer so it is seperated
+	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+	glViewport(xPos, glY, xSize, ySize);
+
+	if (!RENDERMAINSCREEN) {
+
+		std::vector<Vec3> lightPos;
+		std::vector<Vec4> lightSpec;
+		std::vector<Vec4> lightDiff;
+		std::vector<float> lightIntensity;
+		std::vector<GLuint> lightTypes;
+		if (!lightActors.empty()) {
+			for (auto& light : lightActors) {
+				lightPos.push_back(light->GetPositionFromHierarchy(getUsedCamera()));
+				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
+				lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
+				lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
+				lightTypes.push_back(static_cast<int>(light->GetComponent<LightComponent>()->getType()));
+			}
+
+			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
+			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
+			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+		}
+		else {
+
+		}
+
+		/*
+		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
+			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
+			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+		*/
+
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(0.45f, 0.55f, 0.60f, 1.00f));
+
+		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
+
+		//use the picking buffer so it is seperated
+		glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
+		glViewport(0, 0, SCENEWIDTH, SCENEHEIGHT);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	}
+
+	// go through all actors
+	for (const auto& pair : Actors) {
+
+		Ref<Actor> actor = pair.second;
+
+		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
+		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
+		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
+		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
+
+		// if the actor has a shader, mesh, and mat component then render it
+		if (shader && mesh && material) {
+
+
+
+			//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
+
+			Matrix4 modelMatrix = actor->GetModelMatrix(getUsedCamera());
+
+			//glDisable(GL_DEPTH_TEST);
+			//Matrix4 outlineModel = modelMatrix * MMath::scale(1.05, 1.05, 1.05); // Slightly larger
+
+			//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, outlineModel);
+
+			//mesh->Render(GL_TRIANGLES);
+
+
+
+			glEnable(GL_DEPTH_TEST);
+			//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
+
+
+			if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
+			else {
+				if (pair.second->GetComponent<ShaderComponent>()) {
+					glUseProgram(shader->GetProgram());
+				}
+				else continue;
+
+				//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
+
+			}
+
+			///glUseProgram(pickerShader->GetProgram());
+
+			//Vec3 idColor = Actor::encodeID(actor->id);
+
+
+
+
+			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+
+			glBindTexture(GL_TEXTURE_2D, material->getTextureID());
+			mesh->Render(GL_TRIANGLES);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+
+
+		}
+
+	}
+
+	if (!RENDERMAINSCREEN) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, w, h);
+	}
+
 }

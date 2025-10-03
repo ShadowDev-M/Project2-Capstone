@@ -31,6 +31,8 @@ private:
 	// this way we can still look up actors by name but it'll still be optimized with the actor ids
 	std::unordered_map<std::string, uint32_t> ActorNameToId;
 	
+
+
 	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
 
 	bool RENDERMAINSCREEN = 0;
@@ -73,6 +75,12 @@ private:
 	}
 
 public:
+
+	//Hardcode the screen height and width rather than using SDL_GetWindowSize, as at lot of the code is designed for 1280 x 720
+	static const int SCENEWIDTH = 1280;
+	static const int SCENEHEIGHT = 720;
+
+
 	// Meyers Singleton (from JPs class)
 	static SceneGraph& getInstance() {
 		static SceneGraph instance;
@@ -83,7 +91,11 @@ public:
 	
 		int w, h;
 
-		SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+		w = SCENEWIDTH;
+		h = SCENEHEIGHT;
+
+
+//		SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
 		createFBOPicking(w,h);
 
 		//fbo for the imgui docking
@@ -549,126 +561,7 @@ public:
 	Ref<Actor> pickColour(int mouseX, int mouseY);
 
 	// all const
-	void Render() const {
-		int w, h;
-		SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
-
-		if (!RENDERMAINSCREEN) {
-
-		std::vector<Vec3> lightPos;
-		std::vector<Vec4> lightSpec;
-		std::vector<Vec4> lightDiff;
-		std::vector<float> lightIntensity;
-		std::vector<GLuint> lightTypes;
-		if (!lightActors.empty()) {
-			for (auto& light : lightActors) {
-				lightPos.push_back(light->GetPositionFromHierarchy(getUsedCamera()));
-				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
-				lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
-				lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
-				lightTypes.push_back(static_cast<int>(light->GetComponent<LightComponent>()->getType()));
-			}
-
-			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
-			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
-			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
-		}
-		else {
-
-		}
-		
-		/*
-		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
-			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
-			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
-		*/
-
-		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(0.45f, 0.55f, 0.60f, 1.00f));
-
-		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
-
-			//use the picking buffer so it is seperated
-			glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
-			glViewport(0, 0, w, h);
-			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glEnable(GL_DEPTH_TEST);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		}
-
-		// go through all actors
-		for (const auto& pair : Actors) {
-
-			Ref<Actor> actor = pair.second;
-
-			// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
-			Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
-			Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
-			Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
-
-			// if the actor has a shader, mesh, and mat component then render it
-			if (shader && mesh && material) {
-
-
-
-				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
-
-				Matrix4 modelMatrix = actor->GetModelMatrix(getUsedCamera());
-
-				//glDisable(GL_DEPTH_TEST);
-				//Matrix4 outlineModel = modelMatrix * MMath::scale(1.05, 1.05, 1.05); // Slightly larger
-
-				//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, outlineModel);
-
-				//mesh->Render(GL_TRIANGLES);
-
-
-
-				glEnable(GL_DEPTH_TEST);
-				//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
-
-
-				if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-				else {
-					if (pair.second->GetComponent<ShaderComponent>()) {
-						glUseProgram(shader->GetProgram());
-					}
-					else continue;
-
-					//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
-
-				}
-
-				///glUseProgram(pickerShader->GetProgram());
-
-				//Vec3 idColor = Actor::encodeID(actor->id);
-				
-
-
-
-				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-
-				glBindTexture(GL_TEXTURE_2D, material->getTextureID());
-				mesh->Render(GL_TRIANGLES);
-				glBindTexture(GL_TEXTURE_2D, 0);
-
-
-
-			}
-
-		}
-		
-		if (!RENDERMAINSCREEN ) {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, w, h);
-		}
-
-	}
+	void Render() const; 
 
 	bool OnCreate() {
 		// if an actor was setup wrong throw an error

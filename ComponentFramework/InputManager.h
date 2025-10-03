@@ -312,7 +312,10 @@ public:
 
 					int w, h;
 
-					SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+					w = SceneGraph::SCENEWIDTH;
+					h = SceneGraph::SCENEHEIGHT;
+
+					//SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
 
 					float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
 
