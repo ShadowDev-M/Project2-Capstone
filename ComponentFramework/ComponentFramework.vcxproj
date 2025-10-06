@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(ProjectDir)\include\Scripts;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -162,6 +162,7 @@
     <ClInclude Include="Scene4Lights.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="ScriptComponent.h" />
     <ClInclude Include="ShaderComponent.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="tinyxml2.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="Scene4Lights.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="ScriptComponent.cpp" />
     <ClCompile Include="ShaderComponent.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="tinyxml2.cpp" />
@@ -228,4 +230,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="test.cpp" />
+  </ItemGroup>
 </Project>

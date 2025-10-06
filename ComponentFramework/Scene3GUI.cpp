@@ -5,6 +5,8 @@
 #include <MMath.h>
 #include "Debug.h"
 #include "ExampleXML.h"
+#include "ScriptComponent.h"
+
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include <filesystem>
@@ -30,6 +32,11 @@ bool Scene3GUI::OnCreate() {
 
 	SceneGraph::getInstance().OnCreate();
 	SceneGraph::getInstance().ListAllActors();
+
+	ScriptManager::Push_Script("test");
+
+	ScriptManager::OpenFileForUser("test");
+
 
 	//	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
@@ -62,6 +69,11 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
 
 void Scene3GUI::Update(const float deltaTime) {
+
+	for (auto& scriptObj : ScriptManager::scriptsRuntimeVector) {
+		scriptObj->Start();
+	}
+
 
 	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
