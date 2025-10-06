@@ -345,17 +345,34 @@ void InspectorWindow::DrawCameraComponent(Ref<CameraComponent> camera)
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
 			ImGui::OpenPopup("##CameraPopup");
 		}
-		ImGui::TextWrapped("Camera ID: %u", camera.get());
-
-		// display material thumbnail
-		/*if (material->getTextureID() != 0) {
-			ImGui::ImageButton("Drop New Asset Here ##Material", ImTextureID(material->getTextureID()), ImVec2(thumbnailSize, thumbnailSize));
-		}*/
-
 		
+		float fov = camera->getFOV(), aspectRatio = camera->getAspectRatio(), 
+			nearClipPlane = camera->getNearClipPlane(), farClipPlane = camera->getFarClipPlane();
 
+		int fovInt = static_cast<int>(fov);
+
+		ImGui::Text("Fov ");
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##fovslider", &fovInt, 0, 120, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+			camera->setFOV(fovInt);
+		}
+
+		ImGui::Text("Clipping Planes");
+		
+		ImGui::Text("Near");
+		ImGui::SameLine();
+		if (ImGui::DragFloat("##NearDrag", &nearClipPlane, 1.0f, 0.0f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+			camera->setNearClipPlane(nearClipPlane);
+		}
+
+		ImGui::Text("Far ");
+		ImGui::SameLine();
+		if (ImGui::DragFloat("##FarDrag", &farClipPlane, 1.0f, 0.0f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+			camera->setFarClipPlane(farClipPlane);
+		}
 
 	}
+	
 }
 
 void InspectorWindow::DrawLightComponent(Ref<LightComponent> light)
