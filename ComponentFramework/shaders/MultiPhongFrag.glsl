@@ -37,17 +37,37 @@ void main() {
 		// Lighting Spec + Diff + Reflect
 		vec4 ks = specular[i];	
 		vec4 kd = diffuse[i]; 
-		diff = max(dot(vertNormal, lightDir[i]), 0.0); 
-		reflection = normalize(reflect(-lightDir[i], vertNormal)); 
-		spec = max(dot(eyeDir, reflection), 0.0); 
-		spec = pow(spec,14.0); 
+		 
+		
+
 		// Attenuation (fall off)
 		vec4 light;
-		
-		float dist = length(lightPos[i].xyz - fragPos.xyz);
-		float attenuation = (1/dist) * intense; 
 
-		light = ((diff * kd) + (spec * ks)) * kt * attenuation;
+		if (lightType[i] == 0u) {
+			vec3 normal = normalize(vertNormal);
+			vec3 dir = normalize(-lightPos[i]);
+			vec3 eye  = normalize(eyeDir);
+			reflection = reflect(-dir, normal);
+
+			diff = max(dot(normal, dir), 0.0);
+
+			spec = 0.0;
+			if (diff > 0.0) {
+				spec = pow(max(dot(eye, reflection), 0.0), 16.0);
+			}
+
+			light = ((diff * kd) + (spec * ks)) * kt * intense;
+		} else {
+			diff = max(dot(vertNormal, lightDir[i]), 0.0); 
+			reflection = normalize(reflect(-lightDir[i], vertNormal)); 
+			spec = max(dot(eyeDir, reflection), 0.0); 
+			spec = pow(spec,14.0);
+
+			float dist = length(lightPos[i].xyz - fragPos.xyz);
+			float attenuation = (1/dist) * intense; 
+			
+			light = ((diff * kd) + (spec * ks)) * kt * attenuation;
+		}
 		phongResult += light;
 	}
 	fragColor = phongResult;
