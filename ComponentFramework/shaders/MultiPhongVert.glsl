@@ -43,17 +43,17 @@ void main() {
 	eyeDir = -vertDir;
 
 	fragPos = vertPos;
-
-	/// Light position from the point-of-view of each vertex
-	vec3 lightLocFromVertex[MAX_LIGHTS];
-	for(uint i = 0u; i < numLights; i++){
-		if (lightType[i] == 0u) {
-			lightDir[i] = normalize(-lightPos[i]);
-		} else {
-			lightLocFromVertex[i] = vec3(lightPos[i]) - vertPos;
-			lightDir[i] = normalize(lightLocFromVertex[i]); /// Create the light direction.
+	if (numLights > 0) {
+		/// Light position from the point-of-view of each vertex
+		vec3 lightLocFromVertex[MAX_LIGHTS];
+		for(uint i = 0u; i < numLights; i++){
+			if (lightType[i] == 0u) {
+				lightDir[i] = normalize(-lightPos[i]);
+			} else {
+				lightLocFromVertex[i] = vec3(lightPos[i]) - vertPos;
+				lightDir[i] = normalize(lightLocFromVertex[i]); /// Create the light direction.
+			}
 		}
 	}
-	
 	gl_Position =  projectionMatrix * viewMatrix * modelMatrix * vVertex; 
 }

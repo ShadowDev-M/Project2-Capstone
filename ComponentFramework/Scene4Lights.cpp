@@ -92,7 +92,7 @@ void Scene4Lights::ShowLoadDialog()
 
 
 			cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
-
+			
 
 			sceneGraph.OnCreate();
 			saveFileName.clear();
@@ -164,7 +164,7 @@ bool Scene4Lights::OnCreate() {
 	lightOrb = std::make_shared<Actor>(nullptr, "Light_Orb");
 	lightOrb->AddComponent<TransformComponent>(nullptr, Vec3(1.0f, 2.0f, 10.0f), Quaternion(1.0f,Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 	lightOrb->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(0.0f, 1.0f, 0.0f, 1.0f), Vec4(0.0f, 0.5f, 0.0f, 1.0f), 20.0f);
-	lightOrb->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongVert.glsl");
+	lightOrb->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongFrag.glsl");
 	lightOrb->AddComponent<MeshComponent>(nullptr, "meshes/Sphere.obj");
 	lightOrb->AddComponent<MaterialComponent>(nullptr, "textures/moon.jpg");
 		//"textures/moon.jpg"
@@ -175,7 +175,7 @@ bool Scene4Lights::OnCreate() {
 	lightOrb2 = std::make_shared<Actor>(nullptr, "Light_Orb2");
 	lightOrb2->AddComponent<TransformComponent>(nullptr, Vec3(1.0f, 8.0f, 10.0f), Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 	lightOrb2->AddComponent<LightComponent>(nullptr, LightType::Direction, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Vec4(0.5f, 0.0f, 0.0f, 1.0f), 1.0f);
-	lightOrb2->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongVert.glsl");
+	lightOrb2->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongFrag.glsl");
 	lightOrb2->AddComponent<MeshComponent>(nullptr, "meshes/Sphere.obj");
 	lightOrb2->AddComponent<MaterialComponent>(nullptr, "textures/moon.jpg");
 	//"textures/moon.jpg"
@@ -185,7 +185,6 @@ bool Scene4Lights::OnCreate() {
 
 	numLights = sceneGraph.GetLightActors().size();
 	lights = sceneGraph.GetLightActors();
-
 
 	// Board setup
 
@@ -338,43 +337,20 @@ void Scene4Lights::Render() const {
 
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, Vec3(1.0f, 2.0f, 10.0f));
 
-
-	std::vector<Vec3> lightPos;
-	std::vector<Vec4> lightSpec;
-	std::vector<Vec4> lightDiff;
-	std::vector<float> lightIntensity;
-	std::vector<GLuint> lightTypes;
-
-	for (auto light : lights) {
-
-		if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
-			lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());
-			lightTypes.push_back(1u);
-		}
-		else {
-			Vec3 dir = light->GetComponent<TransformComponent>()->GetForward();
-			lightPos.push_back(dir);
-			lightTypes.push_back(0u);
-		}
-		lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
-		lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
-		lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
-	}
+	//std::vector<Vec3> lightPos;
+	//std::vector<Vec4> lightSpec;
+	//std::vector<Vec4> lightDiff;
+	//std::vector<float> lightIntensity;
+	//std::vector<GLuint> lightTypes;
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetViewMatrix());
 
-	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), numLights, &lightPos[0].x);
-	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), numLights, &lightDiff[0].x);
-	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), numLights, &lightSpec[0].x);
-	glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), numLights, lightIntensity.data());
-	glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), numLights, lightTypes.data());
-	Vec4 ambient(0.0f, 0.0f, 0.0f, 0.0f);
-	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, &ambient.x);
-	glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), numLights);
+	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, &clear_color.x);
 
+	/////////////////////////THE LIGHTS ARE IN HERE/////////////////////////
 	sceneGraph.Render();
-
+	////////////////////////////////////////////////////////////////////////
 	glUseProgram(0);
 }

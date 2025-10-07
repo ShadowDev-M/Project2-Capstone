@@ -1,32 +1,4 @@
-﻿  Actor.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\InputManager.h(202,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\InputManager.h(202,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\InputManager.h(202,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\InputManager.h(232,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\InputManager.h(232,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\InputManager.h(232,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\Actor.cpp(159,58): warning C4305: 'argument': truncation from 'double' to 'float'
-  AssetManagerWindow.cpp
+﻿  AssetManagerWindow.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\cjhou\Documents\Game Programming\Semester 4\Game Production 2\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
