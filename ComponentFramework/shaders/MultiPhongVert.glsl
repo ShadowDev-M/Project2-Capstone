@@ -27,7 +27,7 @@ uniform uint numLights;
 layout (location = 0) out vec3 vertNormal;
 layout (location = 1) out vec3 eyeDir;
 layout (location = 2) out vec2 textureCoords;
-layout (location = 3) out vec3 fragPos;
+layout (location = 3) out vec3 vertPos;
 layout (location = 4) out vec3 lightDir[MAX_LIGHTS];
 
  
@@ -42,7 +42,6 @@ void main() {
 	vec3 vertDir = normalize(vertPos);
 	eyeDir = -vertDir;
 
-	fragPos = vertPos;
 	if (numLights > 0) {
 		/// Light position from the point-of-view of each vertex
 		vec3 lightLocFromVertex[MAX_LIGHTS];

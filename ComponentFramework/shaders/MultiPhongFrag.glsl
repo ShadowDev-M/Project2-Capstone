@@ -6,7 +6,7 @@
 layout (location = 0) in vec3 vertNormal;
 layout (location = 1) in vec3 eyeDir;
 layout (location = 2) in vec2 textureCoords;
-layout (location = 3) in vec3 fragPos;
+layout (location = 3) in vec3 vertPos;
 layout (location = 4) in vec3 lightDir[MAX_LIGHTS];
 
 
@@ -37,8 +37,6 @@ void main() {
 			// Lighting Spec + Diff + Reflect
 			vec4 ks = specular[i];	
 			vec4 kd = diffuse[i]; 
-		 
-		
 
 			// Attenuation (fall off)
 			vec4 light;
@@ -63,7 +61,7 @@ void main() {
 				spec = max(dot(eyeDir, reflection), 0.0); 
 				spec = pow(spec,14.0);
 
-				float dist = length(lightPos[i].xyz - fragPos.xyz);
+				float dist = length(lightPos[i].xyz - vertPos.xyz);
 				float attenuation = (1/dist) * intense; 
 			
 				light = ((diff * kd) + (spec * ks)) * kt * attenuation;
