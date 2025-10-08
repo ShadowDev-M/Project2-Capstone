@@ -22,6 +22,10 @@ private:
 	std::string oldActorName = "";
 	std::string newActorName = "";
 
+	// rotation variables (change all this to local if possible)
+	bool isEditingRotation = false;
+	Vec3 eulerAngles;
+
 	// header for renaming, isactive
 	void DrawActorHeader(Ref<Actor> actor_);
 

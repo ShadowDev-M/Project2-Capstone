@@ -3314,6 +3314,9 @@ struct ImGuiTableSettings
 
 namespace ImGui
 {
+    // Additional functions
+    IMGUI_API void          WrapMousePosEx(int axises_mask, const ImRect& wrap_rect);
+
     // Windows
     // We should always have a CurrentWindow in the stack (there is an implicit "Debug" window)
     // If this ever crashes because g.CurrentWindow is NULL, it means that either:

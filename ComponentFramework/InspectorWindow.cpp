@@ -149,11 +149,14 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 		else {
 			// TODO: multi-actor editing
 
-			if (ImGui::CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
-				for (const auto& pair : sceneGraph->debugSelectedAssets) {
-					ImGui::Text("%s", pair.second->getActorName().c_str());
-				}
+			for (const auto& pair : sceneGraph->debugSelectedAssets) {
+				
+				
+
 			}
+
+			
+
 		}
 	}
 
@@ -195,28 +198,40 @@ void InspectorWindow::DrawTransformComponent(Ref<TransformComponent> transform)
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("##Position", position, 0.1f)) {
 			transform->SetPos(position[0], position[1], position[2]);
+			
 		}
+		ImGui::ActiveItemLockMousePos();
 
 		//Rotation
-		//TODO: fix gimbal lock, advanced rotation
-		// possibly use orientation
+		if (!isEditingRotation) {
+			// get the quaternions rotation when not edting anything
+			if (!ImGui::IsAnyItemActive()) {
+				Euler quatEuler = EMath::toEuler(transform->GetQuaternion());
+				eulerAngles = Vec3(quatEuler.xAxis, quatEuler.yAxis, quatEuler.zAxis);
+			}
+		}
 
-		Euler quatEuler = EMath::toEuler(transform->GetQuaternion());
-		float rotation[3] = { quatEuler.xAxis, quatEuler.yAxis, quatEuler.zAxis };
+		float rotation[3] = { eulerAngles.x, eulerAngles.y, eulerAngles.z };
 
 		ImGui::Text("Rotation");
 		ImGui::SameLine();
 
-		if (ImGui::DragFloat3("##Rotation", rotation, 1.0f)) {
-			Quaternion rotX = QMath::angleAxisRotation(rotation[0], Vec3(1.0f, 0.0f, 0.0f));
-			Quaternion rotY = QMath::angleAxisRotation(rotation[1], Vec3(0.0f, 1.0f, 0.0f));
-			Quaternion rotZ = QMath::angleAxisRotation(rotation[2], Vec3(0.0f, 0.0f, 1.0f));
+		bool rotationChanged = ImGui::DragFloat3("##Rotation", rotation, 1.0f);
 
-			// euler
-			Quaternion finalRotation = rotZ * rotY * rotX;
-			transform->SetOrientation(QMath::normalize(finalRotation));
+		isEditingRotation = ImGui::IsItemActive();
+
+		if (rotationChanged) {
+			// store the euler angles
+			eulerAngles.x = rotation[0];
+			eulerAngles.y = rotation[1];
+			eulerAngles.z = rotation[2];
+
+			// convert euler to quaternion
+			Euler eulerRot(rotation[0], rotation[1], rotation[2]);
+			Quaternion newOrientation = QMath::toQuaternion(eulerRot);
+			transform->SetOrientation(QMath::normalize(newOrientation));
 		}
-
+		ImGui::ActiveItemLockMousePos();
 
 		// Scale
 		Vec3 scaleVector = transform->GetScale();
@@ -254,7 +269,7 @@ void InspectorWindow::DrawTransformComponent(Ref<TransformComponent> transform)
 			}
 			
 		}
-
+		ImGui::ActiveItemLockMousePos();
 	}
 }
 
@@ -313,7 +328,7 @@ void InspectorWindow::DrawMaterialComponent(Ref<MaterialComponent> material)
 				ImVec2(thumbnailSize, thumbnailSize));
 		}
 		else {
-			ImGui::Button("Material", ImVec2(thumbnailSize, thumbnailSize));
+			ImGui::Button("Material ##Button", ImVec2(thumbnailSize, thumbnailSize));
 		}
 
 		if (ImGui::BeginDragDropTarget()) {
