@@ -174,7 +174,7 @@ bool Scene4Lights::OnCreate() {
 
 	lightOrb2 = std::make_shared<Actor>(nullptr, "Light_Orb2");
 	lightOrb2->AddComponent<TransformComponent>(nullptr, Vec3(1.0f, 8.0f, 10.0f), Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
-	lightOrb2->AddComponent<LightComponent>(nullptr, LightType::Direction, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Vec4(0.5f, 0.0f, 0.0f, 1.0f), 1.0f);
+	lightOrb2->AddComponent<LightComponent>(nullptr, LightType::Sky, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Vec4(0.5f, 0.0f, 0.0f, 1.0f), 1.0f);
 	lightOrb2->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongFrag.glsl");
 	lightOrb2->AddComponent<MeshComponent>(nullptr, "meshes/Sphere.obj");
 	lightOrb2->AddComponent<MaterialComponent>(nullptr, "textures/moon.jpg");

@@ -4,7 +4,7 @@
 #include "AssetManager.h"
 
 enum class LightType {
-	Direction,
+	Sky,
 	Point,
 };
 

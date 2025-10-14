@@ -410,8 +410,8 @@ void InspectorWindow::DrawLightComponent(Ref<LightComponent> light)
 			// TODO search bar
 			ImGui::Separator();
 
-			if (ImGui::Selectable("Directional Light")) {
-				light->setType(LightType::Direction);
+			if (ImGui::Selectable("Sky Light")) {
+				light->setType(LightType::Sky);
 			}
 			if (ImGui::Selectable("Point Light")) {
 				light->setType(LightType::Point);
