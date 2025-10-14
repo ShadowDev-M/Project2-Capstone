@@ -42,6 +42,8 @@ void main() {
 	vec3 vertDir = normalize(vertPos);
 	eyeDir = -vertDir;
 
+	vec3 lightViewPos;
+
 	if (numLights > 0) {
 		/// Light position from the point-of-view of each vertex
 		vec3 lightLocFromVertex[MAX_LIGHTS];

@@ -50,7 +50,7 @@ public:
 
 	Vec3 GetForward() {
 		Vec3 localForward = Vec3(0.0f, 0.0f, -1.0f);
-		return VMath::normalize(orientation * localForward);
+		return orientation * localForward;
 	}
 
 };

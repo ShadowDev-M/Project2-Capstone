@@ -350,16 +350,19 @@ public:
 		std::vector<Vec4> lightDiff;
 		std::vector<float> lightIntensity;
 		std::vector<GLuint> lightTypes;
-
 		if (!lightActors.empty()) {
 			for (auto& light : lightActors) {
 				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
-					lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());
+					lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition() - usedCamera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition());
+				
+					//lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());
 					lightTypes.push_back(1u);
 				}
 				else {
-					Vec3 dir = light->GetComponent<TransformComponent>()->GetForward();
-					lightPos.push_back(dir);
+					
+					lightPos.push_back(light->GetComponent<TransformComponent>()->GetForward());
+					//Vec3 dir = light->GetComponent<TransformComponent>()->GetForward();
+					//lightPos.push_back(dir);
 					lightTypes.push_back(0u);
 				}
 				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
