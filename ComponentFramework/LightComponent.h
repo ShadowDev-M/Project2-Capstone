@@ -4,7 +4,7 @@
 #include "AssetManager.h"
 
 enum class LightType {
-	Direction,
+	Sky,
 	Point,
 };
 
@@ -30,15 +30,29 @@ public:
 		type = LightType::Point;
 	}
 
-	 ~LightComponent() {}
+	~LightComponent() {}
 
-	 bool OnCreate();
-	 void OnDestroy();
-	 void Update(const float deltaTime_) {}
-	 void Render() const {}
-	 
-	Vec4 getSpec() { return spec; }
-	Vec4 getDiff() { return diff; }
-	GLfloat getIntensity() { return intensity; }
+	bool OnCreate();
+	void OnDestroy();
+	void Update(const float deltaTime_) {}
+	void Render() const {}
+	
+	// setters
+	void setSpec(Vec4 spec_) {
+		spec = spec_;
+	}
+	void setDiff(Vec4 diff_) {
+		diff = diff_;
+	}
+	void setIntensity(float intensity_) {
+		intensity = intensity_;
+	}
+	void setType(LightType type_) {
+		type = type_;
+	}
+	// getters
+	Vec4 getSpec() const { return spec; }
+	Vec4 getDiff() const { return diff; }
+	GLfloat getIntensity() const { return intensity; }
 	LightType getType() { return type; }
 };

@@ -167,9 +167,6 @@
     <ClInclude Include="LightComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Scene4Lights.h">
-      <Filter>Header Files\Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="DockingWindow.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
@@ -282,9 +279,6 @@
     </ClCompile>
     <ClCompile Include="LightComponent.cpp">
       <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene4Lights.cpp">
-      <Filter>Source Files\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="DockingWindow.cpp">
       <Filter>Windows</Filter>

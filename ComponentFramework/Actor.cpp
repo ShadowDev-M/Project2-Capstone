@@ -34,6 +34,8 @@ Actor::~Actor() {
 }
 
 void Actor::OnDestroy() {
+	if (!isCreated) return;
+
 	Debug::Info("Deleting assets for Actor: ", __FILE__, __LINE__);
 	RemoveAllComponents();
 	isCreated = false;

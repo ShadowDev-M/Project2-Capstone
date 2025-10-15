@@ -3,6 +3,8 @@
 #include "Matrix.h"
 #include "QMath.h"
 #include "Euler.h"
+#include "VMath.h"
+
 using namespace MATH;
 class TransformComponent : public Component {
 	friend class XMLtest;
@@ -22,9 +24,9 @@ public:
 	void Update(const float deltaTime_);
 	void Render() const;
 
-	Vec3 GetPosition() { return pos; }
-	Vec3 GetScale() { return scale; }
-	Quaternion GetQuaternion() { return orientation; }
+	Vec3 GetPosition() const { return pos; }
+	Vec3 GetScale() const { return scale; }
+	Quaternion GetQuaternion() const { return orientation; }
 	Matrix4 GetTransformMatrix() const;
 	void SetTransform(Vec3 pos_, Quaternion orientation_, Vec3 scale_ = Vec3(1.0f, 1.0f, 1.0f) ) {
 		pos = pos_;
@@ -46,6 +48,10 @@ public:
 		scale = scale_;
 	}
 
+	Vec3 GetForward() {
+		Vec3 localForward = Vec3(0.0f, 0.0f, -1.0f);
+		return orientation * localForward;
+	}
 
 };
 

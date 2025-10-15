@@ -1,0 +1,10 @@
+<Actor>
+    <TransformComponent>
+        <position x="8.6768246" y="5.185576" z="18.1"/>
+        <rotation w="0.99144489" x="-0.13052617" y="-0" z="0"/>
+        <scale x="2.0999999" y="2.0999999" z="2.0999999"/>
+    </TransformComponent>
+    <MeshComponent name="SM_Sphere"/>
+    <MaterialComponent name="M_Moon"/>
+    <ShaderComponent name="S_Phong"/>
+</Actor>

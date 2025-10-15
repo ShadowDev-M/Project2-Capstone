@@ -159,7 +159,6 @@
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Scene3GUI.h" />
-    <ClInclude Include="Scene4Lights.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptComponent.h" />
@@ -201,7 +200,6 @@
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="Scene3GUI.cpp" />
-    <ClCompile Include="Scene4Lights.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScriptComponent.cpp" />

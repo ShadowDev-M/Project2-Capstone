@@ -1,10 +1,11 @@
 #include "CameraComponent.h"
 
-CameraComponent::CameraComponent(Ref<Actor> userActor, float fovy, float aspectRatio, float nearClipPlane, float farClipPlane) : Component(nullptr)
+CameraComponent::CameraComponent(Ref<Actor> userActor, float fovy, float aspectRatio, float nearClipPlane, float farClipPlane) : 
+	Component(nullptr), m_fov(fovy), m_aspectRatio(aspectRatio), m_nearClipPlane(nearClipPlane), m_farClipPlane(farClipPlane)
 {
 
 	parentActor = userActor;
-	projectionMatrix = MMath::perspective(fovy, aspectRatio, nearClipPlane, farClipPlane);
+	projectionMatrix = MMath::perspective(m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane);
 
 	viewMatrix.loadIdentity();
 	//viewMatrix = MMath::lookAt(Vec3(0.0f, 0.0f, 5.0f), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));

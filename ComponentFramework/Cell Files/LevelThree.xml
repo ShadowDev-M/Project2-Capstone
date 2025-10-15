@@ -2,13 +2,16 @@
     <Actors>
         <Board>
             <Mario/>
-            <Sphere/>
         </Board>
         <CamTest/>
         <Cube/>
+        <Light/>
     </Actors>
     <Components>
         <MaterialComponent>
+            <M_Moon>
+                <Texture path="textures/moon.jpg"/>
+            </M_Moon>
             <M_Sphere>
                 <Texture path="textures/Black Chess Base Colour.png"/>
             </M_Sphere>
@@ -58,15 +61,15 @@
             <S_Multi>
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
             </S_Multi>
+            <S_Default>
+                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
+            </S_Default>
             <S_Outline>
                 <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Outline>
             <S_Phong>
                 <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Phong>
-            <S_Default>
-                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
-            </S_Default>
         </ShaderComponent>
     </Components>
 </CellFile>

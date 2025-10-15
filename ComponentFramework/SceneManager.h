@@ -19,7 +19,6 @@ private:
 		SCENE1g = 1,
 		SCENE2g = 2,
 		SCENE3GUI = 3,
-		SCENE4LIGHTS = 6,
 		SCENE4,
 		SCENE5,
 		SCENE6

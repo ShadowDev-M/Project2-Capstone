@@ -45,11 +45,8 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 		if (ImGui::BeginPopupContextWindow("##RightClickHierarchyWindow")) {
 			
 			if (ImGui::MenuItem("Create Empty Actor")) {
-				std::string newActorName = "Actor";
-				int counter = 1;
-				while (sceneGraph->GetActor(newActorName) != nullptr) {
-					newActorName = "Actor_" + std::to_string(counter++) + "_E"; // can't end or start with a special character or number and there can't be a space at all, XML breaks...
-				}
+				std::string actorName = "EmptyActor";
+				std::string newActorName = GenerateDuplicateName(actorName);
 
 				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
 				newActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 0.0f),
@@ -196,7 +193,7 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> ac
 		if (ImGui::MenuItem("Delete")) {
 			sceneGraph->RemoveLight(sceneGraph->GetActor(actorName_));
 			sceneGraph->GetActor(actorName_)->DeleteComponent<LightComponent>();
-			sceneGraph->GetActor(actorName_)->DeleteComponent<Component>();
+			//sceneGraph->GetActor(actorName_)->DeleteComponent<Component>();
 
 			sceneGraph->RemoveActor(actorName_);
 			sceneGraph->checkValidCamera();
@@ -217,12 +214,31 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> ac
 void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 	if (!original_) return;
 
-	std::string newName = GenerateDuplicateName(original_->getActorName());
-	Ref<Actor> duplicate = DeepCopyActor(newName, original_);
+	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(original_.get());
+	if (original_->getParentActor() == nullptr) {
+		std::string newName = GenerateDuplicateName(original_->getActorName());
 
-	if (duplicate) {
-		duplicate->OnCreate();
-		sceneGraph->AddActor(duplicate);
+		Ref<Actor> parentActor = DeepCopyActor(newName, original_);
+		parentActor->OnCreate();
+		sceneGraph->AddActor(parentActor);
+
+		if (childActors.size() != 0) {
+			for (const auto& child : childActors) {
+				newName = GenerateDuplicateName(child.first);
+				
+				Ref<Actor> childActor = DeepCopyActor(newName, child.second);
+				childActor->setParentActor(parentActor.get());
+				childActor->OnCreate();
+				sceneGraph->AddActor(childActor);
+			}
+		}
+	}
+	else if (original_->getParentActor() != nullptr) {
+		std::string newName = GenerateDuplicateName(original_->getActorName());
+
+		Ref<Actor> parentActor = DeepCopyActor(newName, original_);
+		parentActor->OnCreate();
+		sceneGraph->AddActor(parentActor);
 	}
 }
 
@@ -251,7 +267,7 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	if (auto camera = original_->GetComponent<CameraComponent>()) {
-		copy->AddComponent<CameraComponent>(copy, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+		copy->AddComponent<CameraComponent>(copy);
 	}
 
 	if (auto light = original_->GetComponent<LightComponent>()) {

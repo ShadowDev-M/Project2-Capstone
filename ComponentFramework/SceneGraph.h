@@ -438,7 +438,9 @@ public:
 
 		// call the OnDestroy for each actor 
 		for (auto& pair : Actors) {
-			pair.second->OnDestroy();
+			if (pair.second) {
+				pair.second->OnDestroy();
+			}
 		}
 
 		// clear the maps
@@ -480,7 +482,6 @@ public:
 
 
 	//values for picking framebuffer
-
 
 	//create colour picker fbo
 	void createFBOPicking(int w, int h) {

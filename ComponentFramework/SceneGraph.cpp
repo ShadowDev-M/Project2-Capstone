@@ -238,11 +238,22 @@ void SceneGraph::Render() const
 		std::vector<GLuint> lightTypes;
 		if (!lightActors.empty()) {
 			for (auto& light : lightActors) {
-				lightPos.push_back(light->GetPositionFromHierarchy(getUsedCamera()));
+				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
+					lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition() - usedCamera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition());
+
+					//lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());
+					lightTypes.push_back(1u);
+				}
+				else {
+
+					lightPos.push_back(light->GetComponent<TransformComponent>()->GetForward());
+					//Vec3 dir = light->GetComponent<TransformComponent>()->GetForward();
+					//lightPos.push_back(dir);
+					lightTypes.push_back(0u);
+				}
 				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
 				lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
 				lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
-				lightTypes.push_back(static_cast<int>(light->GetComponent<LightComponent>()->getType()));
 			}
 
 			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
@@ -251,21 +262,9 @@ void SceneGraph::Render() const
 			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
 			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
 		}
-		else {
-
-		}
-
-		/*
-		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
-			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
-			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
-		*/
-
-		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(0.45f, 0.55f, 0.60f, 1.00f));
-
 		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
+
+		//glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(0.45f, 0.55f, 0.60f, 1.00f));
 
 		//use the picking buffer so it is seperated
 		glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
@@ -308,13 +307,18 @@ void SceneGraph::Render() const
 			glEnable(GL_DEPTH_TEST);
 			//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
 
+			bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
-			if (!debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end()) glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
+			if (isSelected) {
+				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
+				glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+			}
 			else {
 				if (pair.second->GetComponent<ShaderComponent>()) {
 					glUseProgram(shader->GetProgram());
+					glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 				}
-				else continue;
+				
 
 				//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
 
@@ -327,7 +331,7 @@ void SceneGraph::Render() const
 
 
 
-			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+			
 
 			glBindTexture(GL_TEXTURE_2D, material->getTextureID());
 			mesh->Render(GL_TRIANGLES);
