@@ -22,9 +22,9 @@ public:
 	void Update(const float deltaTime_);
 	void Render() const;
 
-	Vec3 GetPosition() { return pos; }
-	Vec3 GetScale() { return scale; }
-	Quaternion GetQuaternion() { return orientation; }
+	Vec3 GetPosition() const { return pos; }
+	Vec3 GetScale() const { return scale; }
+	Quaternion GetQuaternion() const { return orientation; }
 	Matrix4 GetTransformMatrix() const;
 	void SetTransform(Vec3 pos_, Quaternion orientation_, Vec3 scale_ = Vec3(1.0f, 1.0f, 1.0f) ) {
 		pos = pos_;

@@ -243,6 +243,12 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 	auto material = std::dynamic_pointer_cast<MaterialComponent>(asset);
 	auto shader = std::dynamic_pointer_cast<ShaderComponent>(asset);
 
+
+	// disable background for buttons
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
+
 	// TODO: better thumbnails for meshes and shaders
 	if (mesh) {
 		// using a color button but disabling all of its functionalilty, just want to differentiate between assets
@@ -258,6 +264,12 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 		payloadType = "SHADER_ASSET";
 	}
 	//TODO: if there are more components that need to go into the assetmanager later add them here
+
+	// pop
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+
 
 	// right click popup menu
 	if (ImGui::BeginPopupContextItem("##AssetRightClick")) {
