@@ -92,7 +92,7 @@ void Scene4Lights::ShowLoadDialog()
 
 
 			cameraActorTwo->GetComponent<CameraComponent>()->fixCameraToTransform();
-
+			
 
 			sceneGraph.OnCreate();
 			saveFileName.clear();
@@ -164,7 +164,7 @@ bool Scene4Lights::OnCreate() {
 	lightOrb = std::make_shared<Actor>(nullptr, "Light_Orb");
 	lightOrb->AddComponent<TransformComponent>(nullptr, Vec3(1.0f, 2.0f, 10.0f), Quaternion(1.0f,Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 	lightOrb->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(0.0f, 1.0f, 0.0f, 1.0f), Vec4(0.0f, 0.5f, 0.0f, 1.0f), 20.0f);
-	lightOrb->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongVert.glsl");
+	lightOrb->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongFrag.glsl");
 	lightOrb->AddComponent<MeshComponent>(nullptr, "meshes/Sphere.obj");
 	lightOrb->AddComponent<MaterialComponent>(nullptr, "textures/moon.jpg");
 		//"textures/moon.jpg"
@@ -174,8 +174,8 @@ bool Scene4Lights::OnCreate() {
 
 	lightOrb2 = std::make_shared<Actor>(nullptr, "Light_Orb2");
 	lightOrb2->AddComponent<TransformComponent>(nullptr, Vec3(1.0f, 8.0f, 10.0f), Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
-	lightOrb2->AddComponent<LightComponent>(nullptr, LightType::Direction, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Vec4(0.5f, 0.0f, 0.0f, 1.0f), 20.0f);
-	lightOrb2->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongVert.glsl");
+	lightOrb2->AddComponent<LightComponent>(nullptr, LightType::Sky, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Vec4(0.5f, 0.0f, 0.0f, 1.0f), 1.0f);
+	lightOrb2->AddComponent<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongFrag.glsl");
 	lightOrb2->AddComponent<MeshComponent>(nullptr, "meshes/Sphere.obj");
 	lightOrb2->AddComponent<MaterialComponent>(nullptr, "textures/moon.jpg");
 	//"textures/moon.jpg"
@@ -183,13 +183,8 @@ bool Scene4Lights::OnCreate() {
 	sceneGraph.AddActor(lightOrb2);
 	sceneGraph.AddLight(lightOrb2);
 
-
-	//LightActor* light1 = new LightActor()
-		// pos	Vec3(1.0f, 2.0f, -10.0f),
-		// spec	Vec4(0.0f, 1.0f, 1.0f, 1.0f),
-		// diff	Vec4(0.4f, 0.4f, 0.4f, 1.0f),
-		// int	4000.0f);
-
+	numLights = sceneGraph.GetLightActors().size();
+	lights = sceneGraph.GetLightActors();
 
 	// Board setup
 
@@ -339,29 +334,23 @@ void Scene4Lights::Render() const {
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, camera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, camera->GetViewMatrix());
 
-	//for (int i = 0; i < lights; ++i) {
-		glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, Vec3(1.0f, 2.0f, 10.0f));
-	//}
 
-		//LightActor* light1 = new LightActor()
-		// pos	Vec3(1.0f, 2.0f, -10.0f),
-		// spec	Vec4(0.0f, 1.0f, 1.0f, 1.0f),
-		// diff	Vec4(0.4f, 0.4f, 0.4f, 1.0f),
-		// int	4000.0f);
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, Vec3(1.0f, 2.0f, 10.0f));
 
-	//lights[0]->getPos()
-	//lights[0]->getDiff()
-	//lights[0]->getSpec()
-	//lights[0]->getIntensity()
+	//std::vector<Vec3> lightPos;
+	//std::vector<Vec4> lightSpec;
+	//std::vector<Vec4> lightDiff;
+	//std::vector<float> lightIntensity;
+	//std::vector<GLuint> lightTypes;
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, sceneGraph.getUsedCamera()->GetViewMatrix());
 
-	
+	glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, &clear_color.x);
 
-
+	/////////////////////////THE LIGHTS ARE IN HERE/////////////////////////
 	sceneGraph.Render();
-
+	////////////////////////////////////////////////////////////////////////
 	glUseProgram(0);
 }

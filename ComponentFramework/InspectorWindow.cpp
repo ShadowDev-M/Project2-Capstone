@@ -113,7 +113,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 
 				if (ImGui::Selectable("Light Component")) {
 					if (!selectedActor->second->GetComponent<LightComponent>()) {
-						selectedActor->second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 200.0f);
+						selectedActor->second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f);
 						sceneGraph->AddLight(selectedActor->second);
 						
 					}
@@ -602,17 +602,85 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 
 void InspectorWindow::DrawLightComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
 {
-	ComponentState<LightComponent> lightState(selectedActors_);
-
-	if (lightState.noneHaveComponent) return;
-
 	if (ImGui::CollapsingHeader("Light")) {
-		RightClickContext<LightComponent>("##LightPopup", selectedActors_);
-		
-		Ref<LightComponent> firstLight = lightState.GetFirst();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+			ImGui::OpenPopup("##LightPopup");
+		}
+		ImGui::TextWrapped("Light ID: %u", light.get());
+		Vec4 spec = light->getSpec();
+		float specular[3] = { spec.x, spec.y, spec.z };
 
-		ImGui::TextWrapped("Light ID: %u", firstLight.get());
+		ImGui::Text("Specular");
+		ImGui::SameLine();
+		if (ImGui::DragFloat3("##Specular", specular, 0.01f)) {
+			for (int i = 0; i < 3; ++i) {
+				if (specular[i] < 0) {
+					specular[i] = 0;
+				}
+				else if (specular[i] > 1) {
+					specular[i] = 1;
+				}
+			}
+			light->setSpec(Vec4(specular[0], specular[1], specular[2], spec.w));
+		}
 
+		Vec4 diff = light->getDiff();
+		float diffuse[3] = { diff.x, diff.y, diff.z };
+
+		ImGui::Text("Diffuse");
+		ImGui::SameLine();
+		if (ImGui::DragFloat3("##Diffuse", diffuse, 0.01f)) {
+			for (int i = 0; i < 3; ++i) {
+				if (diffuse[i] < 0) {
+					diffuse[i] = 0;
+				}
+				else if (diffuse[i] > 1) {
+					diffuse[i] = 1;
+				}
+			}
+			light->setDiff(Vec4(diffuse[0], diffuse[1], diffuse[2], diff.w));
+		}
+
+		float intensity = light->getIntensity();
+
+		ImGui::Text("Intensity");
+		ImGui::SameLine();
+		if (ImGui::DragFloat("##Intensity", &intensity, 0.1f)) {
+			
+			if (intensity < 0) {
+				intensity = 0;
+			}
+			light->setIntensity(intensity);
+		}
+
+		if (ImGui::Button("Light Type##Button")) {
+			ImGui::OpenPopup("Light Type");
+		}
+
+		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 800, mainViewport->WorkPos.y - 600), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
+
+		if (ImGui::BeginPopupModal("Light Type", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			ImGui::Text("Select a Light Type");
+			// TODO search bar
+			ImGui::Separator();
+
+			if (ImGui::Selectable("Sky Light")) {
+				light->setType(LightType::Sky);
+			}
+			if (ImGui::Selectable("Point Light")) {
+				light->setType(LightType::Point);
+			}
+
+			ImGui::Separator();
+
+			if (ImGui::Button("Cancel")) {
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
 	}
 	ImGui::Separator();
 }

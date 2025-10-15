@@ -483,6 +483,39 @@ public:
 
 	//values for picking framebuffer
 
+		std::vector<Vec3> lightPos;
+		std::vector<Vec4> lightSpec;
+		std::vector<Vec4> lightDiff;
+		std::vector<float> lightIntensity;
+		std::vector<GLuint> lightTypes;
+		if (!lightActors.empty()) {
+			for (auto& light : lightActors) {
+				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
+					lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition() - usedCamera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition());
+				
+					//lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());
+					lightTypes.push_back(1u);
+				}
+				else {
+					
+					lightPos.push_back(light->GetComponent<TransformComponent>()->GetForward());
+					//Vec3 dir = light->GetComponent<TransformComponent>()->GetForward();
+					//lightPos.push_back(dir);
+					lightTypes.push_back(0u);
+				}
+				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
+				lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
+				lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
+			}
+
+
+			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
+			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
+			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+		}
+		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
 
 	//create colour picker fbo
 	void createFBOPicking(int w, int h) {

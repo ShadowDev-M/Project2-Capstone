@@ -3,6 +3,8 @@
 #include "Matrix.h"
 #include "QMath.h"
 #include "Euler.h"
+#include "VMath.h"
+
 using namespace MATH;
 class TransformComponent : public Component {
 	friend class XMLtest;
@@ -46,6 +48,10 @@ public:
 		scale = scale_;
 	}
 
+	Vec3 GetForward() {
+		Vec3 localForward = Vec3(0.0f, 0.0f, -1.0f);
+		return orientation * localForward;
+	}
 
 };
 
