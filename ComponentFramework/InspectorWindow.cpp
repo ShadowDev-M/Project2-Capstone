@@ -602,58 +602,107 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 
 void InspectorWindow::DrawLightComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
 {
+	ComponentState<LightComponent> lightState(selectedActors_);
+
+	if (lightState.noneHaveComponent) return;
+
 	if (ImGui::CollapsingHeader("Light")) {
-		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
-			ImGui::OpenPopup("##LightPopup");
-		}
-		ImGui::TextWrapped("Light ID: %u", light.get());
+		RightClickContext<LightComponent>("##LightPopup", selectedActors_);
+
+		Ref<LightComponent> light = lightState.GetFirst();
+
+		bool hasMixedSpec = lightState.HasMixedVec4(&LightComponent::getSpec);
+		bool hasMixedDiff = lightState.HasMixedVec4(&LightComponent::getDiff);
+		bool hasMixedIntensity = lightState.HasMixedFloat(&LightComponent::getIntensity);
+
+		// Specular
 		Vec4 spec = light->getSpec();
 		float specular[3] = { spec.x, spec.y, spec.z };
 
 		ImGui::Text("Specular");
 		ImGui::SameLine();
-		if (ImGui::DragFloat3("##Specular", specular, 0.01f)) {
-			for (int i = 0; i < 3; ++i) {
-				if (specular[i] < 0) {
-					specular[i] = 0;
+		
+		if (hasMixedSpec && !isEditingSpec) {
+			ImGui::DragFloat3("##Specular", specular, 0.01f, 0.0f, 0.0f, "---");
+		}
+		else
+		{
+			if (ImGui::DragFloat3("##Specular", specular, 0.01f)) {
+				for (int i = 0; i < 3; ++i) {
+					if (specular[i] < 0) {
+						specular[i] = 0;
+					}
+					else if (specular[i] > 1) {
+						specular[i] = 1;
+					}
 				}
-				else if (specular[i] > 1) {
-					specular[i] = 1;
+
+				for (auto& component : lightState.components) {
+					Vec4 currentSpec = component->getSpec();
+					component->setSpec(Vec4(specular[0], specular[1], specular[2], currentSpec.w));
 				}
 			}
-			light->setSpec(Vec4(specular[0], specular[1], specular[2], spec.w));
 		}
 
+		isEditingSpec = ImGui::IsItemActive();
+		ImGui::ActiveItemLockMousePos();
+
+		// Diffuse
 		Vec4 diff = light->getDiff();
 		float diffuse[3] = { diff.x, diff.y, diff.z };
 
 		ImGui::Text("Diffuse");
 		ImGui::SameLine();
-		if (ImGui::DragFloat3("##Diffuse", diffuse, 0.01f)) {
-			for (int i = 0; i < 3; ++i) {
-				if (diffuse[i] < 0) {
-					diffuse[i] = 0;
+
+		if (hasMixedDiff && !isEditingDiff) {
+			ImGui::DragFloat3("##Diffuse", diffuse, 0.01f, 0.0f, 0.0f, "---");
+		}
+		else {
+			if (ImGui::DragFloat3("##Diffuse", diffuse, 0.01f)) {
+				for (int i = 0; i < 3; ++i) {
+					if (diffuse[i] < 0) {
+						diffuse[i] = 0;
+					}
+					else if (diffuse[i] > 1) {
+						diffuse[i] = 1;
+					}
 				}
-				else if (diffuse[i] > 1) {
-					diffuse[i] = 1;
+				for (auto& component : lightState.components) {
+					Vec4 currentDiff = component->getDiff();
+					component->setDiff(Vec4(diffuse[0], diffuse[1], diffuse[2], currentDiff.w));
 				}
 			}
-			light->setDiff(Vec4(diffuse[0], diffuse[1], diffuse[2], diff.w));
 		}
 
+		isEditingDiff = ImGui::IsItemActive();
+		ImGui::ActiveItemLockMousePos();
+
+		// Intensity
 		float intensity = light->getIntensity();
 
 		ImGui::Text("Intensity");
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Intensity", &intensity, 0.1f)) {
-			
-			if (intensity < 0) {
-				intensity = 0;
+
+		if (hasMixedIntensity && !isEditingIntensity) {
+			ImGui::DragFloat("##Intensity", &intensity, 0.1f, 0.0f, 0.0f, "---");
+		}
+		else {
+			if (ImGui::DragFloat("##Intensity", &intensity, 0.1f)) {
+
+				if (intensity < 0) {
+					intensity = 0;
+				}
+
+				for (auto& component : lightState.components) {
+					component->setIntensity(intensity);
+				}
 			}
-			light->setIntensity(intensity);
 		}
 
-		if (ImGui::Button("Light Type##Button")) {
+		isEditingIntensity = ImGui::IsItemActive();
+		ImGui::ActiveItemLockMousePos();
+
+		if (ImGui::Button("Light Type##Button", ImVec2(-1, 0))) {
 			ImGui::OpenPopup("Light Type");
 		}
 
@@ -667,10 +716,14 @@ void InspectorWindow::DrawLightComponent(const std::unordered_map<uint32_t, Ref<
 			ImGui::Separator();
 
 			if (ImGui::Selectable("Sky Light")) {
-				light->setType(LightType::Sky);
+				for (auto& component : lightState.components) {
+					component->setType(LightType::Sky);
+				}
 			}
 			if (ImGui::Selectable("Point Light")) {
-				light->setType(LightType::Point);
+				for (auto& component : lightState.components) {
+					component->setType(LightType::Point);
+				}
 			}
 
 			ImGui::Separator();

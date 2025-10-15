@@ -2,22 +2,25 @@
     <Actors>
         <Board>
             <Mario/>
-            <Sphere/>
         </Board>
-        <CamTest/>
         <Cube/>
+        <CamTest/>
+        <Light/>
     </Actors>
     <Components>
         <MaterialComponent>
             <M_Sphere>
                 <Texture path="textures/Black Chess Base Colour.png"/>
             </M_Sphere>
-            <M_MarioN>
-                <Texture path="textures/mario_main.png"/>
-            </M_MarioN>
+            <M_Moon>
+                <Texture path="textures/moon.jpg"/>
+            </M_Moon>
             <M_MarioFire>
                 <Texture path="textures/mario_fire.png"/>
             </M_MarioFire>
+            <M_MarioN>
+                <Texture path="textures/mario_main.png"/>
+            </M_MarioN>
             <M_ChessBoard>
                 <Texture path="textures/8x8_checkered_board.png"/>
             </M_ChessBoard>
@@ -32,12 +35,12 @@
             <SM_Mario>
                 <Mesh path="meshes/Mario.obj"/>
             </SM_Mario>
-            <SM_Cube>
-                <Mesh path="meshes/Cube.obj"/>
-            </SM_Cube>
             <SM_Sphere>
                 <Mesh path="meshes/Sphere.obj"/>
             </SM_Sphere>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
@@ -58,15 +61,15 @@
             <S_Multi>
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
             </S_Multi>
+            <S_Default>
+                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
+            </S_Default>
             <S_Outline>
                 <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Outline>
             <S_Phong>
                 <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Phong>
-            <S_Default>
-                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
-            </S_Default>
         </ShaderComponent>
     </Components>
 </CellFile>

@@ -57,6 +57,27 @@ private:
 			return false;
 		}
 
+		// checks to see if multiple vec4 values are equal or not
+		bool HasMixedVec4(Vec4(ComponentTemplate::* getter)() const) const {
+			if (components.size() <= 1) {
+				return false;
+			}
+
+			Vec4 firstValue = (components[0].get()->*getter)();
+			for (size_t i = 1; i < components.size(); i++) {
+				Vec4 currentValue = (components[i].get()->*getter)();
+
+				// floating point check against each vec3s xyz
+				if (fabs(firstValue.x - currentValue.x) > VERY_SMALL ||
+					fabs(firstValue.y - currentValue.y) > VERY_SMALL ||
+					fabs(firstValue.z - currentValue.z) > VERY_SMALL ||
+					fabs(firstValue.w - currentValue.w) > VERY_SMALL) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		
 		// checks to see if multiple quaternion values (w ijk) are equal or not
 		bool HasMixedQuaternion(Quaternion(ComponentTemplate::* getter)() const) const {
@@ -143,6 +164,11 @@ private:
 
 	bool isEditingScale = false;
 	Vec3 lastScale;
+
+	// light states
+	bool isEditingSpec = false;
+	bool isEditingDiff = false;
+	bool isEditingIntensity = false;
 
 	// header for renaming, isactive
 	void DrawActorHeader(Ref<Actor> actor_);

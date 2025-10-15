@@ -51,8 +51,8 @@ public:
 		type = type_;
 	}
 	// getters
-	Vec4 getSpec() { return spec; }
-	Vec4 getDiff() { return diff; }
-	GLfloat getIntensity() { return intensity; }
+	Vec4 getSpec() const { return spec; }
+	Vec4 getDiff() const { return diff; }
+	GLfloat getIntensity() const { return intensity; }
 	LightType getType() { return type; }
 };
