@@ -6,5 +6,5 @@
     </TransformComponent>
     <MeshComponent name="SM_Plane"/>
     <MaterialComponent name="M_ChessBoard"/>
-    <ShaderComponent name="S_Multi"/>
+    <ShaderComponent name="S_Phong"/>
 </Actor>
