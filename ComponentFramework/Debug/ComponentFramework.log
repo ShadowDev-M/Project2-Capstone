@@ -1,29 +1,11 @@
-﻿  Scene3GUI.cpp
+﻿  ScriptComponent.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
+  (compiling source file 'ScriptComponent.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(340,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(340,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(340,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(375,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(375,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(375,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Scene3GUI.cpp')
+  (compiling source file 'ScriptComponent.cpp')
   
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll

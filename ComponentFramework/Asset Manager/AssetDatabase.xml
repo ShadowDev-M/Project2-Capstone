@@ -1,17 +1,17 @@
 <AssetDatabase>
     <MaterialComponent>
-        <Asset name="M_Moon" filepath="textures/moon.jpg"/>
         <Asset name="M_Sphere" filepath="textures/Black Chess Base Colour.png"/>
-        <Asset name="M_MarioN" filepath="textures/mario_main.png"/>
+        <Asset name="M_Moon" filepath="textures/moon.jpg"/>
         <Asset name="M_MarioFire" filepath="textures/mario_fire.png"/>
+        <Asset name="M_MarioN" filepath="textures/mario_main.png"/>
         <Asset name="M_ChessBoard" filepath="textures/8x8_checkered_board.png"/>
         <Asset name="M_Skull" filepath="textures/skull_texture.jpg"/>
     </MaterialComponent>
     <MeshComponent>
         <Asset name="SM_Plane" filepath="meshes/Plane.obj"/>
         <Asset name="SM_Mario" filepath="meshes/Mario.obj"/>
-        <Asset name="SM_Cube" filepath="meshes/Cube.obj"/>
         <Asset name="SM_Sphere" filepath="meshes/Sphere.obj"/>
+        <Asset name="SM_Cube" filepath="meshes/Cube.obj"/>
         <Asset name="SM_Pawn" filepath="meshes/Pawn.obj"/>
         <Asset name="SM_King" filepath="meshes/King.obj"/>
         <Asset name="SM_Rook" filepath="meshes/Rook.obj"/>

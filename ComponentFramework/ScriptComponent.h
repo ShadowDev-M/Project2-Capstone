@@ -3,61 +3,54 @@
 #include <iostream> 
 #include <vector>
 #include <unordered_map>
-    //std::ofstream outputFile("example.txt"); // Creates or opens "example.txt"
+#include "Component.h"
+#include "Actor.h"
+#include <sol/sol.hpp>
 
-    //if (outputFile.is_open()) { // Check if the file was opened successfully
-    //    outputFile << "This is some text for the new file." << std::endl;
-    //    outputFile << "Another line of content." << std::endl;
-    //    outputFile.close();
-    //}
+//lua handler
+static sol::state lua;
 
-///base class for each script
-class Script {
+//should be called before any lua scripts are added
+
+
+class ScriptComponent : public Component {
+	//Make SceneGraph friend class to allow SceneGraph to authorize/deauthorize an actor's usage of a script by adding/removing it to users
+	//Also you could remove it if you wanted to disable it 
+	friend class SceneGraph;
+	friend class AssetManager;
+
+	ScriptComponent(const ScriptComponent&) = delete;
+	ScriptComponent(ScriptComponent&&) = delete;
+	ScriptComponent& operator = (const ScriptComponent&) = delete;
+	ScriptComponent& operator = (ScriptComponent&&) = delete;
+
+	const std::string SCRIPTSPATH = "scripts/";
+	std::string filename;
+	
+	std::string code;
+
+	//Dangerous to let any actor trigger a script, much better to have a manifest controlled by assetmanager/scenegraph for safety
+	std::vector<Ref<Actor>> users;
+
+	void load_lua_file();
+
+	//Only SceneGraph/AssetManager should call update (friend class)
+	void Update(const float deltaTime_);
 
 public:
+	ScriptComponent(Component* parent, const char* filename);
+	virtual ~ScriptComponent();
+	
+	const std::string getPath() { return SCRIPTSPATH + filename; }
 
-    virtual void Start() {}
+	std::string getName() { return filename; }
 
-
-    virtual void Update(float deltaTime) {}
+	bool OnCreate();
+	void OnDestroy();
+	void Render() const;
 
 };
 
 
 
-class ScriptManager {
-
-    //defined in cpp file
-    static const char* PATH;
- 
-    //list of scripts in use
-    static std::unordered_map<std::string, std::ofstream> scriptList;
-    
-    
-    static void addScriptIncludeToVcxproj(const std::string& scriptPath, const std::string& vcxprojPath);
-
-
-public:
-
-    static void BuildSingleCpp(const std::filesystem::path& msbuildExe,
-        const std::filesystem::path& projectFile,
-        const std::filesystem::path& cppFile);
-
-    static std::vector<Script*> scriptsRuntimeVector;
-
-    static void OpenFileForUser(const std::string& filename);
-
-    static std::string Get_Path(const std::string& = "");
-
-    static bool Push_Script(const std::string& name);
-
-    //static bool ValidScript(std::string name);
-
-    static void Open_File(const std::string& name);
-
-   // static bool Is_Open_File(std::string name);
-
-
-
-};
 
