@@ -10,6 +10,8 @@
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include <filesystem>
+#include <sol/sol.hpp>
+
 
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -33,10 +35,23 @@ bool Scene3GUI::OnCreate() {
 	SceneGraph::getInstance().OnCreate();
 	SceneGraph::getInstance().ListAllActors();
 
-	ScriptManager::Push_Script("test");
+	//ScriptManager::Push_Script("test");
 
-	ScriptManager::OpenFileForUser("test");
+	//ScriptManager::OpenFileForUser("test");
 
+	sol::state lua;
+
+	lua.open_libraries(sol::lib::base, sol::lib::math);
+
+	lua.script(R"(
+        print("Hello from LuaJIT!")
+        function add(a, b)
+            return a + b
+        end
+    )");
+
+	int result = lua["add"](10, 32);
+	std::cout << "C++ got result: " << result << std::endl;
 
 	//	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
