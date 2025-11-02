@@ -13,6 +13,7 @@
 #include "AssetManager.h"
 #include "CameraComponent.h"
 #include "LightComponent.h"
+#include "ScriptComponent.h"
 
 #include "Raycast.h"
 
@@ -102,6 +103,10 @@ public:
 		createDockingFBO(w, h);
 
 		pickerShader->OnCreate();
+
+
+
+
 	}
 	~SceneGraph() { RemoveAllActors();
 	pickerShader->OnDestroy();
@@ -254,6 +259,8 @@ public:
 
 		return true;
 	}
+
+	void Start();
 
 	// 
 	bool RenameActor(const std::string& oldName_, const std::string& newName_) {
@@ -458,7 +465,7 @@ public:
 		//	std::cout << usedCamera << std::endl;
 
 
-
+		ScriptService::callActorScripts(GetActor("Cube"), deltaTime);
 
 
 		for (auto& pair : Actors) {
@@ -565,6 +572,8 @@ public:
 	void Render() const; 
 
 	bool OnCreate() {
+
+		
 		// if an actor was setup wrong throw an error
 		for (auto& actor : Actors) {
 			if (!actor.second->OnCreate()) {
@@ -572,7 +581,10 @@ public:
 				return false;
 			}
 
+
+
 		}
+
 
 		return true;
 	}

@@ -25,6 +25,12 @@ public:
 	void Render() const;
 
 	Vec3 GetPosition() const { return pos; }
+
+	float GetX() const { return pos.x; }
+	float GetY() const { return pos.y; }
+	float GetZ() const { return pos.z; }
+
+
 	Vec3 GetScale() const { return scale; }
 	Quaternion GetQuaternion() const { return orientation; }
 	Matrix4 GetTransformMatrix() const;
@@ -40,6 +46,15 @@ public:
 		pos.z = z_;
 	}
 
+	void SetX(float x_) {
+		pos.x = x_;
+	}
+	void SetY(float x_) {
+		pos.x = x_;
+	}
+	void SetZ(float x_) {
+		pos.x = x_;
+	}
 	void SetOrientation(Quaternion orientation_) {
 		orientation = orientation_;
 	}

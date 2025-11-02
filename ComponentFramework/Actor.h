@@ -8,6 +8,12 @@
 using namespace MATH;
 
 class Actor : public Component {
+	
+	//Script Service should have the ability to fully control actor
+	//However, code should be written in a way to avoid lua scripts having this access.
+	friend class ScriptService;
+
+
 	Actor(const Actor&) = delete;
 	Actor(Actor&&) = delete;
 	Actor& operator= (const Actor&) = delete;
@@ -78,8 +84,8 @@ public:
 	template<typename ComponentTemplate, typename ... Args>
 	void AddComponent(Args&& ... args_) {
 		/// before you add the component ask if you have the component in the list already,
-		/// if so - don't add a second one. 
-		if (GetComponent<ComponentTemplate>().get() != nullptr) {
+		/// if so - don't add a second one (With script component as the exception)
+		if (GetComponent<ComponentTemplate>().get() != nullptr && (typeid(ComponentTemplate).name() != "ScriptComponent")) {
 #ifdef _DEBUG
 			std::cerr << "WARNING: Trying to add a component type that is already added - ignored\n";
 #endif

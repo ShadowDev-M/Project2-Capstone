@@ -64,6 +64,11 @@ public:
 	//constructor
 	FunctionKeyBinding(KeyBinding k, std::function<bool(std::pair<KeyBinding, std::tuple<Args...>>, SceneGraph*)> f, std::tuple<Args... > rA)
         : keyb(k), function(f), reqArguments(rA) {}
+	
+	/*FunctionKeyBinding(KeyBinding k, std::function<bool(KeyBinding, SceneGraph*)> f)
+		: keyb(k), function(f) {
+	}*/
+
 
 
 	///Calls the function associated with the binding
@@ -71,6 +76,7 @@ public:
 		for (auto& keypress : keyb) {
 
 		}
+
 		function({ keyb, reqArguments }, &SceneGraph::getInstance());
 	};
 };
@@ -474,6 +480,8 @@ private:
 		pool.bindingPool.push_back(PoolBindObject());
 		pool.bindingPool.push_back(PoolBindObject());
 		pool.bindingPool.push_back(PoolBindObject());
+		pool.bindingPool.push_back(PoolBindObject());
+
 		//FunctionKeyBinding<Vec3> test = { { SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(0,1,0) };
 
 		pool.bindingPool[0].bindingPtr = new FunctionKeyBinding<Vec3> { { SDL_SCANCODE_W, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(0,1,0) };
@@ -485,6 +493,9 @@ private:
 		pool.bindingPool[5].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_S }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(0,-1,0) };
 		pool.bindingPool[6].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_A }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(-1,0,0) };
 		pool.bindingPool[7].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_D }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(1,0,0) };
+
+		pool.bindingPool[8].bindingPtr = new FunctionKeyBinding<bool>{ { SDL_SCANCODE_SPACE }, BINDFUNCTION<&InputManager::startGame>(this), true};
+
 
 		/*debugCamInputTranslation({
 					{{SDL_SCANCODE_W}, Vec3(0, 1, 0)},
@@ -603,7 +614,18 @@ public:
 	float GetStudMultiplier() { return studMultiplier; }
 	void SetStudMultiplier(float studMulti_) { studMultiplier = studMulti_; }
 
+	bool startGame(std::pair<KeyBinding, std::tuple<bool>> input, SceneGraph* sceneGraph) {
+		
+			//key is pressed
+			if (keyboard.isPressed(input.first[0])) {
 
+				//start game
+				std::cout << "aear" << std::endl;
+				sceneGraph->Start();
+				return true;
+			}
+			return false;
+	}
 
 	void debugInputCamSwap(std::vector<std::pair<SDL_Scancode, Ref<CameraComponent>>> inputMap, SceneGraph* sceneGraph) {
 		

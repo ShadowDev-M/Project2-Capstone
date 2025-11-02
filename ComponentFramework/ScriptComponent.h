@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "Component.h"
 #include "Actor.h"
+
 #include <sol/sol.hpp>
 
 //lua handler
@@ -16,8 +17,8 @@ static sol::state lua;
 class ScriptComponent : public Component {
 	//Make SceneGraph friend class to allow SceneGraph to authorize/deauthorize an actor's usage of a script by adding/removing it to users
 	//Also you could remove it if you wanted to disable it 
-	friend class SceneGraph;
-	friend class AssetManager;
+	friend class ScriptService;
+
 
 	ScriptComponent(const ScriptComponent&) = delete;
 	ScriptComponent(ScriptComponent&&) = delete;
@@ -52,5 +53,20 @@ public:
 };
 
 
+class ScriptService {
+	//Scene graph is the only one who should be using ScriptService
+	static bool libLoaded;
+
+	friend class SceneGraph;
+private:
+	static void callActorScripts(Ref<Actor> target, float deltaTime);
+	static void startActorScripts(Ref<Actor> target);
+
+public:
+
+	static void loadLibraries();
+
+
+};
 
 

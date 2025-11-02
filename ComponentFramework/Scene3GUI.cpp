@@ -34,16 +34,15 @@ bool Scene3GUI::OnCreate() {
 	SceneGraph::getInstance().OnCreate();
 	SceneGraph::getInstance().ListAllActors();
 
-	//ScriptManager::Push_Script("test");
-
-	//ScriptManager::OpenFileForUser("test");
 	
-	ScriptComponent scriptTest(nullptr, "testScript.lua");
-	scriptTest.OnCreate();
+	
 	//	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
 
+	SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(nullptr, "testScript.lua");
+
+	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
 	return true;
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "imgui.h"
 #include "SceneGraph.h"
-
+#include "ScriptComponent.h"
 class InspectorWindow
 {
 	// delete the move and copy constructers
@@ -178,6 +178,7 @@ private:
 	void DrawMeshComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawMaterialComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawCameraComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
+	void DrawScriptComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawLightComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawShaderComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 
@@ -226,6 +227,11 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 				if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
 					if (pair.second->GetComponent<CameraComponent>()) {
 						pair.second->DeleteComponent<CameraComponent>();
+					}
+				}
+				if constexpr (std::is_same_v<ComponentTemplate, ScriptComponent>) {
+					if (pair.second->GetComponent<ScriptComponent>()) {
+						pair.second->DeleteComponent<ScriptComponent>();
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
