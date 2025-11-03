@@ -149,12 +149,16 @@ public:
 			return;
 		}
 		/// Finish building the component and add the component to the list 
+
 		GetComponent<ComponentTemplate>()->OnDestroy();
 
+		if (GetComponent<ComponentTemplate>()) {
 
-		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
-		if (it != components.end()) {
-			components.erase(it);
+			auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
+			if (it != components.end()) {
+				components.erase(it);
+			}
+
 		}
 		
 	}

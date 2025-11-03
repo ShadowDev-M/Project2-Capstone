@@ -193,6 +193,8 @@ public:
 		if (!actor->ValidateLight()) return false;
 
 		lightActors.push_back(actor); 
+
+
 		return true;
 	}
 
@@ -221,7 +223,8 @@ public:
 	std::vector<Ref<Actor>> GetLightActors() { return lightActors; }
 
 	bool RemoveLight(Ref<Actor> actor) {
-		lightActors.erase(std::remove(lightActors.begin(), lightActors.end(), actor), lightActors.end());
+
+		if (GetLightExist(actor)) lightActors.erase(std::find(lightActors.begin(), lightActors.end(), actor));
 
 		return false;
 	}

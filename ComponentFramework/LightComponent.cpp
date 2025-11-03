@@ -23,7 +23,7 @@ bool LightComponent::OnCreate()
 void LightComponent::OnDestroy()
 {
 
-    SceneGraph::getInstance().ValidateAllLights();
+    //SceneGraph::getInstance().ValidateAllLights();
 
 }
 

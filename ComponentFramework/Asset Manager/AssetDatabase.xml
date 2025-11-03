@@ -1,5 +1,6 @@
 <AssetDatabase>
     <MaterialComponent>
+        <Asset name="seamsky" filepath="textures/seamsky.jpg"/>
         <Asset name="M_Moon" filepath="textures/moon.jpg"/>
         <Asset name="M_Sphere" filepath="textures/Black Chess Base Colour.png"/>
         <Asset name="M_MarioN" filepath="textures/mario_main.png"/>
