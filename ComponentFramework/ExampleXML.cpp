@@ -83,6 +83,13 @@ void XMLObjectFile::runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XML
                 //If the element is the same as the root therefore ignore the parent as to not conflict with any actors called "Actors" 
                 sceneGraph->LoadActor(itNameCstr);
 
+                //Add Light here after actor is fully loaded 
+                if (sceneGraph->GetActor(itNameCstr)->GetComponent<LightComponent>()) {
+                    sceneGraph->AddLight(sceneGraph->GetActor(itNameCstr));
+
+                }
+
+
             }
             else {
                 //Actor must therefore have parent of actorElement's name
@@ -231,14 +238,20 @@ void SceneGraph::SaveFile(std::string name) const {
 
         XMLObjectFile::writeUniqueComponent<TransformComponent>(obj.first, GetActor(obj.first)->GetComponent<TransformComponent>().get());
 
+        //write camera as unique as there's no camera 'asset'
         if (GetActor(obj.first)->GetComponent<CameraComponent>())
             XMLObjectFile::writeUniqueComponent<CameraComponent>(obj.first, GetActor(obj.first)->GetComponent<CameraComponent>().get());
+
+        if (GetActor(obj.first)->GetComponent<LightComponent>())
+            XMLObjectFile::writeUniqueComponent<LightComponent>(obj.first, GetActor(obj.first)->GetComponent<LightComponent>().get());
 
 
         AssetManager& assetMgr = AssetManager::getInstance();
 
         std::cout << assetMgr.getAssetName(GetActor(obj.first)->GetComponent<MeshComponent>()) << std::endl;
 
+
+        //write a referenced component (asset)
         if (GetActor(obj.first)->GetComponent<MeshComponent>())
             XMLObjectFile::writeReferenceComponent<MeshComponent>(obj.first, GetActor(obj.first)->GetComponent<MeshComponent>());
 
@@ -247,6 +260,8 @@ void SceneGraph::SaveFile(std::string name) const {
 
         if (GetActor(obj.first)->GetComponent<ShaderComponent>())
             XMLObjectFile::writeReferenceComponent<ShaderComponent>(obj.first, GetActor(obj.first)->GetComponent<ShaderComponent>());
+
+
 
 
         // [key.first/second] accesses the vector for the given key, if it doesn't exist it creates it

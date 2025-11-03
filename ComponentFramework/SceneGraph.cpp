@@ -75,9 +75,29 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}, XMLObjectFile::getComponent<TransformComponent>(name_)));
 	
 
+
 	if (XMLObjectFile::hasComponent<CameraComponent>(name_)) {
 		std::cout << "Has a Camera" << std::endl; 
 		actor_->AddComponent<CameraComponent>(actor_, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+	}
+
+	if (XMLObjectFile::hasComponent<LightComponent>(name_)) {
+		std::cout << "Has a Light" << std::endl;
+
+		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
+		Ref<LightComponent> lightG = Ref<LightComponent>(std::apply([](auto&&... args) {
+			return new LightComponent(args...);
+			}, XMLObjectFile::getComponent<LightComponent>(name_)));
+
+		if (!actor_->GetComponent<LightComponent>()) {
+
+			actor_->AddComponent(lightG);
+
+			//Light will be Added to scenegraph after entire actor is loaded fully to avoid issues (in LoadActor function)
+			
+		}
+
+
 	}
 
 	actor_->OnCreate();

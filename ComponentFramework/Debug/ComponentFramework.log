@@ -1,146 +1,11 @@
-﻿  Actor.cpp
+﻿  ExampleXML.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'ExampleXML.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Actor.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Actor.cpp(163,58): warning C4305: 'argument': truncation from 'double' to 'float'
-  DockingWindow.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'DockingWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'DockingWindow.cpp')
-  
-  InputManager.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'InputManager.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'InputManager.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InputManager.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InputManager.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'InputManager.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InputManager.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InputManager.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'InputManager.cpp')
-  
-  InspectorWindow.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'InspectorWindow.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(386,45): warning C4390: ';': empty controlled statement found; is this the intent?
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(527,28): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(527,13): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(535,65): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(535,50): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(539,61): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(539,46): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InspectorWindow.cpp(598,24): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Scene3GUI.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Scene3GUI.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Scene3GUI.cpp')
+  (compiling source file 'ExampleXML.cpp')
   
   SceneGraph.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
@@ -169,33 +34,23 @@ C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,115): warning C4305: 'argument': truncation from 'double' to 'const float'
   (compiling source file 'SceneGraph.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(103,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(104,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(115,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(116,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(120,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(121,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(127,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(128,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(204,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(205,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(216,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(217,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(221,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(222,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(228,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(229,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
-  ScriptComponent.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'ScriptComponent.cpp')
-  
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'ScriptComponent.cpp')
-  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(124,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(125,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(136,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(137,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(141,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(142,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(148,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(149,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(225,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(226,13): warning C4244: 'initializing': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(237,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(238,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(242,21): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(243,24): warning C4244: '=': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(249,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\SceneGraph.cpp(250,18): warning C4244: '+=': conversion from 'float' to 'GLint', possible loss of data
   Generating Code...
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\DockingWindow.cpp(73,1): warning C4715: 'getClickInteraction': not all control paths return a value
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

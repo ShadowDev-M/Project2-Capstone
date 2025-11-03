@@ -1,10 +1,16 @@
 <Actor>
     <TransformComponent>
-        <position x="8.6768246" y="5.185576" z="18.1"/>
+        <position x="5.6059999" y="3.836442" z="18.1"/>
         <rotation w="0.99144489" x="-0.13052617" y="-0" z="0"/>
-        <scale x="2.0999999" y="2.0999999" z="2.0999999"/>
+        <scale x="0.60000002" y="0.60000002" z="0.60000002"/>
     </TransformComponent>
+    <LightComponent>
+        <diffuse x="0.5" y="0.5" z="0.5" w="1"/>
+        <specular x="1" y="1" z="1" w="1"/>
+        <intensity magnitude="12.4"/>
+        <LightType type="1"/>
+    </LightComponent>
     <MeshComponent name="SM_Sphere"/>
     <MaterialComponent name="M_Moon"/>
-    <ShaderComponent name="S_Phong"/>
+    <ShaderComponent name="S_Multi"/>
 </Actor>
