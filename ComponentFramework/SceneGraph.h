@@ -32,7 +32,7 @@ private:
 	// this way we can still look up actors by name but it'll still be optimized with the actor ids
 	std::unordered_map<std::string, uint32_t> ActorNameToId;
 	
-
+	GLenum drawMode = GL_FILL;
 
 	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
 
@@ -48,12 +48,7 @@ private:
 	GLuint dockingTexture = 0;
 	GLuint dockingDepth = 0;
 
-	int dockingFBOWidth, dockingFBOHeight;
-
-	GLuint selectionFBO = 0;
-	GLuint selectionColorTex = 0;
-	GLuint selectionDepthRBO = 0;
-	int fboWidth = 0, fboHeight = 0;  // Or match your window size
+	int dockingFBOWidth, dockingFBOHeight; // Or match your window size
 
 	Ref<Actor> debugCamera;
 
@@ -122,6 +117,8 @@ public:
 
 	void useDebugCamera() {
 		usedCamera = debugCamera->GetComponent<CameraComponent>();
+
+		checkValidCamera();
 	}
 
 	// changing this to use actor ids as well
@@ -461,7 +458,6 @@ public:
 	/// </summary>
 	/// <param name="deltaTime"></param>
 	void Update(const float deltaTime) {
-		checkValidCamera();
 		//	std::cout << usedCamera << std::endl;
 
 
@@ -589,5 +585,8 @@ public:
 		return true;
 	}
 
+	void SetDrawMode(GLenum drawMode_) { drawMode = drawMode_; }
+
+	GLenum GetDrawMode() const { return drawMode; }
 };
 

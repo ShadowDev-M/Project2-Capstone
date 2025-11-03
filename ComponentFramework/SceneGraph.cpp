@@ -13,6 +13,7 @@ void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
 			Ref<CameraComponent> cam = pair.second->GetComponent<CameraComponent>();
 			if (cam) {
 				usedCamera = cam;
+				checkValidCamera();
 				return;
 			}
 		}
@@ -313,6 +314,8 @@ void SceneGraph::Render() const
 
 			glEnable(GL_DEPTH_TEST);
 			//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
+
+			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 
 			bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 

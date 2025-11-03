@@ -111,7 +111,7 @@ Matrix4 Actor::GetModelMatrix(Ref<Component> camera_) {
 	modelMatrix = transform ? transform->GetTransformMatrix() : Matrix4();
 
 
-
+	// TODO: fix this, parent/child movement is wonky
 	if (parent) { 
 		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera_) * modelMatrix;
 	}

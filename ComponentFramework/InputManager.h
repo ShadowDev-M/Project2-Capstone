@@ -192,7 +192,7 @@ public:
 
 	float frameHeight = 0;
 
-	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph, CollisionSystem* collisionSystem) {
+	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph) {
 
 		//std::cout << dockingClicked << std
 
@@ -248,16 +248,16 @@ public:
 				lastX = sdlEvent.button.x;
 				lastY = sdlEvent.button.y;
 
-				Ref<Actor> cameraActor_ = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
+				//Ref<Actor> cameraActor_ = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
 
-				Vec3 startPos = cameraActor_->GetComponent<TransformComponent>()->GetPosition();
-				Vec3 endPos = startPos + Raycast::screenRayCast(lastX, lastY, sceneGraph->getUsedCamera()->GetProjectionMatrix(), sceneGraph->getUsedCamera()->GetViewMatrix());
+				//Vec3 startPos = cameraActor_->GetComponent<TransformComponent>()->GetPosition();
+				//Vec3 endPos = startPos + Raycast::screenRayCast(lastX, lastY, sceneGraph->getUsedCamera()->GetProjectionMatrix(), sceneGraph->getUsedCamera()->GetViewMatrix());
 
-				if (sdlEvent.type == SDL_MOUSEBUTTONDOWN) {
+				/*if (sdlEvent.type == SDL_MOUSEBUTTONDOWN) {
 					Ref<Actor> pickobj = SceneGraph::getInstance().pickColour(sdlEvent.button.x, sdlEvent.button.y);
 
 					if (pickobj)pickobj->ListComponents();
-				}
+				}*/
 
 				//prepare for unintelligible logic for selecting 
 				Ref<Actor> raycastedActor = sceneGraph->pickColour(sdlEvent.button.x, sdlEvent.button.y);
@@ -742,10 +742,10 @@ public:
 		return false;
 	}
 
-	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph, CollisionSystem* collisionSystem) {
+	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph) {
 		sceneGraph->checkValidCamera();
 
-		mouse.HandleEvents(sdlEvent, sceneGraph, collisionSystem);
+		mouse.HandleEvents(sdlEvent, sceneGraph);
 
 		
 	}
