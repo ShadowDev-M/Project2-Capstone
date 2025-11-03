@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(ProjectDir)\include\Scripts;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\External\luajit;$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -31,6 +31,11 @@ bool Scene3GUI::OnCreate() {
 	//	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
+	// To do: add light component and script component to XML
+	SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(nullptr, "testScript.lua");
+
+	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
+
 
 	return true;
 }
@@ -59,7 +64,8 @@ void Scene3GUI::Update(const float deltaTime) {
 	
 	//collisionSystem.Update(deltaTime);
 
-	//SceneGraph::getInstance().Update(deltaTime);
+	SceneGraph::getInstance().Update(deltaTime);
+
 }
 
 void Scene3GUI::Render() const {
