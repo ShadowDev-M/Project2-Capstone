@@ -620,7 +620,6 @@ public:
 			if (keyboard.isPressed(input.first[0])) {
 
 				//start game
-				std::cout << "aear" << std::endl;
 				sceneGraph->Start();
 				return true;
 			}

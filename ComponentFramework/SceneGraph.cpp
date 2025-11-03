@@ -28,7 +28,6 @@ void SceneGraph::Start()
 	ScriptService::loadLibraries();
 	for (auto& actor : Actors) {
 		ScriptService::startActorScripts(actor.second);
-		std::cout << "e" << std::endl;
 	}
 }
 

@@ -87,7 +87,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 
 
 				loaded_script();
-				//lua["this"] = target->GetComponent<TransformComponent>();
+				lua["Transform"] = target->GetComponent<TransformComponent>();
 				lua["Start"]();
 				script->isCreated = true;
 
@@ -174,8 +174,13 @@ void ScriptService::loadLibraries()
 	);*/
 
 	lua.new_usertype<TransformComponent>("Transform",
+		"LocalPosition", sol::property(&TransformComponent::GetPosition, &TransformComponent::SetPos),
+		"LocalRotation", sol::property(&TransformComponent::GetQuaternion, &TransformComponent::SetOrientation),
+
+		//Write new functions to include parent's transform and get global transforms
 		"Position", sol::property(&TransformComponent::GetPosition, &TransformComponent::SetPos),
 		"Rotation", sol::property(&TransformComponent::GetQuaternion, &TransformComponent::SetOrientation)
+
 
 	);
 
