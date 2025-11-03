@@ -9,30 +9,6 @@ bool AssetManager::OnCreate() {
 
     // load all the assets from the asset database
     LoadAssetDatabaseXML();
-    
-
-    // this is no longer needed since all the assets get loaded from the xml now, but just incase something messes up, this is a backup
-    
-    /*
-    // SM: (Static) Mesh
-    AddAsset<MeshComponent>("SM_Mario", nullptr, "meshes/Mario.obj");
-    AddAsset<MeshComponent>("SM_Sphere", nullptr, "meshes/Sphere.obj");
-    AddAsset<MeshComponent>("SM_Plane", nullptr, "meshes/Plane.obj");
-    AddAsset<MeshComponent>("SM_Pawn", nullptr, "meshes/Pawn.obj");
-    
-    // M: Material
-    AddAsset<MaterialComponent>("M_MarioN", nullptr, "textures/mario_main.png");
-    AddAsset<MaterialComponent>("M_Sphere", nullptr, "textures/Black Chess Base Colour.png");
-    AddAsset<MaterialComponent>("M_ChessBoard", nullptr, "textures/8x8_checkered_board.png");
-    
-    
-    // S: Shader
-    AddAsset<ShaderComponent>("S_Phong", nullptr, "shaders/texturePhongVert.glsl", "shaders/texturePhongFrag.glsl");
-    AddAsset<ShaderComponent>("S_Default", nullptr, "shaders/defaultVert.glsl", "shaders/defaultFrag.glsl");
-    AddAsset<ShaderComponent>("S_Outline", nullptr, "shaders/texturePhongVert.glsl", "shaders/outline.glsl");
-    */
-    
-
 
     // when loading the assets from the database, all the assets' OnCreate are called, this is just extra insurance to call any of the assets already in the assetmanagers oncreate
     for (auto& asset : assetManager) {

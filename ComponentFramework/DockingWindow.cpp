@@ -10,8 +10,44 @@ void DockingWindow::ShowDockingWindow(bool* pOpen)
 {
 
     
-	if (ImGui::Begin("Scene", pOpen, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+	if (ImGui::Begin("Scene", pOpen, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_MenuBar)) {
 		
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("Camera")) {                
+                if (ImGui::MenuItem("Change Camera to Default ##MenuItem", "Ctrl+M")) {
+                    if (sceneGraph) {
+                        sceneGraph->useDebugCamera();
+                    }
+                }
+                
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Draw Modes")) {
+                if (ImGui::MenuItem("Wireframe")) {
+                    sceneGraph->SetDrawMode(GL_LINE);
+                }
+                if (ImGui::MenuItem("Shaded Draw Mode")) {
+                    sceneGraph->SetDrawMode(GL_FILL);
+                }
+
+                ImGui::EndMenu();
+            }
+               
+            if (ImGui::BeginMenu("Grid")) {
+                
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Snapping")) {
+
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenuBar();
+        }
 
 		/*ImVec2 size = ImGui::GetContentRegionAvail();
 		ImGui::Image((ImTextureID)(intptr_t)SceneGraph::getInstance().dockingFBO, size, ImVec2(0, 1), ImVec2(1, 0));

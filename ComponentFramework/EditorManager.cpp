@@ -271,15 +271,6 @@ void EditorManager::RenderMainMenuBar() {
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Tools")) {
-			if (ImGui::MenuItem("Change Camera to Default ##MenuItem", "Ctrl+M")) {
-				if (sceneGraph) {
-					sceneGraph->useDebugCamera();
-				}
-			}
-			ImGui::EndMenu();
-		}
-
 		ImGui::EndMainMenuBar();
 	}
 }

@@ -22,9 +22,6 @@ union SDL_Event;
 
 class Scene3GUI : public Scene {
 private:
-	CollisionSystem collisionSystem;
-	Vec3 lightPos;
-	Ref<CameraActor> camera;
 	bool drawInWireMode;
 
 public:
