@@ -102,11 +102,20 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 
 							if (acceptedPayload) {
 								const char* draggedActorName = static_cast<const char*>(acceptedPayload->Data);
+
 								Ref<Actor> draggedActor = sceneGraph->GetActor(draggedActorName);
 
 								if (draggedActor && !draggedActor->isRootActor()) {
-									draggedActor->unparent();
+
+									if (sceneGraph->debugSelectedAssets.size() != 0) {
+										for (auto& obj : sceneGraph->debugSelectedAssets) {
+											obj.second->unparent();
+										}
+									}
+									
 								}
+
+
 							}
 
 							ImGui::EndDragDropTarget();
@@ -312,8 +321,17 @@ void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> a
 		// set the payload to carry the actor's name
 		ImGui::SetDragDropPayload("ACTOR_NODE", actorName_.c_str(), actorName_.length() + 1);
 
-		// show the actors name while dragging
-		ImGui::Text("Dragging: %s", actorName_.c_str());
+		//string for all selected actors
+		std::string draggingStr = "Dragging:";
+		for (auto& obj : sceneGraph->debugSelectedAssets) {
+			draggingStr += " " + obj.second->getActorName() + ",";
+
+		}
+		//Remove last comma from str
+		draggingStr.pop_back();
+
+		// show the actors names while dragging
+		ImGui::Text(draggingStr.c_str());
 
 		ImGui::EndDragDropSource();
 	}
@@ -331,18 +349,30 @@ void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> a
 
 				// check to make sure theres no circular dependency (don't parent an actor to one of its own children)
 				bool wouldCreateCycle = false;
+
+				//check all selected actors for circular 
+
 				Actor* checkParent = actor_.get();
 				while (checkParent != nullptr) {
-					if (checkParent == draggedActor.get()) {
+					if (sceneGraph->debugSelectedAssets.find(checkParent->getId()) != sceneGraph->debugSelectedAssets.end()) {
 						wouldCreateCycle = true;
 						break;
 					}
 					checkParent = checkParent->getParentActor();
 				}
+			
 
 				// wont create cycle, so its okay to parent
 				if (!wouldCreateCycle && draggedActor) {
-					draggedActor->setParentActor(actor_.get());
+
+					//place all selected assets into the parent actor
+					for (auto& obj : sceneGraph->debugSelectedAssets) 
+					{
+						//You can't place itself into itself, skip this one.
+						if (obj.second == actor_) continue;
+
+						obj.second->setParentActor(actor_.get());
+					}
 				}
 				else if (wouldCreateCycle) {
 					Debug::Warning("Cannot parent actor to its own child", __FILE__, __LINE__);
