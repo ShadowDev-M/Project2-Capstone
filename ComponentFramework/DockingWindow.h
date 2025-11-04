@@ -18,7 +18,8 @@ private:
 	// pointer to scenegraph
 	SceneGraph* sceneGraph;
 
-
+	template<typename ComponentTemplate>
+	void dropAssetOnScene();
 
 public:
 	explicit DockingWindow(SceneGraph* sceneGraph_);
@@ -32,4 +33,5 @@ public:
 	/// </summary>
 	void ClearFilter() { filter.Clear(); }
 };
+
 

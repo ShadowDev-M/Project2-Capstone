@@ -2,6 +2,7 @@
 #include "InputManager.h"
 #include "EditorManager.h"
 
+
 DockingWindow::DockingWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
     EditorManager::getInstance().RegisterWindow("Scene", true);
 }
@@ -82,7 +83,16 @@ void DockingWindow::ShowDockingWindow(bool* pOpen)
         // Display the image with calculated dimensions
         ImGui::SetCursorPos(imagePos);
         ImGui::Image((void*)(intptr_t)SceneGraph::getInstance().dockingTexture, scaledTexture, ImVec2(0, 1), ImVec2(1, 0));
+        
+        if (ImGui::BeginDragDropTarget()) {
 
+            dropAssetOnScene<MaterialComponent>();
+            dropAssetOnScene<ShaderComponent>();
+            dropAssetOnScene<MeshComponent>();
+
+            
+            ImGui::EndDragDropTarget();
+        }
 
 
         ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
@@ -98,6 +108,8 @@ void DockingWindow::ShowDockingWindow(bool* pOpen)
 
         InputManager::getInstance().updateDockingFocused(ImGui::IsWindowFocused());
 
+
+
 	}
 	ImGui::End();
 }
@@ -105,5 +117,95 @@ void DockingWindow::ShowDockingWindow(bool* pOpen)
 bool getClickInteraction() {
     if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
         return true;
+    }
+}
+
+template<typename ComponentTemplate>
+void DockingWindow::dropAssetOnScene() {
+
+    std::string dataType;
+    if (std::is_same_v<ComponentTemplate, MaterialComponent>) dataType = "MATERIAL_ASSET";  
+    else if (std::is_same_v<ComponentTemplate, ShaderComponent>) dataType = "SHADER_ASSET";
+    else if (std::is_same_v<ComponentTemplate, MeshComponent>) dataType = "MESH_ASSET";
+
+    const char* dataTypeC_Str = dataType.c_str();
+
+    if (ImGui::GetDragDropPayload()->IsDataType(dataTypeC_Str)) {
+        int mx, my;
+        SDL_GetMouseState(&mx, &my);
+
+        Ref<Actor> payloadActor = sceneGraph->pickColour(mx, my);
+
+        
+        const char* droppedAssetName = static_cast<const char*>(ImGui::GetDragDropPayload()->Data);
+
+        static Ref<Component> originalComponent;
+        static Ref<Actor> originalActor;
+       
+        //If its a MESH, make sure to colour picked based on the ORIGINAL, so restore it and redo the picking
+        if (std::is_same_v<ComponentTemplate, MeshComponent> && originalActor) {
+            originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
+            originalActor = 0;
+            originalComponent = 0;
+            payloadActor = sceneGraph->pickColour(mx, my);
+
+        }
+
+        //There's a picked object but its NOT the original actor, so restore the original to prepare for the new one
+        if (payloadActor && originalActor && payloadActor != originalActor) {
+            originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
+            originalActor = 0;
+            originalComponent = 0;
+
+            
+
+        }
+
+
+        //Picked actor but no original, so you're good to save a new original 
+        if (payloadActor && !originalActor) {
+            originalActor = payloadActor;
+            originalComponent = originalActor->GetComponent<ComponentTemplate>();
+
+
+
+
+        }
+        // get a reference to the asset that has been dropped
+        Ref<ComponentTemplate> newAsset = AssetManager::getInstance().GetAsset<ComponentTemplate>(droppedAssetName);
+
+        // get the actor
+        if (newAsset) {
+            //get the mouse and see if the mouse can pick an object when it drops the material
+
+
+            if (payloadActor) {
+                if (payloadActor->GetComponent<ComponentTemplate>()) {
+                    payloadActor->ReplaceComponent<ComponentTemplate>(newAsset);
+                }
+
+            }
+        }
+
+        
+        //dropped
+        const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(dataTypeC_Str);
+
+        if (payload) {
+            
+            //wipe the original as we want the temp component to be permanent
+            originalActor = 0;
+            originalComponent = 0;
+            
+        }
+
+        //If no picked actor but originalActor is saving its hovered component, restore it
+        if (!payloadActor && originalActor) { 
+            originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
+            originalActor = 0;
+            originalComponent = 0;
+
+        }
+
     }
 }
