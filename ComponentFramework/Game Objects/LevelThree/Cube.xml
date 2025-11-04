@@ -6,5 +6,5 @@
     </TransformComponent>
     <MeshComponent name="SM_Cube"/>
     <MaterialComponent name="M_Sphere"/>
-    <ShaderComponent name="S_Phong"/>
+    <ShaderComponent name="S_Multi"/>
 </Actor>

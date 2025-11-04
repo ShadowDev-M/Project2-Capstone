@@ -78,6 +78,17 @@ public:
 #endif
 			return;
 		}
+
+		if (typeid(ComponentTemplate).name() == "LightComponent" && typeid(ComponentTemplate).name() == "TransformComponent") {
+			if (ValidateLight()) {
+				InitalizeLight();
+			}
+		}
+
+
+
+
+
 		components.push_back(component_);
 	}
 
@@ -91,8 +102,13 @@ public:
 #endif
 			return;
 		} 
+
+
+
 		/// Finish building the component and add the component to the list 
 		components.push_back(std::make_shared<ComponentTemplate>(std::forward<Args>(args_)...));
+		
+
 		if (typeid(ComponentTemplate).name() == "LightComponent" && typeid(ComponentTemplate).name() == "TransformComponent") {
 			if (ValidateLight()) {
 				InitalizeLight();
@@ -133,12 +149,16 @@ public:
 			return;
 		}
 		/// Finish building the component and add the component to the list 
+
 		GetComponent<ComponentTemplate>()->OnDestroy();
 
+		if (GetComponent<ComponentTemplate>()) {
 
-		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
-		if (it != components.end()) {
-			components.erase(it);
+			auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
+			if (it != components.end()) {
+				components.erase(it);
+			}
+
 		}
 		
 	}

@@ -7,6 +7,7 @@
 #include <tuple>
 #include "TransformComponent.h"  
 #include "CameraComponent.h"  
+#include "LightComponent.h"  
 
 #include "SceneGraph.h"
 
@@ -440,6 +441,47 @@ public:
             return args;
 
         }
+        else if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
+            //LIGHT
+
+            XMLElement* diffElement = component->FirstChildElement("diffuse");
+            XMLElement* specElement = component->FirstChildElement("specular");
+            XMLElement* intensityElement = component->FirstChildElement("intensity");
+            XMLElement* typeElement = component->FirstChildElement("LightType");
+
+            //LIGHT DIFF
+            Vec4 diffArg = Vec4(
+                GetAttrF(diffElement, "x"),
+                GetAttrF(diffElement, "y"),
+                GetAttrF(diffElement, "z"),
+                GetAttrF(diffElement, "w")
+            );
+
+            //LIGHT SPEC
+            Vec4 specArg = Vec4(
+                GetAttrF(specElement, "x"),
+                GetAttrF(specElement, "y"),
+                GetAttrF(specElement, "z"),
+                GetAttrF(specElement, "w")
+            );
+
+            //LIGHT INTENSITY
+            float intensityArg = GetAttrF(intensityElement, "magnitude");
+
+            //ENUM TYPE
+            LightType lightTypeArg = static_cast<LightType>(GetAttrF(typeElement, "type"));
+
+
+            //return the tuple to act as arguments
+            auto args = std::make_tuple(nullptr,
+                lightTypeArg,
+                specArg,
+                diffArg,
+                intensityArg
+                );
+            return args;
+
+        }
         else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent>) {
 
             AssetManager& assetMgr = AssetManager::getInstance();
@@ -484,10 +526,10 @@ public:
 
         std::cout << "Found file to write: " << name << std::endl;
 
+
+        //the basic format for any component
         XMLNode* cRoot = doc.RootElement();
-
         std::string componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
-
 
         XMLElement* componentElement = cRoot->FirstChildElement(componentType.c_str());
         if (componentElement) {
@@ -497,6 +539,8 @@ public:
         }
         std::cout << "Creating Element: " << componentType << std::endl;
 
+
+        //The element for the new component you are adding
         componentElement = doc.NewElement(componentType.c_str());
 
 
@@ -544,6 +588,57 @@ public:
         }
         else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
         
+        }
+        else if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
+            LightComponent* componentToWrite = dynamic_cast<LightComponent*>(toWrite);
+            
+            Vec4 diff = componentToWrite->getDiff();
+            Vec4 spec = componentToWrite->getSpec();
+            GLfloat intensity = componentToWrite->getIntensity();
+            LightType lightType = componentToWrite->getType();
+
+
+
+
+
+            //diffuse
+            XMLElement* diffElement;
+            diffElement = doc.NewElement("diffuse");
+            {
+                diffElement->SetAttribute("x", diff.x);
+                diffElement->SetAttribute("y", diff.y);
+                diffElement->SetAttribute("z", diff.z);
+                diffElement->SetAttribute("w", diff.w);
+            }
+            componentElement->InsertEndChild(diffElement);
+
+            //specular
+            XMLElement* specElement;
+            specElement = doc.NewElement("specular");
+            {
+                specElement->SetAttribute("x", spec.x);
+                specElement->SetAttribute("y", spec.y);
+                specElement->SetAttribute("z", spec.z);
+                specElement->SetAttribute("w", spec.w);
+            }
+            componentElement->InsertEndChild(specElement);
+
+            //intensity
+            XMLElement* intensityElement;
+            intensityElement = doc.NewElement("intensity");
+            {
+                intensityElement->SetAttribute("magnitude", static_cast<float>(intensity));
+            }
+            componentElement->InsertEndChild(intensityElement);
+
+            //LightType
+            XMLElement* typeElement;
+            typeElement = doc.NewElement("LightType");
+            {
+                typeElement->SetAttribute("type", static_cast<int>(lightType));
+            }
+            componentElement->InsertEndChild(typeElement);
+
         }
         else {
 

@@ -22,13 +22,9 @@ private:
 	float intensity;
 	
 public:
-	LightComponent(Component* parent_, LightType type_, Vec4 spec_, Vec4 diff_, float intensity_) :
-		Component(parent_), type(type_),  spec(spec_), diff(diff_), intensity(intensity_) {}
+	LightComponent(Component* parent_);
 
-	LightComponent(Component* parent_, Vec4 spec_, Vec4 diff_, float intensity_) :
-		Component(parent_), spec(spec_), diff(diff_), intensity(intensity_) {
-		type = LightType::Point;
-	}
+	LightComponent(Component* parent_, LightType type_, Vec4 spec_, Vec4 diff_, float intensity_ = 1.0f);
 
 	~LightComponent() {}
 

@@ -238,6 +238,7 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 					if (pair.second->GetComponent<LightComponent>()) {
 						sceneGraph->RemoveLight(pair.second);
 						pair.second->DeleteComponent<LightComponent>();
+
 					}
 				}
 			}

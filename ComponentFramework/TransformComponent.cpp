@@ -12,6 +12,8 @@ TransformComponent::TransformComponent(Component* parent_):Component(parent_) {
 
 TransformComponent::TransformComponent(Component* parent_, Vec3 pos_, Quaternion orientation_, Vec3 scale_):
 	Component{ parent_ }, pos{ pos_ }, orientation{ orientation_ }, scale{ scale_ } {
+
+	
 }
 
 TransformComponent::~TransformComponent() {}
