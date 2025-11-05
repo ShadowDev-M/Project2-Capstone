@@ -1,31 +1,31 @@
-﻿  Actor.cpp
+﻿  DockingWindow.cpp
   This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
   This questionable: Vec4 inverse(const Vec4& v)
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(346,202): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\InputManager.h(381,115): warning C4305: 'argument': truncation from 'double' to 'const float'
-  (compiling source file 'Actor.cpp')
+  (compiling source file 'DockingWindow.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\Actor.cpp(166,58): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\DockingWindow.cpp(121,1): warning C4715: 'getClickInteraction': not all control paths return a value
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied
