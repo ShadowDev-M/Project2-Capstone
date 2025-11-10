@@ -16,6 +16,7 @@
 #include <utility>
 #include <thread>
 #include <chrono>
+#include "ImGuizmo.h"
 
 using namespace ImGui;
 
@@ -295,6 +296,11 @@ public:
 				// makes it so ImGui handles the mouse motion
 				if (!dockingHovered) {
 					toggleKeyPress(sdlEvent.button.button);
+					return;
+				}
+
+				// allows imguizmo to handle mouse movement when editing gizmos
+				if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
 					return;
 				}
 

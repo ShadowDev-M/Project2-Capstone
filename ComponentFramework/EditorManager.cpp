@@ -29,7 +29,7 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 		hierarchyWindow = std::make_unique<HierarchyWindow>(sceneGraph);
 		inspectorWindow = std::make_unique<InspectorWindow>(sceneGraph);
 		assetManagerWindow = std::make_unique<AssetManagerWindow>(sceneGraph);
-		sceneWindow = std::make_unique<DockingWindow>(sceneGraph);
+		sceneWindow = std::make_unique<SceneWindow>(sceneGraph);
 	}
 
 	// register default windows (leaving demo window commented out for now)
@@ -124,7 +124,7 @@ void EditorManager::RenderEditorUI() {
 		assetManagerWindow->ShowAssetManagerWindow(GetWindowStatePtr("AssetManager"));
 	}
 	if (IsWindowOpen("Scene") && sceneWindow) {
-		sceneWindow->ShowDockingWindow(GetWindowStatePtr("Scene"));
+		sceneWindow->ShowSceneWindow(GetWindowStatePtr("Scene"));
 	}
 
 	ShowSaveDialog();

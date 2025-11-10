@@ -20,8 +20,8 @@ class SceneGraph
 {
 	friend class XMLObjectFile;
 
-	//I don't want anything else to really touch the docking FBOs yet, so may as well give DockingWindow access to the private members of SceneGraph
-	friend class DockingWindow;
+	//I don't want anything else to really touch the docking FBOs yet, so may as well give SceneWindow access to the private members of SceneGraph
+	friend class SceneWindow;
 private:
 	// main actor map, replaced old name lookup system with new id lookup system (this makes things more optimized and better in the longrun when we expand the engine)
 	// mainly did this because renaming was annoying and this system makes things so easy

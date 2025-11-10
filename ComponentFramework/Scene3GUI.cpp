@@ -4,7 +4,7 @@
 #include "Scene3GUI.h"
 #include <MMath.h>
 #include "Debug.h"
-#include "ExampleXML.h"
+#include "XMLManager.h"
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include <filesystem>

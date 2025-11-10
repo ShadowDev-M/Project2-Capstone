@@ -7,7 +7,7 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 #include <SDL.h>
-#include "ExampleXML.h"
+#include "XMLManager.h"
 #include "Debug.h"
 #include "imgui_stdlib.h"
 #include <filesystem>
@@ -16,14 +16,14 @@
 #include "HierarchyWindow.h"
 #include "InspectorWindow.h"
 #include "AssetManagerWindow.h"
-#include "DockingWindow.h" // scene
+#include "SceneWindow.h" // scene
 
 // pass all the windows + scenegraph
 class SceneGraph;
 class HierarchyWindow;
 class InspectorWindow;
 class AssetManagerWindow;
-class DockingWindow; // scene
+class SceneWindow; // scene
 
 // this will be used later on for the scene window and edit/play modes, for now just setting up the enum and some functions for it
 enum class EditorMode {
@@ -53,7 +53,7 @@ private:
 	std::unique_ptr<HierarchyWindow> hierarchyWindow;
 	std::unique_ptr<InspectorWindow> inspectorWindow;
 	std::unique_ptr<AssetManagerWindow> assetManagerWindow;
-	std::unique_ptr<DockingWindow> sceneWindow;
+	std::unique_ptr<SceneWindow> sceneWindow;
 
 	// scene graph reference (might change this after since scenegraph is a singleton now, I just don't want anything to break) TODO
 	SceneGraph* sceneGraph = nullptr;

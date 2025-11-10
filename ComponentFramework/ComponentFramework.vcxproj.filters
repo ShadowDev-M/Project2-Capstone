@@ -25,14 +25,8 @@
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{2236924a-410f-4c09-84df-69bc84e1c45b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Windows">
-      <UniqueIdentifier>{54f91657-eeec-4c28-a336-a819b31bed18}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Windows">
       <UniqueIdentifier>{a1ef8e19-c6f7-493d-a179-14c60f93c297}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Systems">
-      <UniqueIdentifier>{8d8703a0-f998-4f52-bae6-a9cca96d72a1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Systems">
       <UniqueIdentifier>{011d8c94-5929-423e-8bf0-bc5566fcacd1}</UniqueIdentifier>
@@ -46,6 +40,24 @@
     <Filter Include="include\imguizmo">
       <UniqueIdentifier>{3af4411e-c990-49f7-a69d-11f866b38acc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Managers">
+      <UniqueIdentifier>{e8f6a3b4-0a73-427e-b992-790b8e03e658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Systems">
+      <UniqueIdentifier>{8d8703a0-f998-4f52-bae6-a9cca96d72a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Managers">
+      <UniqueIdentifier>{73525375-a700-411c-a15e-8310c6e30c18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{54f91657-eeec-4c28-a336-a819b31bed18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tools">
+      <UniqueIdentifier>{cad7467f-d8af-494b-8d0b-4954364bf4cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools">
+      <UniqueIdentifier>{40192462-4d31-485b-9765-58f28e897693}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="GameEngineLog.txt">
@@ -54,9 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tiny_obj_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
@@ -95,18 +104,6 @@
     <ClInclude Include="SceneGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExampleXML.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tinyxml2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Raycast.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Widget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scene3GUI.h">
       <Filter>Header Files\Scenes</Filter>
     </ClInclude>
@@ -121,9 +118,6 @@
     </ClInclude>
     <ClInclude Include="CollisionSystem.h">
       <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CameraComponent.h">
       <Filter>Header Files\Components</Filter>
@@ -161,29 +155,41 @@
     <ClInclude Include="LightComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="DockingWindow.h">
+    <ClInclude Include="SceneWindow.h">
       <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorManager.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ScriptComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="AssetManager.h">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Debug.h">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="include\imguizmo\ImGuizmo.h">
       <Filter>include\imguizmo</Filter>
     </ClInclude>
+    <ClInclude Include="EditorManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="XMLManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny_obj_loader.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml2.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Raycast.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -217,17 +223,8 @@
     <ClCompile Include="CollisionComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="AssetManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PhysicsComponent.cpp">
       <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxml2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ExampleXML.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SceneGraph.cpp">
       <Filter>Source Files</Filter>
@@ -236,13 +233,13 @@
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="InspectorWindow.cpp">
-      <Filter>Windows</Filter>
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="HierarchyWindow.cpp">
-      <Filter>Windows</Filter>
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="AssetManagerWindow.cpp">
-      <Filter>Windows</Filter>
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="CollisionSystem.cpp">
       <Filter>Source Files\Systems</Filter>
@@ -274,23 +271,35 @@
     <ClCompile Include="include\imgui\imgui_widgets.cpp">
       <Filter>include\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LightComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="DockingWindow.cpp">
-      <Filter>Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorManager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="SceneWindow.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="ScriptComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="include\imguizmo\ImGuizmo.cpp">
       <Filter>include\imguizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="XMLManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
+      <Filter>Source Files\Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

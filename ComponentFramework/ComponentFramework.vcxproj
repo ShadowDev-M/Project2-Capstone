@@ -139,9 +139,9 @@
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="DockingWindow.h" />
+    <ClInclude Include="SceneWindow.h" />
     <ClInclude Include="EditorManager.h" />
-    <ClInclude Include="ExampleXML.h" />
+    <ClInclude Include="XMLManager.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="include\imguizmo\ImGuizmo.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
@@ -171,7 +171,6 @@
     <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="tiny_obj_loader.h" />
     <ClInclude Include="TransformComponent.h" />
-    <ClInclude Include="Widget.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -183,9 +182,9 @@
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="DockingWindow.cpp" />
+    <ClCompile Include="SceneWindow.cpp" />
     <ClCompile Include="EditorManager.cpp" />
-    <ClCompile Include="ExampleXML.cpp" />
+    <ClCompile Include="XMLManager.cpp" />
     <ClCompile Include="HierarchyWindow.cpp" />
     <ClCompile Include="include\imguizmo\ImGuizmo.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />

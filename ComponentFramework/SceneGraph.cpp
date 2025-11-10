@@ -1,5 +1,5 @@
 #include "SceneGraph.h"
-#include "ExampleXML.h"
+#include "XMLManager.h"
 #include "InputManager.h"
 
 
