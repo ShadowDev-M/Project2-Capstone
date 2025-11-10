@@ -12,7 +12,7 @@ class CameraComponent : public Component {
 private:
 	
 
-	Ref<Actor> parentActor;
+	Ref<Actor> userActor;
 
 	Matrix4 projectionMatrix;
 	Matrix4 viewMatrix;
@@ -25,11 +25,11 @@ private:
 	Vec3 position;
 
 public:
-	CameraComponent(Ref<Actor> userActor, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f);
+	CameraComponent(Ref<Actor> userActor_, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f);
 	~CameraComponent();
 	bool OnCreate();
 
-	Ref<Actor> GetUserActor() { return parentActor; }
+	Ref<Actor> GetUserActor() { return userActor; }
 
 	Matrix4 GetProjectionMatrix() const { return projectionMatrix; }
 	//void SetProjectionMatrix(const Matrix4& projectionMatrix_) { projectionMatrix = projectionMatrix_; }
@@ -38,17 +38,7 @@ public:
 	//
 	//void SetViewMatrix(const Quaternion& orientation_, const Vec3& position_) { orientation = orientation_, position = position_; }
 
-	void fixCameraToTransform() {
-		
-		if (parentActor->GetComponent<TransformComponent>()) {
-			position = Vec3();
-
-			orientation = parentActor->GetComponent<TransformComponent>()->GetQuaternion();
-			viewMatrix = MMath::translate((position)) * MMath::toMatrix4((orientation));
-
-
-		}
-	}
+	void fixCameraToTransform();
 
 	void OnDestroy();
 	void Update(const float deltaTime_);

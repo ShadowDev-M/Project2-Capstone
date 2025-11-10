@@ -1,10 +1,10 @@
 #include "CameraComponent.h"
 
-CameraComponent::CameraComponent(Ref<Actor> userActor, float fovy, float aspectRatio, float nearClipPlane, float farClipPlane) : 
+CameraComponent::CameraComponent(Ref<Actor> userActor_, float fovy, float aspectRatio, float nearClipPlane, float farClipPlane) : 
 	Component(nullptr), m_fov(fovy), m_aspectRatio(aspectRatio), m_nearClipPlane(nearClipPlane), m_farClipPlane(farClipPlane)
 {
 
-	parentActor = userActor;
+	userActor = userActor_;
 	projectionMatrix = MMath::perspective(m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane);
 
 	viewMatrix.loadIdentity();
@@ -21,7 +21,7 @@ CameraComponent::~CameraComponent()
 
 void CameraComponent::OnDestroy() {
 	std::cout << "deleting cam's actor pointer" << std::endl;
-	parentActor = nullptr;
+	userActor = nullptr;
 }
 
 void CameraComponent::Update(const float deltaTime) {
@@ -32,13 +32,21 @@ void CameraComponent::Render()const {}
 
 bool CameraComponent::OnCreate()
 {
-	Ref<TransformComponent> tc = parentActor->GetComponent<TransformComponent>();
-
-	//
-	if (tc != nullptr) {
-		viewMatrix = tc->GetTransformMatrix();
-		//viewMatrix.print("View Matrix");
-	}
-
+	fixCameraToTransform();
 	return true;
+}
+
+void CameraComponent::fixCameraToTransform() {
+	if (userActor->GetComponent<TransformComponent>()) {
+		Ref<TransformComponent> transform = userActor->GetComponent<TransformComponent>();
+
+		position = transform->GetPosition();
+		orientation = transform->GetQuaternion();
+
+		Matrix4 cameraWorldTransform = MMath::translate(position) * MMath::toMatrix4(orientation);
+
+		viewMatrix = MMath::inverse(cameraWorldTransform);
+
+
+	}
 }

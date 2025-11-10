@@ -4,23 +4,13 @@
 
 
 void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
-	usedCamera = newCam;
-
-	//If camera component is non existent, or if intentionally left blank, try to get the next random camera
-	if (!newCam) {
-		//Set camera to first camera found in loop so it doesn't crash
-		for (auto& pair : Actors) {
-			Ref<CameraComponent> cam = pair.second->GetComponent<CameraComponent>();
-			if (cam) {
-				usedCamera = cam;
-				checkValidCamera();
-				return;
-			}
-		}
-		//If it doesn't return, then it will probably crash 
-		//TODO: handle camera if there ends up no valid camera to use
-
-		
+	if (newCam) {
+		usedCamera = newCam;
+		newCam->fixCameraToTransform();
+	}
+	// if new camera doesn't exisit or something is wrong, use default/scene camera
+	else if (!newCam) {
+		useDebugCamera();
 	}
 }
 

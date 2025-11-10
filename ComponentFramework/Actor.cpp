@@ -81,11 +81,6 @@ bool Actor::DeinitalizeLight()
 }
 
 void Actor::RemoveAllComponents() {
-
-	//SceneGraph::getInstance().RemoveLight()
-	if (GetComponent<CameraActor>()) {
-		GetComponent<CameraActor>()->OnDestroy();
-	}
 	DeinitalizeLight();
 	components.clear();
 }
@@ -102,22 +97,14 @@ void Actor::ListComponents() const {
 
 
 Matrix4 Actor::GetModelMatrix(Ref<Component> camera_) {
-
-	Ref<CameraComponent> cameraComponent_ = std::dynamic_pointer_cast<CameraComponent>(camera_);
-
 	Ref<TransformComponent> transform = GetComponent<TransformComponent>();
-	
-
 	modelMatrix = transform ? transform->GetTransformMatrix() : Matrix4();
 
-
-	// TODO: fix this, parent/child movement is wonky
-	if (parent) { 
+	// TODO: find something better for parent/child movement
+	if (parent && dynamic_cast<Actor*>(parent)) {
 		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera_) * modelMatrix;
 	}
-	else if(camera_){
-		modelMatrix = MMath::translate(-cameraComponent_->GetUserActor()->GetComponent<TransformComponent>()->GetPosition()) * modelMatrix;
-	}
+
 	return modelMatrix;
 }
 

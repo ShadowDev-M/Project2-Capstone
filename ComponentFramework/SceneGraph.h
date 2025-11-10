@@ -9,7 +9,6 @@
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "MMath.h"
-#include "CameraActor.h"
 #include "AssetManager.h"
 #include "CameraComponent.h"
 #include "LightComponent.h"
@@ -179,8 +178,8 @@ public:
 
 	void ValidateAllLights() {
 		if (lightActors.size() != 0) {
-			for (std::vector<Ref<Actor>>::iterator it; it != lightActors.end(); ++it) {
-				if (!(*it)->ValidateLight()) { 
+			for (std::vector<Ref<Actor>>::iterator it = lightActors.begin(); it != lightActors.end(); ++it) {
+				if (!(*it)->ValidateLight()) {
 					
 					lightActors.erase(it);
 				
@@ -402,10 +401,6 @@ public:
 
 		Ref<Actor> actorToRemove = actorIt->second;
 		actorToRemove->DeleteComponent<CameraComponent>();
-
-		if (actorToRemove->GetComponent<CameraActor>()) {
-			actorToRemove->GetComponent<CameraActor>()->OnDestroy();
-		}
 
 		// if the actor that is being removed is parented or a parent, get all children
 		std::vector<std::string> childrenToRemove;

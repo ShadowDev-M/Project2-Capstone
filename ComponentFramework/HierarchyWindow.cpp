@@ -280,7 +280,7 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	if (auto light = original_->GetComponent<LightComponent>()) {
-		copy->AddComponent<LightComponent>(light);
+		copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
 	}
 
 	return copy;

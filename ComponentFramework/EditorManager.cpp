@@ -1,4 +1,5 @@
 #include "EditorManager.h"
+#include "ImGuizmo.h"
 
 bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, SceneGraph* sceneGraph_) {
 	if (imguiInit) {
@@ -82,6 +83,7 @@ void EditorManager::RenderEditorUI() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
 
 	// create a dockspace (based on ImGui demo dockspace)
 	ImGuiViewport* viewport = ImGui::GetMainViewport();

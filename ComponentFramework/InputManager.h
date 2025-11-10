@@ -9,7 +9,6 @@
 #include "SceneGraph.h"
 #include "TransformComponent.h"
 #include <memory>
-#include "CameraActor.h"
 #include "imgui.h"
 #include "CollisionSystem.h"
 #include <functional>
@@ -208,8 +207,6 @@ public:
 		static int lastX = 0, lastY = 0;
 		const Uint8* keys = SDL_GetKeyboardState(NULL);
 
-
-
 		static bool mouseHeld = false;
 
 		switch (sdlEvent.type) {
@@ -296,7 +293,7 @@ public:
 			if (isHeld(SDL_BUTTON_LEFT) || isPressed(SDL_BUTTON_LEFT)) {
 
 				// makes it so ImGui handles the mouse motion
-				if ( !dockingHovered) {
+				if (!dockingHovered) {
 					toggleKeyPress(sdlEvent.button.button);
 					return;
 				}
@@ -343,7 +340,7 @@ public:
 
 					for (const auto& obj : debugGraph) {
 						Ref<TransformComponent> transform = obj.second->GetComponent<TransformComponent>();
-						Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * (camera->GetComponent<TransformComponent>()->GetPosition().z - transform->GetPosition().z) / 40 * 0.045 * (  h / scaledTexture.y);
+						Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * (camera->GetComponent<TransformComponent>()->GetPosition().z - transform->GetPosition().z) / 40 * 0.045 * (h / scaledTexture.y);
 
 
 
@@ -371,17 +368,16 @@ public:
 				lastY = sdlEvent.motion.y;
 
 				Ref<Actor> camera = std::dynamic_pointer_cast<Actor>(sceneGraph->getUsedCamera()->GetUserActor());
-
-
-					//std::cout << "trerst" << std::endl;
 				Ref<TransformComponent> transform = camera->GetComponent<TransformComponent>();
 
 				float speedDrag = 1;
 
 				Vec3 vectorMove = transform->GetPosition() + Vec3(deltaX, -deltaY, transform->GetPosition().z) * -speedDrag * 0.045;
 				transform->SetPos(vectorMove.x, vectorMove.y, transform->GetPosition().z);
-				
 
+				if (camera->GetComponent<CameraComponent>()) {
+					camera->GetComponent<CameraComponent>()->fixCameraToTransform();
+				}
 			}
 			break;
 		default:
@@ -709,35 +705,29 @@ public:
 		Vec3 keyPressVector = std::get<0>(inputMap.second);
 
 		if (camera) {
+			if (!keyboard.isPressed(inputMap.first[0]) || keyboard.isActive(SDL_SCANCODE_LCTRL)) return false;
+
+			//Put a slider here for stud based movement
+			Vec3 inputVector = keyPressVector * studMultiplier; //<- slider multiplier here
+
+			Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
+
+			Quaternion rotation = (QMath::normalize(q));
+			//	camera->GetComponent<TransformComponent>()->GetPosition().print();
+
+				//convert local direction into world coords 
+			Vec3 worldForward = QMath::rotate(inputVector, rotation);
 
 
-					
-				if (!keyboard.isPressed(inputMap.first[0]) || keyboard.isActive(SDL_SCANCODE_LCTRL)) return 0;
+			//no condition needed in this case
+			camera->GetComponent<TransformComponent>()->SetTransform(
+				camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
+				q
+			);
+			camera->GetComponent<CameraComponent>()->fixCameraToTransform();
 
+			return true;
 
-
-
-				//Put a slider here for stud based movement
-				Vec3 inputVector = keyPressVector * studMultiplier; //<- slider multiplier here
-
-				Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
-
-				Quaternion rotation = (QMath::normalize(q));
-				//	camera->GetComponent<TransformComponent>()->GetPosition().print();
-
-					//convert local direction into world coords 
-				Vec3 worldForward = QMath::rotate(inputVector, rotation);
-
-
-				//no condition needed in this case
-				camera->GetComponent<TransformComponent>()->SetTransform(
-					camera->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-					q
-				);
-				camera->GetComponent<CameraComponent>()->fixCameraToTransform();
-				
-				return true;
-			
 		}
 		return false;
 	}

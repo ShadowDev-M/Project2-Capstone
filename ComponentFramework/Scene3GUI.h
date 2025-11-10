@@ -4,7 +4,6 @@
 #include "Vector.h"
 #include <Matrix.h>
 #include "Actor.h"
-#include "CameraActor.h"
 #include <vector>
 
 #include "SceneGraph.h"
