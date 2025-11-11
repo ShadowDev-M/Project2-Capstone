@@ -185,16 +185,42 @@ void SceneWindow::DrawGizmos(ImVec2 scaledTexture_, ImVec2 imagePos_) {
                 float translation[3], rotation[3], scale[3];
                 ImGuizmo::DecomposeMatrixToComponents(modelmatrix, translation, rotation, scale);
 
-                // update postion, rotation, and scale according to how the gizmo was moved
-                Vec3 newPos(translation[0], translation[1], translation[2]);
-
+                // update postion, rotation, and scale according to how the gizmo was moved (world space)
+                Vec3 worldPos(translation[0], translation[1], translation[2]);
                 Euler eulerRotation(rotation[0], rotation[1], rotation[2]);
-                Quaternion newRotation = QMath::toQuaternion(eulerRotation);
-
-                Vec3 newScale(scale[0], scale[1], scale[2]);
+                Quaternion worldRotation = QMath::toQuaternion(eulerRotation);
+                Vec3 worldScale(scale[0], scale[1], scale[2]);
 
                 Ref<TransformComponent> transform = selectedActor->GetComponent<TransformComponent>();
-                transform->SetTransform(newPos, newRotation, newScale);
+
+                // when decomposing the matrix with imguizmo, it returns values in world space
+                // however, child actors do not operate in world space
+                // they operate in a local space relative to the parent actor
+                // so we have to convert
+                if (!selectedActor->isRootActor() && selectedActor->getParentActor() != nullptr) {
+                    // converting world space parent matrix to local space
+                    Matrix4 parentModelMatrix = selectedActor->getParentActor()->GetModelMatrix();
+                    Matrix4 inverseParent = MMath::inverse(parentModelMatrix);
+
+                    // inverse * T * R * S
+                    Matrix4 localMatrix = inverseParent * MMath::translate(worldPos) * MMath::toMatrix4(worldRotation) * MMath::scale(worldScale);
+                    
+                    // decomposing the local matrix to get the local translation, rotation, and scale
+                    ConvertMat4toFloatArray(localMatrix, modelmatrix);
+                    float localTranslation[3], localRotation[3], _localScale[3];
+                    ImGuizmo::DecomposeMatrixToComponents(modelmatrix, localTranslation, localRotation, _localScale);
+
+                    // update postion, rotation, and scale according to how the gizmo was moved (local space)
+                    Vec3 localPos(localTranslation[0], localTranslation[1], localTranslation[2]);
+                    Euler localEulerRotation(localRotation[0], localRotation[1], localRotation[2]);
+                    Quaternion localRot = QMath::toQuaternion(localEulerRotation);
+                    Vec3 localScale(_localScale[0], _localScale[1], _localScale[2]);
+                    
+                    transform->SetTransform(localPos, localRot, localScale);
+                }
+                else {
+                    transform->SetTransform(worldPos, worldRotation, worldScale);
+                }
             }
         }
     }

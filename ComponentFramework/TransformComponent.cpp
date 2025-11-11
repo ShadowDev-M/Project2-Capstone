@@ -33,5 +33,6 @@ void TransformComponent::Update(const float deltaTime) {
 void TransformComponent::Render()const {}
 
 Matrix4 TransformComponent::GetTransformMatrix() const {
-	return MMath::translate(pos) * MMath::scale(scale) * MMath::toMatrix4(orientation);
+	// T * R * S
+	return MMath::translate(pos) * MMath::toMatrix4(orientation) * MMath::scale(scale);
 }

@@ -100,6 +100,7 @@ Matrix4 Actor::GetModelMatrix(Ref<Component> camera_) {
 	Ref<TransformComponent> transform = GetComponent<TransformComponent>();
 	modelMatrix = transform ? transform->GetTransformMatrix() : Matrix4();
 
+	// multiples the parents model matrix by the childs (hierarchly/recursivly multiples parent matrix/transform)
 	// TODO: find something better for parent/child movement
 	if (parent && dynamic_cast<Actor*>(parent)) {
 		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera_) * modelMatrix;
