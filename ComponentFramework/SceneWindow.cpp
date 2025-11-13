@@ -179,8 +179,14 @@ void SceneWindow::DrawGizmos(ImVec2 scaledTexture_, ImVec2 imagePos_) {
             ConvertMat4toFloatArray(projection, projectionMatrix);
             ConvertMat4toFloatArray(model, modelmatrix);
 
+            // 
+            //float originalMatrix[16];
+            //std::memcpy(originalMatrix, modelmatrix, sizeof(float) * 16);
+
+            bool isManipulating = ImGuizmo::Manipulate(viewMatrix, projectionMatrix, currentGizmoOperation, currentGizmoMode, modelmatrix, nullptr, useGizmoSnap ? gizmoSnapValues : nullptr);
+
             // the actual imguizmo code to get the gizmos up and running
-            if (ImGuizmo::Manipulate(viewMatrix, projectionMatrix, currentGizmoOperation, currentGizmoMode, modelmatrix, nullptr, useGizmoSnap ? gizmoSnapValues : nullptr)) {
+            if (isManipulating && ImGuizmo::IsUsing()) {
                 // decomposing the modelmatrix to get the translation, rotation, and scale
                 float translation[3], rotation[3], scale[3];
                 ImGuizmo::DecomposeMatrixToComponents(modelmatrix, translation, rotation, scale);
