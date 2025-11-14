@@ -42,17 +42,13 @@ void main() {
 	vec3 vertDir = normalize(vertPos);
 	eyeDir = -vertDir;
 
-	vec3 lightViewPos;
-
 	if (numLights > 0) {
-		/// Light position from the point-of-view of each vertex
-		vec3 lightLocFromVertex[MAX_LIGHTS];
 		for(uint i = 0u; i < numLights; i++){
 			if (lightType[i] == 0u) {
-				lightDir[i] = normalize(-lightPos[i]);
+				lightDir[i] = normalize((viewMatrix * vec4(-lightPos[i], 0.0f)).xyz); //normalize(-lightPos[i]);
 			} else {
-				lightLocFromVertex[i] = vec3(lightPos[i]) - vertPos;
-				lightDir[i] = normalize(lightLocFromVertex[i]); /// Create the light direction.
+				vec3 lightViewPos = (viewMatrix * vec4(lightPos[i], 1.0f)).xyz;
+				lightDir[i] = normalize(lightViewPos - vertPos); /// Create the light direction.
 			}
 		}
 	}

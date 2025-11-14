@@ -208,7 +208,8 @@ public:
                         // Set the info as attributes
                         if (Ref<MaterialComponent> componentRef = assetMgr.GetAsset<MaterialComponent>(nameCStr)) {
 
-                            if (componentRef->getTextureName()) componentObjElement->SetAttribute("path", componentRef->getTextureName());
+                            if (componentRef->getDiffuseName()) componentObjElement->SetAttribute("diff", componentRef->getDiffuseName());
+                            if (componentRef->getSpecularName()) componentObjElement->SetAttribute("spec", componentRef->getSpecularName());
 
                         }
                         else {

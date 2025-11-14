@@ -230,6 +230,8 @@ void SceneGraph::Render() const
 	glViewport(xPos, glY, xSize, ySize);
 
 	if (!RENDERMAINSCREEN) {
+		Vec4 clearColour = Vec4(0.1f, 0.1f, 0.15f, 0.0f);
+
 
 		std::vector<Vec3> lightPos;
 		std::vector<Vec4> lightSpec;
@@ -239,16 +241,13 @@ void SceneGraph::Render() const
 		if (!lightActors.empty()) {
 			for (auto& light : lightActors) {
 				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
-					lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition() - usedCamera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition());
-
-					//lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());
+					// you shouldn't have to pass a corrected light position into the shader, it should correct itself.
+					lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());// - usedCamera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition());
 					lightTypes.push_back(1u);
 				}
 				else {
 
 					lightPos.push_back(light->GetComponent<TransformComponent>()->GetForward());
-					//Vec3 dir = light->GetComponent<TransformComponent>()->GetForward();
-					//lightPos.push_back(dir);
 					lightTypes.push_back(0u);
 				}
 				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
@@ -264,12 +263,13 @@ void SceneGraph::Render() const
 		}
 		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
 
-		//glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, Vec4(0.45f, 0.55f, 0.60f, 1.00f));
+		// Without an Ambient the light components won't work at all
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, clearColour);
 
 		//use the picking buffer so it is seperated
 		glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
 		glViewport(0, 0, SCENEWIDTH, SCENEHEIGHT);
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -288,8 +288,6 @@ void SceneGraph::Render() const
 
 		// if the actor has a shader, mesh, and mat component then render it
 		if (shader && mesh && material) {
-
-
 
 			//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
 
@@ -316,7 +314,13 @@ void SceneGraph::Render() const
 			else {
 				if (pair.second->GetComponent<ShaderComponent>()) {
 					glUseProgram(shader->GetProgram());
-					glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+					if (pair.second->GetComponent<ShaderComponent>() == AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")) {
+						// use the new material component elements from the struct
+						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+					}
+					else {
+						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+					}
 				}
 				
 
@@ -328,12 +332,19 @@ void SceneGraph::Render() const
 
 			//Vec3 idColor = Actor::encodeID(actor->id);
 
-
-
-
+			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
+			glUniform1i(shader->GetUniformID("specularTexture"), 1);
 			
-
-			glBindTexture(GL_TEXTURE_2D, material->getTextureID());
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
+			if (material->getSpecularID() != 0) {
+				glUniform1i(shader->GetUniformID("hasSpec"), 1);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, material->getSpecularID());
+			}
+			else {
+				glUniform1i(shader->GetUniformID("hasSpec"), 0);
+			}
 			mesh->Render(GL_TRIANGLES);
 			glBindTexture(GL_TEXTURE_2D, 0);
 

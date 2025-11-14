@@ -14,22 +14,22 @@
     <Components>
         <MaterialComponent>
             <M_Sphere>
-                <Texture path="textures/Black Chess Base Colour.png"/>
+                <Texture diff="textures/Black Chess Base Colour.png"/>
             </M_Sphere>
             <M_Moon>
-                <Texture path="textures/moon.jpg"/>
+                <Texture diff="textures/moon.jpg"/>
             </M_Moon>
             <M_MarioN>
-                <Texture path="textures/mario_main.png"/>
+                <Texture diff="textures/mario_main.png"/>
             </M_MarioN>
             <M_MarioFire>
-                <Texture path="textures/mario_fire.png"/>
+                <Texture diff="textures/mario_fire.png"/>
             </M_MarioFire>
             <M_ChessBoard>
-                <Texture path="textures/8x8_checkered_board.png"/>
+                <Texture diff="textures/8x8_checkered_board.png"/>
             </M_ChessBoard>
             <M_Skull>
-                <Texture path="textures/skull_texture.jpg"/>
+                <Texture diff="textures/skull_texture.jpg"/>
             </M_Skull>
         </MaterialComponent>
         <ShaderComponent>

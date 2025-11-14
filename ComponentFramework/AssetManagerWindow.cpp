@@ -119,7 +119,10 @@ void AssetManagerWindow::ShowAddAssetDialog()
 			ImGui::TextWrapped("Example: meshes/Mesh.obj");
 		}
 		else if (selectedAssetType == 1) {
-			ImGui::InputText("##MaterialPath", &newAssetPath);
+			ImGui::Text("Diffuse Map:");
+			ImGui::InputText("##DiffusePath", &newDiffuseMapPath);
+			ImGui::Text("Specular Map (Optional):");
+			ImGui::InputText("##SpecularPath", &newSpecularMapPath);
 			ImGui::TextWrapped("Example: textures/Texture.png");
 		}
 		else if (selectedAssetType == 2) {
@@ -138,8 +141,11 @@ void AssetManagerWindow::ShowAddAssetDialog()
 
 		// checks to see if all the InputText fields are empty
 		bool canAdd = !newAssetName.empty();
-		if (selectedAssetType == 0 || selectedAssetType == 1) {
+		if (selectedAssetType == 0) {
 			canAdd = canAdd && !newAssetPath.empty();
+		}
+		else if (selectedAssetType == 1) {
+			canAdd = canAdd && !newDiffuseMapPath.empty();
 		}
 		else if (selectedAssetType == 2) {
 			canAdd = canAdd && !newVertShaderPath.empty() && !newFragShaderPath.empty();
@@ -180,6 +186,8 @@ void AssetManagerWindow::ResetInput()
 {
 	newAssetName.clear();
 	newAssetPath.clear();
+	newDiffuseMapPath.clear();
+	newSpecularMapPath.clear();
 	newVertShaderPath.clear();
 	newFragShaderPath.clear();
 	selectedAssetType = 0;
@@ -199,8 +207,13 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 			break;
 
 		case 1: // Material Component
-			success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
-				newAssetName, nullptr, newAssetPath.c_str());
+			if (newSpecularMapPath.empty()) {
+				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
+					newAssetName, nullptr, newDiffuseMapPath.c_str());
+			} else {
+				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
+					newAssetName, nullptr, newDiffuseMapPath.c_str(), newSpecularMapPath.c_str());
+			}
 			break;
 
 		case 2: // Shader Component
@@ -256,7 +269,7 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 		payloadType = "MESH_ASSET";
 	}
 	else if (material) {
-		ImGui::ImageButton("##MaterialAssetBtn", ImTextureID(material->getTextureID()), buttonSize);
+		ImGui::ImageButton("##MaterialDiffuseBtn", ImTextureID(material->getDiffuseID()), buttonSize);
 		payloadType = "MATERIAL_ASSET";
 	}
 	else if (shader) {
@@ -311,8 +324,15 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 			ImGui::Text("File Path: %s", mesh->getMeshName());
 		}
 		if (material) {
-			ImGui::Text("Texture ID: %u", material->getTextureID());
-			ImGui::Text("File Path: %s", material->getTextureName());
+			if (material->getSpecularName()) {
+				ImGui::Text("Diffuse Texture ID: %u", material->getDiffuseID());
+				ImGui::Text("Specular Texture ID: %u", material->getSpecularID());
+				ImGui::Text("Diffuse File Path: %s", material->getDiffuseName());
+				ImGui::Text("Specular File Path: %s", material->getSpecularName());
+			} else {
+				ImGui::Text("Diffuse Texture ID: %u", material->getDiffuseID());
+				ImGui::Text("File Path: %s", material->getDiffuseName());
+			}
 		}
 		if (shader) {
 			ImGui::Text("Shader Program ID: %u", shader->GetProgram());
