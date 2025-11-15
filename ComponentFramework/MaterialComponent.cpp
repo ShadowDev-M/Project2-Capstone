@@ -1,34 +1,62 @@
 #include "MaterialComponent.h"
 #include <SDL_image.h>
-MaterialComponent::MaterialComponent(Component* parent_,const char* filename_):
-	Component(parent_), textureID(0), filename(filename_) {}
+MaterialComponent::MaterialComponent(Component* parent_,const char* diffuse_, const char* specular_):
+	Component(parent_), diffuseID(0), specularID(0), diffuse(diffuse_), specular(specular_) {}
 
 MaterialComponent::~MaterialComponent() {
-	glDeleteTextures(1, &textureID);
+	glDeleteTextures(1, &diffuseID);
+	glDeleteTextures(1, &specularID);
 }
 
 bool MaterialComponent::OnCreate() {
-	if (isCreated == true) return true;
+	if (isCreated == true) { 
+		return true; 
+	}
+	else if (!specular.empty()) {
+		if (LoadImage(diffuse.c_str(), false) && LoadImage(specular.c_str(), true)) {
+			isCreated = true;
+			return true;
+		}
+	}
 	isCreated = true;
-	return LoadImage(filename.c_str());
+
+	return LoadImage(diffuse.c_str(), false);
 }
 
-bool MaterialComponent::LoadImage(const char* filename) {
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	SDL_Surface *textureSurface = IMG_Load(filename);
-	if (textureSurface == nullptr) {
-		return false;
+bool MaterialComponent::LoadImage(const char* filename, bool isSpec) {
+	if (isSpec == false) {
+		glGenTextures(1, &diffuseID);
+		glBindTexture(GL_TEXTURE_2D, diffuseID);
+		SDL_Surface* textureSurface = IMG_Load(filename);
+		if (textureSurface == nullptr) {
+			return false;
+		}
+		int mode = (textureSurface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+		glTexImage2D(GL_TEXTURE_2D, 0, mode, textureSurface->w, textureSurface->h, 0, mode, GL_UNSIGNED_BYTE, textureSurface->pixels);
+
+		SDL_FreeSurface(textureSurface);
+		/// Wrapping and filtering options
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0); /// Unbind the texture
+		return true;
+	} else {
+		glGenTextures(1, &specularID);
+		glBindTexture(GL_TEXTURE_2D, specularID);
+		SDL_Surface* textureSurface = IMG_Load(filename);
+		if (textureSurface == nullptr) {
+			return false;
+		}
+		int mode = (textureSurface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+		glTexImage2D(GL_TEXTURE_2D, 0, mode, textureSurface->w, textureSurface->h, 0, mode, GL_UNSIGNED_BYTE, textureSurface->pixels);
+
+		SDL_FreeSurface(textureSurface);
+		/// Wrapping and filtering options
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0); /// Unbind the texture
+		return true;
 	}
-	int mode = (textureSurface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
-	glTexImage2D(GL_TEXTURE_2D, 0, mode, textureSurface->w, textureSurface->h, 0, mode, GL_UNSIGNED_BYTE, textureSurface->pixels);
-	
-	SDL_FreeSurface(textureSurface);
-	/// Wrapping and filtering options
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0); /// Unbind the texture
-	return true;
 }
 
 void MaterialComponent::OnDestroy() {}

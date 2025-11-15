@@ -60,8 +60,13 @@ bool AssetManager::SaveAssetDatabaseXML() const
             }
             else if (componentType.first == "MaterialComponent") {
                 auto materialComponent = std::dynamic_pointer_cast<MaterialComponent>(asset.second);
-                if (materialComponent && materialComponent->getTextureName()) {
-                    assetElement->SetAttribute("filepath", materialComponent->getTextureName());
+                if (materialComponent) {
+                    if (materialComponent->getDiffuseName()) {
+                        assetElement->SetAttribute("diffuseMap", materialComponent->getDiffuseName());
+                    }
+                    if (materialComponent->getSpecularName()) {
+                        assetElement->SetAttribute("specularMap", materialComponent->getSpecularName());
+                    }
                 }
             }
             else if (componentType.first == "ShaderComponent") {
@@ -217,14 +222,18 @@ bool AssetManager::LoadAssetTypeXML(XMLElement* assetElement_, const std::string
     // same thing, this time for materials
     else if constexpr (std::is_same_v<AssetTemplate, MaterialComponent>) {
         // attribute assumes that "filepath" exists and returns its name(const char*) 
-        const char* filepath = assetElement_->Attribute("filepath");
-        if (!filepath) {
+        const char* diffusePath = assetElement_->Attribute("diffuseMap");
+        if (!diffusePath) {
             Debug::Error(componentType + " missing filepath attribute: " + assetName_, __FILE__, __LINE__);
             return false;
         }
+        const char* specularPath = assetElement_->Attribute("specularMap");
+        if (!specularPath) {
+            specularPath = "";
+        }
 
         // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-        bool result = AddAsset<MaterialComponent>(assetName_, nullptr, filepath);
+        bool result = AddAsset<MaterialComponent>(assetName_, nullptr, diffusePath, specularPath);
         if (!result) {
             Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
             return false;
@@ -243,7 +252,7 @@ bool AssetManager::LoadAssetTypeXML(XMLElement* assetElement_, const std::string
         }
 
         // if the asset manages to pass everything, then display an info debug message
-        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " from: " + filepath, __FILE__, __LINE__);
+        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " from: " + diffusePath, __FILE__, __LINE__);
         return true;
     }
 

@@ -90,7 +90,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 
 				if (ImGui::Selectable("Material Component")) {
 					if (!selectedActor->second->GetComponent<MaterialComponent>()) {
-						selectedActor->second->AddComponent<MaterialComponent>(nullptr, "");
+						selectedActor->second->AddComponent<MaterialComponent>(nullptr, "", "");
 					}
 				}
 
@@ -185,7 +185,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Material Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<MaterialComponent>()) {
-								pair.second->AddComponent<MaterialComponent>(nullptr, "");
+								pair.second->AddComponent<MaterialComponent>(nullptr, "", "");
 							}
 						}
 					}
@@ -495,7 +495,8 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 		if (materialState.allHaveComponent && materialState.Count() == 1) {
 			Ref<MaterialComponent> material = materialState.GetFirst();
 
-			ImGui::TextWrapped("Texture ID: %u", material->getTextureID());
+			ImGui::TextWrapped("Diffuse ID: %u", material->getDiffuseID());
+			if (material->getSpecularID() != 0) ImGui::TextWrapped("Specular ID: %u", material->getSpecularID());
 		}
 		else if (materialState.allHaveComponent) {
 			ImGui::TextWrapped("All Selected Actors Have a MaterialComponent");
@@ -506,14 +507,14 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 
 		// display material thumbnail
 		Ref<MaterialComponent> material = materialState.GetFirst();
-		if (material && material->getTextureID() != 0) {
+		if (material && material->getDiffuseID() != 0) {
 			if (materialState.Count() == 1) {
 				// disable background for buttons
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
 				
-				ImGui::ImageButton("##MaterialThumbnail", ImTextureID(material->getTextureID()),
+				ImGui::ImageButton("##MaterialThumbnail", ImTextureID(material->getDiffuseID()),
 					ImVec2(thumbnailSize, thumbnailSize));
 				
 				// pop

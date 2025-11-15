@@ -28,6 +28,8 @@ private:
 	// using imgui_stdlib for InputText(), these will help with passing on the names and paths of assets
 	std::string newAssetName = "";
 	std::string newAssetPath = "";
+	std::string newDiffuseMapPath = "";
+	std::string newSpecularMapPath = "";
 	std::string newVertShaderPath = "";
 	std::string newFragShaderPath = "";
 	int selectedAssetType = 0; // 0 = Mesh, 1 = Material, 2 = Shader, etc

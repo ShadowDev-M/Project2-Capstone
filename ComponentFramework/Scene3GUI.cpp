@@ -4,7 +4,7 @@
 #include "Scene3GUI.h"
 #include <MMath.h>
 #include "Debug.h"
-#include "XMLManager.h"
+#include "ExampleXML.h"
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include <filesystem>
@@ -24,17 +24,15 @@ bool Scene3GUI::OnCreate() {
 	AssetManager::getInstance().ListAllAssets();
 	
 	SceneGraph::getInstance().checkValidCamera();
+	
+	// Light Pos
+	lightPos = Vec3(1.0f, 2.0f, -10.0f);
 
 	SceneGraph::getInstance().OnCreate();
 	SceneGraph::getInstance().ListAllActors();
 
 	//	camera->fixCameraToTransform();
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
-
-	// To do: add light component and script component to XML
-	SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(nullptr, "testScript.lua");
-
-	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
 
 
 	return true;
@@ -50,11 +48,16 @@ void Scene3GUI::OnDestroy() {
 
 	SceneGraph::getInstance().RemoveAllActors();
 
+	//camera->OnDestroy();
+
 }
 
 void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
-	InputManager::getInstance().HandleEvents(sdlEvent, &SceneGraph::getInstance());
+	//sceneGraph.checkValidCamera();
+
+	InputManager::getInstance().HandleEvents(sdlEvent, &SceneGraph::getInstance(), &collisionSystem);
+
 }
 
 
@@ -62,10 +65,9 @@ void Scene3GUI::Update(const float deltaTime) {
 
 	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
-	//collisionSystem.Update(deltaTime);
+	collisionSystem.Update(deltaTime);
 
 	SceneGraph::getInstance().Update(deltaTime);
-
 }
 
 void Scene3GUI::Render() const {
@@ -76,14 +78,27 @@ void Scene3GUI::Render() const {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
+	if (drawInWireMode) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
 	// Rendering	
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
 
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("lightPos"), 1, lightPos);
+
+
+	// S_Multi works now, however light components don't get saved to XML yet so whenever you start up the engine it'll just be dark
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
+
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos"), 1, lightPos);
 	
 	SceneGraph::getInstance().Render();
 
