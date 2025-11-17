@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)\External\luajit;$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(ProjectDir)\include\imguizmo;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\External\luajit;$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(ProjectDir)\include\imguizmo;$(ProjectDir)\include\assimp\include\assimp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -83,7 +83,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)\External\sol2-develop\include;$(ProjectDir)\External\luajit\src;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;$(ProjectDir)\External\luajit\src</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;$(ProjectDir)\External\luajit\src;$(ProjectDir)\include\assimp\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2main.lib;glew32.lib;glew32s.lib;opengl32.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
