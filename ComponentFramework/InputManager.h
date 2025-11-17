@@ -213,7 +213,7 @@ public:
 		switch (sdlEvent.type) {
 		case SDL_MOUSEBUTTONDOWN:
 			// allows imguizmo to handle mouse movement when editing gizmos
-			if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
+			if (ImGuizmo::IsOver() && ImGuizmo::IsUsing()) {
 				return;
 			}
 
@@ -228,13 +228,17 @@ public:
 
 			break;
 		case SDL_MOUSEBUTTONUP:
-			// allows imguizmo to handle mouse movement when editing gizmos
-			if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
-				return;
-			}
+
 
 			toggleKeyRelease(sdlEvent.button.button);
 			std::cout << static_cast<int>(sdlEvent.button.button) << " is Released!" << std::endl;
+
+			// allows imguizmo to handle mouse movement when editing gizmos
+			if (ImGuizmo::IsOver() && ImGuizmo::IsUsing()) {
+
+				return;
+			}
+
 
 			lastX = sdlEvent.button.x;
 			lastY = sdlEvent.button.y;
@@ -300,7 +304,7 @@ public:
 		case SDL_MOUSEMOTION:
 			if (isHeld(SDL_BUTTON_LEFT) || isPressed(SDL_BUTTON_LEFT)) {
 				// allows imguizmo to handle mouse movement when editing gizmos
-				if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
+				if (ImGuizmo::IsOver() && ImGuizmo::IsUsing()) {
 					return;
 				}
 
