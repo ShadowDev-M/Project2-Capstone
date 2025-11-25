@@ -30,11 +30,11 @@ bool Scene3GUI::OnCreate() {
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
-	/*
+	
 	SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(nullptr, "testScript.lua");
 
 	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
-	*/
+	
 
 	return true;
 }

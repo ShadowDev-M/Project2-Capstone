@@ -102,6 +102,19 @@ private:
 
 	bool* GetWindowStatePtr(const std::string& windowName_) { return &windowStates[windowName_]; }
 
+	struct EditorIcons {
+		Ref<MaterialComponent> playIcon = std::make_shared<MaterialComponent>(nullptr, "icons/play.png");
+		Ref<MaterialComponent> pauseIcon = std::make_shared<MaterialComponent>(nullptr, "icons/pause.png");
+		Ref<MaterialComponent> stopIcon = std::make_shared<MaterialComponent>(nullptr, "icons/stop.png");
+		Ref<MaterialComponent> stepIcon = std::make_shared<MaterialComponent>(nullptr, "icons/step.png");
+		Ref<MaterialComponent> meshIcon = std::make_shared<MaterialComponent>(nullptr, "icons/meshIcon.png");
+		Ref<MaterialComponent> shaderIcon = std::make_shared<MaterialComponent>(nullptr, "icons/shader.png");
+	};
+
+	EditorIcons editorIcons;
+
+	void CreateEditorIcons();
+
 public:
 	// Meyers Singleton (from JPs class)
 	static EditorManager& getInstance() {
@@ -122,11 +135,11 @@ public:
 	void RenderEditorUI();
 
 	// This stuff will be used later on when we setup actual functionalilty for each editor mode, but for now I'll leave them here
-	//EditorMode GetEditorMode() const { return currentMode; }
-	//void SetEditorMode(EditorMode mode) { currentMode = mode; }
-	//bool IsEditMode() const { return currentMode == EditorMode::Edit; }
-	//bool IsPlayMode() const { return currentMode == EditorMode::Play; }
-	//bool IsPaused() const { return currentMode == EditorMode::Pause; }
+	EditorMode GetEditorMode() const { return currentMode; }
+	void SetEditorMode(EditorMode mode) { currentMode = mode; }
+	bool isEditMode() const { return currentMode == EditorMode::Edit; }
+	bool isPlayMode() const { return currentMode == EditorMode::Play; }
+	bool isPaused() const { return currentMode == EditorMode::Pause; }
 
 	/// <summary>
 	/// Registers a window to the editor manager (adds it to window states)
@@ -143,7 +156,6 @@ public:
 	
 	bool IsInitialized() const { return imguiInit; }
 	
-	//ImVec4 GetClearColor() const { return clearColor; }
-	//void SetClearColor(const ImVec4& color) { clearColor = color; }
+	EditorManager::EditorIcons getEditorIcons() { return editorIcons; }
 
 };
