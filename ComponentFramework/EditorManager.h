@@ -17,6 +17,7 @@
 #include "InspectorWindow.h"
 #include "AssetManagerWindow.h"
 #include "SceneWindow.h" // scene
+#include "MemoryWindow.h"
 
 // pass all the windows + scenegraph
 class SceneGraph;
@@ -24,6 +25,8 @@ class HierarchyWindow;
 class InspectorWindow;
 class AssetManagerWindow;
 class SceneWindow; // scene
+class MemoryManagerWindow; // scene
+
 
 // this will be used later on for the scene window and edit/play modes, for now just setting up the enum and some functions for it
 enum class EditorMode {
@@ -54,6 +57,7 @@ private:
 	std::unique_ptr<InspectorWindow> inspectorWindow;
 	std::unique_ptr<AssetManagerWindow> assetManagerWindow;
 	std::unique_ptr<SceneWindow> sceneWindow;
+	std::unique_ptr<MemoryManagerWindow> memoryWindow;
 
 	// scene graph reference (might change this after since scenegraph is a singleton now, I just don't want anything to break) TODO
 	SceneGraph* sceneGraph = nullptr;

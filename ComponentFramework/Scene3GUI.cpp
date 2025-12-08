@@ -7,7 +7,9 @@
 #include "XMLManager.h"
 #include "InputManager.h"
 #include "CameraComponent.h"
+#include "MemorySize.h"
 #include <filesystem>
+
 
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -56,6 +58,7 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
 
 void Scene3GUI::Update(const float deltaTime) {
+	
 	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
 	SceneGraph::getInstance().Update(deltaTime);

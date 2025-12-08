@@ -6,6 +6,7 @@
 #include "EditorManager.h"
 #include "SceneGraph.h"
 
+
 SceneManager::SceneManager() :
 	currentScene{ nullptr }, window{ nullptr }, timer{ nullptr },
 	fps(60), isRunning{ false }, fullScreen{ false } {

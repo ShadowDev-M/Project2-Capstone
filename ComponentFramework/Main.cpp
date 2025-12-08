@@ -1,6 +1,7 @@
 #define _CRTDBG_MAP_ALLOC  
 #include <stdlib.h>  
 #include <crtdbg.h>
+#include "MemoryMonitor.h"
 
 #include <string>
 #include "SceneManager.h"
@@ -20,3 +21,5 @@ int main(int argc, char* args[]) {
 	_CrtDumpMemoryLeaks();
 	exit(0);
 }
+
+static const size_t Memory_Total_Size() { return MEMORY_NUMUSEDBYTES; }

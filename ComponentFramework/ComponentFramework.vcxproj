@@ -139,8 +139,12 @@
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="MemoryMonitor.h" />
+    <ClInclude Include="MemorySize.h" />
+    <ClInclude Include="MemoryWindow.h" />
     <ClInclude Include="SceneWindow.h" />
     <ClInclude Include="EditorManager.h" />
+    <ClInclude Include="SkeletalAnimation.h" />
     <ClInclude Include="XMLManager.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="include\imguizmo\ImGuizmo.h" />
@@ -182,6 +186,8 @@
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="MemoryMonitor.cpp" />
+    <ClCompile Include="MemoryWindow.cpp" />
     <ClCompile Include="SceneWindow.cpp" />
     <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="XMLManager.cpp" />
