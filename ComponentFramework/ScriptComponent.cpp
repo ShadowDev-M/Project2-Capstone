@@ -60,6 +60,7 @@ bool ScriptComponent::OnCreate()
 	
 	return true;
 }
+
 void ScriptService::startActorScripts(Ref<Actor> target) {
 
 	for (auto& comp : target->components) {
