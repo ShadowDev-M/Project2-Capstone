@@ -8,7 +8,6 @@
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include <filesystem>
-#include "AudioManager.h"
 
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -37,7 +36,7 @@ bool Scene3GUI::OnCreate() {
 	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
 	
 	AudioManager::getInstance().Initialize();
-	AudioManager::getInstance().Play2D("audio/mario.wav");
+	marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);
 
 	return true;
 }
@@ -64,6 +63,15 @@ void Scene3GUI::Update(const float deltaTime) {
 	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
 	SceneGraph::getInstance().Update(deltaTime);
+
+	Ref<Actor> cameraActor = SceneGraph::getInstance().getUsedCamera()->GetUserActor();
+	if (cameraActor && cameraActor->GetComponent<TransformComponent>()) {
+		Vec3 cameraPos = cameraActor->GetComponent<TransformComponent>()->GetPosition();
+		Vec3 lookDir = cameraActor->GetComponent<TransformComponent>()->GetForward();
+		AudioManager::getInstance().SetListenerPos(cameraPos, lookDir);
+	}
+	
+	AudioManager::getInstance().SetSoundPos(marioSFX, SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition());
 }
 
 void Scene3GUI::Render() const {

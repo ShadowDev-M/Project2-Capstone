@@ -60,7 +60,7 @@ ISound* AudioManager::Play3D(const std::string& filename_, const Vec3& pos_, boo
 	}
 
 	// converting to irrklang vec3
-	vec3df pos(pos_.x, pos_.y, pos_.z);
+	vec3df pos(-pos_.x, pos_.y, pos_.z);
 
 	ISound* sound = soundEngine->play3D(filename_.c_str(), pos, loop, false, true);
 
@@ -80,9 +80,9 @@ void AudioManager::SetListenerPos(const Vec3& pos_, const Vec3& lookDir_, const 
 {
 	if (!isInitialized || !soundEngine) { return; }
 
-	vec3df pos(pos_.x, pos_.y, pos_.z);
-	vec3df lookDir(lookDir_.x, lookDir_.y, lookDir_.z);
-	vec3df velocity(velocity_.x, velocity_.y, velocity_.z);
+	vec3df pos(-pos_.x, pos_.y, pos_.z);
+	vec3df lookDir(-lookDir_.x, lookDir_.y, lookDir_.z);
+	vec3df velocity(-velocity_.x, velocity_.y, velocity_.z);
 	vec3df upVec(upVec_.x, upVec_.y, upVec_.z);
 
 	soundEngine->setListenerPosition(pos, lookDir, velocity, upVec);
@@ -94,7 +94,7 @@ void AudioManager::SetSoundPos(ISound* sound_, const Vec3& pos_)
 		return;
 	}
 
-	vec3df pos(pos_.x, pos_.y, pos_.z);
+	vec3df pos(-pos_.x, pos_.y, pos_.z);
 
 	sound_->setPosition(pos);
 }
