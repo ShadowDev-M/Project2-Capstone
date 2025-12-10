@@ -1,10 +1,10 @@
 <AssetDatabase>
     <MaterialComponent>
-        <Asset name="M_Moon" diffuseMap="textures/moon.jpg" specularMap=""/>
         <Asset name="M_Sphere" diffuseMap="textures/Black Chess Base Colour.png" specularMap=""/>
-        <Asset name="M_MarioN" diffuseMap="textures/mario_main.png" specularMap=""/>
+        <Asset name="M_Moon" diffuseMap="textures/moon.jpg" specularMap=""/>
         <Asset name="M_Hammer" diffuseMap="textures\hammer_BaseColor.png" specularMap="textures\hammer_specular.png"/>
         <Asset name="M_MarioFire" diffuseMap="textures/mario_fire.png" specularMap=""/>
+        <Asset name="M_MarioN" diffuseMap="textures/mario_main.png" specularMap=""/>
         <Asset name="M_ChessBoard" diffuseMap="textures/8x8_checkered_board.png" specularMap=""/>
         <Asset name="M_Skull" diffuseMap="textures/skull_texture.jpg" specularMap=""/>
         <Asset name="M_TestSpec" diffuseMap="textures\8x8_checkered_board.png" specularMap="textures\TestSpecMap.png"/>
@@ -12,8 +12,8 @@
     <MeshComponent>
         <Asset name="SM_Plane" filepath="meshes/Plane.obj"/>
         <Asset name="SM_Mario" filepath="meshes/Mario.obj"/>
-        <Asset name="SM_Cube" filepath="meshes/Cube.obj"/>
         <Asset name="SM_Sphere" filepath="meshes/Sphere.obj"/>
+        <Asset name="SM_Cube" filepath="meshes/Cube.obj"/>
         <Asset name="SM_Pawn" filepath="meshes/Pawn.obj"/>
         <Asset name="SM_King" filepath="meshes/King.obj"/>
         <Asset name="SM_Rook" filepath="meshes/Rook.obj"/>
@@ -21,8 +21,8 @@
         <Asset name="SM_Skull" filepath="meshes/Skull.obj"/>
     </MeshComponent>
     <ShaderComponent>
-        <Asset name="S_Multi" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>
         <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
+        <Asset name="S_Multi" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>
         <Asset name="S_Outline" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/outline.glsl"/>
         <Asset name="S_Phong" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/texturePhongFrag.glsl"/>
     </ShaderComponent>

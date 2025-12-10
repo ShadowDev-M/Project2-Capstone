@@ -35,6 +35,8 @@ bool Scene3GUI::OnCreate() {
 
 	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
 	
+	AudioManager::getInstance().Initialize();
+	marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);
 
 	return true;
 }
@@ -48,6 +50,8 @@ void Scene3GUI::OnDestroy() {
 	AssetManager::getInstance().RemoveAllAssets();
 
 	SceneGraph::getInstance().RemoveAllActors();
+
+	AudioManager::getInstance().Shutdown();
 }
 
 void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
@@ -59,6 +63,15 @@ void Scene3GUI::Update(const float deltaTime) {
 	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
 	SceneGraph::getInstance().Update(deltaTime);
+
+	Ref<Actor> cameraActor = SceneGraph::getInstance().getUsedCamera()->GetUserActor();
+	if (cameraActor && cameraActor->GetComponent<TransformComponent>()) {
+		Vec3 cameraPos = cameraActor->GetComponent<TransformComponent>()->GetPosition();
+		Vec3 lookDir = cameraActor->GetComponent<TransformComponent>()->GetForward();
+		AudioManager::getInstance().SetListenerPos(cameraPos, lookDir);
+	}
+	
+	AudioManager::getInstance().SetSoundPos(marioSFX, SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition());
 }
 
 void Scene3GUI::Render() const {
