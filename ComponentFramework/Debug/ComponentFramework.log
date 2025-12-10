@@ -1,14 +1,4 @@
-﻿  EditorManager.cpp
-  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
-  This questionable: Vec4 inverse(const Vec4& v)
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'EditorManager.cpp')
-  
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'EditorManager.cpp')
-  
-  ImGuizmo.cpp
-  Generating Code...
+﻿  AudioManager.cpp
   ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

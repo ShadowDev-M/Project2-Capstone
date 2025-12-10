@@ -188,6 +188,9 @@
     <ClInclude Include="Raycast.h">
       <Filter>Header Files\Tools</Filter>
     </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -300,6 +303,9 @@
     </ClCompile>
     <ClCompile Include="tinyxml2.cpp">
       <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>Source Files\Managers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

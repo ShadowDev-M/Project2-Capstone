@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)\External\luajit;$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(ProjectDir)\include\imguizmo;$(ProjectDir)\include\assimp\include\assimp;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\External\luajit;$(ProjectDir)\include\gamedev\SDL\include;$(ProjectDir)\include\gamedev\OpenGL\include;$(ProjectDir)\include\gamedev\MathLibraryEx\include;$(ProjectDir)\include\gamedev\MathLibrary\include;$(ProjectDir)\include\imgui;$(ProjectDir)\include\imguizmo;$(ProjectDir)\include\assimp\include\assimp;$(ProjectDir)\include\IrrKlang\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -83,7 +83,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)\External\sol2-develop\include;$(ProjectDir)\External\luajit\src;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;$(ProjectDir)\External\luajit\src;$(ProjectDir)\include\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;$(ProjectDir)\External\luajit\src;$(ProjectDir)\include\assimp\lib;$(ProjectDir)\include\IrrKlang\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2main.lib;glew32.lib;glew32s.lib;opengl32.lib;lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -134,6 +134,7 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManagerWindow.h" />
+    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="CollisionComponent.h" />
     <ClInclude Include="CollisionSystem.h" />
@@ -177,6 +178,7 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManagerWindow.cpp" />
+    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="CollisionComponent.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
