@@ -8,6 +8,7 @@
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include <filesystem>
+#include "AudioManager.h"
 
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -35,6 +36,8 @@ bool Scene3GUI::OnCreate() {
 
 	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
 	
+	AudioManager::getInstance().Initialize();
+	AudioManager::getInstance().Play2D("audio/mario.wav");
 
 	return true;
 }
@@ -48,6 +51,8 @@ void Scene3GUI::OnDestroy() {
 	AssetManager::getInstance().RemoveAllAssets();
 
 	SceneGraph::getInstance().RemoveAllActors();
+
+	AudioManager::getInstance().Shutdown();
 }
 
 void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {

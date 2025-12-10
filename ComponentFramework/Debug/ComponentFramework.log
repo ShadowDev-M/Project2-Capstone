@@ -1,4 +1,30 @@
-﻿  AudioManager.cpp
+﻿  Scene3GUI.cpp
+  This is wrong: Vec4 cross(const Vec4& a, const Vec4& b)
+  This questionable: Vec4 inverse(const Vec4& v)
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(25,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\Raycast.h(26,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(359,65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(359,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(359,202): warning C4305: 'argument': truncation from 'double' to 'const float'
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(391,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(391,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  (compiling source file 'Scene3GUI.cpp')
+  
+C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\InputManager.h(391,115): warning C4305: 'argument': truncation from 'double' to 'const float'
+  (compiling source file 'Scene3GUI.cpp')
+  
   ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied
