@@ -67,7 +67,7 @@ ISound* AudioManager::Play3D(const std::string& filename_, const Vec3& pos_, boo
 	if (sound) {
 		sound->setVolume(volume * masterVolume);
 		// lots of options to change for this, leaving as default for now
-		// sound->setMinDistance();
+		sound->setMinDistance(2.5f);
 	}
 	else {
 		Debug::Warning("Failed to play3D sound: " + filename_, __FILE__, __LINE__);
