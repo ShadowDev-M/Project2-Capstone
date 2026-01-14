@@ -3,12 +3,33 @@
 #include <fstream>
 #include "SceneGraph.h"
 
+static std::vector<ScriptComponent*> scriptsInUse;
+
 ScriptComponent::ScriptComponent(Component* parent_, const char* filename_) :
-	Component(parent_), filename(filename_) {}
+	Component(parent_), filename(filename_) {
+	scriptsInUse.push_back(this);
+}
 
-ScriptComponent::~ScriptComponent() {}
+ScriptComponent::~ScriptComponent() {
 
-void ScriptComponent::OnDestroy() {}
+	std::vector<ScriptComponent*>::iterator it = std::find(scriptsInUse.begin(), scriptsInUse.end(), this);
+
+	if (it != scriptsInUse.end()) {
+		scriptsInUse.erase(it);
+	}
+	else {
+		std::cerr << "ERROR: " << this << " was not found as a valid used script upon destroy (Do not remove scripts from the system until they are destroyed.)" << std::endl;
+	}
+}
+
+void ScriptComponent::OnDestroy() {
+	std::vector<ScriptComponent*>::iterator it = std::find(scriptsInUse.begin(), scriptsInUse.end(), this);
+
+	if (it != scriptsInUse.end()) {
+		scriptsInUse.erase(it);
+	}
+
+}
 
 void ScriptComponent::Update(const float deltaTime) {
 	std::cout << "Hello from Update " << deltaTime << '\n';
@@ -60,6 +81,7 @@ bool ScriptComponent::OnCreate()
 	
 	return true;
 }
+
 void ScriptService::startActorScripts(Ref<Actor> target) {
 
 	for (auto& comp : target->components) {
@@ -103,6 +125,88 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 	}
 }
 
+void ScriptService::stopActorScripts(Ref<Actor> target)
+{
+	for (auto& comp : target->components) {
+
+		//filter out non scripts, but don't break as we want to check for multiple scripts on an actor
+		if (!std::dynamic_pointer_cast<ScriptComponent>(comp)) continue;
+
+		Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(comp);
+
+		//No point in continuing if its already started
+		script->isCreated = false;
+
+		
+
+		
+	}
+}
+
+void ScriptService::updateAllScripts(float deltaTime) {
+	for (auto& script : scriptsInUse) {
+
+
+		Actor* user = dynamic_cast<Actor*>(script->parent);
+
+		if (user == nullptr) { continue; }
+
+		if (script->isCreated == false) continue;
+
+		if (script->filename.empty()) continue;
+
+		sol::load_result loaded_script = lua.load(script->code);
+
+
+		if (!loaded_script.valid()) {
+
+			sol::error err = loaded_script;
+			std::cerr << "[ERROR] Lua compile error: " << err.what() << std::endl;
+
+			//Disable script by setting isCreated to false
+			script->isCreated = false;
+			continue;
+		}
+		else {
+
+			//Script should be good to run
+			try {
+
+
+				loaded_script();
+
+				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
+				lua["Transform"] = user->GetComponent<TransformComponent>();
+				sol::protected_function update = lua["Update"];
+				if (update.valid()) {
+					auto result = update(deltaTime);
+					if (!result.valid()) {
+						sol::error err = result;
+						std::cerr << "[ERROR] Update failed: " << err.what() << std::endl;
+						script->isCreated = false;
+						continue;
+					}
+				}
+
+			}
+			catch (const sol::error& e) {
+				std::cerr << "[ERROR] Lua runtime error: " << e.what() << std::endl;
+				//Runtime error, so disable script
+				script->isCreated = false;
+
+				//Disable play mode 
+			}
+			catch (...) {
+				std::cerr << "[ERROR] Unknown Lua panic - state corrupted!" << std::endl;
+				script->isCreated = false;
+				// Consider recreating lua state here for safety
+			}
+		}
+
+	}
+}
+
+
 void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 {
 	//Verify the script is a component of the target before calling
@@ -134,9 +238,19 @@ void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 				
 
 				loaded_script();
-				lua["Transform"] = target->GetComponent<TransformComponent>();
-				lua["Update"](deltaTime);
 
+				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
+				lua["Transform"] = target->GetComponent<TransformComponent>();
+				sol::protected_function update = lua["Update"];
+				if (update.valid()) {
+					auto result = update(deltaTime);
+					if (!result.valid()) {
+						sol::error err = result;
+						std::cerr << "[ERROR] Update failed: " << err.what() << std::endl;
+						script->isCreated = false;
+						continue;
+					}
+				}
 
 			}
 			catch (const sol::error& e) {
@@ -145,6 +259,11 @@ void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 				script->isCreated = false;
 
 				//Disable play mode 
+			}
+			catch (...) {
+				std::cerr << "[ERROR] Unknown Lua panic - state corrupted!" << std::endl;
+				script->isCreated = false;
+				// Consider recreating lua state here for safety
 			}
 		}
 
@@ -181,6 +300,35 @@ void ScriptService::loadLibraries()
 
 	);
 
+
+
+	//put overload parametres in the second brackets of the LHS
+	const Vec3(Vec3::*VEC3_UNARY_MINUS)() const = &Vec3::operator-;
+	const Vec3(Vec3::*VEC3_SUBTRACT)(const Vec3&) const = &Vec3::operator-;
+
+	const Vec3(Vec3::*VEC3_MULTIPLY_FLOAT)(const float) const = &Vec3::operator*;
+	//friend functions has to be lambda unfortunately due to not being a member of Vec3
+	const auto FLOAT_MULTIPLY_VEC3 = [](const float s, const Vec3& v) {
+		return v * s;
+	};
+
+
+	const Quaternion(Quaternion::*QUATERNION_UNARY_MINUS)() const = &Quaternion::operator-;
+	const Quaternion(Quaternion::*QUATERNION_SUBTRACT)(const Quaternion) const = &Quaternion::operator-;
+	const Quaternion(Quaternion::* QUATERNION_MULTIPLY_FLOAT)(const float) const = &Quaternion::operator*;
+	const Vec3(Quaternion::* QUATERNION_MULTIPLY_VEC3)(const Vec3&) const = &Quaternion::operator*;
+	//Quaternion h makes this function a friend function which causes issues with this due to changing the function from being a member of quaternion to a member of nothing (non member)
+	//Since we can't use the non-member (friend) function, lets just use a lambda.
+	const auto VEC3_MULTIPLY_QUATERNION = [](const Vec3 v, const Quaternion& q) {
+		Quaternion qv(0.0f, v);
+		Quaternion result = qv * q;
+		return result.ijk;
+		};
+
+
+
+	//const Vec3 v, const Quaternion& q
+	// 
 	//Vec3 Def
 	lua.new_usertype<Vec3>("Vec3",
 		sol::constructors<Vec3(), Vec3(float, float, float)>(),
@@ -197,9 +345,9 @@ void ScriptService::loadLibraries()
 
 		//operators
 		sol::meta_function::addition, &Vec3::operator+,
-		sol::meta_function::unary_minus, [](const Vec3& v) { return -v; },
-		sol::meta_function::subtraction, [](const Vec3& a, const Vec3& b) { return a - b; }, //lua does not know which meta function to use when doing Vec3:operator-, so do a lambda
-		sol::meta_function::multiplication, &Vec3::operator*,
+		sol::meta_function::unary_minus, VEC3_UNARY_MINUS,
+		sol::meta_function::subtraction, VEC3_SUBTRACT, //lua does not know which meta function to use when doing Vec3:operator-, so do a lambda
+		sol::meta_function::multiplication, sol::overload(VEC3_MULTIPLY_FLOAT, FLOAT_MULTIPLY_VEC3, VEC3_MULTIPLY_QUATERNION),
 		sol::meta_function::division, &Vec3::operator/
 
 	);
@@ -218,14 +366,51 @@ void ScriptService::loadLibraries()
 		},
 
 		//operators
-		sol::meta_function::addition, & Quaternion::operator+,
-		sol::meta_function::unary_minus, [](const Quaternion& q) { return -q; },
-		sol::meta_function::subtraction, [](const Quaternion& a, const Quaternion& b) { return a - b; }, 
-		//sol::meta_function::multiplication, [](const Quaternion& a, const Quaternion& b) { return a * b; },
-		sol::meta_function::division, & Quaternion::operator/
+		sol::meta_function::addition, &Quaternion::operator+,
+		sol::meta_function::unary_minus, QUATERNION_UNARY_MINUS,
+		sol::meta_function::subtraction, QUATERNION_SUBTRACT, 
+		sol::meta_function::multiplication, sol::overload(QUATERNION_MULTIPLY_VEC3, QUATERNION_MULTIPLY_FLOAT),
+		sol::meta_function::division, & Quaternion::operator/	
 
 	);
+	lua["QMath"] = sol::new_table();
+	{
+		lua["QMath"]["Conjugate"] = &QMath::conjugate;
+		lua["QMath"]["AngleAxisRotation"] = &QMath::angleAxisRotation;
+		lua["QMath"]["Dot"] = &QMath::dot;
+		lua["QMath"]["Inverse"] = &QMath::inverse;
+		lua["QMath"]["LookAt"] = &QMath::lookAt;
+		lua["QMath"]["Magnitude"] = &QMath::magnitude;
+		lua["QMath"]["Normalize"] = &QMath::normalize;
+		lua["QMath"]["Pow"] = &QMath::pow;
+		lua["QMath"]["Rotate"] = &QMath::rotate;
+		lua["QMath"]["Slerp"] = &QMath::slerp;
+	}
 
+	//I didn't add implimentation for Vec2 or Vec4, I only did Vec3
+	lua["VMath"] = sol::new_table();
+	{
+
+		lua["VMath"]["Lerp"] = &VMath::lerp;
+		lua["VMath"]["Distance"] = &VMath::distance;
+		lua["VMath"]["Reflect"] = &VMath::reflect;
+		lua["VMath"]["Rotate"] = &VMath::rotate;
+
+
+		//same as quat and vec3, except that because its static, remove the namespace in (Vec3::*VEC3_Cross)
+		const Vec3(*VEC3_CROSS)(const Vec3&, const Vec3&) = &VMath::cross;
+		lua["VMath"]["Cross"] = VEC3_CROSS;
+
+		float(*VEC3_DOT)(const Vec3&, const Vec3&) = &VMath::dot;
+		lua["VMath"]["Dot"] = VEC3_DOT;
+
+		float(*VEC3_MAG)(const Vec3&) = &VMath::mag;
+		lua["VMath"]["Magnitude"] = VEC3_MAG;
+
+		Vec3(*VEC3_NORMALIZE)(const Vec3&) = &VMath::normalize;
+		lua["VMath"]["Normalize"] = VEC3_NORMALIZE;
+
+	}
 
 
 }

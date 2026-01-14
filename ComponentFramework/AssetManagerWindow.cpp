@@ -258,14 +258,13 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 
 
 	// disable background for buttons
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// TODO: better thumbnails for meshes and shaders
 	if (mesh) {
-		// using a color button but disabling all of its functionalilty, just want to differentiate between assets
-		ImGui::ColorButton("##MeshAssetBtn", meshColor, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, buttonSize);
+		ImGui::ImageButton("##MeshDiffuseBtn", ImTextureID(EditorManager::getInstance().getEditorIcons().meshIcon->getDiffuseID()), buttonSize);
 		payloadType = "MESH_ASSET";
 	}
 	else if (material) {
@@ -273,7 +272,7 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 		payloadType = "MATERIAL_ASSET";
 	}
 	else if (shader) {
-		ImGui::ColorButton("##ShaderAssetBtn", shaderColor, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, buttonSize);
+		ImGui::ImageButton("##ShaderDiffuseBtn", ImTextureID(EditorManager::getInstance().getEditorIcons().shaderIcon->getDiffuseID()), buttonSize);
 		payloadType = "SHADER_ASSET";
 	}
 	//TODO: if there are more components that need to go into the assetmanager later add them here

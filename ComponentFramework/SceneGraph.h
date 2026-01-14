@@ -97,6 +97,7 @@ public:
 		createDockingFBO(w, h);
 
 		pickerShader->OnCreate();
+		ScriptService::loadLibraries();
 
 
 
@@ -260,6 +261,8 @@ public:
 	}
 
 	void Start();
+
+	void Stop();
 
 	// 
 	bool RenameActor(const std::string& oldName_, const std::string& newName_) {
@@ -459,8 +462,8 @@ public:
 		//	std::cout << usedCamera << std::endl;
 
 
-		ScriptService::callActorScripts(GetActor("Cube"), deltaTime);
-
+		//ScriptService::callActorScripts(GetActor("Cube"), deltaTime);
+		ScriptService::updateAllScripts(deltaTime);
 
 		for (auto& pair : Actors) {
 

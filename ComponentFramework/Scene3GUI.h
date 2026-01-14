@@ -13,6 +13,7 @@
 #include "CollisionSystem.h"
 
 #include "AssetManager.h"
+#include "AudioManager.h"
 
 using namespace MATH;
 
@@ -33,6 +34,7 @@ public:
 	virtual void Render() const override;
 	virtual void HandleEvents(const SDL_Event &sdlEvent) override;
 
+	ISound* marioSFX;
 };
 
 

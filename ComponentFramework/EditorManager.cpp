@@ -1,6 +1,16 @@
 #include "EditorManager.h"
 #include "ImGuizmo.h"
 
+void EditorManager::CreateEditorIcons()
+{
+	editorIcons.playIcon->OnCreate();
+	editorIcons.pauseIcon->OnCreate();
+	editorIcons.stopIcon->OnCreate();
+	editorIcons.stepIcon->OnCreate();
+	editorIcons.meshIcon->OnCreate();
+	editorIcons.shaderIcon->OnCreate();
+}
+
 bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, SceneGraph* sceneGraph_) {
 	if (imguiInit) {
 		Debug::Warning("EditorManager already initialized!", __FILE__, __LINE__);
@@ -30,7 +40,8 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 		inspectorWindow = std::make_unique<InspectorWindow>(sceneGraph);
 		assetManagerWindow = std::make_unique<AssetManagerWindow>(sceneGraph);
 		sceneWindow = std::make_unique<SceneWindow>(sceneGraph);
-		memoryWindow = std::make_unique<MemoryManagerWindow>(sceneGraph);
+	
+		CreateEditorIcons();
 	}
 
 	// register default windows (leaving demo window commented out for now)
@@ -51,7 +62,6 @@ void EditorManager::Shutdown() {
 	inspectorWindow.reset();
 	assetManagerWindow.reset();
 	sceneWindow.reset();
-	memoryWindow.reset();
 
 	windowStates.clear();
 
@@ -105,9 +115,72 @@ void EditorManager::RenderEditorUI() {
 
 	// Create the dockspace
 	ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
+
+	ImVec2 buttonSize = ImVec2(32, 32);
+	float width = ImGui::GetWindowSize().x;
+	float centreButtonPos = (width - buttonSize.x) / 2;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 0.0f });
+
+	ImGui::SetCursorPosX(centreButtonPos);
+
+	// background color 0.102f
+
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.314f, 0.314f, 0.314f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.467f, 0.467f, 0.467f, 1.0f));
+
+	if (isEditMode()) {
+		if (ImGui::ImageButton("##PlayButton", ImTextureID(editorIcons.playIcon->getDiffuseID()), buttonSize)) {
+			SetEditorMode(EditorMode::Play);
+
+			sceneGraph->Start();
+			Ref<Actor> camera = sceneGraph->GetActor("CamTest");
+			sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
+		}
+	}
+	else if (isPlayMode() || isPaused()) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.298f, 0.373f, 0.471f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
+		if (ImGui::ImageButton("##StopButton", ImTextureID(editorIcons.stopIcon->getDiffuseID()), buttonSize)) {
+			SetEditorMode(EditorMode::Edit);
+			sceneGraph->Stop();
+
+			sceneGraph->useDebugCamera();
+		}
+
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+	}
+	
+	ImGui::SameLine();
+	
+	ImGui::ImageButton("##PauseButton", ImTextureID(editorIcons.pauseIcon->getDiffuseID()), buttonSize);
+	
+	ImGui::SameLine();
+
+	if (isEditMode() || isPlayMode()) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
+
+		ImGui::ImageButton("##StepButton", ImTextureID(editorIcons.stepIcon->getDiffuseID()), buttonSize);
+
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+	}
+
+	ImGui::PopStyleVar();
+
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 	ImGui::End();
-
 
 	// render all the windows and dialogs
 	RenderMainMenuBar();
@@ -127,9 +200,6 @@ void EditorManager::RenderEditorUI() {
 	}
 	if (IsWindowOpen("Scene") && sceneWindow) {
 		sceneWindow->ShowSceneWindow(GetWindowStatePtr("Scene"));
-	}
-	if (IsWindowOpen("Memory") && memoryWindow) {
-		memoryWindow->ShowMemoryManagerWindow(GetWindowStatePtr("Memory"));
 	}
 
 	ShowSaveDialog();
@@ -275,13 +345,11 @@ void EditorManager::RenderMainMenuBar() {
 			ImGui::MenuItem("Inspector", nullptr, GetWindowStatePtr("Inspector"));
 			ImGui::MenuItem("Asset Manager", nullptr, GetWindowStatePtr("AssetManager"));
 			ImGui::MenuItem("Scene", nullptr, GetWindowStatePtr("Scene"));
-			ImGui::MenuItem("Memory Manager", nullptr, GetWindowStatePtr("Memory"));
-
 			ImGui::EndMenu();
 		}
 
-		ImGui::EndMainMenuBar();
 	}
+	ImGui::EndMainMenuBar();
 }
 
 void EditorManager::RequestActorRename(const std::string& oldName_, const std::string& newName_) {

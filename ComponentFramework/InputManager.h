@@ -480,6 +480,169 @@ public:
 
 };
 
+class gamepadInputMap {
+private:
+	SDL_GameController* controller;
+	
+	// finds a controller connected (controller has to be connected before running the engine)
+	SDL_GameController* findController() {
+		for (int i = 0; i < SDL_NumJoysticks(); i++) {
+			if (SDL_IsGameController(i)) {
+				return SDL_GameControllerOpen(i);
+			}
+		}
+
+		return nullptr;
+	}
+
+	// joystick states
+	float leftStickX = 0.0f;
+	float leftStickY = 0.0f;
+	// button states
+	bool leftShoulderPressed = false;
+	bool rightShoulderPressed = false;
+
+	// deadzone for joystick
+	const float deadzone = 0.2f;
+
+	float applyDeadzone(float value) {
+		if (std::abs(value) < deadzone) {
+			return 0.0f;
+		}
+
+		// flip sign
+		float sign = (value > 0) ? 1.0f : -1.0f;
+		return sign * ((std::abs(value) - deadzone) / (1.0f - deadzone));
+	}
+
+public: 
+	gamepadInputMap() {
+		controller = findController();
+		if (!controller) {
+			std::cout << "No controller found." << std::endl;
+		}
+	}
+	
+	~gamepadInputMap() {
+		if (controller) {
+			SDL_GameControllerClose(controller);
+			controller = nullptr;
+		}
+	}
+	
+	// checks if controller is currently connected
+	bool isConnected() const {
+		return controller != nullptr && SDL_GameControllerGetAttached(controller);
+	}
+
+	void HandleEvents(const SDL_Event& event) {
+		switch (event.type) {
+		// controller plugged in after engine runs
+		case SDL_CONTROLLERDEVICEADDED:
+			if (!controller) {
+				controller = SDL_GameControllerOpen(event.cdevice.which);
+				
+				if (controller) {
+					std::cout << "Controller connected: " << SDL_GameControllerName(controller) << std::endl;
+				}
+			}
+			break;
+
+		// controller removed after engine runs
+		case SDL_CONTROLLERDEVICEREMOVED:
+			if (controller && event.cdevice.which == SDL_JoystickInstanceID(
+				SDL_GameControllerGetJoystick(controller))) {
+				SDL_GameControllerClose(controller);
+				controller = findController();
+
+				// resetting button states
+				leftStickX = 0.0f;
+				leftStickY = 0.0f;
+				leftShoulderPressed = false;
+				rightShoulderPressed = false;
+
+			}
+			break;
+
+		// button presses
+		case SDL_CONTROLLERBUTTONDOWN:
+			if (isConnected()) {
+				if (event.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+					leftShoulderPressed = true;
+				}
+				else if (event.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+					rightShoulderPressed = true;
+				}
+			}
+			break;
+
+		case SDL_CONTROLLERBUTTONUP:
+			if (isConnected()) {
+				if (event.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+					leftShoulderPressed = false;
+				}
+				else if (event.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+					rightShoulderPressed = false;
+				}
+			}
+			break;
+			
+		// joystick
+		case SDL_CONTROLLERAXISMOTION:
+			if (isConnected()) {
+				HandleAxisMotion(event.caxis.axis, event.caxis.value);
+			}
+			break;
+		}
+	}
+	
+	// for joystick movement
+	void HandleAxisMotion(Uint8 axis, Sint16 value) {
+		// sdl returns values from -32768 to 32767, so gotta normalize
+		float normValue = value / 32767.0f;
+
+		switch (axis) {
+		case SDL_CONTROLLER_AXIS_LEFTX:
+			leftStickX = applyDeadzone(normValue);
+			break;
+		case SDL_CONTROLLER_AXIS_LEFTY:
+			leftStickY = applyDeadzone(normValue);
+			break;
+		}
+	}
+
+	void Update(float deltaTime, SceneGraph* sceneGraph_) {
+		if (!isConnected()) return;
+		if (sceneGraph_->debugSelectedAssets.empty()) return;
+
+		// function will move a selected actor based on joystick movement and shoulder button input
+		// move values are holders for the actual inputs
+		float moveX = leftStickX;
+		float moveY = leftStickY;
+		float moveZ = 0.0f;
+
+		if (rightShoulderPressed) moveZ = 1.0f;
+		if (leftShoulderPressed) moveZ = -1.0f;
+		
+		// making sure there is input
+		if (std::abs(moveX) > 0.01f || std::abs(moveY) > 0.01f || std::abs(moveZ) > 0.01f) {
+			float moveSpeed = 15.0f * deltaTime;
+
+			// moving transform based on controller inputs
+			for (const auto& actor : sceneGraph_->debugSelectedAssets) {
+				Ref<TransformComponent> transform = actor.second->GetComponent<TransformComponent>();
+				
+				if (transform) {
+					Vec3 currentPos = transform->GetPosition();
+
+					// have to flip y because of SDL
+					transform->SetPos(currentPos.x + (moveX * moveSpeed), currentPos.y + (-moveY * moveSpeed), currentPos.z + (moveZ * moveSpeed));
+				}
+			}
+		}
+	}
+};
+
 class InputManager
 {
 private:
@@ -526,7 +689,7 @@ private:
 
 	keyboardInputMap keyboard;
 	mouseInputMap mouse;
-
+	gamepadInputMap gamepad;
 
 
 	float studMultiplier = 0.5f;
@@ -561,6 +724,8 @@ public:
 		//update keyboard object
 		keyboard.update(deltaTime);
 		
+		gamepad.Update(deltaTime, sceneGraph);
+
 		//Check which scene debug vs playing
 		if (true) { //temp set to always true until we can define debug vs playable scenes
 
@@ -753,7 +918,7 @@ public:
 
 		mouse.HandleEvents(sdlEvent, sceneGraph);
 
-		
+		gamepad.HandleEvents(sdlEvent);
 	}
 
 

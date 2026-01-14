@@ -61,6 +61,9 @@ class ScriptService {
 private:
 	static void callActorScripts(Ref<Actor> target, float deltaTime);
 	static void startActorScripts(Ref<Actor> target);
+	static void stopActorScripts(Ref<Actor> target);
+
+	static void updateAllScripts(float deltaTime);
 
 public:
 

@@ -16,11 +16,19 @@ void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
 
 void SceneGraph::Start()
 {
-	ScriptService::loadLibraries();
 	for (auto& actor : Actors) {
 		ScriptService::startActorScripts(actor.second);
 	}
 }
+
+
+void SceneGraph::Stop()
+{
+	for (auto& actor : Actors) {
+		ScriptService::stopActorScripts(actor.second);
+	}
+}
+
 
 void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 	
