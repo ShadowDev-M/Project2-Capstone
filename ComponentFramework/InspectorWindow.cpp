@@ -373,7 +373,7 @@ void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, 
 
 		ImGui::Text("Scale");
 		ImGui::SameLine();
-		if (ImGui::Checkbox("##Lock", &scaleLock));
+		/*if*/ (ImGui::Checkbox("##Lock", &scaleLock));
 		ImGui::SameLine();
 
 		bool scaleChanged = false;
@@ -586,7 +586,7 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 		//else {
 			if (ImGui::SliderInt("##fovslider", &fovInt, 0, 120, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 				for (auto& component : cameraState.components) {
-					component->setFOV(fovInt);
+					component->setFOV((float)fovInt);
 				}
 			}
 		//}

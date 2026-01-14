@@ -240,7 +240,7 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 
 void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Component> asset)
 {
-	const ImVec2 buttonSize(thumbnailSize, thumbnailSize);
+	const ImVec2 buttonSize((float)thumbnailSize, (float)thumbnailSize);
 
 	const char* payloadType = "";
 

@@ -229,6 +229,40 @@ XMLElement* XMLObjectFile::writeActorRecursive(Actor* actor_, XMLElement* root_)
 
 
 
+bool SceneGraph::RenameActor(const std::string& oldName_, const std::string& newName_)
+{
+    if (oldName_ == newName_) return true;
+    if (newName_.empty()) {
+        Debug::Warning("Cannot rename actor to empty name", __FILE__, __LINE__);
+        return false;
+    }
+
+    // check if new name is already taken
+    auto nameIt = ActorNameToId.find(newName_);
+    if (nameIt != ActorNameToId.end()) {
+        Debug::Warning("An actor named: " + newName_ + " already exists", __FILE__, __LINE__);
+        return false;
+    }
+
+    // find the actor by old name
+    auto oldNameIt = ActorNameToId.find(oldName_);
+    if (oldNameIt == ActorNameToId.end()) {
+        Debug::Error("Cannot find actor named: " + oldName_, __FILE__, __LINE__);
+        return false;
+    }
+
+    uint32_t actorId = oldNameIt->second;
+    Ref<Actor> actor = Actors[actorId];
+
+    // update the actor's internal name
+    actor->setActorName(newName_);
+
+    // update the name lookup map
+    UpdateActorNameMap(actorId, oldName_, newName_);
+
+    return true;
+}
+
 void SceneGraph::SaveFile(std::string name) const {
     XMLObjectFile::writeCellFile(name);
 

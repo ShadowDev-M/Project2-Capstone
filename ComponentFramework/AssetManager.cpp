@@ -5,7 +5,7 @@
 bool AssetManager::OnCreate() {
 	std::cout << "Initialzing all assets: " << std::endl;
 
-    if (std::filesystem::create_directory("Asset Manager"));
+    /*if*/ (std::filesystem::create_directory("Asset Manager")) ;
 
     // load all the assets from the asset database
     LoadAssetDatabaseXML();

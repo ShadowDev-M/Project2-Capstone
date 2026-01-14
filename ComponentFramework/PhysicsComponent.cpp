@@ -38,6 +38,7 @@ bool PhysicsComponent::OnCreate()
 	//}
 	if (isCreated == true) return true;
 	
+	return false;
 }
 
 void PhysicsComponent::OnDestroy()

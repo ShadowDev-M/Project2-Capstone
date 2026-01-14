@@ -147,7 +147,7 @@ private:
 	SceneGraph* sceneGraph;
 
 	// thumbnail size, assetmanager also has this, possibly find a way to make it so they share the same thing incase I edit
-	const int thumbnailSize = 64;
+	const float thumbnailSize = 64;
 
 	bool scaleLock = false;
 

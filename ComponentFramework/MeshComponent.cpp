@@ -13,7 +13,7 @@ bool MeshComponent::OnCreate() {
     if (isCreated == true) return true;
 	LoadModel(filename.c_str());
     StoreMeshData(GL_TRIANGLES);
-    isCreated == true;
+    //isCreated == true;
     return true;
 }
 

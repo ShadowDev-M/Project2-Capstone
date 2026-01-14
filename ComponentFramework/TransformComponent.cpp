@@ -20,7 +20,7 @@ TransformComponent::~TransformComponent() {}
 
 bool TransformComponent::OnCreate() {
 	if (isCreated == true) return true;
-	isCreated == true;
+	//isCreated == true;
 	return true;
 }
 

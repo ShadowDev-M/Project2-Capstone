@@ -2,7 +2,8 @@
 #include <vector>
 #include <Matrix.h>
 #include <iostream>
-#include "Raycast.h"
+//#include "Raycast.h"
+
 #include "Component.h"
 // transformcomponent
 using namespace MATH;

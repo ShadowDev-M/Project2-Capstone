@@ -250,6 +250,7 @@ bool getClickInteraction() {
     if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
         return true;
     }
+    return false;
 }
 
 template<typename ComponentTemplate>
