@@ -33,9 +33,9 @@ bool Scene3GUI::OnCreate() {
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
 	
-	SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(SceneGraph::getInstance().GetActor("Cube").get(), "testScript.lua");
+	//SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(SceneGraph::getInstance().GetActor("Cube").get(), "testScript.lua");
 
-	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
+//	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
 	
 	//AudioManager::getInstance().Initialize();
 	//marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);

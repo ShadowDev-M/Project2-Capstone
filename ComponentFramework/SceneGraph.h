@@ -13,7 +13,7 @@
 #include "CameraComponent.h"
 #include "LightComponent.h"
 #include "ScriptComponent.h"
-
+#include "ScriptAbstract.h"
 #include "Raycast.h"
 
 class SceneGraph

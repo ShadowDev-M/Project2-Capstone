@@ -13,12 +13,13 @@ static sol::state lua;
 
 //should be called before any lua scripts are added
 
+class ScriptAbstract;
 
 class ScriptComponent : public Component {
 	//Make SceneGraph friend class to allow SceneGraph to authorize/deauthorize an actor's usage of a script by adding/removing it to users
 	//Also you could remove it if you wanted to disable it 
 	friend class ScriptService;
-
+	friend class InspectorWindow;
 
 	ScriptComponent(const ScriptComponent&) = delete;
 	ScriptComponent(ScriptComponent&&) = delete;
@@ -37,6 +38,8 @@ class ScriptComponent : public Component {
 
 	//Only SceneGraph/AssetManager should call update (friend class)
 	void Update(const float deltaTime_);
+
+	void setFilenameFromAbstract(Ref<ScriptAbstract> baseScript);
 
 public:
 	ScriptComponent(Component* parent, const char* filename);

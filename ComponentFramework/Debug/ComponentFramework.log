@@ -1,10 +1,4 @@
-﻿  MeshComponent.cpp
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\tiny_obj_loader.h(1665,27): warning C4018: '<': signed/unsigned mismatch
-  (compiling source file 'MeshComponent.cpp')
-  
-  PhysicsComponent.cpp
-  TransformComponent.cpp
-  Generating Code...
+﻿  SceneGraph.cpp
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

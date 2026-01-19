@@ -24,7 +24,18 @@ private:
 			for (const auto& pair : selectedActors_) {
 				auto component = pair.second->GetComponent<ComponentTemplate>();
 				if (component) {
-					components.push_back(component);
+					if constexpr (std::is_same_v<ComponentTemplate, ScriptComponent>) {
+
+						//duplicate copies vector if scriptcomponent. If you want to add more components just change the if condition.
+						std::vector<Ref<ComponentTemplate>> componentsToPush = pair.second->GetAllComponent<ComponentTemplate>();
+						for (auto& obj : componentsToPush) {
+							components.push_back(obj);
+						}
+					}
+					else {
+						components.push_back(component);
+					}
+					//if (pair.second->get)
 				}
 			}
 

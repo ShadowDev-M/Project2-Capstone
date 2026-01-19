@@ -83,32 +83,32 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				ImGui::Separator();
 
 				if (ImGui::Selectable("Mesh Component")) {
-					if (!selectedActor->second->GetComponent<MeshComponent>()) {
+				//	if (!selectedActor->second->GetComponent<MeshComponent>()) {
 						selectedActor->second->AddComponent<MeshComponent>(nullptr, "");
-					}
+				//	}
 				}
 
 				if (ImGui::Selectable("Material Component")) {
-					if (!selectedActor->second->GetComponent<MaterialComponent>()) {
+				//	if (!selectedActor->second->GetComponent<MaterialComponent>()) {
 						selectedActor->second->AddComponent<MaterialComponent>(nullptr, "", "");
-					}
+				//	}
 				}
 
 				if (ImGui::Selectable("Shader Component")) {
-					if (!selectedActor->second->GetComponent<ShaderComponent>()) {
+				//	if (!selectedActor->second->GetComponent<ShaderComponent>()) {
 						selectedActor->second->AddComponent<ShaderComponent>(nullptr, "", "");
-					}
+				//	}
 				}
 
 				if (ImGui::Selectable("Camera Component")) {
-					if (!selectedActor->second->GetComponent<CameraComponent>()) {
+					//if (!selectedActor->second->GetComponent<CameraComponent>()) {
 						selectedActor->second->AddComponent<CameraComponent>(selectedActor->second, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-					}
+					//}
 				}
 				if (ImGui::Selectable("Script Component")) {
-					if (!selectedActor->second->GetComponent<ScriptComponent>()) {
-						selectedActor->second->AddComponent<ScriptComponent>(nullptr, "");
-					}
+				//	if (!selectedActor->second->GetComponent<ScriptComponent>()) {
+						selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get(), "");
+					//}
 				}
 				if (ImGui::Selectable("Light Component")) {
 					if (!selectedActor->second->GetComponent<LightComponent>()) {
@@ -618,50 +618,48 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 	ComponentState<ScriptComponent> scriptState(selectedActors_);
 
 	if (scriptState.noneHaveComponent) return;
+	
+	int id = 0;
 
-	if (ImGui::CollapsingHeader("Script"), ImGuiTreeNodeFlags_DefaultOpen) {
-		RightClickContext<ScriptComponent>("##ScriptPopup", sceneGraph->debugSelectedAssets);
+	if (selectedActors_.size() == 1) {
 
-		if (scriptState.allHaveComponent && scriptState.Count() == 1) {
-			Ref<ScriptComponent> script = scriptState.GetFirst();
+		for (auto& script : selectedActors_.begin()->second->GetAllComponent<ScriptComponent>()) {
 
-			ImGui::TextWrapped("Script Name: %s", script->getName().c_str());
+			
 
-			ImGui::TextWrapped("Script Path: %s", script->getPath().c_str());
-		}
-		else if (scriptState.allHaveComponent) {
-			ImGui::TextWrapped("All Selected Actors Have a ScriptComponent");
-		}
-		else if (scriptState.someHaveComponent) {
-			ImGui::TextWrapped("Some Selected Actors Have a ScriptComponent");
-		}
+			ImGui::PushID(id);
+			id++;
 
-		ImGui::Button("Drop New Script Here", ImVec2(-1, 0));
-		if (ImGui::BeginDragDropTarget()) {
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCRIPT_ASSET");
-			if (payload) {
-				// store the payload data
-				const char* droppedAssetName = static_cast<const char*>(payload->Data);
+			if (ImGui::CollapsingHeader("Script"), ImGuiTreeNodeFlags_DefaultOpen) {
+				RightClickContext<ScriptComponent>("##ScriptPopup", sceneGraph->debugSelectedAssets);
 
-				// get a reference to the asset that has been dropped
-				Ref<ScriptComponent> newScript = AssetManager::getInstance().GetAsset<ScriptComponent>(droppedAssetName);
+				ImGui::TextWrapped("Script Name: %s", script->getName().c_str());
 
-				// get the actor
-				if (newScript) {
-					for (auto& component : scriptState.components) {
-						for (const auto& pair : selectedActors_) {
-							// replace the actors shader
-							if (pair.second->GetComponent<ScriptComponent>() == component) {
-								pair.second->ReplaceComponent<ScriptComponent>(newScript);
-							}
-						}
+				ImGui::TextWrapped("Script Path: %s", script->getPath().c_str());
+			
+
+				ImGui::Button("Drop New Script Here", ImVec2(-1, 0));
+				if (ImGui::BeginDragDropTarget()) {
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCRIPT_ASSET");
+					if (payload) {
+						// store the payload data
+						const char* droppedAssetName = static_cast<const char*>(payload->Data);
+
+						// get a reference to the asset that has been dropped
+						//ScriptAbstract is the asset in assetmanager that has the name, the actors have the component
+						Ref<ScriptAbstract> newScript = AssetManager::getInstance().GetAsset<ScriptAbstract>(droppedAssetName);
+
+						
+						script->setFilenameFromAbstract(newScript);
 					}
+					ImGui::EndDragDropTarget();
 				}
 			}
-			ImGui::EndDragDropTarget();
+			ImGui::Separator();
+
+			ImGui::PopID(); // Pop the ID from the stack
 		}
 	}
-	ImGui::Separator();
 }
 
 void InspectorWindow::DrawLightComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)

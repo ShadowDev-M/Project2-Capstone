@@ -100,7 +100,7 @@ void AssetManagerWindow::ShowAddAssetDialog()
 		
 		// in the popup, pick the type of asset you want to add (using a simple combo here for selection)
 		ImGui::Text("Asset Type:");
-		const char* assetTypes[] = { "MeshComponent", "MaterialComponent", "ShaderComponent" };
+		const char* assetTypes[] = { "MeshComponent", "MaterialComponent", "ShaderComponent", "ScriptAbstract"};
 		ImGui::Combo("##AssetType", &selectedAssetType, assetTypes, IM_ARRAYSIZE(assetTypes));
 
 		ImGui::Separator();
@@ -128,13 +128,17 @@ void AssetManagerWindow::ShowAddAssetDialog()
 		else if (selectedAssetType == 2) {
 			ImGui::Text("Vertex Shader:");
 			ImGui::InputText("##VertexPath", &newVertShaderPath);
-			
 			ImGui::Text("Fragment Shader:");
 			ImGui::InputText("##FragmentPath", &newFragShaderPath);
 			
 			ImGui::TextWrapped("Example: shaders/Shader.vert & .frag");
 
 			//TODO: rest of the shader types
+		}
+		else if (selectedAssetType == 3) {
+			ImGui::Text("Script:");
+			ImGui::InputText("##ScriptPath", &newScriptPath);
+
 		}
 		
 		ImGui::Separator();
@@ -150,7 +154,9 @@ void AssetManagerWindow::ShowAddAssetDialog()
 		else if (selectedAssetType == 2) {
 			canAdd = canAdd && !newVertShaderPath.empty() && !newFragShaderPath.empty();
 		}
-
+		else if (selectedAssetType == 3) {
+			canAdd = canAdd && !newScriptPath.empty();
+		}
 		// disables button if empty
 		if (!canAdd) {
 			ImGui::BeginDisabled();
@@ -190,6 +196,7 @@ void AssetManagerWindow::ResetInput()
 	newSpecularMapPath.clear();
 	newVertShaderPath.clear();
 	newFragShaderPath.clear();
+	newScriptPath.clear();
 	selectedAssetType = 0;
 	ImGui::CloseCurrentPopup();
 }
@@ -219,6 +226,11 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 		case 2: // Shader Component
 			success = AssetManager::getInstance().LoadAsset<ShaderComponent>(
 				newAssetName, nullptr, newVertShaderPath.c_str(), newFragShaderPath.c_str());
+			break;
+
+		case 3: // Script Component
+			success = AssetManager::getInstance().LoadAsset<ScriptAbstract>(
+				newAssetName, nullptr, newScriptPath.c_str());
 			break;
 
 		default:
@@ -255,6 +267,7 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 	auto mesh = std::dynamic_pointer_cast<MeshComponent>(asset);
 	auto material = std::dynamic_pointer_cast<MaterialComponent>(asset);
 	auto shader = std::dynamic_pointer_cast<ShaderComponent>(asset);
+	auto script = std::dynamic_pointer_cast<ScriptAbstract>(asset);
 
 
 	// disable background for buttons
@@ -275,6 +288,10 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 		ImGui::ImageButton("##ShaderDiffuseBtn", ImTextureID(EditorManager::getInstance().getEditorIcons().shaderIcon->getDiffuseID()), buttonSize);
 		payloadType = "SHADER_ASSET";
 	}
+	else if (script) {
+		ImGui::ImageButton("##ScriptDiffuseBtn", ImTextureID(EditorManager::getInstance().getEditorIcons().shaderIcon->getDiffuseID()), buttonSize);
+		payloadType = "SCRIPT_ASSET";
+	}
 	//TODO: if there are more components that need to go into the assetmanager later add them here
 
 	// pop
@@ -294,6 +311,10 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 			}
 			else if (shader) {
 				AssetManager::getInstance().RemoveAsset<ShaderComponent>(assetName);
+			}
+			else if (script) {
+				AssetManager::getInstance().RemoveAsset<ScriptAbstract>(assetName);
+
 			}
 			// TODO if removing an asset that an actor is using, replace with a temporary asset so program doesn't crash
 		}
@@ -337,6 +358,10 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 			ImGui::Text("Shader Program ID: %u", shader->GetProgram());
 			ImGui::Text("Shader Vert: %s", shader->GetVertName());
 			ImGui::Text("Shader Frag: %s", shader->GetFragName());
+		}
+		if (script) {
+			ImGui::Text("Script Name: %s", script->getName());
+
 		}
 
 		ImGui::EndTooltip();

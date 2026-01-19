@@ -200,6 +200,12 @@
     <ClInclude Include="MemoryWindow.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptAbstract.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -317,6 +323,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoryWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptAbstract.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -7,6 +7,7 @@
 #include <map>
 #include "Debug.h"
 
+#include "ScriptAbstract.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "ShaderComponent.h"

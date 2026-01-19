@@ -32,6 +32,8 @@ private:
 	std::string newSpecularMapPath = "";
 	std::string newVertShaderPath = "";
 	std::string newFragShaderPath = "";
+	std::string newScriptPath = "";
+
 	int selectedAssetType = 0; // 0 = Mesh, 1 = Material, 2 = Shader, etc
 
 	//

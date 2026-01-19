@@ -97,7 +97,7 @@ public:
 	void AddComponent(Args&& ... args_) {
 		/// before you add the component ask if you have the component in the list already,
 		/// if so - don't add a second one (With script component as the exception)
-		if (GetComponent<ComponentTemplate>().get() != nullptr && (typeid(ComponentTemplate).name() != "ScriptComponent")) {
+		if (GetComponent<ComponentTemplate>().get() && static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) != "ScriptComponent") {
 #ifdef _DEBUG
 			std::cerr << "WARNING: Trying to add a component type that is already added - ignored\n";
 #endif
@@ -127,6 +127,21 @@ public:
 			}
 		}
 		return Ref<ComponentTemplate>(nullptr);
+	}
+
+	template<typename ComponentTemplate>
+	std::vector<Ref<ComponentTemplate>> GetAllComponent() const {
+		std::vector<Ref<ComponentTemplate>> componentListReturn;
+
+		for (auto& component : components) {
+			if (dynamic_cast<ComponentTemplate*>(component.get())) {
+				/// This is a dynamic cast designed for shared_ptr's
+				/// https://en.cppreference.com/w/cpp/memory/shared_ptr/pointer_cast
+				componentListReturn.push_back(std::dynamic_pointer_cast<ComponentTemplate>(component));
+			}
+		}
+		return componentListReturn;
+
 	}
 
 	bool ValidateLight();

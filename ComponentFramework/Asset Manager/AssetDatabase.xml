@@ -20,6 +20,12 @@
         <Asset name="SM_Hammer" filepath="meshes/Hammer.obj"/>
         <Asset name="SM_Skull" filepath="meshes/Skull.obj"/>
     </MeshComponent>
+    <ScriptAbstract>
+        <Asset name="script1" scriptName="testScript.lua"/>
+        <Asset name="Test" scriptName="testScript.lua"/>
+        <Asset name="eretwrgw" scriptName="testScript.lua"/>
+        <Asset name="et4y4ewf" scriptName="testScript.lua"/>
+    </ScriptAbstract>
     <ShaderComponent>
         <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
         <Asset name="S_Multi" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>

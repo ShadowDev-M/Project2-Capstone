@@ -2,12 +2,14 @@
 #include <filesystem>
 #include <fstream>
 #include "SceneGraph.h"
+#include "ScriptAbstract.h"
 
 static std::vector<ScriptComponent*> scriptsInUse;
 
 ScriptComponent::ScriptComponent(Component* parent_, const char* filename_) :
 	Component(parent_), filename(filename_) {
-	scriptsInUse.push_back(this);
+
+	if (filename_) scriptsInUse.push_back(this);
 }
 
 ScriptComponent::~ScriptComponent() {
@@ -33,6 +35,25 @@ void ScriptComponent::OnDestroy() {
 
 void ScriptComponent::Update(const float deltaTime) {
 	std::cout << "Hello from Update " << deltaTime << '\n';
+}
+
+///sets the filename to the name stored by a ScriptAbstract dropped from AssetManager onto a Actor's component in InspectorWindow. (Friend class inspectorwindow()
+void ScriptComponent::setFilenameFromAbstract(Ref<ScriptAbstract> baseScript)
+{
+	filename = baseScript->getName();
+	load_lua_file();
+
+	std::vector<ScriptComponent*>::iterator it = std::find(scriptsInUse.begin(), scriptsInUse.end(), this);
+
+	if (it != scriptsInUse.end()) {
+		//script is in already
+	}
+	else {
+		//script is not considered valid, add to list of valid
+		scriptsInUse.push_back(this);
+
+	}
+
 }
 
 
@@ -92,15 +113,25 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 		Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(comp);
 
 		//No point in continuing if its already started
+		Actor* user = dynamic_cast<Actor*>(script->parent);
+
 		if (script->isCreated == true) continue;
 
 		
+
+
 		sol::load_result loaded_script = lua.load(script->code);
 
 		//Check runtime vs compiler errors, (Not writing anything just a check)
 		if (!loaded_script.valid()) {
 			sol::error err = loaded_script;
 			std::cerr << "[ERROR] Lua compile error: " << err.what() << std::endl;
+			script->isCreated = false;
+			continue;
+		}
+		else if (!user) {
+
+			std::cerr << "[ERROR] Lua compile error: " << script.get() << " has no user!" << std::endl;
 			script->isCreated = false;
 			continue;
 		}

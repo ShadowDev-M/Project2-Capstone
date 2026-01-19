@@ -5,6 +5,8 @@
 
 SceneGraph::SceneGraph()
 {
+
+
 	int w, h;
 
 	w = SCENEWIDTH;
@@ -721,6 +723,8 @@ void SceneGraph::Render() const
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
 		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
+
+		if (!shader || !mesh || !material) { continue; }
 
 		glUniformMatrix4fv(shader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
 		glUniformMatrix4fv(shader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
