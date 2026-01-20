@@ -8,7 +8,7 @@
 #include "TransformComponent.h"  
 #include "CameraComponent.h"  
 #include "LightComponent.h"  
-
+#include "ScriptComponent.h"
 #include "SceneGraph.h"
 
 
@@ -371,7 +371,7 @@ public:
 
 
     template<typename ComponentTemplate>
-    static auto getComponent(std::string name) {
+    static auto getComponent(std::string name, int copy = 0) {
 
         /*
 
@@ -483,16 +483,26 @@ public:
             return args;
 
         }
-        else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent>) {
+        else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent> || std::is_same_v<ComponentTemplate, ScriptComponent>) {
 
             AssetManager& assetMgr = AssetManager::getInstance();
             
-
-            
-                
+            if (copy > 0) {
+                //when you want a different copy, find that
+                if (cRoot->ChildElementCount(componentType.c_str()) > copy) {
+                    
+                    for (int i = 0; i < copy && component != nullptr; i++) {
+                        component = component->NextSiblingElement(componentType.c_str());
+                    }
+                }
+                else { 
+                    
+                    return std::string(); 
+                }
+            }
             //return the asset reference in AssetManager named in element
             std::string assetName = component->FindAttribute("name")->Value();
-
+            
             const char* assetNameCStr = assetName.c_str();
 
             auto args = assetName;

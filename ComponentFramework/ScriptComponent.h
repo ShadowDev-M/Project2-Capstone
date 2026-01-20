@@ -20,6 +20,7 @@ class ScriptComponent : public Component {
 	//Also you could remove it if you wanted to disable it 
 	friend class ScriptService;
 	friend class InspectorWindow;
+	friend class XMLObjectFile;
 
 	ScriptComponent(const ScriptComponent&) = delete;
 	ScriptComponent(ScriptComponent&&) = delete;
@@ -30,6 +31,9 @@ class ScriptComponent : public Component {
 	std::string filename;
 	
 	std::string code;
+
+	//Asset and Component names are different sometimes so just point to the base asset (Important for save files as you need the asset and can't use GetAsset(name) because the name may be different)
+	Ref<ScriptAbstract> baseAsset;
 
 	//Dangerous to let any actor trigger a script, much better to have a manifest controlled by assetmanager/scenegraph for safety
 	std::vector<Ref<Actor>> users;
@@ -42,7 +46,8 @@ class ScriptComponent : public Component {
 	void setFilenameFromAbstract(Ref<ScriptAbstract> baseScript);
 
 public:
-	ScriptComponent(Component* parent, const char* filename);
+	Ref<ScriptAbstract> getBaseAsset() { return baseAsset; }
+	ScriptComponent(Component* parent, Ref<ScriptAbstract> baseScriptAsset = 0);
 	virtual ~ScriptComponent();
 	
 	const std::string getPath() { return SCRIPTSPATH + filename; }

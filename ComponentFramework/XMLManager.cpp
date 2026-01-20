@@ -1,5 +1,5 @@
 #include "XMLManager.h"
-
+#include "ScriptComponent.h"
 void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute) {
        
 
@@ -279,6 +279,8 @@ void SceneGraph::SaveFile(std::string name) const {
         if (GetActor(obj.first)->GetComponent<LightComponent>())
             XMLObjectFile::writeUniqueComponent<LightComponent>(obj.first, GetActor(obj.first)->GetComponent<LightComponent>().get());
 
+       
+
 
         AssetManager& assetMgr = AssetManager::getInstance();
 
@@ -295,7 +297,11 @@ void SceneGraph::SaveFile(std::string name) const {
         if (GetActor(obj.first)->GetComponent<ShaderComponent>())
             XMLObjectFile::writeReferenceComponent<ShaderComponent>(obj.first, GetActor(obj.first)->GetComponent<ShaderComponent>());
 
+        for (auto& script : GetActor(obj.first)->GetAllComponent<ScriptComponent>()) {
+            
+            XMLObjectFile::writeReferenceComponent<ScriptComponent>(obj.first, script->getBaseAsset());
 
+        }
 
 
         // [key.first/second] accesses the vector for the given key, if it doesn't exist it creates it

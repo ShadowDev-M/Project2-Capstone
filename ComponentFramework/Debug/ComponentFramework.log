@@ -1,4 +1,6 @@
 ﻿  SceneGraph.cpp
+  XMLManager.cpp
+  Generating Code...
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

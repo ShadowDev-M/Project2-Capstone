@@ -6,10 +6,12 @@
 
 static std::vector<ScriptComponent*> scriptsInUse;
 
-ScriptComponent::ScriptComponent(Component* parent_, const char* filename_) :
-	Component(parent_), filename(filename_) {
+ScriptComponent::ScriptComponent(Component* parent_, Ref<ScriptAbstract> baseScriptAsset) :
+	Component(parent_), baseAsset(baseScriptAsset) {
 
-	if (filename_) scriptsInUse.push_back(this);
+	if (baseScriptAsset) {
+		setFilenameFromAbstract(baseScriptAsset);
+	}
 }
 
 ScriptComponent::~ScriptComponent() {
@@ -40,9 +42,10 @@ void ScriptComponent::Update(const float deltaTime) {
 ///sets the filename to the name stored by a ScriptAbstract dropped from AssetManager onto a Actor's component in InspectorWindow. (Friend class inspectorwindow()
 void ScriptComponent::setFilenameFromAbstract(Ref<ScriptAbstract> baseScript)
 {
-	filename = baseScript->getName();
-	load_lua_file();
+	baseAsset = baseScript;
 
+	filename = baseAsset->getName();
+	load_lua_file();
 	std::vector<ScriptComponent*>::iterator it = std::find(scriptsInUse.begin(), scriptsInUse.end(), this);
 
 	if (it != scriptsInUse.end()) {

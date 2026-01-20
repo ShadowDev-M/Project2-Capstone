@@ -107,7 +107,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				}
 				if (ImGui::Selectable("Script Component")) {
 				//	if (!selectedActor->second->GetComponent<ScriptComponent>()) {
-						selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get(), "");
+						selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get());
 					//}
 				}
 				if (ImGui::Selectable("Light Component")) {
@@ -215,7 +215,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Script Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<ScriptComponent>()) {
-								pair.second->AddComponent<ScriptComponent>(nullptr, "");
+								pair.second->AddComponent<ScriptComponent>(nullptr);
 							}
 						}
 					}
