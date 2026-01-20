@@ -483,7 +483,9 @@ void SceneGraph::createFBOPicking(int w, int h)
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
+#ifdef _DEBUG
 		std::cerr << "Framebuffer is not complete!" << std::endl;
+#endif
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -518,7 +520,9 @@ void SceneGraph::createDockingFBO(int w, int h)
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
+#ifdef _DEBUG
 		std::cerr << "Framebuffer is not complete!" << std::endl;
+#endif
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

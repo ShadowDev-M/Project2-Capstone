@@ -1,6 +1,6 @@
 #include "AssetManagerWindow.h"
 #include "EditorManager.h"
-
+#include <cstdlib> // Required for system()
 AssetManagerWindow::AssetManagerWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
 	EditorManager::getInstance().RegisterWindow("AssetManager", true);
 }
@@ -318,7 +318,60 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 			}
 			// TODO if removing an asset that an actor is using, replace with a temporary asset so program doesn't crash
 		}
+		if (ImGui::MenuItem("Open File")) {
+			if (script) {
+//				std::string filePath = "scripts/" + std::string(script->getName());  // "scripts/testScript.lua"				// The '-n' flag opens a new window/instance of VS Code
+
+				std::string command = "start \"\" \"scripts/" + std::string(script->getName()) + "\"";
+				system(command.c_str());				
+			}
+			else if (material) {
+				if (material->getDiffuseName() != "") {
+					std::string command = "start \"\" \"" + std::string((material->getDiffuseName())) + "\"";
+					system(command.c_str());
+				}
+
+				if (material->getSpecularName() != "") {
+					std::string command = "start \"\" \"" + std::string((material->getSpecularName())) + "\"";
+					system(command.c_str());
+
+				}
+
+			}
+			else if (shader) {
+
+				
+				if (shader->GetFragName() != "") {
+					std::string command = "start \"\" \"" + std::string((shader->GetFragName())) + "\"";
+					system(command.c_str());
+				}
+
+				if (shader->GetVertName() != "") {
+					std::string command = "start \"\" \"" + std::string((shader->GetVertName())) + "\"";
+					system(command.c_str());
+
+				}
+				
+
+			}
+			else if (mesh) {
+
+
+				if (mesh->getMeshName() != "") {
+					std::string command = "start \"\" \"" + std::string((mesh->getMeshName())) + "\"";
+					system(command.c_str());
+				}
+
+				
+
+
+			}
+
+
+		}
 		ImGui::EndPopup();
+
+		
 	}
 	ImGui::OpenPopupOnItemClick("##AssetRightClick", ImGuiPopupFlags_MouseButtonRight);
 

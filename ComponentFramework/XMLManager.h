@@ -67,7 +67,9 @@ public:
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
             return eResult;
         }
         XMLNode* cRoot = doc.RootElement();
@@ -106,7 +108,9 @@ public:
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
             return eResult;
         }
         XMLNode* cRoot = doc.RootElement();
@@ -135,7 +139,9 @@ public:
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
             return eResult;
         }
 
@@ -146,7 +152,9 @@ public:
         //just calling actors so it doesn't get wiped, xml is weird
         XMLElement* actors = cRoot->FirstChildElement("Actors");
         if (actors == nullptr) {
+#ifdef _DEBUG
             std::cerr << "Root element not found!" << std::endl;
+#endif
             return 1;
         }
 
@@ -298,7 +306,9 @@ public:
         XMLError eResultSave = doc.SaveFile(id);
 
         if (eResultSave != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error saving file: " << eResultSave << std::endl;
+#endif
             return -1;
         }
 
@@ -319,7 +329,9 @@ public:
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
             return eResult;
         }
 
@@ -359,7 +371,9 @@ public:
         XMLError eResultSave = doc.SaveFile(id);
 
         if (eResultSave != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error saving file: " << eResultSave << std::endl;
+#endif
             return -1;
         }
 
@@ -394,7 +408,9 @@ public:
 
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
         }
 
         XMLNode* cRoot = doc.RootElement();
@@ -530,7 +546,9 @@ public:
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
             return eResult;
         }
 
@@ -668,7 +686,9 @@ public:
         XMLError eResultSave = doc.SaveFile(id);
 
         if (eResultSave != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error saving file: " << eResultSave << std::endl;
+#endif
             return -1;
         }
 
@@ -699,7 +719,9 @@ public:
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
             return eResult;
         }
 
@@ -742,7 +764,9 @@ public:
         XMLError eResultSave = doc.SaveFile(id);
 
         if (eResultSave != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error saving file: " << eResultSave << std::endl;
+#endif
             return -1;
         }
 
@@ -766,7 +790,9 @@ public:
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
             std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
             return false;
         }
         

@@ -22,7 +22,9 @@ ScriptComponent::~ScriptComponent() {
 		scriptsInUse.erase(it);
 	}
 	else {
+#ifdef _DEBUG
 		std::cerr << "ERROR: " << this << " was not found as a valid used script upon destroy (Do not remove scripts from the system until they are destroyed.)" << std::endl;
+#endif
 	}
 }
 
@@ -67,7 +69,9 @@ void ScriptComponent::load_lua_file() {
 
 	
 	if (!file.is_open()) {
+#ifdef _DEBUG
 		std::cerr << "[ERROR] Failed to open Lua file: " << getPath() << std::endl;
+#endif
 		return;
 	}
 
@@ -128,13 +132,16 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 		//Check runtime vs compiler errors, (Not writing anything just a check)
 		if (!loaded_script.valid()) {
 			sol::error err = loaded_script;
+#ifdef _DEBUG
 			std::cerr << "[ERROR] Lua compile error: " << err.what() << std::endl;
+#endif
 			script->isCreated = false;
 			continue;
 		}
 		else if (!user) {
-
+#ifdef _DEBUG
 			std::cerr << "[ERROR] Lua compile error: " << script.get() << " has no user!" << std::endl;
+#endif
 			script->isCreated = false;
 			continue;
 		}
@@ -150,7 +157,9 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 
 			}
 			catch (const sol::error& e) {
+#ifdef _DEBUG
 				std::cerr << "[ERROR] Lua runtime error: " << e.what() << std::endl;
+#endif
 				//Runtime error, so disable script
 				script->isCreated = false;
 				//Disable play mode 
@@ -195,8 +204,9 @@ void ScriptService::updateAllScripts(float deltaTime) {
 		if (!loaded_script.valid()) {
 
 			sol::error err = loaded_script;
+#ifdef _DEBUG
 			std::cerr << "[ERROR] Lua compile error: " << err.what() << std::endl;
-
+#endif
 			//Disable script by setting isCreated to false
 			script->isCreated = false;
 			continue;
@@ -216,7 +226,9 @@ void ScriptService::updateAllScripts(float deltaTime) {
 					auto result = update(deltaTime);
 					if (!result.valid()) {
 						sol::error err = result;
+#ifdef _DEBUG
 						std::cerr << "[ERROR] Update failed: " << err.what() << std::endl;
+#endif
 						script->isCreated = false;
 						continue;
 					}
@@ -224,14 +236,18 @@ void ScriptService::updateAllScripts(float deltaTime) {
 
 			}
 			catch (const sol::error& e) {
+#ifdef _DEBUG
 				std::cerr << "[ERROR] Lua runtime error: " << e.what() << std::endl;
+#endif
 				//Runtime error, so disable script
 				script->isCreated = false;
 
 				//Disable play mode 
 			}
 			catch (...) {
+#ifdef _DEBUG
 				std::cerr << "[ERROR] Unknown Lua panic - state corrupted!" << std::endl;
+#endif
 				script->isCreated = false;
 				// Consider recreating lua state here for safety
 			}
@@ -258,8 +274,10 @@ void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 		
 		if (!loaded_script.valid()) {
 
-			sol::error err = loaded_script;
+			sol::error err = loaded_script; 
+#ifdef _DEBUG
 			std::cerr << "[ERROR] Lua compile error: " << err.what() << std::endl;
+#endif
 
 			//Disable script by setting isCreated to false
 			script->isCreated = false;
@@ -280,7 +298,9 @@ void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 					auto result = update(deltaTime);
 					if (!result.valid()) {
 						sol::error err = result;
+#ifdef _DEBUG
 						std::cerr << "[ERROR] Update failed: " << err.what() << std::endl;
+#endif
 						script->isCreated = false;
 						continue;
 					}
@@ -288,14 +308,18 @@ void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 
 			}
 			catch (const sol::error& e) {
+#ifdef _DEBUG
 				std::cerr << "[ERROR] Lua runtime error: " << e.what() << std::endl;
+#endif
 				//Runtime error, so disable script
 				script->isCreated = false;
 
 				//Disable play mode 
 			}
 			catch (...) {
+#ifdef _DEBUG
 				std::cerr << "[ERROR] Unknown Lua panic - state corrupted!" << std::endl;
+#endif
 				script->isCreated = false;
 				// Consider recreating lua state here for safety
 			}
