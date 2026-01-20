@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "AssetManager.h"
-#include <MMath.h>
-#include <filesystem>
 #include "ScriptAbstract.h"
 
 bool AssetManager::OnCreate() {

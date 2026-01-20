@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "ScriptComponent.h"
-#include <filesystem>
-#include <fstream>
 #include "SceneGraph.h"
 #include "ScriptAbstract.h"
 

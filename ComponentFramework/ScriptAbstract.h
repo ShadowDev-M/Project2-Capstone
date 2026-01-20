@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Component.h"
-#include <iostream>
-
 class ScriptAbstract : public Component {
 
 	ScriptAbstract(const ScriptAbstract&) = delete;

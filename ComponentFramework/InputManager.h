@@ -1,26 +1,9 @@
 #pragma once
 
-#include <iostream>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <map>
-#include "Debug.h"
 #include "SceneGraph.h"
 #include "TransformComponent.h"
-#include <memory>
-#include "imgui.h"
+
 #include "CollisionSystem.h"
-#include <functional>
-#include <tuple>
-#include <utility>
-#include <thread>
-#include <chrono>
-#include "ImGuizmo.h"
-#include <VMath.h>
-#include <Matrix.h>
-#include <SDL.h>
-#include <MMath.h>
 
 using namespace ImGui;
 

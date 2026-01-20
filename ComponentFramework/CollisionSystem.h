@@ -1,12 +1,8 @@
 #pragma once
-#include <vector>
 #include "CollisionComponent.h"
 #include "PhysicsComponent.h"
 #include "Actor.h"
-#include "Debug.h"
-#include <Sphere.h>
-#include <VMath.h>
-#include <PMath.h>
+
 using namespace MATH;
 using namespace MATHEX;
 

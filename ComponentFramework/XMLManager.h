@@ -1,10 +1,5 @@
 #pragma once
-#include <iostream>
-#include <string>
 
-#include "tinyxml2.h"
-#include "Component.h"
-#include <tuple>
 #include "TransformComponent.h"  
 #include "CameraComponent.h"  
 #include "LightComponent.h"  

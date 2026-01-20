@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "AssetManagerWindow.h"
 #include "EditorManager.h"
 

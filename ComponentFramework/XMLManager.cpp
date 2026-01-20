@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "XMLManager.h"
 #include "ScriptComponent.h"
 void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute) {

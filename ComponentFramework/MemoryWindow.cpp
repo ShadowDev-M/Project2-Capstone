@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "MemoryWindow.h"
 #include "EditorManager.h"
 

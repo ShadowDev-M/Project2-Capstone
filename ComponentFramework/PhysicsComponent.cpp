@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PhysicsComponent.h"
 #include "TransformComponent.h"
 

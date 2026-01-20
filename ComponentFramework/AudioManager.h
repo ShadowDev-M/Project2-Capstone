@@ -1,8 +1,4 @@
 #pragma once
-#include <irrKlang.h>
-#include <string>
-#include "Vector.h"
-#include <algorithm>
 
 using namespace irrklang;
 using namespace MATH;

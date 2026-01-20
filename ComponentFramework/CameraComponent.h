@@ -1,8 +1,4 @@
 #pragma once
-#include "Component.h"
-#include <Vector.h>
-#include <MMath.h>
-#include <Quaternion.h>
 #include "TransformComponent.h"
 #include "Actor.h"
 

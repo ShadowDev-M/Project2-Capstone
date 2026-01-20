@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ScriptAbstract.h"
 
 ScriptAbstract::ScriptAbstract(Component* parent_, const char* filename_):Component(parent_), filename(filename_)

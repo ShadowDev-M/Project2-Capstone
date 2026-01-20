@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "CameraComponent.h"
 
 CameraComponent::CameraComponent(Ref<Actor> userActor_, float fovy, float aspectRatio, float nearClipPlane, float farClipPlane) : 

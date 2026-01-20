@@ -1,5 +1,4 @@
 #pragma once
-#include "imgui.h"
 #include "SceneGraph.h"
 #include "ScriptComponent.h"
 class InspectorWindow

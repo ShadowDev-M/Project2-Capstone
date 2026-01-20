@@ -1,14 +1,12 @@
-#include <glew.h>
-#include <iostream>
-#include <SDL.h>
+#include "pch.h"
 #include "Scene3GUI.h"
-#include <MMath.h>
-#include "Debug.h"
+
+
 #include "XMLManager.h"
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include "MemorySize.h"
-#include <filesystem>
+
 
 
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {

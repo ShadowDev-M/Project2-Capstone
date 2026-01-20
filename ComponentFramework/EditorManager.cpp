@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "EditorManager.h"
-#include "ImGuizmo.h"
 
 void EditorManager::CreateEditorIcons()
 {

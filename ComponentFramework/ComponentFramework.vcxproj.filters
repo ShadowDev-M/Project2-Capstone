@@ -206,6 +206,9 @@
     <ClInclude Include="ScriptAbstract.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -330,6 +333,9 @@
     </ClCompile>
     <ClCompile Include="ScriptAbstract.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files\Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

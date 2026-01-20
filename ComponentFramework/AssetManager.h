@@ -1,20 +1,11 @@
 #pragma once
 
-#include <iostream>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <map>
-#include "Debug.h"
-
 #include "ScriptAbstract.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
 #include "ShaderComponent.h"
 #include "TransformComponent.h"
 
-// saving and loading of assets via XML
-#include "tinyxml2.h"
 using namespace tinyxml2;
 
 struct AssetKey

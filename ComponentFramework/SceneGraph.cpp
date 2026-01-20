@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SceneGraph.h"
 #include "XMLManager.h"
 #include "InputManager.h"

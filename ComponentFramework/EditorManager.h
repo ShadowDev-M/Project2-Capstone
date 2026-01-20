@@ -1,16 +1,5 @@
 #pragma once
-#include <string>
-#include <unordered_map>
-#include <memory>
-#include <functional>
-#include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_opengl3.h"
-#include <SDL.h>
 #include "XMLManager.h"
-#include "Debug.h"
-#include "imgui_stdlib.h"
-#include <filesystem>
 
 #include "SceneGraph.h"
 #include "HierarchyWindow.h"
@@ -24,11 +13,10 @@ class SceneGraph;
 class HierarchyWindow;
 class InspectorWindow;
 class AssetManagerWindow;
-class SceneWindow; // scene
-class MemoryManagerWindow; // scene
+class SceneWindow;
+class MemoryManagerWindow;
 
-
-// this will be used later on for the scene window and edit/play modes, for now just setting up the enum and some functions for it
+// used for edit & play modes
 enum class EditorMode {
 	Edit,
 	Play, 

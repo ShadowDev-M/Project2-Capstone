@@ -1,6 +1,4 @@
 #pragma once
-#include "Component.h"
-#include "glew.h"
 #include "AssetManager.h"
 
 enum class LightType {

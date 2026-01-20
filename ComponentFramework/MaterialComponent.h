@@ -1,7 +1,4 @@
 #pragma once
-#include <glew.h>
-#include "Component.h"
-#include <string>
 
 class MaterialComponent : public Component {
 private:

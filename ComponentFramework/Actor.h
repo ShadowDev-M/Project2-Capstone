@@ -1,11 +1,5 @@
 #pragma once
-#include <vector>
-#include <Matrix.h>
-#include <iostream>
-//#include "Raycast.h"
 
-#include "Component.h"
-// transformcomponent
 using namespace MATH;
 
 class Actor : public Component {

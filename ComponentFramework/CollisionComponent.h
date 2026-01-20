@@ -1,6 +1,5 @@
 #pragma once
 #include "TransformComponent.h"
-#include <Plane.h>
 using namespace MATHEX;
 
 enum class ColliderType {

@@ -1,7 +1,5 @@
+#include "pch.h"
 #include "ShaderComponent.h"
-#include "Debug.h"
-#include <fstream>
-#include <string.h>
 
 ShaderComponent::ShaderComponent(Component* parent_,const char* vertFilename_, const char* fragFilename_,
 	const char* tessCtrlFilename_, const char* tessEvalFilename_,const char* geomFilename_):

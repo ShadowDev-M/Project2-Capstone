@@ -1,9 +1,6 @@
 #pragma once
 
-#include "imgui.h"
-#include "imgui_stdlib.h"
 #include "SceneGraph.h"
-#include "ImGuizmo.h"
 
 class SceneWindow
 {

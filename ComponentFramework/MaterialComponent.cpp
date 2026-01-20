@@ -1,5 +1,6 @@
+#include "pch.h"
 #include "MaterialComponent.h"
-#include <SDL_image.h>
+
 MaterialComponent::MaterialComponent(Component* parent_,const char* diffuse_, const char* specular_):
 	Component(parent_), diffuseID(0), specularID(0), diffuse(diffuse_), specular(specular_) {}
 

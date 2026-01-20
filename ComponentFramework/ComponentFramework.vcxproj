@@ -79,8 +79,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(ProjectDir)\External\sol2-develop\include;$(ProjectDir)\External\luajit\src;</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;$(ProjectDir)\External\luajit\src;$(ProjectDir)\include\assimp\lib;$(ProjectDir)\include\IrrKlang\lib</AdditionalLibraryDirectories>
@@ -143,6 +144,7 @@
     <ClInclude Include="MemoryMonitor.h" />
     <ClInclude Include="MemorySize.h" />
     <ClInclude Include="MemoryWindow.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="SceneWindow.h" />
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="ScriptAbstract.h" />
@@ -187,28 +189,58 @@
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="CollisionComponent.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
-    <ClCompile Include="Component.cpp" />
-    <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="MemoryMonitor.cpp" />
+    <ClCompile Include="Component.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="MemoryMonitor.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="MemoryWindow.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="SceneWindow.cpp" />
     <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="ScriptAbstract.cpp" />
     <ClCompile Include="XMLManager.cpp" />
     <ClCompile Include="HierarchyWindow.cpp" />
-    <ClCompile Include="include\imguizmo\ImGuizmo.cpp" />
-    <ClCompile Include="include\imgui\imgui.cpp" />
-    <ClCompile Include="include\imgui\imgui_demo.cpp" />
-    <ClCompile Include="include\imgui\imgui_draw.cpp" />
-    <ClCompile Include="include\imgui\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="include\imgui\imgui_impl_sdl2.cpp" />
-    <ClCompile Include="include\imgui\imgui_stdlib.cpp" />
-    <ClCompile Include="include\imgui\imgui_tables.cpp" />
-    <ClCompile Include="include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="include\imguizmo\ImGuizmo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_impl_opengl3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_impl_sdl2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_stdlib.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InspectorWindow.cpp" />
     <ClCompile Include="LightComponent.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
@@ -217,10 +249,16 @@
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScriptComponent.cpp" />
     <ClCompile Include="ShaderComponent.cpp" />
-    <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="tinyxml2.cpp" />
+    <ClCompile Include="Timer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="TransformComponent.cpp" />
-    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="Window.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\colourPickFrag.glsl" />

@@ -1,12 +1,5 @@
 #pragma once
-#include <fstream>
-#include <iostream> 
-#include <vector>
-#include <unordered_map>
-#include "Component.h"
 #include "Actor.h"
-
-#include <sol/sol.hpp>
 
 //lua handler
 static sol::state lua;

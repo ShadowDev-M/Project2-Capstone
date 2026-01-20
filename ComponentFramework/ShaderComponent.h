@@ -1,8 +1,4 @@
 #pragma once
-#include "Component.h"
-#include "glew.h"
-#include <unordered_map>
-#include <string>
 
 class ShaderComponent: public Component {
 	ShaderComponent(const ShaderComponent&) = delete;

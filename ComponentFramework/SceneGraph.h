@@ -1,20 +1,15 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
 #include "Actor.h"
-#include "Debug.h"
 #include "PhysicsComponent.h"
 #include "ShaderComponent.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
-#include "MMath.h"
 #include "AssetManager.h"
 #include "CameraComponent.h"
 #include "LightComponent.h"
 #include "ScriptComponent.h"
 #include "ScriptAbstract.h"
-#include "Raycast.h"
 
 class SceneGraph
 {

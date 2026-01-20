@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "CollisionComponent.h"
 
 // if this constructor is used collider type is sphere

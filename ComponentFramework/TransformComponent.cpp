@@ -1,7 +1,6 @@
-#include <iostream>
+#include "pch.h"
 #include "TransformComponent.h"
-#include "QMath.h"
-#include "MMath.h"
+
 using namespace MATH;
 
 TransformComponent::TransformComponent(Component* parent_):Component(parent_) {

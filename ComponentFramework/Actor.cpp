@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "Actor.h"
-#include "Debug.h"
 #include "TransformComponent.h"
 #include "LightComponent.h"
 #include "MeshComponent.h"

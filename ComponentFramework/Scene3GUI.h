@@ -1,10 +1,7 @@
 #ifndef SCENE3GUI_H
 #define SCENE3GUI_H
 #include "Scene.h"
-#include "Vector.h"
-#include <Matrix.h>
 #include "Actor.h"
-#include <vector>
 
 #include "SceneGraph.h"
 

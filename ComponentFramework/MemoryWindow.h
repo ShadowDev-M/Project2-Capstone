@@ -1,11 +1,7 @@
 #pragma once
 #include "MemorySize.h"
 
-
-#include "imgui.h"
-#include "imgui_stdlib.h"
 #include "SceneGraph.h"
-#include "ImGuizmo.h"
 
 class MemoryManagerWindow
 {

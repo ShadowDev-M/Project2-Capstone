@@ -1,7 +1,6 @@
 #pragma once
-#include "Component.h"
 #include "Actor.h"
-#include <Vector.h>
+
 using namespace MATH;
 
 // converted Body into a component 

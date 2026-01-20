@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "InputManager.h"
 
 bool PoolBindObject::call() {

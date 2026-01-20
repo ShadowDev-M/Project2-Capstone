@@ -1,6 +1,4 @@
 #pragma once
-#include "imgui.h"
-#include "imgui_stdlib.h"
 #include "AssetManager.h"
 #include "SceneGraph.h"
 

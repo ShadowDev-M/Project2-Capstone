@@ -1,9 +1,5 @@
 #pragma once
-#include "Component.h"
-#include <glew.h>
-#include <vector>
-#include "Vector.h"
-#include "Raycast.h"
+
 using namespace MATH;
 
 class MeshComponent : public Component {

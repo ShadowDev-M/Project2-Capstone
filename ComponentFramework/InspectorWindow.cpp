@@ -1,8 +1,8 @@
+#include "pch.h"
 #include "InspectorWindow.h"
 #include "InputManager.h"
 #include "EditorManager.h"
-#include "imgui_stdlib.h"
-#include <EMath.h>
+
 //#include "ScriptComponent.h"
 
 
