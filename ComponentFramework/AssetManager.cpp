@@ -11,12 +11,12 @@ bool AssetManager::OnCreate() {
     LoadAssetDatabaseXML();
 
     // when loading the assets from the database, all the assets' OnCreate are called, this is just extra insurance to call any of the assets already in the assetmanagers oncreate
-    for (auto& asset : assetManager) {
+    /*for (auto& asset : assetManager) {
         if (!asset.second->OnCreate()) {
             Debug::Error("Asset failed to initialize: " + asset.first.name, __FILE__, __LINE__);
             return false;
         }
-    }
+    }*/
 
     return true;
 }

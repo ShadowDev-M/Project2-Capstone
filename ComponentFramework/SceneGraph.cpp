@@ -2,7 +2,71 @@
 #include "SceneGraph.h"
 #include "XMLManager.h"
 #include "InputManager.h"
+#include <chrono>
+void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
+	workerQueue.push_back(mesh);
+}
+void SceneGraph::stopMeshLoadingWorker()
+{
+	shouldStop = true;
+	if (workerThread.joinable()) {
+		workerThread.join();
+	}
+}
+void SceneGraph::meshLoadingWorker()
+{
+	while (!shouldStop) {
+		MeshComponent* model = nullptr;
 
+		{
+			std::lock_guard<std::mutex> lock(queueMutex);
+			if (workerQueue.empty()) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(20));
+				continue;
+			}
+			model = workerQueue.back();  
+			workerQueue.pop_back();
+		}
+
+		if (model) {
+
+			std::cout << "Loading Model: " << model->getMeshName()  << std::endl;
+
+			model->InitializeMesh(); 
+
+			scheduleOnMain([model]() {  
+				model->storeLoadedModel();  
+				});
+		}
+	}
+}
+void SceneGraph::processMainThreadTasks() {
+	std::unique_lock<std::mutex> lock(taskMutex);
+	while (!mainThreadTasks.empty()) {
+		auto task = std::move(mainThreadTasks.front());
+		mainThreadTasks.pop();
+		lock.unlock();  // Release lock before OpenGL
+		task();
+		lock.lock();
+	}
+}
+void SceneGraph::scheduleOnMain(std::function<void()> task)
+{
+	{
+		std::lock_guard<std::mutex> lock(taskMutex);
+		mainThreadTasks.push(std::move(task));
+	}
+	taskCV.notify_one();
+}
+
+void SceneGraph::storeInitializedMeshData() {
+
+	while (!finishedQueue.empty()) {
+		finishedQueue.back()->storeLoadedModel();
+
+	}
+
+}
 
 SceneGraph::SceneGraph()
 {
@@ -22,10 +86,15 @@ SceneGraph::SceneGraph()
 
 	pickerShader->OnCreate();
 	ScriptService::loadLibraries();
+	startMeshLoadingWorkerThread();
+
 }
 
 SceneGraph::~SceneGraph()
 {
+	//end the mesh loading thread
+	
+
 	RemoveAllActors();
 	pickerShader->OnDestroy();
 	glDeleteFramebuffers(1, &pickingFBO);
@@ -54,6 +123,12 @@ void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
 	else if (!newCam) {
 		useDebugCamera();
 	}
+}
+
+void SceneGraph::startMeshLoadingWorkerThread()
+{
+	workerThread = std::thread(&SceneGraph::meshLoadingWorker, this);
+	//t.detach();              
 }
 
 Ref<CameraComponent> SceneGraph::getUsedCamera() const
@@ -210,7 +285,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		if (!materialName.empty()) {
 			Ref<MaterialComponent> materialComponent = AssetManager::getInstance().GetAsset<MaterialComponent>(materialName);
 			if (materialComponent) {
-				actor_->AddComponent<MaterialComponent>(materialComponent);
+				actor_->ReplaceComponent<MaterialComponent>(materialComponent);
 			}
 		}
 	}
@@ -220,7 +295,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		if (!shaderName.empty()) {
 			Ref<ShaderComponent> shaderComponent = AssetManager::getInstance().GetAsset<ShaderComponent>(shaderName);
 			if (shaderComponent) {
-				actor_->AddComponent<ShaderComponent>(shaderComponent);
+				actor_->ReplaceComponent<ShaderComponent>(shaderComponent);
 			}
 		}
 	}
@@ -230,7 +305,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		if (!meshName.empty()) {
 			Ref<MeshComponent> meshComponent = AssetManager::getInstance().GetAsset<MeshComponent>(meshName);
 			if (meshComponent) {
-				actor_->AddComponent<MeshComponent>(meshComponent);
+				actor_->ReplaceComponent<MeshComponent>(meshComponent);
 			}
 		}
 	}
@@ -429,6 +504,11 @@ void SceneGraph::RemoveAllActors()
 
 void SceneGraph::Update(const float deltaTime)
 {
+	processMainThreadTasks();
+
+	//Load any models that the worker thread finishes loading through assimp
+	//storeInitializedMeshData();
+
 	getUsedCamera()->fixCameraToTransform();
 
 	//	std::cout << usedCamera << std::endl;
@@ -633,7 +713,7 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 void SceneGraph::Render() const
 {
-
+	
 	int w, h;
 	//SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
 	w = SCENEWIDTH;

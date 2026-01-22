@@ -3,8 +3,21 @@
 
 using namespace MATH;
 
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/mesh.h"
+#include "assimp/postprocess.h"
+
+
+#include "SceneGraph.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+
+void MeshComponent::storeLoadedModel()
+{
+    StoreMeshData(GL_TRIANGLES);
+}
 
 MeshComponent::MeshComponent(Component *parent_, const char* filename_): Component(parent_), filename(filename_) {}
 
@@ -12,16 +25,19 @@ MeshComponent::~MeshComponent() {}
 
 bool MeshComponent::OnCreate() {
     if (isCreated == true) return true;
-	LoadModel(filename.c_str());
-    StoreMeshData(GL_TRIANGLES);
+    //InitializeMesh();
+    SceneGraph::getInstance().pushMeshToWorker(this);
     //isCreated == true;
     return true;
 }
 
-
+bool MeshComponent::InitializeMesh() {
+    LoadModel(filename.c_str());
+    return true;
+}
 
 void MeshComponent::LoadModel(const char* filename) {
-    tinyobj::attrib_t attrib;
+   /* tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
@@ -53,7 +69,45 @@ void MeshComponent::LoadModel(const char* filename) {
             normals.push_back(normal);
             uvCoords.push_back(uvCoord);
         }
-    } 
+    } */
+
+    //based on this 
+    //https://nickthecoder.wordpress.com/2013/01/20/mesh-loading-with-assimp/
+
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Fast);//aiProcessPreset_TargetRealtime_Fast has the configs you'll need
+
+    aiMesh* mesh = scene->mMeshes[0]; //assuming you only want the first mesh
+
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+    {
+        const aiFace& face = mesh->mFaces[i];
+
+        for (int j = 0; j < 3; j++)
+        {
+            aiVector3D aiVertex = mesh->mVertices[face.mIndices[j]];
+            Vec3 vertex{ aiVertex.x, aiVertex.y, aiVertex.z};
+
+
+            aiVector3D aiNormal = mesh->mNormals[face.mIndices[j]];
+            Vec3 normal{ aiNormal.x, aiNormal.y, aiNormal.z};
+
+
+            aiVector3D aiUv = mesh->mTextureCoords[0][face.mIndices[j]];
+            Vec2 uvCoord{aiUv.x, aiUv.y};
+
+          
+
+            vertices.push_back(vertex);
+            normals.push_back(normal);
+            uvCoords.push_back(uvCoord);
+
+          
+        }
+    }
+
+
+
 }
 
 void MeshComponent::StoreMeshData(GLenum drawmode_) {

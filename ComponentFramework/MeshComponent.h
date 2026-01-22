@@ -24,9 +24,12 @@ private:
 	GLuint vao, vbo;
 public:
 	
+	void storeLoadedModel();
+
 	MeshComponent(Component *parent_,const char* filename_);
 	~MeshComponent();
 	bool OnCreate() override;
+	bool InitializeMesh();
 	void OnDestroy() override;
 	void Update(const float deltaTime) override;
 	void Render() const;
