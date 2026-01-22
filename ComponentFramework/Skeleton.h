@@ -3,8 +3,7 @@
 #include "MMath.h"
 #include "assimp/Importer.hpp"
 #include "assimp/matrix4x4.h"
-
-
+#include "assimp/scene.h"     
 class ConversionAiMatrix4 {
 public:
     static Matrix4 AiToMatrix4(const aiMatrix4x4& aiMat) {

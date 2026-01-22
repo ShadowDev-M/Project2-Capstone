@@ -6,7 +6,7 @@
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include "MemorySize.h"
-
+#include "AnimatorComponent.h"
 
 
 Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
@@ -30,7 +30,8 @@ bool Scene3GUI::OnCreate() {
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
-	
+	SceneGraph::getInstance().GetActor("Mario")->AddComponent<AnimatorComponent>((SceneGraph::getInstance().GetActor("Mario").get()));
+
 	//SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(SceneGraph::getInstance().GetActor("Cube").get(), "testScript.lua");
 
 //	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();

@@ -215,6 +215,9 @@
     <ClInclude Include="Skeleton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AnimatorComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -342,6 +345,9 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimatorComponent.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

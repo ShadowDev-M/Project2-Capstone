@@ -5,11 +5,13 @@ static const int BONE_WEIGHTS_SIZE = 4;  // Each vertex affected by max 4 bones
 using namespace MATH;
 
 class MeshComponent : public Component {
+	friend class AnimatorComponent;
+
 	MeshComponent(const MeshComponent&) = delete;
 	MeshComponent(MeshComponent&&) = delete;
 	MeshComponent& operator = (const MeshComponent&) = delete;
 	MeshComponent& operator = (MeshComponent&&) = delete;
-
+	
 private:
 
 	// const char* creates an address for the name and shares it between same names
@@ -25,6 +27,7 @@ private:
 
 	void LoadSkeleton(const char* filename); 
 
+	bool fullyLoaded = false;
 	
 	size_t dataLength;
 	GLenum drawmode;
@@ -36,6 +39,10 @@ private:
 	GLuint vao, vbo;
 public:
 	
+	bool queryLoadStatus() { return fullyLoaded; }
+
+
+
 	void storeLoadedModel();
 
 	MeshComponent(Component *parent_,const char* filename_);

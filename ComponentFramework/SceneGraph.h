@@ -90,6 +90,8 @@ public:
 
 	void storeInitializedMeshData();
 
+	bool queryMeshLoadStatus(std::string name);
+
 	void pushMeshToWorker(MeshComponent* mesh);
 
 	//Hardcode the screen height and width rather than using SDL_GetWindowSize, as at lot of the code is designed for 1280 x 720
@@ -105,7 +107,7 @@ public:
 		return instance;
 	}
 
-
+	bool queryMeshLoadStatus();
 
 	SceneGraph();
 

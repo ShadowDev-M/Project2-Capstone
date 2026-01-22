@@ -35,6 +35,7 @@ void SceneGraph::meshLoadingWorker()
 			model->InitializeMesh(); 
 
 			scheduleOnMain([model]() {  
+
 				model->storeLoadedModel();  
 				});
 		}
@@ -67,6 +68,22 @@ void SceneGraph::storeInitializedMeshData() {
 	}
 
 }
+
+bool SceneGraph::queryMeshLoadStatus(std::string name)
+{
+	for (auto& obj : Actors) {
+		
+		Ref<MeshComponent> queriedMesh = obj.second->GetComponent<MeshComponent>();
+		if (queriedMesh && queriedMesh->getMeshName() == name.c_str()) {
+			return queriedMesh->queryLoadStatus();
+		}
+
+	}
+
+
+	return false;
+}
+
 
 SceneGraph::SceneGraph()
 {

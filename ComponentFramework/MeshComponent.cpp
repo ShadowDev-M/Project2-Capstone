@@ -8,6 +8,7 @@ using namespace MATH;
 #include "assimp/mesh.h"
 #include "assimp/postprocess.h"
 
+#include "AnimatorComponent.h"
 #include "Skeleton.h"
 #include "SceneGraph.h"
 
@@ -16,6 +17,7 @@ using namespace MATH;
 
 void MeshComponent::storeLoadedModel()
 {
+
     StoreMeshData(GL_TRIANGLES);
 }
 
@@ -60,63 +62,68 @@ void MeshComponent::LoadModel(const char* filename) {
         for (int j = 0; j < 3; j++)
         {
             aiVector3D aiVertex = mesh->mVertices[face.mIndices[j]];
-            Vec3 vertex{ aiVertex.x, aiVertex.y, aiVertex.z};
+            Vec3 vertex{ aiVertex.x, aiVertex.y, aiVertex.z };
 
 
             aiVector3D aiNormal = mesh->mNormals[face.mIndices[j]];
-            Vec3 normal{ aiNormal.x, aiNormal.y, aiNormal.z};
+            Vec3 normal{ aiNormal.x, aiNormal.y, aiNormal.z };
 
 
             aiVector3D aiUv = mesh->mTextureCoords[0][face.mIndices[j]];
-            Vec2 uvCoord{aiUv.x, aiUv.y};
+            Vec2 uvCoord{ aiUv.x, aiUv.y };
 
-          
+
 
             vertices.push_back(vertex);
             normals.push_back(normal);
             uvCoords.push_back(uvCoord);
 
-          
+
         }
     }
 
-    //Skeleton
-    skeleton = std::make_unique<Skeleton>();
+    if (mesh->HasBones()) {
+        //Skeleton
+        skeleton = std::make_unique<Skeleton>();
 
-    // heirarchy
-    int boneId = 0;
-    for (int i = 0; i < mesh->mNumBones; i++) {
-        aiBone* aiBone = mesh->mBones[i];
-        auto bone = std::make_unique<Bone>(aiBone, boneId++);
-        skeleton->boneMap[aiBone->mName.C_Str()] = bone.get();
-        skeleton->bones.push_back(std::move(bone));
-    }
+        // heirarchy
+        int boneId = 0;
+        for (int i = 0; i < mesh->mNumBones; i++) {
+            aiBone* aiBone = mesh->mBones[i];
+            auto bone = std::make_unique<Bone>(aiBone, boneId++);
+            skeleton->boneMap[aiBone->mName.C_Str()] = bone.get();
+            skeleton->bones.push_back(std::move(bone));
+        }
 
-    int boneIdArraySize = mesh->mNumVertices * BONE_WEIGHTS_SIZE;
-    boneIds.assign(boneIdArraySize, 0.0f);      
-    boneWeights.assign(boneIdArraySize, 0.0f);  
+        int boneIdArraySize = mesh->mNumVertices * BONE_WEIGHTS_SIZE;
+        boneIds.assign(boneIdArraySize, 0.0f);
+        boneWeights.assign(boneIdArraySize, 0.0f);
 
-    // bone weights
-    for (int i = 0; i < mesh->mNumBones; i++) {
-        aiBone* aiBone = mesh->mBones[i];
-        Bone* bone = skeleton->FindBone(aiBone->mName.data);
-        unsigned int boneId = bone->id;
+        // bone weights
+        for (int i = 0; i < mesh->mNumBones; i++) {
+            aiBone* aiBone = mesh->mBones[i];
+            Bone* bone = skeleton->FindBone(aiBone->mName.data);
+            unsigned int boneId = bone->id;
 
-        for (int j = 0; j < aiBone->mNumWeights; j++) {
-            aiVertexWeight w = aiBone->mWeights[j];
-            unsigned int vertexStart = w.mVertexId * BONE_WEIGHTS_SIZE;
+            for (int j = 0; j < aiBone->mNumWeights; j++) {
+                aiVertexWeight w = aiBone->mWeights[j];
+                unsigned int vertexStart = w.mVertexId * BONE_WEIGHTS_SIZE;
 
-            for (int k = 0; k < BONE_WEIGHTS_SIZE; k++) {
-                if (boneWeights[vertexStart + k] == 0) {
-                    boneWeights[vertexStart + k] = w.mWeight;
-                    boneIds[vertexStart + k] = boneId;
-                    break;
+                for (int k = 0; k < BONE_WEIGHTS_SIZE; k++) {
+                    if (boneWeights[vertexStart + k] == 0) {
+                        boneWeights[vertexStart + k] = w.mWeight;
+                        boneIds[vertexStart + k] = boneId;
+                        break;
+                    }
                 }
             }
         }
-    }
+        fullyLoaded = true;
+        AnimatorComponent::queryAllAnimators(this);
 
-    printSkeleton(skeleton.get(), this);
+
+        printSkeleton(skeleton.get(), this);
+    }
 
 }
 
