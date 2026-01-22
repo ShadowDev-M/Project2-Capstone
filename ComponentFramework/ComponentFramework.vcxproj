@@ -149,6 +149,7 @@
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="ScriptAbstract.h" />
     <ClInclude Include="SkeletalAnimation.h" />
+    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="XMLManager.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="include\imguizmo\ImGuizmo.h" />

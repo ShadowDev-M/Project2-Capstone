@@ -1,4 +1,23 @@
-﻿  Actor.cpp
+﻿  MeshComponent.cpp
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\tiny_obj_loader.h(1665,27): warning C4018: '<': signed/unsigned mismatch
+  (compiling source file '/MeshComponent.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(88,23): warning C4018: '<': signed/unsigned mismatch
+  (compiling source file '/MeshComponent.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(100,23): warning C4018: '<': signed/unsigned mismatch
+  (compiling source file '/MeshComponent.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(105,27): warning C4018: '<': signed/unsigned mismatch
+  (compiling source file '/MeshComponent.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(112,48): warning C4244: '=': conversion from 'unsigned int' to '_Ty', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(112,48): warning C4244:         with
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(112,48): warning C4244:         [
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(112,48): warning C4244:             _Ty=float
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\MeshComponent.cpp(112,48): warning C4244:         ]
+  (compiling source file '/MeshComponent.cpp')
+  
   ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

@@ -8,6 +8,7 @@
         <Asset name="M_ChessBoard" diffuseMap="textures/8x8_checkered_board.png" specularMap=""/>
         <Asset name="M_Skull" diffuseMap="textures/skull_texture.jpg" specularMap=""/>
         <Asset name="M_TestSpec" diffuseMap="textures\8x8_checkered_board.png" specularMap="textures\TestSpecMap.png"/>
+        <Asset name="skeletonTexture" diffuseMap="textures/skeleton_d.png" specularMap=""/>
     </MaterialComponent>
     <MeshComponent>
         <Asset name="SM_Plane" filepath="meshes/Plane.obj"/>
@@ -20,6 +21,9 @@
         <Asset name="SM_Hammer" filepath="meshes/Hammer.obj"/>
         <Asset name="SM_Skull" filepath="meshes/Skull.obj"/>
         <Asset name="testRuntimeMesh" filepath="meshes/Mario.obj"/>
+        <Asset name="SkeletalMeshTest" filepath="meshes/passive_marker_man(1).fbx"/>
+        <Asset name="testassetfbx" filepath="meshes/cliff_rock1.fbx"/>
+        <Asset name="SkeletonMeshRigged" filepath="meshes/skeleton.fbx"/>
     </MeshComponent>
     <ScriptAbstract>
         <Asset name="script1" scriptName="testScript.lua"/>
