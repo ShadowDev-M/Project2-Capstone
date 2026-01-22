@@ -387,6 +387,8 @@ void ScriptService::loadLibraries()
 	//const Vec3 v, const Quaternion& q
 	// 
 	//Vec3 Def
+
+
 	lua.new_usertype<Vec3>("Vec3",
 		sol::constructors<Vec3(), Vec3(float, float, float)>(),
 

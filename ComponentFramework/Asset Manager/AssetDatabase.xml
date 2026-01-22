@@ -22,6 +22,7 @@
     </MeshComponent>
     <ScriptAbstract>
         <Asset name="script1" scriptName="testScript.lua"/>
+        <Asset name="lerjgklktbl" scriptName="testScript.lua"/>
         <Asset name="testScript" scriptName="testScript.lua"/>
         <Asset name="testScriptTwo" scriptName="testScriptTwo.lua"/>
     </ScriptAbstract>
