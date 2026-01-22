@@ -31,7 +31,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			ImGui::Separator();
 
 			/// Components Section
-			// TODO: PhysicsComponent, CollisionComponent + CollisionSystem
+			// TODO: CollisionComponent + CollisionSystem
 
 
 			// transform
@@ -54,11 +54,17 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				DrawShaderComponent(sceneGraph->debugSelectedAssets);
 			}
 
+			// physics (rigidbody)
+			if (selectedActor->second->GetComponent<PhysicsComponent>()) {
+				DrawPhysicsComponent(sceneGraph->debugSelectedAssets);
+			}
+
 			// camera
 			if (selectedActor->second->GetComponent<CameraComponent>()) {
 				DrawCameraComponent(sceneGraph->debugSelectedAssets);
 			}
 			
+			// script
 			if (selectedActor->second->GetComponent<ScriptComponent>()) {
 				DrawScriptComponent(sceneGraph->debugSelectedAssets);
 			}
@@ -83,27 +89,33 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				ImGui::Separator();
 
 				if (ImGui::Selectable("Mesh Component")) {
-				//	if (!selectedActor->second->GetComponent<MeshComponent>()) {
+					if (!selectedActor->second->GetComponent<MeshComponent>()) {
 						selectedActor->second->AddComponent<MeshComponent>(nullptr, "");
-				//	}
+					}
 				}
 
 				if (ImGui::Selectable("Material Component")) {
-				//	if (!selectedActor->second->GetComponent<MaterialComponent>()) {
+					if (!selectedActor->second->GetComponent<MaterialComponent>()) {
 						selectedActor->second->AddComponent<MaterialComponent>(nullptr, "", "");
-				//	}
+					}
 				}
 
 				if (ImGui::Selectable("Shader Component")) {
-				//	if (!selectedActor->second->GetComponent<ShaderComponent>()) {
+					if (!selectedActor->second->GetComponent<ShaderComponent>()) {
 						selectedActor->second->AddComponent<ShaderComponent>(nullptr, "", "");
-				//	}
+					}
+				}
+
+				if (ImGui::Selectable("Physics Component")) {
+					if (!selectedActor->second->GetComponent<PhysicsComponent>()) {
+						selectedActor->second->AddComponent<PhysicsComponent>();
+					}
 				}
 
 				if (ImGui::Selectable("Camera Component")) {
-					//if (!selectedActor->second->GetComponent<CameraComponent>()) {
+					if (!selectedActor->second->GetComponent<CameraComponent>()) {
 						selectedActor->second->AddComponent<CameraComponent>(selectedActor->second, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-					//}
+					}
 				}
 				if (ImGui::Selectable("Script Component")) {
 				//	if (!selectedActor->second->GetComponent<ScriptComponent>()) {
@@ -147,6 +159,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			DrawMeshComponent(sceneGraph->debugSelectedAssets);
 			DrawMaterialComponent(sceneGraph->debugSelectedAssets);
 			DrawShaderComponent(sceneGraph->debugSelectedAssets);
+			DrawPhysicsComponent(sceneGraph->debugSelectedAssets);
 			DrawScriptComponent(sceneGraph->debugSelectedAssets);
 			DrawCameraComponent(sceneGraph->debugSelectedAssets);
 			DrawLightComponent(sceneGraph->debugSelectedAssets);
@@ -167,6 +180,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				ComponentState<MeshComponent> meshState(sceneGraph->debugSelectedAssets);
 				ComponentState<MaterialComponent> materialState(sceneGraph->debugSelectedAssets);
 				ComponentState<ShaderComponent> shaderState(sceneGraph->debugSelectedAssets);
+				ComponentState<PhysicsComponent> physicsState(sceneGraph->debugSelectedAssets);
 				ComponentState<CameraComponent> cameraState(sceneGraph->debugSelectedAssets);
 				ComponentState<ScriptComponent> scriptState(sceneGraph->debugSelectedAssets);
 				ComponentState<LightComponent> lightState(sceneGraph->debugSelectedAssets);
@@ -196,6 +210,16 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<ShaderComponent>()) {
 								pair.second->AddComponent<ShaderComponent>(nullptr, "", "");
+							}
+						}
+					}
+				}
+
+				if (physicsState.noneHaveComponent || physicsState.someHaveComponent) {
+					if (ImGui::Selectable("Physics Component")) {
+						for (const auto& pair : sceneGraph->debugSelectedAssets) {
+							if (!pair.second->GetComponent<PhysicsComponent>()) {
+								pair.second->AddComponent<PhysicsComponent>();
 							}
 						}
 					}
@@ -855,3 +879,76 @@ void InspectorWindow::DrawShaderComponent(const std::unordered_map<uint32_t, Ref
 	ImGui::Separator();
 }
 
+void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
+{
+	ComponentState<PhysicsComponent> physicsState(selectedActors_);
+
+	if (physicsState.noneHaveComponent) return;
+
+	if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen)) {
+		RightClickContext<PhysicsComponent>("##PhysicsPopup", selectedActors_);
+		
+		// Mass
+		bool hasMixedMass = physicsState.HasMixedFloat(&PhysicsComponent::getMass);
+
+		float displayMass = physicsState.GetFirst()->getMass();
+
+		float mass = displayMass;
+
+		ImGui::Text("Mass ");
+		ImGui::SameLine();
+
+		if (hasMixedMass && !isEditingMass) {
+			ImGui::DragFloat("##Mass", &mass, 0.1f, 0.0f, 100.0f, "---");
+		}
+		else { // no delta (might add later)
+			if (ImGui::DragFloat("##Mass", &mass, 0.1f, 0.1f, 100.0f)) {
+				for (auto& component : physicsState.components) {
+					component->setMass(mass);
+				}
+			}
+		}
+
+		isEditingMass = ImGui::IsItemActive();
+		ImGui::ActiveItemLockMousePos();
+
+		// Drag
+
+		// Apply gravity
+		ImGui::Text("Use Gravity ");
+		ImGui::SameLine();
+		ImGui::Checkbox("##Checkbox", &useGravity); 
+		if (useGravity) {
+			for (auto& component : physicsState.components) {
+				component->ApplyForce(Vec3(0.0f, -9.8f * component->getMass(), 0.0f));
+			}
+		}
+		else {
+			for (auto& component : physicsState.components) {
+				component->setVel(Vec3(0.0f, 0.0f, 0.0f));
+				component->setAccel(Vec3(0.0f, 0.0f, 0.0f));
+			}
+		}
+		
+		if (ImGui::TreeNode("Info")) {
+			// Velocity
+			Vec3 displayVel = physicsState.GetFirst()->getVel();
+			float vel[3] = { displayVel.x, displayVel.y, displayVel.z };
+
+			ImGui::Text("Velocity ");
+			ImGui::SameLine();
+			ImGui::DragFloat3("##Vel", vel, 0.1f);
+			
+
+			// Acceleration
+			Vec3 displayAccel = physicsState.GetFirst()->getAccel();
+			float accel[3] = { displayAccel.x, displayAccel.y, displayAccel.z };
+
+			ImGui::Text("Acceleration ");
+			ImGui::SameLine();
+			ImGui::DragFloat3("##Accel", accel, 0.1f);
+			
+			ImGui::TreePop();
+		}
+	}
+}

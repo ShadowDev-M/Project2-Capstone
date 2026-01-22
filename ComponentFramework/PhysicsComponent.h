@@ -14,12 +14,17 @@ class PhysicsComponent : public Component
 	PhysicsComponent& operator = (PhysicsComponent&&) = delete;
 
 private:
+	float mass;
+	Matrix3 rotationalInertia;
+	Vec3 pos;
 	Vec3 vel;
 	Vec3 accel;
-	float mass;
+	Quaternion orientation;
+	Vec3 angularVel;
+	Vec3 angularAcc;
 
 public:
-	PhysicsComponent(Component* parent_, float mass_);
+	PhysicsComponent(Component* parent_ = nullptr, float mass_ = 1.0f);
 	~PhysicsComponent();
 
 	bool OnCreate() override;

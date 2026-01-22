@@ -180,6 +180,11 @@ private:
 	bool isEditingDiff = false;
 	bool isEditingIntensity = false;
 
+	// physics states
+	bool isEditingMass = false;
+
+	bool useGravity = false;
+
 	// header for renaming, isactive
 	void DrawActorHeader(Ref<Actor> actor_);
 
@@ -191,6 +196,7 @@ private:
 	void DrawScriptComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawLightComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawShaderComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
+	void DrawPhysicsComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 
 	// right click popup menu
 	template <typename ComponentTemplate>
@@ -232,6 +238,11 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 				if constexpr (std::is_same_v<ComponentTemplate, ShaderComponent>) {
 					if (pair.second->GetComponent<ShaderComponent>()) {
 						pair.second->RemoveComponent<ShaderComponent>();
+					}
+				}
+				if constexpr (std::is_same_v<ComponentTemplate, PhysicsComponent>) {
+					if (pair.second->GetComponent<PhysicsComponent>()) {
+						pair.second->RemoveComponent<PhysicsComponent>();
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {

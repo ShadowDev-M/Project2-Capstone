@@ -195,6 +195,8 @@ void SceneGraph::Stop()
 {
 	for (auto& actor : Actors) {
 		ScriptService::stopActorScripts(actor.second);
+
+		// Stop physics engine 
 	}
 }
 

@@ -9,7 +9,7 @@
 
 
 
-Scene3GUI::Scene3GUI() : drawInWireMode{ false } {
+Scene3GUI::Scene3GUI() {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
 }
 
@@ -21,20 +21,16 @@ bool Scene3GUI::OnCreate() {
 	Debug::Info("Loading assets Scene3GUI: ", __FILE__, __LINE__);
 
 	AssetManager::getInstance().OnCreate();	
-	AssetManager::getInstance().ListAllAssets();
 	
 	SceneGraph::getInstance().checkValidCamera();
 	
 	SceneGraph::getInstance().OnCreate();
-	SceneGraph::getInstance().ListAllActors();
+	
+	//AssetManager::getInstance().ListAllAssets();
+	//SceneGraph::getInstance().ListAllActors();
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
-	
-	//SceneGraph::getInstance().GetActor("Cube")->AddComponent<ScriptComponent>(SceneGraph::getInstance().GetActor("Cube").get(), "testScript.lua");
-
-//	SceneGraph::getInstance().GetActor("Cube")->GetComponent<ScriptComponent>()->OnCreate();
-	
 	//AudioManager::getInstance().Initialize();
 	//marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);
 
@@ -63,7 +59,12 @@ void Scene3GUI::Update(const float deltaTime) {
 	
 	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
-	SceneGraph::getInstance().Update(deltaTime);
+	if (EditorManager::getInstance().isPlayMode()) {
+		SceneGraph::getInstance().Update(deltaTime);
+
+		//SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->ApplyForce(Vec3(0.0f, -9.8f, 0.0f));
+		//std::cout << SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->getMass();
+	}
 
 	Ref<Actor> cameraActor = SceneGraph::getInstance().getUsedCamera()->GetUserActor();
 	if (cameraActor && cameraActor->GetComponent<TransformComponent>()) {

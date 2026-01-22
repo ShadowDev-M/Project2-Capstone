@@ -134,6 +134,8 @@ void EditorManager::RenderEditorUI() {
 		if (ImGui::ImageButton("##PlayButton", ImTextureID(editorIcons.playIcon->getDiffuseID()), buttonSize)) {
 			SetEditorMode(EditorMode::Play);
 
+			sceneGraph->SaveFile(sceneGraph->cellFileName);
+
 			sceneGraph->Start();
 			Ref<Actor> camera = sceneGraph->GetActor("CamTest");
 			sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
@@ -146,6 +148,12 @@ void EditorManager::RenderEditorUI() {
 		if (ImGui::ImageButton("##StopButton", ImTextureID(editorIcons.stopIcon->getDiffuseID()), buttonSize)) {
 			SetEditorMode(EditorMode::Edit);
 			sceneGraph->Stop();
+
+			sceneGraph->RemoveAllActors();
+			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
+			sceneGraph->setUsedCamera(nullptr);
+			sceneGraph->checkValidCamera();
+			sceneGraph->OnCreate();
 
 			sceneGraph->useDebugCamera();
 		}
@@ -241,7 +249,7 @@ void EditorManager::ShowSaveDialog() {
 				Debug::Info("Saved file: " + sceneGraph->cellFileName, __FILE__, __LINE__);
 			}
 			
-			sceneGraph->cellFileName.clear();
+			//sceneGraph->cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -252,7 +260,7 @@ void EditorManager::ShowSaveDialog() {
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel")) {
-			SceneGraph::getInstance().cellFileName.clear();
+			//SceneGraph::getInstance().cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -297,7 +305,7 @@ void EditorManager::ShowLoadDialog() {
 				Debug::Info("Loaded file: " + sceneGraph->cellFileName, __FILE__, __LINE__);
 			}
 
-			sceneGraph->cellFileName.clear();
+			//sceneGraph->cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -308,7 +316,7 @@ void EditorManager::ShowLoadDialog() {
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel")) {
-			sceneGraph->cellFileName.clear();
+			//sceneGraph->cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 

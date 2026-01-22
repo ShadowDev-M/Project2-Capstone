@@ -11,6 +11,7 @@
 
 #include "AssetManager.h"
 #include "AudioManager.h"
+#include "EditorManager.h"
 
 using namespace MATH;
 
@@ -18,9 +19,6 @@ using namespace MATH;
 union SDL_Event;
 
 class Scene3GUI : public Scene {
-private:
-	bool drawInWireMode;
-
 public:
 	explicit Scene3GUI();
 	virtual ~Scene3GUI();
