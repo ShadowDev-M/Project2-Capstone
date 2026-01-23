@@ -28,7 +28,7 @@ MeshComponent::~MeshComponent() {}
 bool MeshComponent::OnCreate() {
     if (isCreated == true) return true;
     //InitializeMesh();
-    SceneGraph::getInstance().pushMeshToWorker(this);
+   // SceneGraph::getInstance().pushMeshToWorker(this);
     //isCreated == true;
     return true;
 }
@@ -118,12 +118,12 @@ void MeshComponent::LoadModel(const char* filename) {
                 }
             }
         }
-        fullyLoaded = true;
         AnimatorComponent::queryAllAnimators(this);
 
 
         printSkeleton(skeleton.get(), this);
     }
+    fullyLoaded = true;
 
 }
 

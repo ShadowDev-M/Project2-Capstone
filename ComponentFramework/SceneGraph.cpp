@@ -4,7 +4,14 @@
 #include "InputManager.h"
 #include <chrono>
 void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
-	workerQueue.push_back(mesh);
+
+	if (!mesh->queryLoadStatus()) {
+		auto it = std::find(workerQueue.begin(), workerQueue.end(), mesh);
+		auto itsecond = std::find(finishedQueue.begin(), finishedQueue.end(), mesh);
+		if (it == workerQueue.end() && itsecond == finishedQueue.end()) {
+			workerQueue.push_back(mesh); 
+		}
+	}
 }
 void SceneGraph::stopMeshLoadingWorker()
 {
@@ -25,7 +32,6 @@ void SceneGraph::meshLoadingWorker()
 				continue;
 			}
 			model = workerQueue.back();  
-			workerQueue.pop_back();
 		}
 
 		if (model) {
@@ -33,12 +39,18 @@ void SceneGraph::meshLoadingWorker()
 			std::cout << "Loading Model: " << model->getMeshName()  << std::endl;
 
 			model->InitializeMesh(); 
+			workerQueue.pop_back();
 
 			scheduleOnMain([model]() {  
 
 				model->storeLoadedModel();  
 				});
 		}
+		else {
+			workerQueue.pop_back();
+
+		}
+
 	}
 }
 void SceneGraph::processMainThreadTasks() {

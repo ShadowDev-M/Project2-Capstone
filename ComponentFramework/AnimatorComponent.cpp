@@ -97,3 +97,69 @@ void AnimatorComponent::Update(const float deltaTime) {
 
 }
 
+std::vector<std::string> AnimatorComponent::getBoneVisualData() {
+	std::vector<std::string> bonesVisualData;
+	for (size_t i = 0; i < skeleton->bones.size(); i++) {
+		std::string visualDataString;
+		const Bone* bone = skeleton->bones[i].get();
+		visualDataString += "Bone[" + std::to_string(bone->id) + "] \"" + bone->name + "\"\n";
+		visualDataString += "  Parent: " + std::string(bone->parent ? bone->parent->name : "none") + "\n";
+		visualDataString += "  Children count: " + std::to_string(bone->children.size()) + "\n";
+		visualDataString += "  Offset matrix:\n";
+
+		char matrixLine[128];
+		for (int row = 0; row < 4; row++) {
+			snprintf(matrixLine, sizeof(matrixLine), "    %.3f %.3f %.3f %.3f\n",
+				bone->offsetMatrix[row * 4 + 0],
+				bone->offsetMatrix[row * 4 + 1],
+				bone->offsetMatrix[row * 4 + 2],
+				bone->offsetMatrix[row * 4 + 3]);
+			visualDataString += matrixLine;
+		}
+		visualDataString += "\n";
+
+		bonesVisualData.push_back(visualDataString);
+
+	}
+	return bonesVisualData;
+}
+
+std::vector<std::string> AnimatorComponent::getBoneWeightVisualData() {
+	std::vector<std::string> bonesVisualData;
+	int numVertsToPrint = std::min(5, (int)mesh->boneIds.size() / 4);
+	for (int v = 0; v < numVertsToPrint; v++) {
+		std::string visualDataString;
+		int offset = v * 4;
+		char vertexLine[256];
+		snprintf(vertexLine, sizeof(vertexLine), "Vertex %d: ", v);
+		visualDataString += vertexLine;
+
+		for (int k = 0; k < 4; k++) {
+			snprintf(vertexLine, sizeof(vertexLine), "B%d(%.2f) ",
+				(int)mesh->boneIds[offset + k], mesh->boneWeights[offset + k]);
+			visualDataString += vertexLine;
+		}
+		visualDataString += "\n";
+
+
+		bonesVisualData.push_back(visualDataString);
+	}
+
+	return bonesVisualData;
+}
+std::string AnimatorComponent::getSkeletonVisualData()
+{
+
+	std::string visualDataString = R"(
+	Skeleton Debug
+)";
+
+	visualDataString += "Bones count: " + std::to_string(skeleton->bones.size()) + "\n\n";
+	return visualDataString;
+	// Print all bones
+	
+
+	// Print first few vertex bone weights
+	
+}
+

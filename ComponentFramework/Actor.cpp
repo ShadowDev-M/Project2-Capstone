@@ -96,6 +96,14 @@ void Actor::RemoveAllComponents() {
 }
 
 
+void Actor::pushToSceneGraphWorker(Ref<Component> component)
+{
+	Ref<MeshComponent> mesh = std::dynamic_pointer_cast<MeshComponent>(component);
+	SceneGraph::getInstance().pushMeshToWorker(mesh.get());
+
+}
+
+
 //
 void Actor::ListComponents() const {
 	std::cout << typeid(*this).name() << " contains the following components:\n";

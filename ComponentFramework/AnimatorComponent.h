@@ -42,6 +42,12 @@ public:
 	void Render() const;
 	void Update(const float deltaTime);
 
+	std::vector<std::string> getBoneVisualData();
+
+	std::vector<std::string> getBoneWeightVisualData();
+
+	std::string getSkeletonVisualData();
+
 	static void queryAllAnimators(MeshComponent* caller);
 
 };
