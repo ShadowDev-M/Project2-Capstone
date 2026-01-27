@@ -5,7 +5,7 @@
 #include "MeshComponent.h"
 #include "ShaderComponent.h"
 #include "TransformComponent.h"
-
+#include "AnimatorComponent.h"
 using namespace tinyxml2;
 
 struct AssetKey

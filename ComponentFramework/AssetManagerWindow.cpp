@@ -101,7 +101,7 @@ void AssetManagerWindow::ShowAddAssetDialog()
 		
 		// in the popup, pick the type of asset you want to add (using a simple combo here for selection)
 		ImGui::Text("Asset Type:");
-		const char* assetTypes[] = { "MeshComponent", "MaterialComponent", "ShaderComponent", "ScriptAbstract"};
+		const char* assetTypes[] = { "MeshComponent", "MaterialComponent", "ShaderComponent", "ScriptAbstract", "Animation"};
 		ImGui::Combo("##AssetType", &selectedAssetType, assetTypes, IM_ARRAYSIZE(assetTypes));
 
 		ImGui::Separator();
@@ -141,6 +141,11 @@ void AssetManagerWindow::ShowAddAssetDialog()
 			ImGui::InputText("##ScriptPath", &newScriptPath);
 
 		}
+		else if (selectedAssetType == 4) {
+			ImGui::Text("Animation:");
+			ImGui::InputText("##AnimationPath", &newAnimationPath);
+
+		}
 		
 		ImGui::Separator();
 
@@ -157,6 +162,9 @@ void AssetManagerWindow::ShowAddAssetDialog()
 		}
 		else if (selectedAssetType == 3) {
 			canAdd = canAdd && !newScriptPath.empty();
+		}
+		else if (selectedAssetType == 4) {
+			canAdd = canAdd && !newAnimationPath.empty();
 		}
 		// disables button if empty
 		if (!canAdd) {
@@ -198,6 +206,7 @@ void AssetManagerWindow::ResetInput()
 	newVertShaderPath.clear();
 	newFragShaderPath.clear();
 	newScriptPath.clear();
+	newAnimationPath.clear();
 	selectedAssetType = 0;
 	ImGui::CloseCurrentPopup();
 }
@@ -232,6 +241,10 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 		case 3: // Script Component
 			success = AssetManager::getInstance().LoadAsset<ScriptAbstract>(
 				newAssetName, nullptr, newScriptPath.c_str());
+			break;
+		case 4: // Animation
+			success = AssetManager::getInstance().LoadAsset<Animation>(
+				newAssetName, nullptr, newAnimationPath.c_str());
 			break;
 
 		default:
@@ -269,6 +282,7 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 	auto material = std::dynamic_pointer_cast<MaterialComponent>(asset);
 	auto shader = std::dynamic_pointer_cast<ShaderComponent>(asset);
 	auto script = std::dynamic_pointer_cast<ScriptAbstract>(asset);
+	auto animation = std::dynamic_pointer_cast<Animation>(asset);
 
 
 	// disable background for buttons
@@ -293,6 +307,10 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 		ImGui::ImageButton("##ScriptDiffuseBtn", ImTextureID(EditorManager::getInstance().getEditorIcons().shaderIcon->getDiffuseID()), buttonSize);
 		payloadType = "SCRIPT_ASSET";
 	}
+	else if (animation) {
+		ImGui::ImageButton("##AnimationDiffuseBtn", ImTextureID(EditorManager::getInstance().getEditorIcons().meshIcon->getDiffuseID()), buttonSize);
+		payloadType = "ANIMATION_ASSET";
+	}
 	//TODO: if there are more components that need to go into the assetmanager later add them here
 
 	// pop
@@ -315,6 +333,10 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 			}
 			else if (script) {
 				AssetManager::getInstance().RemoveAsset<ScriptAbstract>(assetName);
+
+			}
+			else if (animation) {
+				AssetManager::getInstance().RemoveAsset<Animation>(assetName);
 
 			}
 			// TODO if removing an asset that an actor is using, replace with a temporary asset so program doesn't crash
@@ -367,6 +389,12 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 
 
 			}
+			else if (animation) {
+				if (animation->getName() != "") {
+					std::string command = "start \"\" \"" + std::string((animation->getName())) + "\"";
+					system(command.c_str());
+				}
+			}
 
 
 		}
@@ -415,6 +443,10 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 		}
 		if (script) {
 			ImGui::Text("Script Name: %s", script->getName());
+
+		}
+		if (animation) {
+			ImGui::Text("Animation Name: %s", animation->getName());
 
 		}
 

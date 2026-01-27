@@ -9,9 +9,13 @@
 #include "CameraComponent.h"
 #include "LightComponent.h"
 #include "ScriptComponent.h"
+#include "AnimatorComponent.h"
+
 #include "ScriptAbstract.h"
 #include <mutex>
 #include <queue>
+
+
 class SceneGraph
 {
 	friend class XMLObjectFile;
@@ -68,8 +72,8 @@ private:
 		ActorNameToId[newName_] = actorID_;
 	}
 
-	std::vector<MeshComponent*> workerQueue;
-	std::vector<MeshComponent*> finishedQueue;
+	std::vector<Component*> workerQueue;
+	std::vector<Component*> finishedQueue;
 
 
 	std::queue<std::function<void()>> mainThreadTasks;
@@ -93,6 +97,8 @@ public:
 	bool queryMeshLoadStatus(std::string name);
 
 	void pushMeshToWorker(MeshComponent* mesh);
+
+	void pushAnimationToWorker(Animation* animation);
 
 	//Hardcode the screen height and width rather than using SDL_GetWindowSize, as at lot of the code is designed for 1280 x 720
 	static const int SCENEWIDTH = 1280;

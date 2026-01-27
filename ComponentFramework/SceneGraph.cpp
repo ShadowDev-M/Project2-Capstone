@@ -3,6 +3,7 @@
 #include "XMLManager.h"
 #include "InputManager.h"
 #include <chrono>
+#include "AnimatorComponent.h"
 void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
 
 	if (!mesh->queryLoadStatus()) {
@@ -13,6 +14,19 @@ void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
 		}
 	}
 }
+
+void SceneGraph::pushAnimationToWorker(Animation* animation) {
+
+	if (!animation->queryLoadStatus()) {
+		auto it = std::find(workerQueue.begin(), workerQueue.end(), animation);
+		auto itsecond = std::find(finishedQueue.begin(), finishedQueue.end(), animation);
+		if (it == workerQueue.end() && itsecond == finishedQueue.end()) {
+			workerQueue.push_back(animation);
+		}
+	}
+}
+
+
 void SceneGraph::stopMeshLoadingWorker()
 {
 	shouldStop = true;
@@ -23,7 +37,9 @@ void SceneGraph::stopMeshLoadingWorker()
 void SceneGraph::meshLoadingWorker()
 {
 	while (!shouldStop) {
+
 		MeshComponent* model = nullptr;
+		Animation* animation = nullptr;
 
 		{
 			std::lock_guard<std::mutex> lock(queueMutex);
@@ -31,26 +47,38 @@ void SceneGraph::meshLoadingWorker()
 				std::this_thread::sleep_for(std::chrono::milliseconds(20));
 				continue;
 			}
-			model = workerQueue.back();  
+
+
+			model = dynamic_cast<MeshComponent*>(workerQueue.back());
+			animation = dynamic_cast<Animation*>(workerQueue.back());
 		}
 
 		if (model) {
 
-			std::cout << "Loading Model: " << model->getMeshName()  << std::endl;
+			std::cout << "Loading Model: " << model->getMeshName() << std::endl;
 
-			model->InitializeMesh(); 
+			model->InitializeMesh();
 			workerQueue.pop_back();
 
-			scheduleOnMain([model]() {  
+			scheduleOnMain([model]() {
 
-				model->storeLoadedModel();  
+				model->storeLoadedModel();
 				});
+		}
+		else if (animation) {
+			std::cout << "Loading Animation: " << animation << std::endl;
+
+			animation->InitializeAnimation();
+			workerQueue.pop_back();
+
+			
+
 		}
 		else {
 			workerQueue.pop_back();
 
 		}
-
+	
 	}
 }
 void SceneGraph::processMainThreadTasks() {
@@ -75,7 +103,10 @@ void SceneGraph::scheduleOnMain(std::function<void()> task)
 void SceneGraph::storeInitializedMeshData() {
 
 	while (!finishedQueue.empty()) {
-		finishedQueue.back()->storeLoadedModel();
+
+		if (dynamic_cast<MeshComponent*> (finishedQueue.back())) {
+			dynamic_cast<MeshComponent*> (finishedQueue.back())->storeLoadedModel();
+		}
 
 	}
 
@@ -292,6 +323,7 @@ void SceneGraph::Start()
 	for (auto& actor : Actors) {
 		ScriptService::startActorScripts(actor.second);
 	}
+	GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
 }
 
 
@@ -837,6 +869,11 @@ void SceneGraph::Render() const
 
 	}
 
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	//glDisable(GL_BLEND);
 
 	// go through all actors
 	for (const auto& pair : Actors) {

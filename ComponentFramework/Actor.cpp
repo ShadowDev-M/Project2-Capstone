@@ -5,7 +5,7 @@
 #include "MeshComponent.h"
 #include "InputManager.h"
 #include "SceneGraph.h"
-
+#include "AnimatorComponent.h"
 static uint32_t idCounter = 1;
 
 Actor::Actor(Component* parent_) :Component(parent_) { id = idCounter++; }
@@ -98,8 +98,20 @@ void Actor::RemoveAllComponents() {
 
 void Actor::pushToSceneGraphWorker(Ref<Component> component)
 {
+
+
 	Ref<MeshComponent> mesh = std::dynamic_pointer_cast<MeshComponent>(component);
-	SceneGraph::getInstance().pushMeshToWorker(mesh.get());
+	Ref<Animation> animation = std::dynamic_pointer_cast<Animation>(component);
+
+	if (mesh) {
+		SceneGraph::getInstance().pushMeshToWorker(mesh.get());
+	}
+	else if (animation) {
+
+		SceneGraph::getInstance().pushAnimationToWorker(animation.get());
+
+	}
+
 
 }
 

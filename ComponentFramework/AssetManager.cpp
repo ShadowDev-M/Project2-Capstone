@@ -91,6 +91,15 @@ bool AssetManager::SaveAssetDatabaseXML() const
                     // TODO: rest of the shader file types
                 }
             }
+            else if (componentType.first == "Animation") {
+                auto animation = std::dynamic_pointer_cast<Animation>(asset.second);
+                if (animation) {
+                    if (animation->getName()) {
+                        assetElement->SetAttribute("animationName", animation->getName());
+                    }
+
+                }
+            }
 
             // insert all the assets to its own component type
             componentTypeElement->InsertEndChild(assetElement);
@@ -171,6 +180,9 @@ bool AssetManager::LoadAssetDatabaseXML()
             }
             else if (componentType == "ScriptAbstract") {
                 success = LoadAssetTypeXML<ScriptAbstract>(assetElement, assetName);
+            }
+            else if (componentType == "Animation") {
+                success = LoadAssetTypeXML<Animation>(assetElement, assetName);
             }
             
             //TODO: if there are more components that need to go into the assetmanager later add them here
@@ -338,6 +350,41 @@ bool AssetManager::LoadAssetTypeXML(XMLElement* assetElement_, const std::string
 
         // if the asset manages to pass everything, then display an info debug message
         Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " (abstract script: " + scriptName + ")", __FILE__, __LINE__);
+        return true;
+        }
+    else if constexpr (std::is_same_v<AssetTemplate, Animation>) {
+        // attribute assumes that the path for shaders exists and returns its name(const char*) 
+        const char* animationName = assetElement_->Attribute("animationName");
+
+        // checks to see if any shaders are null
+        if (!animationName) {
+            Debug::Error(componentType + " missing name attribute(s): " + assetName_, __FILE__, __LINE__);
+            return false;
+        }
+
+        // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
+        bool result = AddAsset<Animation>(assetName_, nullptr, animationName);
+        if (!result) {
+            Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
+            return false;
+        }
+
+        // get the specific asset and call its oncreate + error handling
+        auto asset = GetAsset<Animation>(assetName_);
+        if (!asset) {
+            Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__); // GetAsset has an error message for when an asset can't be found when trying to get it, 
+            return false;                                                                                            // this is just extra insurance incase something else messes up
+        }
+        if (!asset->OnCreate()) {
+            Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
+            RemoveAsset<Animation>(assetName_);
+            return false;
+        }
+
+        //TODO: rest of the shader types
+
+        // if the asset manages to pass everything, then display an info debug message
+        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " (Animation: " + animationName + ")", __FILE__, __LINE__);
         return true;
         }
     //TODO: if there are more components that need to go into the assetmanager later add them here

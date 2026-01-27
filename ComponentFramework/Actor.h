@@ -220,7 +220,7 @@ public:
 		AddComponent(newComponent);
 	}
 
-	void pushToSceneGraphWorker(Ref<Component> mesh);
+	void pushToSceneGraphWorker(Ref<Component> component);
 
 	void ListComponents() const;
 	void RemoveAllComponents();

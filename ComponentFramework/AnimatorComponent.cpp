@@ -163,3 +163,49 @@ std::string AnimatorComponent::getSkeletonVisualData()
 	
 }
 
+AnimationClip::AnimationClip()
+{
+}
+
+AnimationClip::~AnimationClip()
+{
+}
+
+void AnimationClip::setAnimation(Ref<Animation> animation_)
+{
+	if (animation_ && !animation_->queryLoadStatus()) {
+		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());
+	}
+	animation = animation_;
+
+}
+
+Animation::Animation(Component* parent, const char* filename_) : Component(nullptr)/*shouldn't really have a parent*/, filename(filename_)
+{
+}
+
+Animation::~Animation()
+{
+}
+
+bool Animation::InitializeAnimation()
+{
+	return false;
+}
+
+bool Animation::OnCreate()
+{
+	return true;
+}
+
+void Animation::OnDestroy()
+{
+}
+
+void Animation::Update(const float deltaTime)
+{
+}
+
+void Animation::Render() const
+{
+}
