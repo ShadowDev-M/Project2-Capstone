@@ -2,7 +2,7 @@
 #include "SceneGraph.h"
 #include "XMLManager.h"
 #include "InputManager.h"
-
+#include "PhysicsSystem.h"
 
 SceneGraph::SceneGraph()
 {
@@ -197,6 +197,7 @@ void SceneGraph::Stop()
 		ScriptService::stopActorScripts(actor.second);
 
 		// Stop physics engine 
+		PhysicsSystem::getInstance().ResetPhysics();
 	}
 }
 
@@ -277,6 +278,18 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}
 
 
+	}
+
+	if (XMLObjectFile::hasComponent<PhysicsComponent>(name_)) {
+		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
+		Ref<PhysicsComponent> PC = Ref<PhysicsComponent>(std::apply([](auto&&... args) {
+			return new PhysicsComponent(args...);
+			}, XMLObjectFile::getComponent<PhysicsComponent>(name_)));
+
+		if (!actor_->GetComponent<PhysicsComponent>()) {
+			actor_->AddComponent(PC);
+			PhysicsSystem::getInstance().AddActor(actor_);
+		}
 	}
 
 	actor_->OnCreate();
@@ -377,6 +390,12 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 	}
 
 	Ref<Actor> actorToRemove = actorIt->second;
+
+	// check to see if actor is in physicssystem and remove it
+	if (actorToRemove->GetComponent<PhysicsComponent>()) {
+		PhysicsSystem::getInstance().RemoveActor(actorToRemove);
+	}
+
 	actorToRemove->DeleteComponent<CameraComponent>();
 
 	// if the actor that is being removed is parented or a parent, get all children
@@ -416,6 +435,8 @@ void SceneGraph::RemoveAllActors()
 {
 	std::cout << "Deleting All Actors In The Scene" << std::endl;
 
+	PhysicsSystem::getInstance().ClearActors();
+
 	// call the OnDestroy for each actor 
 	for (auto& pair : Actors) {
 		if (pair.second) {
@@ -440,18 +461,15 @@ void SceneGraph::Update(const float deltaTime)
 	ScriptService::updateAllScripts(deltaTime);
 
 	for (auto& pair : Actors) {
-
-
-
-
 		// get the second value from the pair (actor)
 		Ref<Actor> actor = pair.second;
-		// get the physics component from the actor
-		Ref<PhysicsComponent> PC = actor->GetComponent<PhysicsComponent>();
-		// if the actor has a physicis component, call the update
-		if (PC) {
-			PC->UpdateP(deltaTime, actor);
+		
+		// call physics system update
+		if (actor->GetComponent<PhysicsComponent>()) {
+			PhysicsSystem::getInstance().Update(deltaTime);
 		}
+
+		// check for collision system
 	}
 	/*if (!(usedCamera == nullptr)) {
 		setUsedCamera();
@@ -831,9 +849,6 @@ bool SceneGraph::OnCreate()
 			Debug::Error("Actor failed to initialize: " + actor.second->getActorName(), __FILE__, __LINE__);
 			return false;
 		}
-
-
-
 	}
 
 

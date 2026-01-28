@@ -107,6 +107,9 @@ private:
 
 	void CreateEditorIcons();
 
+	// temporary save file location
+	std::string tempSaveFile = "tempsave";
+
 public:
 	// Meyers Singleton (from JPs class)
 	static EditorManager& getInstance() {

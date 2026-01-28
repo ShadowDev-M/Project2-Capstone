@@ -3,48 +3,81 @@
 
 using namespace MATH;
 
-// converted Body into a component 
+// reworking physics component to now only hold physics data instead of also trying to handle actual physics interactions
+// now it is more simialr to how the collisioncomponent works
+// the components just store information, and the systems handle the functions/interactions
+
+// using unitys rigidbody component as a reference for the physics component
+
+enum class PhysicsState {
+	Dynamic,
+	Kinematic,
+	Static
+};
 
 class PhysicsComponent : public Component
 {
-	// delete the move and copy constructers
+	friend class PhysicsSystem;
 	PhysicsComponent(const PhysicsComponent&) = delete;
 	PhysicsComponent(PhysicsComponent&&) = delete;
 	PhysicsComponent& operator = (const PhysicsComponent&) = delete;
 	PhysicsComponent& operator = (PhysicsComponent&&) = delete;
 
 private:
+	PhysicsState state;
 	float mass;
-	Matrix3 rotationalInertia;
-	Vec3 pos;
+	bool useGravity;
+	float drag;
+	float angularDrag;
+
+	// TODO: use in collision system
+	//float friction;
+
+	// linear motion 
 	Vec3 vel;
-	Vec3 accel;
-	Quaternion orientation;
+	Vec3 accel;	
+	// angular motion (setting this up just for now, if we want to do angular stuff after)
 	Vec3 angularVel;
 	Vec3 angularAcc;
+	
+	//Matrix3 rotationalInertia;
+	
+	// constraints (more so for freezing position and rotation, will implement actual constraints later if we want them)
 
 public:
-	PhysicsComponent(Component* parent_ = nullptr, float mass_ = 1.0f);
-	~PhysicsComponent();
+	PhysicsComponent(Component* parent_ = nullptr, PhysicsState state_ = PhysicsState::Dynamic, float mass_ = 1.0f, 
+		bool useGrav_ = true, float drag_ = 0.0f, float angularDrag_ = 0.05f);
+	~PhysicsComponent() {};
 
-	bool OnCreate() override;
-	void OnDestroy() override;
-	void Update(float deltaTime) override;
-	void Render() const;
-	
-	void ApplyForce(Vec3 force);
-
-	// cause its inherting from a pure virtual I cant modify Update, so new function
-	void UpdateP(float deltaTime, Ref<Actor> actor);
+	bool OnCreate() { return true; }
+	void OnDestroy() {};
+	void Update(const float deltaTime) {};
+	void Render() const {};
 
 	// setters
+	void setState(PhysicsState state_) { state = state_; }
+	void setMass(const float& mass_) { mass = mass_; } 
+	void setUseGravity(bool useGrav_) { useGravity = useGrav_; }
+
+	void setDrag(float drag_) { drag = drag_; }
+	void setAngularDrag(float angDrag_) { angularDrag = angDrag_; }
+
 	void setVel(const Vec3& vel_) { vel = vel_; }
 	void setAccel(const Vec3& accel_) { accel = accel_; }
-	void setMass(const float& mass_) { mass = mass_; }
+	void setAngularVel(const Vec3& angularVel_) { angularVel = angularVel_; }
+	void setAngularAccel(const Vec3& angularAccel_) { angularAcc = angularAccel_; }
 
 	// getters
+	PhysicsState getState() const { return state; }
+	float getMass() const { return (state == PhysicsState::Static) ? FLT_MAX : mass; } // if static, return infinite mass
+	bool getUseGravity() const { return useGravity; }
+
+	float getDrag() const { return drag; }
+	float getAngularDrag() const { return angularDrag; }
+
 	Vec3 getVel() { return vel; }
 	Vec3 getAccel() { return accel; }
-	float getMass() const { return mass; }
+	Vec3 getAngularVel() { return angularVel; }
+	Vec3 getAngularAccel() { return angularAcc; }
 };
 

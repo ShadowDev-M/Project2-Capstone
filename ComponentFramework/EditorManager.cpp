@@ -134,7 +134,9 @@ void EditorManager::RenderEditorUI() {
 		if (ImGui::ImageButton("##PlayButton", ImTextureID(editorIcons.playIcon->getDiffuseID()), buttonSize)) {
 			SetEditorMode(EditorMode::Play);
 
-			sceneGraph->SaveFile(sceneGraph->cellFileName);
+			// on play, save data to a temporary save file
+			std::filesystem::create_directory("Game Objects/" + tempSaveFile);
+			sceneGraph->SaveFile(tempSaveFile);
 
 			sceneGraph->Start();
 			Ref<Actor> camera = sceneGraph->GetActor("CamTest");
@@ -150,12 +152,16 @@ void EditorManager::RenderEditorUI() {
 			sceneGraph->Stop();
 
 			sceneGraph->RemoveAllActors();
-			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
+			XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
+			
 			sceneGraph->setUsedCamera(nullptr);
 			sceneGraph->checkValidCamera();
 			sceneGraph->OnCreate();
-
 			sceneGraph->useDebugCamera();
+
+			// removing temporary save file data
+			std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
+			std::filesystem::remove_all("Game Objects/" + tempSaveFile);
 		}
 
 		ImGui::PopStyleColor();

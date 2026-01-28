@@ -182,8 +182,7 @@ private:
 
 	// physics states
 	bool isEditingMass = false;
-
-	bool useGravity = false;
+	bool isEditingDrag = false;
 
 	// header for renaming, isactive
 	void DrawActorHeader(Ref<Actor> actor_);

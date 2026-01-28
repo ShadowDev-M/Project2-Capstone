@@ -17,7 +17,7 @@ private:
 
 
 public:
-	/// This function will check the the actor being added is new and has the all proper components 
+	/// This function will check the actor being added is new and has the all proper components 
 	void AddActor(Ref<Actor> actor_) {
 		if (actor_->GetComponent<CollisionComponent>().get() == nullptr) {
 			Debug::Error("The Actor must have a CollisionComponent - ignored ", __FILE__, __LINE__);

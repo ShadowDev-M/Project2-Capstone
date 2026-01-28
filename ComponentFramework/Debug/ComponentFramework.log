@@ -1,4 +1,13 @@
-﻿  PhysicsComponent.cpp
+﻿  AssetManagerWindow.cpp
+  EditorManager.cpp
+  HierarchyWindow.cpp
+  InspectorWindow.cpp
+  MemoryWindow.cpp
+  Scene3GUI.cpp
+  SceneGraph.cpp
+  SceneManager.cpp
+  SceneWindow.cpp
+  Generating Code...
   ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

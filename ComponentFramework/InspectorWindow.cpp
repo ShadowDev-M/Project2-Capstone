@@ -2,6 +2,7 @@
 #include "InspectorWindow.h"
 #include "InputManager.h"
 #include "EditorManager.h"
+#include "PhysicsSystem.h"
 
 //#include "ScriptComponent.h"
 
@@ -886,25 +887,68 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 	if (physicsState.noneHaveComponent) return;
 
 	if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen)) {
-		RightClickContext<PhysicsComponent>("##PhysicsPopup", selectedActors_);
+		RightClickContext<PhysicsComponent>("##PhysicsPopup", sceneGraph->debugSelectedAssets);
 		
-		// Mass
-		bool hasMixedMass = physicsState.HasMixedFloat(&PhysicsComponent::getMass);
-
-		float displayMass = physicsState.GetFirst()->getMass();
-
-		float mass = displayMass;
-
-		ImGui::Text("Mass ");
+		ImGui::Text("Physics State");
 		ImGui::SameLine();
 
-		if (hasMixedMass && !isEditingMass) {
-			ImGui::DragFloat("##Mass", &mass, 0.1f, 0.0f, 100.0f, "---");
+		// Physics State
+		PhysicsState currentState = physicsState.GetFirst()->getState();
+
+		// creating a dropdown, tracking current state name
+		const char* stateModes[] = { "Dynamic", "Kinematic", "Static" };
+		int stateIndex = static_cast<int>(currentState);
+
+		// dropdown for states
+		if (ImGui::Combo("##PhysicsStates", &stateIndex, stateModes, 3)) {
+			PhysicsState newState = static_cast<PhysicsState>(stateIndex);
+			
+			for (auto& component : physicsState.components) {
+				component->setState(newState);
+			}
+		}
+
+		// Mass
+
+		// only showing mass if its not static
+		if (physicsState.GetFirst()->getState() != PhysicsState::Static) {
+			ImGui::Text("Mass");
+			ImGui::SameLine();
+		
+			bool hasMixedMass = physicsState.HasMixedFloat(&PhysicsComponent::getMass);
+			float displayMass = physicsState.GetFirst()->getMass();
+			float mass = displayMass;
+
+			if (hasMixedMass && !isEditingMass) {
+				ImGui::DragFloat("##Mass", &mass, 0.1f, 0.0f, 100.0f, "---");
+			}
+			else { // no delta (might add later)
+				if (ImGui::DragFloat("##Mass", &mass, 0.1f, 0.1f, 100.0f)) {
+					for (auto& component : physicsState.components) {
+						component->setMass(mass);
+					}
+				}
+			}
+
+			isEditingMass = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+		}
+	
+		// Drag
+		ImGui::Text("Drag");
+		ImGui::SameLine();
+
+		bool hasMixedDrag = physicsState.HasMixedFloat(&PhysicsComponent::getDrag);
+		float displayDrag = physicsState.GetFirst()->getDrag();
+		float drag = displayDrag;
+
+		if (hasMixedDrag && !isEditingDrag) {
+			ImGui::DragFloat("##Drag", &drag, 0.1f, 0.0f, 100.0f, "---");
 		}
 		else { // no delta (might add later)
-			if (ImGui::DragFloat("##Mass", &mass, 0.1f, 0.1f, 100.0f)) {
+			if (ImGui::DragFloat("##Drag", &drag, 0.1f, 0.1f, 100.0f)) {
 				for (auto& component : physicsState.components) {
-					component->setMass(mass);
+					component->setDrag(drag);
 				}
 			}
 		}
@@ -912,43 +956,28 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		isEditingMass = ImGui::IsItemActive();
 		ImGui::ActiveItemLockMousePos();
 
-		// Drag
-
 		// Apply gravity
-		ImGui::Text("Use Gravity ");
+		ImGui::Text("Use Gravity");
 		ImGui::SameLine();
-		ImGui::Checkbox("##Checkbox", &useGravity); 
-		if (useGravity) {
-			for (auto& component : physicsState.components) {
-				component->ApplyForce(Vec3(0.0f, -9.8f * component->getMass(), 0.0f));
-			}
-		}
-		else {
-			for (auto& component : physicsState.components) {
-				component->setVel(Vec3(0.0f, 0.0f, 0.0f));
-				component->setAccel(Vec3(0.0f, 0.0f, 0.0f));
-			}
-		}
-		
-		if (ImGui::TreeNode("Info")) {
-			// Velocity
-			Vec3 displayVel = physicsState.GetFirst()->getVel();
-			float vel[3] = { displayVel.x, displayVel.y, displayVel.z };
 
-			ImGui::Text("Velocity ");
-			ImGui::SameLine();
-			ImGui::DragFloat3("##Vel", vel, 0.1f);
+		bool useGravity = physicsState.GetFirst()->getUseGravity();
+
+		if (ImGui::Checkbox("##UseGrav", &useGravity)) {
+			for (auto& component : physicsState.components) {
+				component->setUseGravity(useGravity);
+			}
+		}
+
+		// additional info, check things like velocity and acceleration (not editable)		
+		if (ImGui::TreeNode("Info")) {			
 			
-
-			// Acceleration
-			Vec3 displayAccel = physicsState.GetFirst()->getAccel();
-			float accel[3] = { displayAccel.x, displayAccel.y, displayAccel.z };
-
-			ImGui::Text("Acceleration ");
-			ImGui::SameLine();
-			ImGui::DragFloat3("##Accel", accel, 0.1f);
+			// just displaying text, 1 decimal place, displaying acceleration as speed (might change)
+			ImGui::Text("Speed: %.1f", VMath::mag(physicsState.GetFirst()->getAccel()));
+			ImGui::Text("Velocity: (%.1f, %.1f, %.1f)", physicsState.GetFirst()->getVel().x, physicsState.GetFirst()->getVel().y, physicsState.GetFirst()->getVel().z);
 			
 			ImGui::TreePop();
 		}
 	}
+
+	ImGui::Separator();
 }

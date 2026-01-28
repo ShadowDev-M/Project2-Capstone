@@ -453,6 +453,40 @@ public:
             return args;
 
         }
+        else if constexpr (std::is_same_v<ComponentTemplate, PhysicsComponent>) {
+            // physics
+
+            XMLElement* stateElement = component->FirstChildElement("PhysicsState");
+            XMLElement* massElement = component->FirstChildElement("mass");
+            XMLElement* useGravityElement = component->FirstChildElement("UsingGravity");
+            XMLElement* dragElement = component->FirstChildElement("drag");
+            XMLElement* angularDragElement = component->FirstChildElement("angularDrag");
+
+            // physics state
+            PhysicsState physicsStateArg = static_cast<PhysicsState>(GetAttrF(stateElement, "state"));
+
+            // mass
+            float massArg = GetAttrF(massElement, "value");
+
+            // using gravity
+            bool useGravityArg = static_cast<bool>(GetAttrF(useGravityElement, "isUsing"));
+
+            // drag
+            float dragArg = GetAttrF(dragElement, "value");
+
+            // angular drag
+            float angularDragArg = GetAttrF(angularDragElement, "value");
+
+            //return the tuple to act as arguments
+            auto args = std::make_tuple(nullptr,
+                physicsStateArg,
+                massArg,
+                useGravityArg,
+                dragArg,
+                angularDragArg
+            );
+            return args;
+        }
         else if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
             //LIGHT
 
@@ -609,6 +643,39 @@ public:
             scale->SetAttribute("z", scaleVector.z);
 
             componentElement->InsertEndChild(scale);
+        }
+        else if constexpr (std::is_same_v<ComponentTemplate, PhysicsComponent>) {
+            PhysicsComponent* componentToWrite = dynamic_cast<PhysicsComponent*>(toWrite);
+
+            // physics state
+            XMLElement* stateElement;
+            stateElement = doc.NewElement("PhysicsState");
+            stateElement->SetAttribute("state", static_cast<int>(componentToWrite->getState()));
+            componentElement->InsertEndChild(stateElement);
+
+            // mass
+            XMLElement* massElement;
+            massElement = doc.NewElement("mass");
+            massElement->SetAttribute("value", componentToWrite->getMass());
+            componentElement->InsertEndChild(massElement);
+
+            // using gravity
+            XMLElement* useGravityElement;
+            useGravityElement = doc.NewElement("UsingGravity");
+            useGravityElement->SetAttribute("isUsing", static_cast<int>(componentToWrite->getUseGravity()));
+            componentElement->InsertEndChild(useGravityElement);
+
+            // drag
+            XMLElement* dragElement;
+            dragElement = doc.NewElement("drag");
+            dragElement->SetAttribute("value", componentToWrite->getDrag());
+            componentElement->InsertEndChild(dragElement);
+            
+            // angular drag
+            XMLElement* angularDragElement;
+            angularDragElement = doc.NewElement("angularDrag");
+            angularDragElement->SetAttribute("value", componentToWrite->getAngularDrag());
+            componentElement->InsertEndChild(angularDragElement);
         }
         else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
         
