@@ -1,10 +1,10 @@
 <Actor>
     <TransformComponent>
-        <position x="3.099685" y="-3.0996826" z="0"/>
-        <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="1" y="1" z="1"/>
+        <position x="12.090068" y="-3.0996826" z="0"/>
+        <rotation w="0.70712441" x="-0.70708913" y="-0" z="0"/>
+        <scale x="7" y="6.9999547" z="6.9999547"/>
     </TransformComponent>
-    <MeshComponent name="SM_Mario"/>
-    <MaterialComponent name="M_MarioN"/>
+    <MeshComponent name="SkeletonMeshRigged"/>
+    <MaterialComponent name="skeletonTexture"/>
     <ShaderComponent name="S_Multi"/>
 </Actor>

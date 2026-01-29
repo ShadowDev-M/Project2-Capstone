@@ -1,6 +1,7 @@
 #pragma once
 #include "SceneGraph.h"
 #include "ScriptComponent.h"
+
 class InspectorWindow
 {
 	// delete the move and copy constructers
@@ -196,6 +197,7 @@ private:
 	void DrawLightComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawShaderComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawPhysicsComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
+	void DrawAnimatorComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 
 	// right click popup menu
 	template <typename ComponentTemplate>

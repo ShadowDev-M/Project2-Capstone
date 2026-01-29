@@ -3,8 +3,23 @@
 
 using namespace MATH;
 
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/mesh.h"
+#include "assimp/postprocess.h"
+
+#include "AnimatorComponent.h"
+#include "Skeleton.h"
+#include "SceneGraph.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+
+void MeshComponent::storeLoadedModel()
+{
+
+    StoreMeshData(GL_TRIANGLES);
+}
 
 MeshComponent::MeshComponent(Component *parent_, const char* filename_): Component(parent_), filename(filename_) {}
 
@@ -12,49 +27,142 @@ MeshComponent::~MeshComponent() {}
 
 bool MeshComponent::OnCreate() {
     if (isCreated == true) return true;
-	LoadModel(filename.c_str());
-    StoreMeshData(GL_TRIANGLES);
+    //InitializeMesh();
+   // SceneGraph::getInstance().pushMeshToWorker(this);
     //isCreated == true;
     return true;
 }
 
+bool MeshComponent::InitializeMesh() {
+    LoadModel(filename.c_str());
+    return true;
+}
 
+void MeshComponent::LoadSkeleton(const char* filename)
+{
+    
+
+}
 
 void MeshComponent::LoadModel(const char* filename) {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
 
-    vertices.clear();
-    normals.clear();
-	uvCoords.clear();
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename)) {
-        throw std::runtime_error(warn + err); /// This is how tinyobj want to handle errors
-    }
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            Vec3 vertex{};
-            vertex.x = attrib.vertices[3 * index.vertex_index + 0];
-            vertex.y = attrib.vertices[3 * index.vertex_index + 1];
-            vertex.z = attrib.vertices[3 * index.vertex_index + 2];
-            
-            Vec3 normal{};
-            normal.x = attrib.normals[3 * index.normal_index + 0];
-            normal.y = attrib.normals[3 * index.normal_index + 1];
-            normal.z = attrib.normals[3 * index.normal_index + 2];
+    //based on this 
+    //https://nickthecoder.wordpress.com/2013/01/20/mesh-loading-with-assimp/
 
-            Vec2 uvCoord{};
-            uvCoord.x = attrib.texcoords[2 * index.texcoord_index + 0];
-            uvCoord.y = attrib.texcoords[2 * index.texcoord_index + 1];
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Fast);//aiProcessPreset_TargetRealtime_Fast has the configs you'll need
+
+    aiMesh* mesh = scene->mMeshes[0]; //assuming you only want the first mesh
+
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+    {
+        const aiFace& face = mesh->mFaces[i];
+
+        for (int j = 0; j < 3; j++)
+        {
+            aiVector3D aiVertex = mesh->mVertices[face.mIndices[j]];
+            Vec3 vertex{ aiVertex.x, aiVertex.y, aiVertex.z };
+
+
+            aiVector3D aiNormal = mesh->mNormals[face.mIndices[j]];
+            Vec3 normal{ aiNormal.x, aiNormal.y, aiNormal.z };
+
+
+            aiVector3D aiUv = mesh->mTextureCoords[0][face.mIndices[j]];
+            Vec2 uvCoord{ aiUv.x, aiUv.y };
+
+
 
             vertices.push_back(vertex);
             normals.push_back(normal);
             uvCoords.push_back(uvCoord);
+
+
         }
-    } 
+    }
+
+    if (mesh->HasBones()) {
+        //Skeleton
+        skeleton = std::make_unique<Skeleton>();
+
+        // heirarchy
+        int boneId = 0;
+        for (int i = 0; i < mesh->mNumBones; i++) {
+            aiBone* aiBone = mesh->mBones[i];
+            auto bone = std::make_unique<Bone>(aiBone, boneId++);
+            skeleton->boneMap[aiBone->mName.C_Str()] = bone.get();
+            skeleton->bones.push_back(std::move(bone));
+        }
+
+        int boneIdArraySize = mesh->mNumVertices * BONE_WEIGHTS_SIZE;
+        boneIds.assign(boneIdArraySize, 0.0f);
+        boneWeights.assign(boneIdArraySize, 0.0f);
+
+        // bone weights
+        for (int i = 0; i < mesh->mNumBones; i++) {
+            aiBone* aiBone = mesh->mBones[i];
+            Bone* bone = skeleton->FindBone(aiBone->mName.data);
+            unsigned int boneId = bone->id;
+
+            for (int j = 0; j < aiBone->mNumWeights; j++) {
+                aiVertexWeight w = aiBone->mWeights[j];
+                unsigned int vertexStart = w.mVertexId * BONE_WEIGHTS_SIZE;
+
+                for (int k = 0; k < BONE_WEIGHTS_SIZE; k++) {
+                    if (boneWeights[vertexStart + k] == 0) {
+                        boneWeights[vertexStart + k] = w.mWeight;
+                        boneIds[vertexStart + k] = boneId;
+                        break;
+                    }
+                }
+            }
+        }
+        AnimatorComponent::queryAllAnimators(this);
+
+
+        printSkeleton(skeleton.get(), this);
+    }
+    fullyLoaded = true;
+
 }
+
+void MeshComponent::printSkeleton(const Skeleton* skeleton, MeshComponent* mesh) {
+    std::cout << "\n=== SKELETON DEBUG ===\n";
+    std::cout << "Bones count: " << skeleton->bones.size() << "\n\n";
+
+    // Print all bones
+    for (size_t i = 0; i < skeleton->bones.size(); i++) {
+        const Bone* bone = skeleton->bones[i].get();
+        std::cout << "Bone[" << bone->id << "] \"" << bone->name << "\"\n";
+        std::cout << "  Parent: " << (bone->parent ? bone->parent->name : "none") << "\n";
+        std::cout << "  Children count: " << bone->children.size() << "\n";
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "  Offset matrix:\n";
+        for (int row = 0; row < 4; row++) {
+            std::cout << "    " << bone->offsetMatrix[row * 4 + 0] << " "
+                << bone->offsetMatrix[row * 4 + 1] << " "
+                << bone->offsetMatrix[row * 4 + 2] << " "
+                << bone->offsetMatrix[row * 4 + 3] << "\n";
+        }
+        std::cout << "\n";
+    }
+
+    // Print first few vertex bone weights
+    std::cout << "=== VERTEX BONE WEIGHTS ===\n";
+    int numVertsToPrint = std::min(5, (int)mesh->boneIds.size() / 4);
+    for (int v = 0; v < numVertsToPrint; v++) {
+        int offset = v * 4;
+        std::cout << "Vertex " << v << ": ";
+        for (int k = 0; k < 4; k++) {
+            std::cout << "B" << (int)mesh->boneIds[offset + k]
+                << "(" << std::fixed << std::setprecision(2)
+                << mesh->boneWeights[offset + k] << ") ";
+        }
+        std::cout << "\n";
+    }
+}
+
 
 void MeshComponent::StoreMeshData(GLenum drawmode_) {
     drawmode = drawmode_;

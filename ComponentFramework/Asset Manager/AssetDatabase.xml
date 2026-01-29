@@ -1,4 +1,7 @@
 <AssetDatabase>
+    <Animation>
+        <Asset name="svgvuijwerjtuiew" animationName="example"/>
+    </Animation>
     <MaterialComponent>
         <Asset name="M_Sphere" diffuseMap="textures/Black Chess Base Colour.png" specularMap=""/>
         <Asset name="M_Moon" diffuseMap="textures/moon.jpg" specularMap=""/>
@@ -7,7 +10,10 @@
         <Asset name="M_MarioN" diffuseMap="textures/mario_main.png" specularMap=""/>
         <Asset name="M_ChessBoard" diffuseMap="textures/8x8_checkered_board.png" specularMap=""/>
         <Asset name="M_Skull" diffuseMap="textures/skull_texture.jpg" specularMap=""/>
+        <Asset name="testtex" diffuseMap="textures/Underwater Box_Negz.png" specularMap=""/>
         <Asset name="M_TestSpec" diffuseMap="textures\8x8_checkered_board.png" specularMap="textures\TestSpecMap.png"/>
+        <Asset name="skeletonTexture" diffuseMap="textures/skeleton_d.png" specularMap=""/>
+        <Asset name="gridtexture2" diffuseMap="textures/gridimage.png" specularMap=""/>
     </MaterialComponent>
     <MeshComponent>
         <Asset name="SM_Plane" filepath="meshes/Plane.obj"/>
@@ -19,11 +25,16 @@
         <Asset name="SM_Rook" filepath="meshes/Rook.obj"/>
         <Asset name="SM_Hammer" filepath="meshes/Hammer.obj"/>
         <Asset name="SM_Skull" filepath="meshes/Skull.obj"/>
+        <Asset name="testRuntimeMesh" filepath="meshes/Mario.obj"/>
+        <Asset name="testassetfbx" filepath="meshes/cliff_rock1.fbx"/>
+        <Asset name="SkeletonMeshRigged" filepath="meshes/skeleton.fbx"/>
+        <Asset name="grid" filepath="meshes/grid.obj"/>
     </MeshComponent>
     <ScriptAbstract>
         <Asset name="script1" scriptName="testScript.lua"/>
-        <Asset name="testScript" scriptName="testScript.lua"/>
         <Asset name="testScriptTwo" scriptName="testScriptTwo.lua"/>
+        <Asset name="lerjgklktbl" scriptName="testScript.lua"/>
+        <Asset name="testScript" scriptName="testScript.lua"/>
     </ScriptAbstract>
     <ShaderComponent>
         <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
