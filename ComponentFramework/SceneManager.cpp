@@ -74,7 +74,6 @@ void SceneManager::Run() {
 	EditorManager& editor = EditorManager::getInstance();
 
 	while (isRunning) {
-		SceneGraph::getInstance().storeInitializedMeshData();
 		HandleEvents();
 		timer->UpdateFrameTicks();
 		currentScene->Update(timer->GetDeltaTime());

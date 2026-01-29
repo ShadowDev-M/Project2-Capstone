@@ -1,5 +1,5 @@
 #pragma once
-class MeshComponent;
+
 using namespace MATH;
 
 class Actor : public Component {
@@ -205,22 +205,15 @@ public:
 		for (auto& component : components) {
 			if (std::dynamic_pointer_cast<ComponentTemplate>(component)) {
 				component = newComponent;
-				if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MeshComponent") {
 
-					pushToSceneGraphWorker(newComponent);
-				}
 				return;
 			}
 		}
-		if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MeshComponent") {
 
-			pushToSceneGraphWorker(newComponent);
-		}
 		// if the component that is trying to be replaced doesn't exist, add it instead
 		AddComponent(newComponent);
 	}
 
-	void pushToSceneGraphWorker(Ref<Component> component);
 
 	void ListComponents() const;
 	void RemoveAllComponents();

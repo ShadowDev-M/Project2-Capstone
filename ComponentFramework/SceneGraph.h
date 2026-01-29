@@ -9,12 +9,7 @@
 #include "CameraComponent.h"
 #include "LightComponent.h"
 #include "ScriptComponent.h"
-#include "AnimatorComponent.h"
-
 #include "ScriptAbstract.h"
-#include <mutex>
-#include <queue>
-
 
 class SceneGraph
 {
@@ -34,9 +29,6 @@ private:
 	GLenum drawMode = GL_FILL;
 
 	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
-
-	std::thread workerThread;
-	std::atomic<bool> shouldStop{ false };  // Thread-safe flag
 
 	bool RENDERMAINSCREEN = 0;
  
@@ -72,39 +64,11 @@ private:
 		ActorNameToId[newName_] = actorID_;
 	}
 
-	std::vector<Component*> workerQueue;
-	std::vector<Component*> finishedQueue;
-
-
-	std::queue<std::function<void()>> mainThreadTasks;
-
-	std::mutex queueMutex;
-
-	std::mutex taskMutex;
-	std::condition_variable taskCV;
-
-	void meshLoadingWorker();
-
-	void processMainThreadTasks();
-
-	
-
 public:
-	void scheduleOnMain(std::function<void()> task);
-
-	void storeInitializedMeshData();
-
-	bool queryMeshLoadStatus(std::string name);
-
-	void pushMeshToWorker(MeshComponent* mesh);
-
-	void pushAnimationToWorker(Animation* animation);
 
 	//Hardcode the screen height and width rather than using SDL_GetWindowSize, as at lot of the code is designed for 1280 x 720
 	static const int SCENEWIDTH = 1280;
 	static const int SCENEHEIGHT = 720;
-
-	void stopMeshLoadingWorker();
 
 
 	// Meyers Singleton (from JPs class)
@@ -112,8 +76,6 @@ public:
 		static SceneGraph instance;
 		return instance;
 	}
-
-	bool queryMeshLoadStatus();
 
 	SceneGraph();
 
@@ -128,8 +90,6 @@ public:
 	mutable std::string cellFileName = "LevelThree";
 
 	void setUsedCamera(Ref<CameraComponent> newCam);
-
-	void startMeshLoadingWorkerThread();
 
 	Ref<CameraComponent> getUsedCamera() const;
 

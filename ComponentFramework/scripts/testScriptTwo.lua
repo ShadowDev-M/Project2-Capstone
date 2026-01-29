@@ -4,5 +4,6 @@ function Start()
 end
 
 function Update(deltaTime)
-	Transform.Position = Transform.Position + new Vec3(0, 0, 1) 
+	print(Transform.Position, "test")        
+
 end

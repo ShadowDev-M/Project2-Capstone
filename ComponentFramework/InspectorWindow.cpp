@@ -2,7 +2,6 @@
 #include "InspectorWindow.h"
 #include "InputManager.h"
 #include "EditorManager.h"
-#include "AnimatorComponent.h"
 #include "PhysicsSystem.h"
 
 //#include "ScriptComponent.h"
@@ -71,10 +70,6 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				DrawScriptComponent(sceneGraph->debugSelectedAssets);
 			}
 
-			if (selectedActor->second->GetComponent<AnimatorComponent>()) {
-				DrawAnimatorComponent(sceneGraph->debugSelectedAssets);
-			}	
-			
 			// light
 			if (selectedActor->second->GetComponent<LightComponent>()) {
 				DrawLightComponent(sceneGraph->debugSelectedAssets);
@@ -689,64 +684,6 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 
 			ImGui::PopID(); // Pop the ID from the stack
 		}
-	}
-}
-
-
-void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, Ref<Actor>>&selectedActors_)
-{
-	ComponentState<AnimatorComponent> animatorState(selectedActors_);
-	if (animatorState.noneHaveComponent) return;
-
-	for (auto& animator : selectedActors_.begin()->second->GetAllComponent<AnimatorComponent>()) {
-		if (ImGui::CollapsingHeader("AnimatorComponent")) {
-			RightClickContext<ScriptComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
-
-			ImGuiChildFlags skeletonFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY;
-			ImGui::TextWrapped("%s", animator->getSkeletonVisualData().c_str());
-			
-
-			ImGui::Separator();
-
-			ImGuiChildFlags detailsFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY;
-			if (ImGui::BeginChild("details_panel", ImVec2(0, 150), detailsFlags)) {
-	
-
-
-				if (ImGui::CollapsingHeader("Data")) {
-					if (ImGui::BeginChild("databone_details", ImVec2(0, 0), ImGuiChildFlags_Borders)) {
-
-						int boneId = 0;
-						for (auto& boneData : animator->getBoneVisualData()) {
-							ImGui::PushID(("bone_" + std::to_string(boneId)).c_str());
-							std::string boneName = "Bone " + std::to_string(boneId);
-							if (ImGui::CollapsingHeader(boneName.c_str())) {
-								ImGui::TextWrapped("%s", boneData.c_str());
-							}
-							ImGui::PopID();
-							boneId++;
-							ImGui::Separator();
-						}
-
-						int weightId = 0;
-						for (auto& weightData : animator->getBoneWeightVisualData()) {
-							ImGui::PushID(("weight_" + std::to_string(weightId)).c_str());
-							std::string weightName = "Bone Weight " + std::to_string(weightId);
-							if (ImGui::CollapsingHeader(weightName.c_str())) {
-								ImGui::TextWrapped("%s", weightData.c_str());
-							}
-							ImGui::PopID();
-							ImGui::Separator();
-							weightId++;
-						}
-					}
-					ImGui::EndChild(); 
-
-				}
-			}
-			ImGui::EndChild();  
-		}
-		ImGui::Separator();
 	}
 }
 

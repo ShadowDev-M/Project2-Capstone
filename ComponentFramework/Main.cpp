@@ -19,8 +19,6 @@ int main(int argc, char* args[]) {
 	} 
 	delete gsm;
 	_CrtDumpMemoryLeaks();
-	std::cout << (int)MEMORY_NUMUSEDBYTES << std::endl;
-
 	exit(0);
 }
 

@@ -5,7 +5,7 @@
 #include "MeshComponent.h"
 #include "InputManager.h"
 #include "SceneGraph.h"
-#include "AnimatorComponent.h"
+
 static uint32_t idCounter = 1;
 
 Actor::Actor(Component* parent_) :Component(parent_) { id = idCounter++; }
@@ -18,17 +18,7 @@ bool Actor::OnCreate() {
 	Debug::Info("Loading assets for Actor: ", __FILE__, __LINE__);
 	
 	// Loops over all components
-	for (auto& component : components) {
-
-		std::string componentType = static_cast<std::string>(typeid(component.get()).name()).substr(6); //TODO: substr removes the 'class ' that gets added when getting the name from a typeid, 
-
-		if (std::dynamic_pointer_cast<ShaderComponent>(component) ||
-			std::dynamic_pointer_cast<MeshComponent>(component) ||
-			std::dynamic_pointer_cast<MaterialComponent>(component) ||
-			std::dynamic_pointer_cast<ScriptComponent>(component)) {
-			continue;
-		}
-
+	for (auto &component : components) {
 		if (component->OnCreate() == false) {
 			Debug::Error("Loading assets for Actor/Components: ", __FILE__, __LINE__);
 			isCreated = false;
@@ -93,26 +83,6 @@ bool Actor::DeinitalizeLight()
 void Actor::RemoveAllComponents() {
 	DeinitalizeLight();
 	components.clear();
-}
-
-
-void Actor::pushToSceneGraphWorker(Ref<Component> component)
-{
-
-
-	Ref<MeshComponent> mesh = std::dynamic_pointer_cast<MeshComponent>(component);
-	Ref<Animation> animation = std::dynamic_pointer_cast<Animation>(component);
-
-	if (mesh) {
-		SceneGraph::getInstance().pushMeshToWorker(mesh.get());
-	}
-	else if (animation) {
-
-		SceneGraph::getInstance().pushAnimationToWorker(animation.get());
-
-	}
-
-
 }
 
 

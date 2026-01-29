@@ -58,9 +58,6 @@
     <Filter Include="Source Files\Tools">
       <UniqueIdentifier>{40192462-4d31-485b-9765-58f28e897693}</UniqueIdentifier>
     </Filter>
-    <Filter Include="include\assimp">
-      <UniqueIdentifier>{816729a2-a73a-4fef-bffc-093989df348d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="GameEngineLog.txt">
@@ -209,12 +206,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files\Tools</Filter>
     </ClInclude>
-    <ClInclude Include="Skeleton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimatorComponent.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
     <ClInclude Include="PhysicsSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -348,9 +339,6 @@
     </ClCompile>
     <ClCompile Include="MemoryMonitor.cpp">
       <Filter>Source Files\Tools</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimatorComponent.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files\Managers</Filter>
