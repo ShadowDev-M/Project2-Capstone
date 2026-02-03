@@ -323,6 +323,8 @@ void SceneGraph::Start()
 	for (auto& actor : Actors) {
 		ScriptService::startActorScripts(actor.second);
 	}
+
+	// TODO: disabled this line for now, it was crashing the engine on playmode
 	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
 }
 
