@@ -80,12 +80,12 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)\External\sol2-develop\include;$(ProjectDir)\External\luajit\src;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\External\sol2-develop\include;$(ProjectDir)\External\luajit\src;$(ProjectDir)\include\assimp\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;$(ProjectDir)\External\luajit\src;$(ProjectDir)\include\assimp\lib;$(ProjectDir)\include\IrrKlang\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2main.lib;glew32.lib;glew32s.lib;opengl32.lib;lua51.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\include\gamedev\OpenGL\lib;$(ProjectDir)\include\gamedev\SDL\lib;$(ProjectDir)\External\luajit\src;$(ProjectDir)\include\assimp\lib;$(ProjectDir)\include\IrrKlang\lib;$(ProjectDir)\include\assimp\include;$(ProjectDir)\include\assimp\x86;$(ProjectDir)\include\assimp\x86\Debug;$(ProjectDir)\include\assimp\x86\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2main.lib;glew32.lib;glew32s.lib;opengl32.lib;lua51.lib;irrKlang.lib;assimp-vc143-mtd.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -133,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManagerWindow.h" />
     <ClInclude Include="AudioManager.h" />
@@ -150,6 +151,7 @@
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="ScriptAbstract.h" />
     <ClInclude Include="SkeletalAnimation.h" />
+    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="XMLManager.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="include\imguizmo\ImGuizmo.h" />
@@ -184,6 +186,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManagerWindow.cpp" />
     <ClCompile Include="AudioManager.cpp" />

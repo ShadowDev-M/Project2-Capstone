@@ -2,7 +2,131 @@
 #include "SceneGraph.h"
 #include "XMLManager.h"
 #include "InputManager.h"
+#include "AnimatorComponent.h"
 #include "PhysicsSystem.h"
+void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
+
+	if (!mesh->queryLoadStatus()) {
+		auto it = std::find(workerQueue.begin(), workerQueue.end(), mesh);
+		auto itsecond = std::find(finishedQueue.begin(), finishedQueue.end(), mesh);
+		if (it == workerQueue.end() && itsecond == finishedQueue.end()) {
+			workerQueue.push_back(mesh); 
+		}
+	}
+}
+
+void SceneGraph::pushAnimationToWorker(Animation* animation) {
+
+	if (!animation->queryLoadStatus()) {
+		auto it = std::find(workerQueue.begin(), workerQueue.end(), animation);
+		auto itsecond = std::find(finishedQueue.begin(), finishedQueue.end(), animation);
+		if (it == workerQueue.end() && itsecond == finishedQueue.end()) {
+			workerQueue.push_back(animation);
+		}
+	}
+}
+
+
+void SceneGraph::stopMeshLoadingWorker()
+{
+	shouldStop = true;
+	if (workerThread.joinable()) {
+		workerThread.join();
+	}
+}
+void SceneGraph::meshLoadingWorker()
+{
+	while (!shouldStop) {
+
+		MeshComponent* model = nullptr;
+		Animation* animation = nullptr;
+
+		{
+			std::lock_guard<std::mutex> lock(queueMutex);
+			if (workerQueue.empty()) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(20));
+				continue;
+			}
+
+
+			model = dynamic_cast<MeshComponent*>(workerQueue.back());
+			animation = dynamic_cast<Animation*>(workerQueue.back());
+		}
+
+		if (model) {
+
+			std::cout << "Loading Model: " << model->getMeshName() << std::endl;
+
+			model->InitializeMesh();
+			workerQueue.pop_back();
+
+			scheduleOnMain([model]() {
+
+				model->storeLoadedModel();
+				});
+		}
+		else if (animation) {
+			std::cout << "Loading Animation: " << animation << std::endl;
+
+			animation->InitializeAnimation();
+			workerQueue.pop_back();
+
+			
+
+		}
+		else {
+			workerQueue.pop_back();
+
+		}
+	
+	}
+}
+void SceneGraph::processMainThreadTasks() {
+	std::unique_lock<std::mutex> lock(taskMutex);
+	while (!mainThreadTasks.empty()) {
+		auto task = std::move(mainThreadTasks.front());
+		mainThreadTasks.pop();
+		lock.unlock();  // Release lock before OpenGL
+		task();
+		lock.lock();
+	}
+}
+void SceneGraph::scheduleOnMain(std::function<void()> task)
+{
+	{
+		std::lock_guard<std::mutex> lock(taskMutex);
+		mainThreadTasks.push(std::move(task));
+	}
+	taskCV.notify_one();
+}
+
+void SceneGraph::storeInitializedMeshData() {
+
+	while (!finishedQueue.empty()) {
+
+		if (dynamic_cast<MeshComponent*> (finishedQueue.back())) {
+			dynamic_cast<MeshComponent*> (finishedQueue.back())->storeLoadedModel();
+		}
+
+	}
+
+}
+
+bool SceneGraph::queryMeshLoadStatus(std::string name)
+{
+	for (auto& obj : Actors) {
+		
+		Ref<MeshComponent> queriedMesh = obj.second->GetComponent<MeshComponent>();
+		if (queriedMesh && queriedMesh->getMeshName() == name.c_str()) {
+			return queriedMesh->queryLoadStatus();
+		}
+
+	}
+
+
+	return false;
+}
+
 
 SceneGraph::SceneGraph()
 {
@@ -22,10 +146,15 @@ SceneGraph::SceneGraph()
 
 	pickerShader->OnCreate();
 	ScriptService::loadLibraries();
+	startMeshLoadingWorkerThread();
+
 }
 
 SceneGraph::~SceneGraph()
 {
+	//end the mesh loading thread
+	
+
 	RemoveAllActors();
 	pickerShader->OnDestroy();
 	glDeleteFramebuffers(1, &pickingFBO);
@@ -54,6 +183,12 @@ void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
 	else if (!newCam) {
 		useDebugCamera();
 	}
+}
+
+void SceneGraph::startMeshLoadingWorkerThread()
+{
+	workerThread = std::thread(&SceneGraph::meshLoadingWorker, this);
+	//t.detach();              
 }
 
 Ref<CameraComponent> SceneGraph::getUsedCamera() const
@@ -188,6 +323,7 @@ void SceneGraph::Start()
 	for (auto& actor : Actors) {
 		ScriptService::startActorScripts(actor.second);
 	}
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
 }
 
 
@@ -213,7 +349,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		if (!materialName.empty()) {
 			Ref<MaterialComponent> materialComponent = AssetManager::getInstance().GetAsset<MaterialComponent>(materialName);
 			if (materialComponent) {
-				actor_->AddComponent<MaterialComponent>(materialComponent);
+				actor_->ReplaceComponent<MaterialComponent>(materialComponent);
 			}
 		}
 	}
@@ -223,7 +359,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		if (!shaderName.empty()) {
 			Ref<ShaderComponent> shaderComponent = AssetManager::getInstance().GetAsset<ShaderComponent>(shaderName);
 			if (shaderComponent) {
-				actor_->AddComponent<ShaderComponent>(shaderComponent);
+				actor_->ReplaceComponent<ShaderComponent>(shaderComponent);
 			}
 		}
 	}
@@ -233,7 +369,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		if (!meshName.empty()) {
 			Ref<MeshComponent> meshComponent = AssetManager::getInstance().GetAsset<MeshComponent>(meshName);
 			if (meshComponent) {
-				actor_->AddComponent<MeshComponent>(meshComponent);
+				actor_->ReplaceComponent<MeshComponent>(meshComponent);
 			}
 		}
 	}
@@ -452,6 +588,11 @@ void SceneGraph::RemoveAllActors()
 
 void SceneGraph::Update(const float deltaTime)
 {
+	processMainThreadTasks();
+
+	//Load any models that the worker thread finishes loading through assimp
+	//storeInitializedMeshData();
+
 	getUsedCamera()->fixCameraToTransform();
 
 	//	std::cout << usedCamera << std::endl;
@@ -466,7 +607,8 @@ void SceneGraph::Update(const float deltaTime)
 		
 		// call physics system update
 		if (actor->GetComponent<PhysicsComponent>()) {
-			PhysicsSystem::getInstance().Update(deltaTime);
+			// TODO: fix this, best place to call all functions that need update for engine,
+			// between play and edit modes.
 		}
 
 		// check for collision system
@@ -653,7 +795,7 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 void SceneGraph::Render() const
 {
-
+	
 	int w, h;
 	//SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
 	w = SCENEWIDTH;
@@ -748,6 +890,11 @@ void SceneGraph::Render() const
 
 	}
 
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	//glDisable(GL_BLEND);
 
 	// go through all actors
 	for (const auto& pair : Actors) {

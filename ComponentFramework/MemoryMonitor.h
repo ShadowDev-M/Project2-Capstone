@@ -6,6 +6,8 @@
 #include <memory>
 #include "MemorySize.h"
 
+
+
 void* operator new(std::size_t numBytes) {
  //   std::cout << "allocating " << numBytes << " bytes of memory\n";
     MEMORY_NUMUSEDBYTES += numBytes;

@@ -33,7 +33,7 @@ void PhysicsSystem::RemoveActor(Ref<Actor> actor_)
 
 void PhysicsSystem::Update(float deltaTime) 
 {
-	for (Ref<Actor> actor : physicsActors) {
+	for (const Ref<Actor>& actor : physicsActors) {
 		// getting transform and physics components
 		Ref<TransformComponent> TC = actor->GetComponent<TransformComponent>();
 		Ref<PhysicsComponent> PC = actor->GetComponent<PhysicsComponent>();

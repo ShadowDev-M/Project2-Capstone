@@ -6,6 +6,8 @@
 #include "InputManager.h"
 #include "CameraComponent.h"
 #include "MemorySize.h"
+#include "AnimatorComponent.h"
+#include "PhysicsSystem.h"
 
 
 
@@ -39,7 +41,14 @@ bool Scene3GUI::OnCreate() {
 
 
 void Scene3GUI::OnDestroy() {
+	Debug::Info("Disabling Mesh-Loading Thread", __FILE__, __LINE__);
+
+	SceneGraph::getInstance().stopMeshLoadingWorker();
+
 	Debug::Info("Deleting assets Scene3GUI: ", __FILE__, __LINE__);
+
+	
+
 
 	// save all the assets in the assetmanager to the xml file then remove them all locally
 	AssetManager::getInstance().SaveAssetDatabaseXML();
@@ -59,9 +68,11 @@ void Scene3GUI::Update(const float deltaTime) {
 	
 	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
 	
-	if (EditorManager::getInstance().isPlayMode()) {
-		SceneGraph::getInstance().Update(deltaTime);
+	SceneGraph::getInstance().Update(deltaTime);
 
+	if (EditorManager::getInstance().isPlayMode()) {
+		PhysicsSystem::getInstance().Update(deltaTime);
+		
 		//SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->ApplyForce(Vec3(0.0f, -9.8f, 0.0f));
 		//std::cout << SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->getMass();
 	}
