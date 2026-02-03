@@ -264,6 +264,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\animationVert.glsl" />
     <None Include="shaders\colourPickFrag.glsl" />
     <None Include="shaders\colourPickVert.glsl" />
     <None Include="shaders\defaultFrag.glsl" />

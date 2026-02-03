@@ -12,5 +12,4 @@
     </LightComponent>
     <MeshComponent name="SM_Sphere"/>
     <ShaderComponent name="S_Multi"/>
-    <ScriptComponent name="testScript"/>
 </Actor>
