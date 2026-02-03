@@ -995,24 +995,13 @@ void SceneGraph::Render() const
 
 				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
 
-				// Get animated bone transforms at current time
 				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
-				//timeInTicks = 0;
-
-
 
 				std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
-
-
-
-
 				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
 
 
-				for (auto& matr : finalBoneMatrices) matr.print();
-
 				
-				printf("Uploading %zu matrices\n", finalBoneMatrices.size());
 				GLint loc = shader->GetUniformID("bone_transforms[0]");
 				if (loc == -1) {
 					printf("ERROR: bone_transforms uniform not found!\n");
@@ -1021,7 +1010,6 @@ void SceneGraph::Render() const
 
 					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
 						reinterpret_cast<const float*>(finalBoneMatrices.data()));
-					printf("Uploaded to uniform location: %d\n", loc);
 				}
 
 			

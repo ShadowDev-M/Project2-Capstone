@@ -8,7 +8,7 @@
 #include <algorithm>
 #include "MMath.h"
 #include <iostream>
-
+#include <algorithm>
 static std::vector<AnimatorComponent*> animators;
 
 void AnimatorComponent::queryAllAnimators(MeshComponent* caller)
@@ -69,9 +69,7 @@ void AnimatorComponent::copySkeletalData()
 			finalBoneMatrices.resize(skeleton->bones.size());
 
 			std::cout << "SUCCESSFUL COPY INTO ANIMATOR" << std::endl;
-			std::cout << "SUCCESSFUL COPY INTO ANIMATOR" << std::endl;
 
-			std::cout << "SUCCESSFUL COPY INTO ANIMATOR" << std::endl;
 
 		}
 	
@@ -285,6 +283,8 @@ void Animation::LoadAnimation(const char* filename) {
 					aiChan->mRotationKeys[k].mValue.y,
 					aiChan->mRotationKeys[k].mValue.z));
 			chan.rotKeys.push_back(key);
+
+			
 		}
 
 		// Scales (your existing code - unchanged)
@@ -331,6 +331,7 @@ KeyframeIndex findKeyframe(const std::vector<VectorKey>& keys, double time) {
 			double t0 = keys[i].time;
 			double t1 = keys[i + 1].time;
 			result.frac = (time - t0) / (t1 - t0);
+			result.frac = std::clamp(result.frac, 0.0f, 1.0f);
 			return result;
 		}
 	}
@@ -359,35 +360,7 @@ KeyframeIndex findKeyframe(const std::vector<QuatKey>& keys, double time) {
 	result.index = keys.size() - 1;
 	return result;
 }
-int findPositionKeyIndex(const NodeAnim& chan, double time) {
-	if (chan.posKeys.empty()) return -1;
-	if (chan.posKeys.size() == 1) return 0;
 
-	for (size_t i = 0; i < chan.posKeys.size() - 1; ++i) {
-		if (time < chan.posKeys[i + 1].time) return i;
-	}
-	return chan.posKeys.size() - 1;
-}
-
-int findRotationKeyIndex(const NodeAnim& chan, double time) {
-	if (chan.rotKeys.empty()) return -1;
-	if (chan.rotKeys.size() == 1) return 0;
-
-	for (size_t i = 0; i < chan.rotKeys.size() - 1; ++i) {
-		if (time < chan.rotKeys[i + 1].time) return i;
-	}
-	return chan.rotKeys.size() - 1;
-}
-
-int findScalingKeyIndex(const NodeAnim& chan, double time) {
-	if (chan.scaleKeys.empty()) return -1;
-	if (chan.scaleKeys.size() == 1) return 0;
-
-	for (size_t i = 0; i < chan.scaleKeys.size() - 1; ++i) {
-		if (time < chan.scaleKeys[i + 1].time) return i;
-	}
-	return chan.scaleKeys.size() - 1;
-}
 
 
 
@@ -433,11 +406,7 @@ std::vector<Bone> Animation::getBonesAtTime(double time, MeshComponent* mesh) {
 			// ROTATION - ARM TEST OVERRIDE
 			if (!channel->rotKeys.empty()) {
 				KeyframeIndex fp = findKeyframe(channel->rotKeys, time);
-				if ((meshBone->id == 6 || meshBone->id == 8) && fp.index >= 0) {
-					// ARM TEST: Use your hardcoded quaternion
-					rot = QMath::normalize(Quaternion(0.766044443f, Vec3(0.0f, 0.0f, 0.642787609f)));
-				}
-				else if (fp.index >= 0) {
+				if (fp.index >= 0) {
 					if (fp.index < channel->rotKeys.size() - 1) {
 						rot = QMath::normalize(QMath::slerp(channel->rotKeys[fp.index].value,
 							channel->rotKeys[fp.index + 1].value, fp.frac));
@@ -555,6 +524,7 @@ void Animation::calculatePose(double time, Skeleton* skeleton, std::vector<Matri
 					position = channel->posKeys[fp.index].value;
 				}
 			}
+
 		}
 
 		// Interpolate rotation
@@ -593,18 +563,18 @@ void Animation::calculatePose(double time, Skeleton* skeleton, std::vector<Matri
 		Matrix4 scaleMat = MMath::scale(scaleVec);
 		Matrix4 localTransform = positionMat * rotationMat * scaleMat;
 		Matrix4 globalTransform = parentTransform * localTransform;
-
+		
 		// EXACT reference final skinning matrix
 		if (!bone->name.empty() && bone->id >= 0 && bone->id < output.size()) {
 			output[bone->id] = globalTransform * bone->offsetMatrix;
 
 			// DEBUG - PRINT FIRST 10 BONES ONLY
-			std::cout << "globalTransform\n";
+			/*std::cout << "globalTransform\n";
 			globalTransform.print();
 			std::cout << "offset\n";
 			bone->offsetMatrix.print();
 			std::cout << "output\n";
-			output[bone->id].print();
+			output[bone->id].print();*/
 		}
 		else {
 			printf("SKIPPED bone '%s' id=%d (size=%zu)\n", bone->name.c_str(), bone->id, output.size());
