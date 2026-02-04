@@ -1,6 +1,39 @@
 #include "pch.h"
 #include "CollisionSystem.h"
 
+void CollisionSystem::AddActor(Ref<Actor> actor_) {
+	if (actor_->GetComponent<CollisionComponent>().get() == nullptr) {
+		Debug::Error("The Actor must have a CollisionComponent - ignored ", __FILE__, __LINE__);
+		return;
+	}
+
+	if (actor_->GetComponent<PhysicsComponent>().get() == nullptr) {
+		Debug::Error("The Actor must have a PhysicsComponent - ignored ", __FILE__, __LINE__);
+		return;
+	}
+
+	// additional check to make sure not adding duplicate actors
+	if (std::find(collidingActors.begin(), collidingActors.end(), actor_) != collidingActors.end()) {
+		Debug::Warning("Actor already added to CollisionSystem", __FILE__, __LINE__);
+		return;
+	}
+
+	collidingActors.push_back(actor_);
+}
+
+void CollisionSystem::RemoveActor(Ref<Actor> actor_) {
+	// finding actor from vector and removing it
+	auto it = std::find(collidingActors.begin(), collidingActors.end(), actor_);
+	if (it != collidingActors.end()) {
+		collidingActors.erase(it);
+	}
+}
+
+
+
+
+/*
+
 Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
 
 	for (Ref<Actor> obj : collidingActors) {
@@ -185,9 +218,9 @@ void CollisionSystem::Update(const float deltaTime)
 					AABBAABBCollisionResponse(collidingActors[i], collidingActors[j]);
 				}
 				// debug check to see if collision is being detected
-				/*else {
-					std::cout << "NO COLLISION DETECTED" << std::endl;
-				}*/
+				//else {
+				//	std::cout << "NO COLLISION DETECTED" << std::endl;
+				//}
 
 			}
 
@@ -213,9 +246,9 @@ void CollisionSystem::Update(const float deltaTime)
 					SpherePlaneCollisionResponse(collidingActors[i], collidingActors[j]);
 				}
 				// debug to check if collision is detected
-				/*else {
-					std::cout << "NO COLLISION DETECTED" << std::endl;
-				}*/
+				//else {
+				//	std::cout << "NO COLLISION DETECTED" << std::endl;
+				//}
 
 			}
 
@@ -223,4 +256,6 @@ void CollisionSystem::Update(const float deltaTime)
 	}
 
 }
+
+*/
 

@@ -136,7 +136,7 @@ namespace MATH{
 
 			if (cosTheta < 0.0f) {		/// if cosTheta is negative, the angle is oblique. The shortest path 
 				q2 = -q2;				/// would be the other representation of the same angle -q2 
-				cosTheta = cosTheta;
+				cosTheta = -cosTheta;
 			}
 			float c1, c2;
 			///If cosTheta is very close to 1.0 just lerp it to prevent divide by zero

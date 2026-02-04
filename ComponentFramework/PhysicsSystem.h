@@ -45,7 +45,7 @@ public:
 	void ResetPhysics();
 
 	// TODO: things to add in future if needed
-	//void ApplyTorque(Ref<Actor> actor_, const Vec3& torque); need rotational inertia
+	// void ApplyTorque(Ref<Actor> actor_, const Vec3& torque); need rotational inertia
 	// creating constraints (mostly likely will be their own components)
 
 	// getters and setters
