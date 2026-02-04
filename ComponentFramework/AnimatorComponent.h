@@ -104,6 +104,8 @@ class AnimationClip {
 	AnimationClip& operator = (AnimationClip&&) = delete;
 
 	float clipLength = -1.0f;
+	float startTime = 0.0f;
+	float speedMult = 1.0f;
 	float currentTime = 0.0f;
 
 	bool loop = true;
@@ -122,17 +124,61 @@ public:
 	
 	void setAnimation(Ref<Animation> animation_);
 
+	float getStartTime() { return startTime; }
+
+	float getSpeedMult() { return speedMult; }
+
+	float getCurrentTime() { return currentTime; }
+
+	float getClipLength() { 
+		if (clipLength < 0.0f) {
+			InitializeClipLength();
+		}
+		return clipLength; 
+	}
+
+	void setStartTime(float time_) {
+
+		if (!(animation && animation->queryLoadStatus())) return;
+
+		if (clipLength >= 0.0f && time_ <= clipLength) { 
+			startTime = time_; 
+			if (!(time_ >= startTime && time_ <= clipLength)) { currentTime = startTime; }
+		}
+	
+	}
+
+	void setSpeedMult(float speed_) { speedMult = speed_; }
+
+	void setCurrentTime(float time_) {
+		if (!(animation && animation->queryLoadStatus())) return;
+
+		if (time_ >= startTime && time_ <= clipLength) { currentTime = time_; }
+	}
+
+	std::string getAnimName() { 
+		if (animation && animation->queryLoadStatus()) { return animation->getName(); }
+		else { return "LOADING..."; }
+	}
+
+	bool hasAnim() { return (bool)animation; }
+
+	void setLooping(bool state) { loop = state; }
+	bool getLoopingState() { return loop; }
 
 
 	void displayDataTest(); 
-
+	
 	void Play() {
+
 		playing = true;
 	}
 
 	float getCurrentTimeInFrames();
 
 	static void updateClipTimes(float deltaTime);
+
+	void InitializeClipLength();
 
 	void StopPlaying() { playing = false; }
 
@@ -168,6 +214,28 @@ public:
 	virtual ~AnimatorComponent();
 
 	void setAnimation(Ref<Animation> animation_) { activeClip.setAnimation(animation_); };
+
+	float getStartTime() { return activeClip.getStartTime(); }
+
+	float getSpeedMult() { return activeClip.getSpeedMult(); }
+
+	float getCurrentTime() { return activeClip.getCurrentTime(); }
+
+	float getClipLength() { return activeClip.getClipLength(); }
+
+	void setStartTime(float time_) {activeClip.setStartTime(time_);}
+
+	void setSpeedMult(float speed_) { activeClip.setSpeedMult(speed_); }
+
+	void setCurrentTime(float time_) {activeClip.setCurrentTime(time_);}
+
+	void setLooping(bool state) { activeClip.setLooping(state); }
+
+	bool getLoopingState() { return activeClip.getLoopingState(); }
+
+	std::string getAnimName() {return activeClip.getAnimName();}
+
+	bool hasAnim() { return activeClip.hasAnim(); }
 
 	void copySkeletalData();
 

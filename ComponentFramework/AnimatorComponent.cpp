@@ -207,14 +207,7 @@ void AnimationClip::displayDataTest()
 
 float AnimationClip::getCurrentTimeInFrames()
 {
-	if (currentTime >= clipLength) {
-		if (loop) currentTime = 0;
-		else {
-			currentTime = clipLength;
-			StopPlaying();
-		}
-		
-	}
+	
 	double ticksPerSecond = animation->getTicksPerSecond();
 	double timeInTicks = currentTime * ticksPerSecond;
 	return timeInTicks;
@@ -231,12 +224,41 @@ void AnimationClip::updateClipTimes(float deltaTime)
 
 				}
 
-				clip->currentTime += deltaTime;
+				clip->currentTime += deltaTime * clip->speedMult;
+
+				if (clip->currentTime > clip->clipLength) {
+					if (clip->loop)
+						clip->currentTime = clip->startTime;
+					else {
+						clip->currentTime = clip->clipLength;
+						clip->StopPlaying();
+					}
+
+				}
+				else if (clip->currentTime < clip->startTime) {
+					if (clip->loop) clip->currentTime = clip->clipLength;
+					else {
+						clip->currentTime = clip->startTime;
+						clip->StopPlaying();
+					}
+
+				}
+
 			}
 		}
 	}
 }
 
+void AnimationClip::InitializeClipLength() {
+	if (animation && animation->queryLoadStatus()) {
+
+		if (clipLength < 0.0f) {
+
+			clipLength = animation->getDuration() / animation->getTicksPerSecond();
+
+		}
+	}
+}
 
 void Animation::LoadAnimation(const char* filename) {
 	Assimp::Importer importer;

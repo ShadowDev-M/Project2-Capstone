@@ -355,12 +355,11 @@ void SceneGraph::Stop()
 			actorAnimator->activeClip.currentTime = 0.0f;
 		}
 	}
+	PhysicsSystem::getInstance().ResetPhysics();
+
 }
 
-		// Stop physics engine 
-		PhysicsSystem::getInstance().ResetPhysics();
-	}
-}
+		
 
 
 void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
@@ -949,6 +948,7 @@ void SceneGraph::Render() const
 	for (const auto& pair : Actors) {
 
 		Ref<Actor> actor = pair.second;
+		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
 		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
@@ -956,7 +956,7 @@ void SceneGraph::Render() const
 		
 
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
-		if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+		if (!isSelected && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
 			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
 			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
 
@@ -983,7 +983,6 @@ void SceneGraph::Render() const
 
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 
-			bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
 			if (isSelected) {
 				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
@@ -1010,7 +1009,7 @@ void SceneGraph::Render() const
 
 
 
-			if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+			if (!isSelected && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
 				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
 				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
 
