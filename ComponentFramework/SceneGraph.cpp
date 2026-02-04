@@ -3,6 +3,10 @@
 #include "XMLManager.h"
 #include "InputManager.h"
 #include "AnimatorComponent.h"
+#include "Skeleton.h"
+
+
+
 #include "PhysicsSystem.h"
 void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
 
@@ -145,6 +149,7 @@ SceneGraph::SceneGraph()
 	createDockingFBO(w, h);
 
 	pickerShader->OnCreate();
+
 	ScriptService::loadLibraries();
 	startMeshLoadingWorkerThread();
 
@@ -324,6 +329,12 @@ void SceneGraph::Start()
 		ScriptService::startActorScripts(actor.second);
 	}
 
+	if (!GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation || !GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation->queryLoadStatus())
+	GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "meshes/dancing.gltf"));
+
+
+	GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.Play();
+
 	// TODO: disabled this line for now, it was crashing the engine on playmode
 	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
 }
@@ -331,8 +342,20 @@ void SceneGraph::Start()
 
 void SceneGraph::Stop()
 {
+	GetActor("Mario")->GetComponent<AnimatorComponent>()->displayDataTest();
+	GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.StopPlaying();
+
 	for (auto& actor : Actors) {
 		ScriptService::stopActorScripts(actor.second);
+
+
+		Ref<AnimatorComponent> actorAnimator =  actor.second->GetComponent<AnimatorComponent>();
+		if (actorAnimator) {
+			actorAnimator->activeClip.StopPlaying();
+			actorAnimator->activeClip.currentTime = 0.0f;
+		}
+	}
+}
 
 		// Stop physics engine 
 		PhysicsSystem::getInstance().ResetPhysics();
@@ -587,11 +610,14 @@ void SceneGraph::RemoveAllActors()
 	ActorNameToId.clear();
 	debugSelectedAssets.clear();
 }
+static double testval = 0.0;
 
 void SceneGraph::Update(const float deltaTime)
 {
 	processMainThreadTasks();
 
+
+	AnimationClip::updateClipTimes(deltaTime);
 	//Load any models that the worker thread finishes loading through assimp
 	//storeInitializedMeshData();
 
@@ -751,6 +777,7 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 	//get the special shader for picking and set its uniforms
 	glUseProgram(pickerShader->GetProgram());
+
 	glUniformMatrix4fv(pickerShader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
 	glUniformMatrix4fv(pickerShader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
 
@@ -794,6 +821,8 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 	return nullptr; // nothing clicked
 }
+
+
 
 void SceneGraph::Render() const
 {
@@ -876,11 +905,29 @@ void SceneGraph::Render() const
 			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
 			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
 			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+			
+			glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
+
+			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
+			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
+			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
+			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
+
 		}
+		glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
+
 		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
 
 		// Without an Ambient the light components won't work at all
 		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, clearColour);
+
+
+		glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
+
+		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("numLights"), lightActors.size());
+
+		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("ambient"), 1, clearColour);
 
 		//use the picking buffer so it is seperated
 		glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
@@ -905,7 +952,17 @@ void SceneGraph::Render() const
 
 		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
+
+		
+
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
+		if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
+			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
+
+		}
+		if (shader) glUseProgram(shader->GetProgram());
+
 		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
 
 		if (!shader || !mesh || !material) { continue; }
@@ -916,21 +973,13 @@ void SceneGraph::Render() const
 		// if the actor has a shader, mesh, and mat component then render it
 		if (shader && mesh && material) {
 
-			//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix() * MMath::translate(Vec3(GetActor("camera")->GetComponent<TransformComponent>()->GetPosition())));
 
-			Matrix4 modelMatrix = actor->GetModelMatrix(getUsedCamera());
+			Matrix4 modelMatrix = actor->GetModelMatrix();
 
-			//glDisable(GL_DEPTH_TEST);
-			//Matrix4 outlineModel = modelMatrix * MMath::scale(1.05, 1.05, 1.05); // Slightly larger
-
-			//glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, outlineModel);
-
-			//mesh->Render(GL_TRIANGLES);
-
+			
 
 
 			glEnable(GL_DEPTH_TEST);
-			//glUniformMatrix4fv("shaders/texturePhongVert.glsl", 1, GL_FALSE, modelMatrix);
 
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 
@@ -943,6 +992,7 @@ void SceneGraph::Render() const
 			else {
 				if (pair.second->GetComponent<ShaderComponent>()) {
 					glUseProgram(shader->GetProgram());
+
 					if (pair.second->GetComponent<ShaderComponent>() == AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")) {
 						// use the new material component elements from the struct
 						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
@@ -953,10 +1003,43 @@ void SceneGraph::Render() const
 				}
 				
 
+
 				//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
 
 			}
 
+
+
+			if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
+				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
+
+				
+
+				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
+
+				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
+
+				std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
+				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
+
+
+				
+				GLint loc = shader->GetUniformID("bone_transforms[0]");
+				if (loc == -1) {
+					printf("ERROR: bone_transforms uniform not found!\n");
+				}
+				else {
+
+					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
+						reinterpret_cast<const float*>(finalBoneMatrices.data()));
+				}
+
+			
+
+			}
+
+			
 			///glUseProgram(pickerShader->GetProgram());
 
 			//Vec3 idColor = Actor::encodeID(actor->id);
@@ -974,6 +1057,9 @@ void SceneGraph::Render() const
 			else {
 				glUniform1i(shader->GetUniformID("hasSpec"), 0);
 			}
+			
+			
+			
 			mesh->Render(GL_TRIANGLES);
 			glBindTexture(GL_TEXTURE_2D, 0);
 

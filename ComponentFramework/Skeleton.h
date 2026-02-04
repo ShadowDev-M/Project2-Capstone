@@ -7,11 +7,11 @@
 class ConversionAiMatrix4 {
 public:
     static Matrix4 AiToMatrix4(const aiMatrix4x4& aiMat) {
-        return Matrix4(
-            aiMat.a1, aiMat.a2, aiMat.a3, aiMat.a4,  // Column 0
-            aiMat.b1, aiMat.b2, aiMat.b3, aiMat.b4,  // Column 1
-            aiMat.c1, aiMat.c2, aiMat.c3, aiMat.c4,  // Column 2
-            aiMat.d1, aiMat.d2, aiMat.d3, aiMat.d4   // Column 3
+         return Matrix4(
+            aiMat.a1, aiMat.b1, aiMat.c1, aiMat.d1,  // Row 0 = Assimp column 0
+            aiMat.a2, aiMat.b2, aiMat.c2, aiMat.d2,  // Row 1 = Assimp column 1  
+            aiMat.a3, aiMat.b3, aiMat.c3, aiMat.d3,  // Row 2 = Assimp column 2
+            aiMat.a4, aiMat.b4, aiMat.c4, aiMat.d4   // Row 3 = Assimp column 3
         );
     }
     
@@ -39,6 +39,7 @@ struct Bone {
 
 class Skeleton {
 public:
+    Matrix4 globalInverseTransform;
     std::vector<std::unique_ptr<Bone>> bones;
     std::unordered_map<std::string, Bone*> boneMap;
 

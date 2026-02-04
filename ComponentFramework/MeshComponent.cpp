@@ -14,9 +14,33 @@ using namespace MATH;
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#define BONE_WEIGHTS_SIZE 4
 
 void MeshComponent::storeLoadedModel()
 {
+    //printf("\n=== RAW BONE IDS FROM MESH LOADER ===\n");
+    //printf("BONE_WEIGHTS_SIZE = %d\n", BONE_WEIGHTS_SIZE);
+    //printf("boneIds.size() = %zu, vertices.size() = %zu\n", boneIds.size(), vertices.size());
+    //printf("Expected boneIds: %zu\n", vertices.size() * BONE_WEIGHTS_SIZE);
+
+    //// **FIXED INDEXING** - Verify bounds first
+    //size_t expectedSize = vertices.size() * BONE_WEIGHTS_SIZE;
+    //if (boneIds.size() != expectedSize) {
+    //    printf("*** FATAL ERROR ***: boneIds.size()=%zu != %zu*4=%zu\n",
+    //        boneIds.size(), vertices.size(), expectedSize);
+    //    return;
+    //}
+
+    //for (size_t v = 0; v < std::min<size_t>(10, vertices.size()); v++) {
+    //    size_t base = v * BONE_WEIGHTS_SIZE;  // Use constant!
+    //    if (base + BONE_WEIGHTS_SIZE <= boneIds.size()) {
+    //        printf("V[%3zu] RAW boneIds=[%3d,%3d,%3d,%3d]\n", v,
+    //            boneIds[base + 0], boneIds[base + 1], boneIds[base + 2], boneIds[base + 3]);
+    //    }
+    //}
+    //printf("Vertices: %zu, Expected bones: %zu, Got boneIds: %zu\n",
+    //    vertices.size(), expectedSize, boneIds.size());
+
 
     StoreMeshData(GL_TRIANGLES);
 }
@@ -43,173 +67,248 @@ void MeshComponent::LoadSkeleton(const char* filename)
     
 
 }
+void ReadNodeHierarchy(Skeleton* skeleton, aiNode* node, Bone* parentBone) {
+    // Check if this node corresponds to a bone
+    std::string nodeName(node->mName.C_Str());
+    Bone* bone = skeleton->FindBone(nodeName);
+
+    if (bone) {
+        // Link to parent
+        if (parentBone) {
+            bone->parent = parentBone;
+            parentBone->children.push_back(bone);
+        }
+
+        // Debug print
+        std::cout << "Linked " << nodeName
+            << " parent: " << (parentBone ? parentBone->name : "ROOT") << std::endl;
+    }
+
+    // Recurse children
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        ReadNodeHierarchy(skeleton, node->mChildren[i], bone ? bone : parentBone);
+    }
+}
+
 
 void MeshComponent::LoadModel(const char* filename) {
-
-
-    //based on this 
-    //https://nickthecoder.wordpress.com/2013/01/20/mesh-loading-with-assimp/
-
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Fast);//aiProcessPreset_TargetRealtime_Fast has the configs you'll need
+    const aiScene* scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Fast);
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        printf("ERROR::ASSIMP::%s\n", importer.GetErrorString());
+        return;
+    }
 
-    aiMesh* mesh = scene->mMeshes[0]; //assuming you only want the first mesh
+    aiMesh* mesh = scene->mMeshes[0];
+    vertices.clear(); normals.clear(); uvCoords.clear();
 
-    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-    {
+    printf("Mesh vertices: %u, faces: %u\n", mesh->mNumVertices, mesh->mNumFaces);
+
+    std::vector<unsigned int> renderToUnique;
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
         const aiFace& face = mesh->mFaces[i];
-
-        for (int j = 0; j < 3; j++)
-        {
-            aiVector3D aiVertex = mesh->mVertices[face.mIndices[j]];
-            Vec3 vertex{ aiVertex.x, aiVertex.y, aiVertex.z };
-
-
-            aiVector3D aiNormal = mesh->mNormals[face.mIndices[j]];
-            Vec3 normal{ aiNormal.x, aiNormal.y, aiNormal.z };
-
-
-            aiVector3D aiUv = mesh->mTextureCoords[0][face.mIndices[j]];
-            Vec2 uvCoord{ aiUv.x, aiUv.y };
-
-
-
-            vertices.push_back(vertex);
-            normals.push_back(normal);
-            uvCoords.push_back(uvCoord);
-
+        if (face.mNumIndices != 3) continue;
+        for (int j = 0; j < 3; j++) {
+            unsigned int uniqueIdx = face.mIndices[j];
+            vertices.push_back({ mesh->mVertices[uniqueIdx].x, mesh->mVertices[uniqueIdx].y, mesh->mVertices[uniqueIdx].z });
+            normals.push_back({ mesh->mNormals[uniqueIdx].x, mesh->mNormals[uniqueIdx].y, mesh->mNormals[uniqueIdx].z });
+            if (mesh->HasTextureCoords(0))
+                uvCoords.push_back({ mesh->mTextureCoords[0][uniqueIdx].x, mesh->mTextureCoords[0][uniqueIdx].y });
+            else
+                uvCoords.push_back({ 0.0f, 0.0f });
+            renderToUnique.push_back(uniqueIdx);
 
         }
     }
 
     if (mesh->HasBones()) {
-        //Skeleton
         skeleton = std::make_unique<Skeleton>();
 
-        // heirarchy
+        printf("Creating %u bones...\n", mesh->mNumBones);
         int boneId = 0;
-        for (int i = 0; i < mesh->mNumBones; i++) {
+        for (unsigned int i = 0; i < mesh->mNumBones; i++) {
             aiBone* aiBone = mesh->mBones[i];
-            auto bone = std::make_unique<Bone>(aiBone, boneId++);
+            printf("Bone %2d: %s\n", boneId, aiBone->mName.C_Str());
+
+            auto bone = std::make_unique<Bone>(aiBone, boneId);
             skeleton->boneMap[aiBone->mName.C_Str()] = bone.get();
             skeleton->bones.push_back(std::move(bone));
+            boneId++;
         }
 
-        int boneIdArraySize = mesh->mNumVertices * BONE_WEIGHTS_SIZE;
-        boneIds.assign(boneIdArraySize, 0.0f);
-        boneWeights.assign(boneIdArraySize, 0.0f);
+        boneIds.assign(vertices.size() * BONE_WEIGHTS_SIZE, 0);
+        boneWeights.assign(vertices.size() * BONE_WEIGHTS_SIZE, 0.0f);
 
-        // bone weights
-        for (int i = 0; i < mesh->mNumBones; i++) {
-            aiBone* aiBone = mesh->mBones[i];
-            Bone* bone = skeleton->FindBone(aiBone->mName.data);
-            unsigned int boneId = bone->id;
+        ReadNodeHierarchy(skeleton.get(), scene->mRootNode, nullptr);
 
-            for (int j = 0; j < aiBone->mNumWeights; j++) {
-                aiVertexWeight w = aiBone->mWeights[j];
-                unsigned int vertexStart = w.mVertexId * BONE_WEIGHTS_SIZE;
+        skeleton->globalInverseTransform = (ConversionAiMatrix4::AiToMatrix4(scene->mRootNode->mTransformation));
 
-                for (int k = 0; k < BONE_WEIGHTS_SIZE; k++) {
-                    if (boneWeights[vertexStart + k] == 0) {
-                        boneWeights[vertexStart + k] = w.mWeight;
-                        boneIds[vertexStart + k] = boneId;
-                        break;
+        std::vector<std::vector<size_t>> uniqueToRender(mesh->mNumVertices);
+        for (size_t renderIdx = 0; renderIdx < renderToUnique.size(); renderIdx++) {
+            uniqueToRender[renderToUnique[renderIdx]].push_back(renderIdx);
+        }
+
+        int assignedWeights = 0;
+        for (unsigned int b = 0; b < mesh->mNumBones; b++) {
+            aiBone* aiBone = mesh->mBones[b];
+            Bone* bone = skeleton->boneMap[aiBone->mName.C_Str()];
+
+            if (!bone) {
+                printf("ERROR: Bone %s (index %d) NOT FOUND in boneMap!\n", aiBone->mName.C_Str(), b);
+                continue;
+            }
+
+            unsigned int boneIndex = bone->id;
+            printf("Processing bone %d (%s): %u weights\n", boneIndex, aiBone->mName.C_Str(), aiBone->mNumWeights);
+
+            for (unsigned int w = 0; w < aiBone->mNumWeights; w++) {
+                aiVertexWeight& weight = aiBone->mWeights[w];
+                if (weight.mVertexId >= mesh->mNumVertices) continue;
+
+                for (size_t renderIdx : uniqueToRender[weight.mVertexId]) {
+                    size_t boneDataIdx = renderIdx * BONE_WEIGHTS_SIZE;
+                    for (int slot = 0; slot < BONE_WEIGHTS_SIZE; slot++) {
+                        if (boneWeights[boneDataIdx + slot] < 0.001f) {
+                            boneWeights[boneDataIdx + slot] = weight.mWeight;
+                            boneIds[boneDataIdx + slot] = boneIndex;
+                            assignedWeights++;
+                            break;
+                        }
                     }
                 }
             }
         }
+
+        printf("Total bone weights assigned: %d\n", assignedWeights);
+
+        // Normalize
+        for (size_t renderIdx = 0; renderIdx < vertices.size(); renderIdx++) {
+            float sum = 0.0f;
+            size_t start = renderIdx * BONE_WEIGHTS_SIZE;
+            for (int k = 0; k < BONE_WEIGHTS_SIZE; k++) {
+                sum += boneWeights[start + k];
+            }
+            if (sum > 0.001f) {
+                for (int k = 0; k < BONE_WEIGHTS_SIZE; k++) {
+                    boneWeights[start + k] /= sum;
+                }
+            }
+        }
+
+        // REPLACE the FINAL DEBUG section in LoadModel:
+        printf("=== FINAL BONE IDS ===\n");
+        printf("boneIds.size() = %zu, vertices.size() = %zu\n", boneIds.size(), vertices.size());
+
+        // **FIND vertices with Hips (bone 0) weights**
+        int hipsFound = 0;
+        for (size_t i = 0; i < vertices.size() && hipsFound < 10; i++) {
+            size_t base = i * BONE_WEIGHTS_SIZE;
+            if (boneIds[base + 0] == 0 || boneIds[base + 1] == 0 ||
+                boneIds[base + 2] == 0 || boneIds[base + 3] == 0) {
+                printf("V[%6zu] boneIds=[%2d,%2d,%2d,%2d]\n", i,
+                    boneIds[base + 0], boneIds[base + 1], boneIds[base + 2], boneIds[base + 3]);
+                hipsFound++;
+            }
+        }
         AnimatorComponent::queryAllAnimators(this);
-
-
         printSkeleton(skeleton.get(), this);
     }
-    fullyLoaded = true;
 
+    fullyLoaded = true;
 }
+
+
+
 
 void MeshComponent::printSkeleton(const Skeleton* skeleton, MeshComponent* mesh) {
     std::cout << "\n=== SKELETON DEBUG ===\n";
     std::cout << "Bones count: " << skeleton->bones.size() << "\n\n";
-
-    // Print all bones
-    for (size_t i = 0; i < skeleton->bones.size(); i++) {
-        const Bone* bone = skeleton->bones[i].get();
-        std::cout << "Bone[" << bone->id << "] \"" << bone->name << "\"\n";
-        std::cout << "  Parent: " << (bone->parent ? bone->parent->name : "none") << "\n";
-        std::cout << "  Children count: " << bone->children.size() << "\n";
-        std::cout << std::fixed << std::setprecision(3);
-        std::cout << "  Offset matrix:\n";
-        for (int row = 0; row < 4; row++) {
-            std::cout << "    " << bone->offsetMatrix[row * 4 + 0] << " "
-                << bone->offsetMatrix[row * 4 + 1] << " "
-                << bone->offsetMatrix[row * 4 + 2] << " "
-                << bone->offsetMatrix[row * 4 + 3] << "\n";
-        }
-        std::cout << "\n";
+    printf("=== HIERARCHY DEBUG ===\n");
+    int totalChildren = 0;
+    for (auto& meshBonePtr : skeleton->bones) {
+        printf("Bone %s (OF MAIN MESH) children: %zu\n", meshBonePtr->name.c_str(), meshBonePtr->children.size());
+        totalChildren += meshBonePtr->children.size();
     }
-
-    // Print first few vertex bone weights
-    std::cout << "=== VERTEX BONE WEIGHTS ===\n";
-    int numVertsToPrint = std::min(5, (int)mesh->boneIds.size() / 4);
-    for (int v = 0; v < numVertsToPrint; v++) {
-        int offset = v * 4;
-        std::cout << "Vertex " << v << ": ";
-        for (int k = 0; k < 4; k++) {
-            std::cout << "B" << (int)mesh->boneIds[offset + k]
-                << "(" << std::fixed << std::setprecision(2)
-                << mesh->boneWeights[offset + k] << ") ";
-        }
-        std::cout << "\n";
-    }
+    printf("Total children links: %d (should = %zu)\n", totalChildren, skeleton->bones.size() - 1);
 }
+
 
 
 void MeshComponent::StoreMeshData(GLenum drawmode_) {
     drawmode = drawmode_;
-/// These just make the code easier for me to read
-#define VERTEX_LENGTH 	(vertices.size() * (sizeof(Vec3)))
-#define NORMAL_LENGTH 	(normals.size() * (sizeof(Vec3)))
-#define TEXCOORD_LENGTH (uvCoords.size() * (sizeof(Vec2)))
 
-	const int verticiesLayoutLocation = 0;
-	const int normalsLayoutLocation = 1;
-	const int uvCoordsLayoutLocation = 2;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
-	/// create and bind the VOA
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	/// Create and initialize vertex buffer object VBO
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, VERTEX_LENGTH + NORMAL_LENGTH + TEXCOORD_LENGTH, nullptr, GL_STATIC_DRAW);
+    if (skeleton) {
+        //SceneGraph::useAnimShader();
+        std::vector<Vertex> interleaved(vertices.size());
 
-	/// assigns the addr of "points" to be the beginning of the array buffer "sizeof(points)" in length
-	glBufferSubData(GL_ARRAY_BUFFER, 0, VERTEX_LENGTH, &vertices[0]);
-	/// assigns the addr of "normals" to be "sizeof(points)" offset from the beginning and "sizeof(normals)" in length  
-	glBufferSubData(GL_ARRAY_BUFFER, VERTEX_LENGTH, NORMAL_LENGTH, &normals[0]);
-	/// assigns the addr of "texCoords" to be "sizeof(points) + sizeof(normals)" offset from the beginning and "sizeof(texCoords)" in length  
-	glBufferSubData(GL_ARRAY_BUFFER, VERTEX_LENGTH + NORMAL_LENGTH, TEXCOORD_LENGTH, &uvCoords[0]);
+        // SAFETY: Check bone data sizes match vertex count
+        size_t expectedBoneCount = vertices.size() * 4;
+        printf("Vertices: %zu, Expected bones: %zu, Got boneIds: %zu\n",
+            vertices.size(), expectedBoneCount, boneIds.size());
 
-	glEnableVertexAttribArray(verticiesLayoutLocation);
-	glVertexAttribPointer(verticiesLayoutLocation, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
-	glEnableVertexAttribArray(normalsLayoutLocation);
-	glVertexAttribPointer(normalsLayoutLocation, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(VERTEX_LENGTH));
-	glEnableVertexAttribArray(uvCoordsLayoutLocation);
-	glVertexAttribPointer(uvCoordsLayoutLocation, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(VERTEX_LENGTH + NORMAL_LENGTH));
+        for (size_t i = 0; i < vertices.size(); i++) {
+            interleaved[i].pos = vertices[i];
+            interleaved[i].normal = normals[i];
+            interleaved[i].uv = uvCoords[i];
 
+            // SAFE BOUNDS - don't crash!
+            interleaved[i].boneIds[0] = (i * 4 + 0 < boneIds.size()) ? boneIds[i * 4 + 0] : 0;
+            interleaved[i].boneIds[1] = (i * 4 + 1 < boneIds.size()) ? boneIds[i * 4 + 1] : 0;
+            interleaved[i].boneIds[2] = (i * 4 + 2 < boneIds.size()) ? boneIds[i * 4 + 2] : 0;
+            interleaved[i].boneIds[3] = (i * 4 + 3 < boneIds.size()) ? boneIds[i * 4 + 3] : 0;
+
+            interleaved[i].boneWeights[0] = (i * 4 + 0 < boneWeights.size()) ? boneWeights[i * 4 + 0] : 0.0f;
+            interleaved[i].boneWeights[1] = (i * 4 + 1 < boneWeights.size()) ? boneWeights[i * 4 + 1] : 0.0f;
+            interleaved[i].boneWeights[2] = (i * 4 + 2 < boneWeights.size()) ? boneWeights[i * 4 + 2] : 0.0f;
+            interleaved[i].boneWeights[3] = (i * 4 + 3 < boneWeights.size()) ? boneWeights[i * 4 + 3] : 1.0f; // Default identity
+
+        }
+
+        // SINGLE BUFFER - totalSize = vertices * sizeof(Vertex)
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER,
+            interleaved.size() * sizeof(Vertex),  //  YOUR TOTAL SIZE
+            interleaved.data(),
+            GL_STATIC_DRAW
+        );
+
+        // REFERENCE ATTRIBUTE SETUP
+        glEnableVertexAttribArray(0); glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+        glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * 4));
+        glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6 * 4));
+        glEnableVertexAttribArray(3); glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (void*)(8 * 4));   // boneIds
+        glEnableVertexAttribArray(4); glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(12 * 4)); // boneWeights
+
+    }
+    else {
+        // NON-SKINNED - use your existing sequential layout
+        size_t totalSize = vertices.size() * sizeof(Vec3) +
+            normals.size() * sizeof(Vec3) +
+            uvCoords.size() * sizeof(Vec2);  // SIMPLIFIED
+
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, totalSize, nullptr, GL_STATIC_DRAW);
+
+        size_t offset = 0;
+        glBufferSubData(GL_ARRAY_BUFFER, offset, vertices.size() * sizeof(Vec3), vertices.data()); offset += vertices.size() * sizeof(Vec3);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, normals.size() * sizeof(Vec3), normals.data()); offset += normals.size() * sizeof(Vec3);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, uvCoords.size() * sizeof(Vec2), uvCoords.data());
+
+        glEnableVertexAttribArray(0); glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(vertices.size() * sizeof(Vec3)));
+        glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
+
+        glDisableVertexAttribArray(3); glVertexAttribI4i(3, 0, 0, 0, 0);
+        glDisableVertexAttribArray(4); glVertexAttrib4f(4, 0, 0, 0, 1);
+    }
 
     dataLength = vertices.size();
-
-    /// give back the memory used in these vectors. The data is safely stored in the GPU now
-    vertices.clear();
-    normals.clear();
-    uvCoords.clear();
-
-    /// Don't need these defines sticking around anymore
-#undef VERTEX_LENGTH
-#undef NORMAL_LENGTH
-#undef TEXCOORD_LENGTH
-
+    vertices.clear(); normals.clear(); uvCoords.clear();
 }
 
 void MeshComponent::Render() const {

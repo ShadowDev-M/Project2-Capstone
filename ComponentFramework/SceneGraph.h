@@ -35,6 +35,7 @@ private:
 
 	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
 
+
 	std::thread workerThread;
 	std::atomic<bool> shouldStop{ false };  // Thread-safe flag
 
@@ -90,6 +91,7 @@ private:
 	
 
 public:
+
 	void scheduleOnMain(std::function<void()> task);
 
 	void storeInitializedMeshData();
