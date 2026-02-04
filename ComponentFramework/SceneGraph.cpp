@@ -329,30 +329,28 @@ void SceneGraph::Start()
 		ScriptService::startActorScripts(actor.second);
 	}
 
-	if (!GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation || !GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation->queryLoadStatus())
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "meshes/dancing.gltf"));
-
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.Play();
-
 	// TODO: disabled this line for now, it was crashing the engine on playmode
-	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
+	//if (!GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation || !GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation->queryLoadStatus())
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "meshes/dancing.gltf"));
+
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.Play();
 }
 
 
 void SceneGraph::Stop()
 {
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->displayDataTest();
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.StopPlaying();
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->displayDataTest();
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.StopPlaying();
 
 	for (auto& actor : Actors) {
 		ScriptService::stopActorScripts(actor.second);
 
 
-		Ref<AnimatorComponent> actorAnimator =  actor.second->GetComponent<AnimatorComponent>();
+		/*Ref<AnimatorComponent> actorAnimator =  actor.second->GetComponent<AnimatorComponent>();
 		if (actorAnimator) {
 			actorAnimator->activeClip.StopPlaying();
 			actorAnimator->activeClip.currentTime = 0.0f;
-		}
+		}*/
 	}
 
 	// Stop physics engine 

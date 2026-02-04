@@ -5,7 +5,6 @@
         <CamTest/>
         <Cube/>
         <SkyLight/>
-        <EmptyActor_1D/>
     </Actors>
     <Components>
         <Animation>
