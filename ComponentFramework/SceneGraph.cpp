@@ -938,7 +938,7 @@ void SceneGraph::Render() const
 			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
 
 		}
-		glUseProgram(shader->GetProgram());
+		if (shader) glUseProgram(shader->GetProgram());
 
 		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
 
