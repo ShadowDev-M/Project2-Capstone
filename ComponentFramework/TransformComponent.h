@@ -41,6 +41,10 @@ public:
 		pos.z = z_;
 	}
 
+	void SetPos(Vec3 pos_) {
+		pos = pos_;
+	}
+
 	void SetX(float x_) {
 		pos.x = x_;
 	}

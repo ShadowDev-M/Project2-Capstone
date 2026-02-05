@@ -8,37 +8,37 @@
     </Actors>
     <Components>
         <Animation>
-            <dancing/>
             <svgvuijwerjtuiew/>
+            <dancing/>
         </Animation>
         <MaterialComponent>
-            <M_Moon>
-                <Texture diff="textures/moon.jpg" spec=""/>
-            </M_Moon>
             <M_Sphere>
                 <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
             </M_Sphere>
-            <M_MarioN>
-                <Texture diff="textures/mario_main.png" spec=""/>
-            </M_MarioN>
+            <M_Moon>
+                <Texture diff="textures/moon.jpg" spec=""/>
+            </M_Moon>
             <M_MarioFire>
                 <Texture diff="textures/mario_fire.png" spec=""/>
             </M_MarioFire>
             <M_Hammer>
                 <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
             </M_Hammer>
+            <M_MarioN>
+                <Texture diff="textures/mario_main.png" spec=""/>
+            </M_MarioN>
             <M_ChessBoard>
                 <Texture diff="textures/8x8_checkered_board.png" spec=""/>
             </M_ChessBoard>
             <M_Skull>
                 <Texture diff="textures/skull_texture.jpg" spec=""/>
             </M_Skull>
-            <testtex>
-                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
-            </testtex>
             <M_TestSpec>
                 <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
             </M_TestSpec>
+            <testtex>
+                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
+            </testtex>
             <skeletonTexture>
                 <Texture diff="textures/skeleton_d.png" spec=""/>
             </skeletonTexture>
@@ -47,12 +47,12 @@
             </gridtexture2>
         </MaterialComponent>
         <MeshComponent>
-            <SM_Sphere>
-                <Mesh path="meshes/Sphere.obj"/>
-            </SM_Sphere>
             <SM_Cube>
                 <Mesh path="meshes/Cube.obj"/>
             </SM_Cube>
+            <SM_Sphere>
+                <Mesh path="meshes/Sphere.obj"/>
+            </SM_Sphere>
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
@@ -77,12 +77,12 @@
             <SM_Skull>
                 <Mesh path="meshes/Skull.obj"/>
             </SM_Skull>
-            <manni>
-                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
-            </manni>
             <testRuntimeMesh>
                 <Mesh path="meshes/Mario.obj"/>
             </testRuntimeMesh>
+            <manni>
+                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
+            </manni>
             <testassetfbx>
                 <Mesh path="meshes/cliff_rock1.fbx"/>
             </testassetfbx>

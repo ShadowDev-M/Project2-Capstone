@@ -2,7 +2,8 @@
 #include "ScriptComponent.h"
 #include "SceneGraph.h"
 #include "ScriptAbstract.h"
-
+#include "InputCreatorManager.h"
+#include "InputManager.h"
 static std::vector<ScriptComponent*> scriptsInUse;
 
 ScriptComponent::ScriptComponent(Component* parent_, Ref<ScriptAbstract> baseScriptAsset) :
@@ -149,14 +150,18 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 
 
 				loaded_script();
+				
 				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
+				lua["Transform"] = user->GetComponent<TransformComponent>().get();
 
-				lua["Transform"] = target->GetComponent<TransformComponent>();
+				lua["Animator"] = sol::lua_nil;
+				if (user->GetComponent<AnimatorComponent>()) {
+					lua["Animator"] = user->GetComponent<AnimatorComponent>().get();
+				}
 
-				if (target->GetComponent<AnimatorComponent>()) {
-					lua["Animator"] = sol::lua_nil; 
-
-					lua["Animator"] = target->GetComponent<AnimatorComponent>();
+				lua["Rigidbody"] = sol::lua_nil;
+				if (user->GetComponent<PhysicsComponent>()) {
+					lua["Rigidbody"] = user->GetComponent<PhysicsComponent>().get();
 				}
 
 
@@ -229,13 +234,17 @@ void ScriptService::updateAllScripts(float deltaTime) {
 				loaded_script();
 
 				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
-				lua["Transform"] = user->GetComponent<TransformComponent>();
+				lua["Transform"] = user->GetComponent<TransformComponent>().get();
 
+				lua["Animator"] = sol::lua_nil;
 				if (user->GetComponent<AnimatorComponent>()) {
-					lua["Animator"] = sol::lua_nil;  
-					lua["Animator"] = user->GetComponent<AnimatorComponent>();
+					lua["Animator"] = user->GetComponent<AnimatorComponent>().get();
 				}
 
+				lua["Rigidbody"] = sol::lua_nil;
+				if (user->GetComponent<PhysicsComponent>()) {
+					lua["Rigidbody"] = user->GetComponent<PhysicsComponent>().get();
+				}
 
 				sol::protected_function update = lua["Update"];
 				if (update.valid()) {
@@ -308,11 +317,16 @@ void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 				loaded_script();
 
 				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
-				lua["Transform"] = target->GetComponent<TransformComponent>();
+				lua["Transform"] = target->GetComponent<TransformComponent>().get();
 
+				lua["Animator"] = sol::lua_nil;
 				if (target->GetComponent<AnimatorComponent>()) {
-					lua["Animator"] = sol::lua_nil;
-					lua["Animator"] = target->GetComponent<AnimatorComponent>();
+					lua["Animator"] = target->GetComponent<AnimatorComponent>().get();
+				}
+
+				lua["Rigidbody"] = sol::lua_nil;
+				if (target->GetComponent<PhysicsComponent>()) {
+					lua["Rigidbody"] = target->GetComponent<PhysicsComponent>().get();
 				}
 
 				sol::protected_function update = lua["Update"];
@@ -372,13 +386,31 @@ void ScriptService::loadLibraries()
 		"z", sol::property(&TransformComponent::GetZ, &TransformComponent::SetZ)
 	);*/
 
+
+	void(TransformComponent::*TRANSFORM_SETPOSVEC3)(Vec3) = &TransformComponent::SetPos;
+	void(TransformComponent::*TRANSFORM_SETPOSFLOAT)(float,float,float) = &TransformComponent::SetPos;
+
+
 	lua.new_usertype<TransformComponent>("Transform",
 		//Write new functions to include parent's transform and get global transforms
-		"Position", sol::property(&TransformComponent::GetPosition, &TransformComponent::SetPos),
+		"Position", sol::property(&TransformComponent::GetPosition, TRANSFORM_SETPOSVEC3),
 		"Rotation", sol::property(&TransformComponent::GetQuaternion, &TransformComponent::SetOrientation)
 
 
 	);
+
+	lua.new_usertype<PhysicsComponent>("Rigidbody",
+		"Vel", sol::property(&PhysicsComponent::getVel, &PhysicsComponent::setVel),
+		"Accel", sol::property(&PhysicsComponent::getAccel, &PhysicsComponent::setAccel),
+		"Drag", sol::property(&PhysicsComponent::getDrag, &PhysicsComponent::setDrag),
+		"AngVel", sol::property(&PhysicsComponent::getAngularVel, &PhysicsComponent::setAngularVel),
+		"AngAccel", sol::property(&PhysicsComponent::getAngularAccel, &PhysicsComponent::setAngularAccel),
+		"AngDrag", sol::property(&PhysicsComponent::getAngularDrag, &PhysicsComponent::setAngularDrag),
+		"UseGravity", sol::property(&PhysicsComponent::getUseGravity, &PhysicsComponent::setUseGravity),
+		"Mass", sol::property(&PhysicsComponent::getMass, &PhysicsComponent::setMass),
+		"State", sol::property(&PhysicsComponent::getState, &PhysicsComponent::setState)
+	);
+
 
 	lua.new_usertype<AnimationClip>("AnimationClip",
 		sol::constructors<AnimationClip()>(),
@@ -419,6 +451,8 @@ void ScriptService::loadLibraries()
 	const Vec3(Vec3::*VEC3_SUBTRACT)(const Vec3&) const = &Vec3::operator-;
 
 	const Vec3(Vec3::*VEC3_MULTIPLY_FLOAT)(const float) const = &Vec3::operator*;
+
+
 	//friend functions has to be lambda unfortunately due to not being a member of Vec3
 	const auto FLOAT_MULTIPLY_VEC3 = [](const float s, const Vec3& v) {
 		return v * s;
@@ -469,6 +503,8 @@ void ScriptService::loadLibraries()
 		sol::meta_function::division, &Vec3::operator/
 
 	);
+
+
 	
 	//Quaternion Def
 	lua.new_usertype<Quaternion>("Quaternion",
@@ -491,42 +527,48 @@ void ScriptService::loadLibraries()
 		sol::meta_function::division, & Quaternion::operator/	
 
 	);
+
+	lua["Input"] = sol::new_table();
+	
+	lua["Input"]["GetInputState"].set_function(&InputCreatorManager::getInputState);
+	
+
 	lua["QMath"] = sol::new_table();
 	{
-		lua["QMath"]["Conjugate"] = &QMath::conjugate;
-		lua["QMath"]["AngleAxisRotation"] = &QMath::angleAxisRotation;
-		lua["QMath"]["Dot"] = &QMath::dot;
-		lua["QMath"]["Inverse"] = &QMath::inverse;
-		lua["QMath"]["LookAt"] = &QMath::lookAt;
-		lua["QMath"]["Magnitude"] = &QMath::magnitude;
-		lua["QMath"]["Normalize"] = &QMath::normalize;
-		lua["QMath"]["Pow"] = &QMath::pow;
-		lua["QMath"]["Rotate"] = &QMath::rotate;
-		lua["QMath"]["Slerp"] = &QMath::slerp;
+		lua["QMath"]["Conjugate"].set_function(&QMath::conjugate);
+		lua["QMath"]["AngleAxisRotation"].set_function(&QMath::angleAxisRotation);
+		lua["QMath"]["Dot"].set_function(&QMath::dot);
+		lua["QMath"]["Inverse"].set_function(&QMath::inverse);
+		lua["QMath"]["LookAt"].set_function(&QMath::lookAt);
+		lua["QMath"]["Magnitude"].set_function(&QMath::magnitude);
+		lua["QMath"]["Normalize"].set_function(&QMath::normalize);
+		lua["QMath"]["Pow"].set_function(&QMath::pow);
+		lua["QMath"]["Rotate"].set_function(&QMath::rotate);
+		lua["QMath"]["Slerp"].set_function(&QMath::slerp);
 	}
 
 	//I didn't add implimentation for Vec2 or Vec4, I only did Vec3
 	lua["VMath"] = sol::new_table();
 	{
 
-		lua["VMath"]["Lerp"] = &VMath::lerp;
-		lua["VMath"]["Distance"] = &VMath::distance;
-		lua["VMath"]["Reflect"] = &VMath::reflect;
-		lua["VMath"]["Rotate"] = &VMath::rotate;
+		lua["VMath"]["Lerp"].set_function(&VMath::lerp);
+		lua["VMath"]["Distance"].set_function(&VMath::distance);
+		lua["VMath"]["Reflect"].set_function(&VMath::reflect);
+		lua["VMath"]["Rotate"].set_function(&VMath::rotate);
 
 
 		//same as quat and vec3, except that because its static, remove the namespace in (Vec3::*VEC3_Cross)
 		const Vec3(*VEC3_CROSS)(const Vec3&, const Vec3&) = &VMath::cross;
-		lua["VMath"]["Cross"] = VEC3_CROSS;
+		lua["VMath"]["Cross"].set_function(VEC3_CROSS);
 
 		float(*VEC3_DOT)(const Vec3&, const Vec3&) = &VMath::dot;
-		lua["VMath"]["Dot"] = VEC3_DOT;
+		lua["VMath"]["Dot"].set_function(VEC3_DOT);
 
 		float(*VEC3_MAG)(const Vec3&) = &VMath::mag;
-		lua["VMath"]["Magnitude"] = VEC3_MAG;
+		lua["VMath"]["Magnitude"].set_function(VEC3_MAG);
 
 		Vec3(*VEC3_NORMALIZE)(const Vec3&) = &VMath::normalize;
-		lua["VMath"]["Normalize"] = VEC3_NORMALIZE;
+		lua["VMath"]["Normalize"].set_function(VEC3_NORMALIZE);
 
 	}
 
