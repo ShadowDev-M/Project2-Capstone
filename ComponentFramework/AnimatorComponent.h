@@ -51,12 +51,15 @@ class Animation : public Component {
 	Animation& operator = (Animation&&) = delete;
 
 	std::string filename;
+	std::string assetname;
 
 	void LoadSkeleton(const char* filename);
 
 	bool fullyLoaded = false;
 	
 	bool hierarchyLoaded = false;
+
+
 
 	std::string name;
 	double duration;               // in ticks
@@ -77,11 +80,16 @@ public:
 
 	std::vector<Bone> getBonesAtTime(double time, MeshComponent* mesh);
 
-	const char* getName() const { return filename.c_str(); }
+	const char* getName() const { return assetname.c_str(); }
+
+	const char* getFilename() const { return filename.c_str(); }
+
 
 	bool queryLoadStatus() { return fullyLoaded; }
 
 	bool InitializeAnimation();
+
+	void SendAssetname(std::string assetname_);
 
 	bool OnCreate() override;
 	void OnDestroy() override;
@@ -148,6 +156,10 @@ public:
 	
 	}
 
+	///Sets the start time while ignoring if the animation is loaded or not, use at your own risk (Intended for save file loading)
+	void setStartTimeRaw(float time_) {	startTime = time_;	}
+
+
 	void setSpeedMult(float speed_) { speedMult = speed_; }
 
 	void setCurrentTime(float time_) {
@@ -161,6 +173,12 @@ public:
 		else { return "LOADING..."; }
 	}
 
+	std::string getAnimFilename() {
+		if (animation && animation->queryLoadStatus()) { return animation->getFilename(); }
+		else { return "LOADING..."; }
+	}
+
+
 	bool hasAnim() { return (bool)animation; }
 
 	void setLooping(bool state) { loop = state; }
@@ -173,6 +191,9 @@ public:
 
 		playing = true;
 	}
+
+	bool isPlaying() { return playing; }
+
 
 	float getCurrentTimeInFrames();
 
@@ -210,7 +231,7 @@ class AnimatorComponent : public Component {
 
 public:
 	//Ref<AnimationClip> getBaseAsset() { return baseAsset; }
-	AnimatorComponent(Component* parent);
+	AnimatorComponent(Component* parent, float startTime_ = 0.0f, float speedMult_ = 0.0f, bool loop_ = false, std::string assetname_ = "");
 	virtual ~AnimatorComponent();
 
 	void setAnimation(Ref<Animation> animation_) { activeClip.setAnimation(animation_); };
@@ -234,6 +255,15 @@ public:
 	bool getLoopingState() { return activeClip.getLoopingState(); }
 
 	std::string getAnimName() {return activeClip.getAnimName();}
+
+	std::string getAnimFilename() { return activeClip.getAnimFilename(); }
+
+	void PlayClip() { activeClip.Play(); }
+
+	bool isPlaying() { return activeClip.isPlaying(); }
+
+	void StopClip() { activeClip.StopPlaying(); }
+
 
 	bool hasAnim() { return activeClip.hasAnim(); }
 

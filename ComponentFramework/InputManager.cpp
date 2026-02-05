@@ -134,7 +134,7 @@ bool InputManager::startGame(std::pair<KeyBinding, std::tuple<bool>> input, Scen
 	if (keyboard.isPressed(input.first[0])) {
 
 		//start game
-		sceneGraph->Start();
+		//sceneGraph->Start();
 		return true;
 	}
 	return false;

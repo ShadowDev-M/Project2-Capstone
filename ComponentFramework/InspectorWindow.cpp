@@ -128,6 +128,17 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 						selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get());
 					//}
 				}
+				if (ImGui::Selectable("Animator Component")) {
+					if (selectedActor->second->GetComponent<MeshComponent>())
+					selectedActor->second->AddComponent<AnimatorComponent>(selectedActor->second.get());
+					else {
+						// if the actor can't be found by name or by ID
+#ifdef _DEBUG
+						Debug::Error("You require a MeshComponent to create an Animator!: " + selectedActor->second->getActorName(), __FILE__, __LINE__);
+#endif
+					}
+
+				}
 				if (ImGui::Selectable("Light Component")) {
 					if (!selectedActor->second->GetComponent<LightComponent>()) {
 						selectedActor->second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f);
@@ -700,7 +711,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 	for (auto& animator : selectedActors_.begin()->second->GetAllComponent<AnimatorComponent>()) {
 		if (ImGui::CollapsingHeader("AnimatorComponent")) {
-			RightClickContext<ScriptComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
+			RightClickContext<AnimatorComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
 
 			ImGuiChildFlags detailsFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY;
 			if (ImGui::BeginChild("details_panel", ImVec2(0, 150), detailsFlags)) {
@@ -734,7 +745,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 						}
 						else {
-							ImGui::Text("Loading...");
+							ImGui::Text("NULL");
 						}
 
 						if (currentTimeChanged) {
@@ -762,7 +773,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 						}
 						else {
-							ImGui::Text("Loading...");
+							ImGui::Text("NULL");
 						}
 
 						if (startTimeChanged) {
@@ -801,7 +812,8 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 					/*ImGui::TextWrapped("Script Path: %s", script->getPath().c_str());*/
 
-					if (animator->hasAnim()) ImGui::Text(animator->getAnimName().c_str());
+					if (animator->hasAnim()) 
+						ImGui::Text(animator->getAnimName().c_str());
 
 					ImGui::Button("Drop Animation Here", ImVec2(-1, 0));
 

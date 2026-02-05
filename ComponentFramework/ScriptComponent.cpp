@@ -149,7 +149,17 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 
 
 				loaded_script();
+				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
+
 				lua["Transform"] = target->GetComponent<TransformComponent>();
+
+				if (target->GetComponent<AnimatorComponent>()) {
+					lua["Animator"] = sol::lua_nil; 
+
+					lua["Animator"] = target->GetComponent<AnimatorComponent>();
+				}
+
+
 				lua["Start"]();
 				script->isCreated = true;
 
@@ -220,6 +230,13 @@ void ScriptService::updateAllScripts(float deltaTime) {
 
 				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
 				lua["Transform"] = user->GetComponent<TransformComponent>();
+
+				if (user->GetComponent<AnimatorComponent>()) {
+					lua["Animator"] = sol::lua_nil;  
+					lua["Animator"] = user->GetComponent<AnimatorComponent>();
+				}
+
+
 				sol::protected_function update = lua["Update"];
 				if (update.valid()) {
 					auto result = update(deltaTime);
@@ -357,7 +374,19 @@ void ScriptService::loadLibraries()
 
 	);
 
+	lua.new_usertype<AnimatorComponent>("Animator",
+		"Play", &AnimatorComponent::PlayClip,
+		"Stop", &AnimatorComponent::StopClip,
+		"GetPlayState", &AnimatorComponent::isPlaying,
+		"Length", &AnimatorComponent::getClipLength,
+		"GetLength", &AnimatorComponent::getClipLength,
+		"Loop", sol::property(&AnimatorComponent::getLoopingState, &AnimatorComponent::setLooping),
+		"CurrentTime", sol::property(&AnimatorComponent::getCurrentTime, &AnimatorComponent::setCurrentTime),
+		"StartTime", sol::property(&AnimatorComponent::getStartTime, &AnimatorComponent::setStartTime),
+		"SpeedMult", sol::property(&AnimatorComponent::getSpeedMult, &AnimatorComponent::setSpeedMult)
 
+
+	);
 
 	//put overload parametres in the second brackets of the LHS
 	const Vec3(Vec3::*VEC3_UNARY_MINUS)() const = &Vec3::operator-;

@@ -528,6 +528,34 @@ public:
             return args;
 
         }
+        else if constexpr (std::is_same_v<ComponentTemplate, AnimatorComponent>) {
+            //Animator
+
+            XMLElement* startTimeElement = component->FirstChildElement("startTime");
+            XMLElement* speedMultElement = component->FirstChildElement("speedMult");
+            XMLElement* loopingElement = component->FirstChildElement("looping");
+            XMLElement* animNameElement = component->FirstChildElement("animName");
+
+            float startTimeArg = GetAttrF(startTimeElement, "time");
+
+            float speedMultArg = GetAttrF(speedMultElement, "mult");
+
+            bool loopingArg = GetAttrF(loopingElement, "state");
+
+            std::string nameArg = std::string(animNameElement->FindAttribute("name")->Value());
+
+
+
+            //return the tuple to act as arguments
+            auto args = std::make_tuple(
+                startTimeArg,
+                speedMultArg,
+                loopingArg,
+                nameArg
+            );
+            return args;
+
+            }
         else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent> || std::is_same_v<ComponentTemplate, ScriptComponent>) {
 
             AssetManager& assetMgr = AssetManager::getInstance();
@@ -731,6 +759,56 @@ public:
             componentElement->InsertEndChild(typeElement);
 
         }
+        else if constexpr (std::is_same_v<ComponentTemplate, AnimatorComponent>) {
+            AnimatorComponent* componentToWrite = dynamic_cast<AnimatorComponent*>(toWrite);
+
+            float startTime = componentToWrite->getStartTime();
+            float speedMult = componentToWrite->getSpeedMult();
+            bool loop = componentToWrite->getLoopingState();
+
+            std::string animName = "";
+
+            if (componentToWrite->hasAnim()) animName = componentToWrite->getAnimName();
+
+            
+
+
+
+
+            //startTime
+            XMLElement* startTimeElement;
+            startTimeElement = doc.NewElement("startTime");
+            {
+                startTimeElement->SetAttribute("time", startTime);
+            }
+            componentElement->InsertEndChild(startTimeElement);
+
+            //speedMult
+            XMLElement* speedMultElement;
+            speedMultElement = doc.NewElement("speedMult");
+            {
+                speedMultElement->SetAttribute("mult", speedMult);
+                
+            }
+            componentElement->InsertEndChild(speedMultElement);
+
+            //loopingState
+            XMLElement* loopElement;
+            loopElement = doc.NewElement("looping");
+            {
+                loopElement->SetAttribute("state", loop);
+            }
+            componentElement->InsertEndChild(loopElement);
+
+            //filename
+            XMLElement* animNameElement;
+            animNameElement = doc.NewElement("animName");
+            {
+                animNameElement->SetAttribute("name", animName.c_str());
+            }
+            componentElement->InsertEndChild(animNameElement);
+
+            }
         else {
 
             std::cout << "ComponentWriteError: " << componentType << " is not a supported component type" << std::endl;

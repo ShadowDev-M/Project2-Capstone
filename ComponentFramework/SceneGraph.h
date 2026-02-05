@@ -115,6 +115,8 @@ public:
 		return instance;
 	}
 
+	bool isAllComponentsLoaded() { return (finishedQueue.empty() && workerQueue.empty()); }
+
 	bool queryMeshLoadStatus();
 
 	SceneGraph();

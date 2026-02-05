@@ -284,6 +284,9 @@ void SceneGraph::SaveFile(std::string name) const {
             XMLObjectFile::writeUniqueComponent<LightComponent>(obj.first, GetActor(obj.first)->GetComponent<LightComponent>().get());
 
        
+        if (GetActor(obj.first)->GetComponent<AnimatorComponent>())
+            XMLObjectFile::writeUniqueComponent<AnimatorComponent>(obj.first, GetActor(obj.first)->GetComponent<AnimatorComponent>().get());
+
 
 
         AssetManager& assetMgr = AssetManager::getInstance();

@@ -95,7 +95,7 @@ bool AssetManager::SaveAssetDatabaseXML() const
                 auto animation = std::dynamic_pointer_cast<Animation>(asset.second);
                 if (animation) {
                     if (animation->getName()) {
-                        assetElement->SetAttribute("animationName", animation->getName());
+                        assetElement->SetAttribute("animationName", animation->getFilename());
                     }
 
                 }
@@ -375,6 +375,7 @@ bool AssetManager::LoadAssetTypeXML(XMLElement* assetElement_, const std::string
             Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__); // GetAsset has an error message for when an asset can't be found when trying to get it, 
             return false;                                                                                            // this is just extra insurance incase something else messes up
         }
+        asset->SendAssetname(getAssetName(asset));
         if (!asset->OnCreate()) {
             Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
             RemoveAsset<Animation>(assetName_);

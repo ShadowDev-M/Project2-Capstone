@@ -4,8 +4,9 @@
 #include "InputManager.h"
 #include "AnimatorComponent.h"
 #include "Skeleton.h"
-
-
+#include <iostream>
+#include <tuple>
+#include <string>
 
 #include "PhysicsSystem.h"
 void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
@@ -295,7 +296,9 @@ bool SceneGraph::GetLightExist(Ref<Actor> actor)
 bool SceneGraph::AddActor(Ref<Actor> actor)
 {
 	if (!actor) {
+#ifdef _DEBUG
 		Debug::Error("Attempted to add null actor", __FILE__, __LINE__);
+#endif
 		return false;
 	}
 
@@ -325,15 +328,17 @@ bool SceneGraph::AddActor(Ref<Actor> actor)
 
 void SceneGraph::Start()
 {
+
+
 	for (auto& actor : Actors) {
 		ScriptService::startActorScripts(actor.second);
 	}
 
-	if (!GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation || !GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation->queryLoadStatus())
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "meshes/dancing.gltf"));
+	//if (!GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation || !GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation->queryLoadStatus())
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "meshes/dancing.gltf"));
 
 
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.Play();
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.Play();
 
 	// TODO: disabled this line for now, it was crashing the engine on playmode
 	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
@@ -424,6 +429,9 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 	if (XMLObjectFile::hasComponent<LightComponent>(name_)) {
 		std::cout << "Has a Light" << std::endl;
 
+		std::tuple arguments = XMLObjectFile::getComponent<LightComponent>(name_);
+		
+
 		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
 		Ref<LightComponent> lightG = Ref<LightComponent>(std::apply([](auto&&... args) {
 			return new LightComponent(args...);
@@ -435,6 +443,24 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 			//Light will be Added to scenegraph after entire actor is loaded fully to avoid issues (in LoadActor function)
 			
+		}
+
+
+	}
+
+	if (XMLObjectFile::hasComponent<AnimatorComponent>(name_)) {
+		std::cout << "Has an Animator" << std::endl;
+
+		auto test = std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<AnimatorComponent>(name_));
+
+		Ref<AnimatorComponent> animC = Ref<AnimatorComponent>(std::apply([](auto&&... args) {
+			return new AnimatorComponent(args...);
+			}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<AnimatorComponent>(name_))));
+
+		if (!actor_->GetComponent<AnimatorComponent>()) {
+
+			actor_->AddComponent(animC);
+
 		}
 
 
@@ -504,7 +530,9 @@ Ref<Actor> SceneGraph::GetActor(const std::string& actorName) const
 	// try to find the actor by name
 	auto nameIt = ActorNameToId.find(actorName);
 	if (nameIt == ActorNameToId.end()) {
+#ifdef _DEBUG
 		Debug::Error("Can't find requested actor: " + actorName, __FILE__, __LINE__);
+#endif
 		return nullptr;
 	}
 
@@ -517,7 +545,10 @@ Ref<Actor> SceneGraph::GetActor(const std::string& actorName) const
 	}
 
 	// if the actor can't be found by name or by ID
+#ifdef _DEBUG
+
 	Debug::Error("Can't find requested actor: " + actorName, __FILE__, __LINE__);
+#endif
 	return nullptr;
 }
 
@@ -545,7 +576,10 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 	auto actorIt = Actors.find(actorId);
 
 	if (actorIt == Actors.end()) {
+#ifdef _DEBUG
+
 		Debug::Error("Actor: " + actorName + " ID does not exist!", __FILE__, __LINE__);
+#endif
 		return false;
 	}
 
@@ -1080,7 +1114,9 @@ bool SceneGraph::OnCreate()
 	// if an actor was setup wrong throw an error
 	for (auto& actor : Actors) {
 		if (!actor.second->OnCreate()) {
+#ifdef _DEBUG
 			Debug::Error("Actor failed to initialize: " + actor.second->getActorName(), __FILE__, __LINE__);
+#endif
 			return false;
 		}
 	}

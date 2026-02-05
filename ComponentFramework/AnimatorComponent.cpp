@@ -9,6 +9,7 @@
 #include "MMath.h"
 #include <iostream>
 #include <algorithm>
+#include "AssetManager.h"
 static std::vector<AnimatorComponent*> animators;
 
 void AnimatorComponent::queryAllAnimators(MeshComponent* caller)
@@ -20,7 +21,7 @@ void AnimatorComponent::queryAllAnimators(MeshComponent* caller)
 	}
 }
 
-AnimatorComponent::AnimatorComponent(Component* parent_) : Component(parent_)
+AnimatorComponent::AnimatorComponent(Component* parent_, float startTime_, float speedMult_, bool loop_, std::string assetname_ ) : Component(parent_)
 {
 	animators.push_back(this);
 
@@ -36,6 +37,14 @@ AnimatorComponent::AnimatorComponent(Component* parent_) : Component(parent_)
 			std::cout << mesh->getMeshName() << std::endl;
 		}
 		copySkeletalData();
+		Ref<Animation> animationClip = std::dynamic_pointer_cast<Animation>(AssetManager::getInstance().GetAsset<Animation>(assetname_));
+		if (animationClip)
+			activeClip.setAnimation(animationClip);
+		activeClip.setStartTimeRaw(startTime_);
+		activeClip.setSpeedMult(speedMult_);
+		activeClip.setLooping(loop_);
+		
+		
 	}
 	else {
 #ifdef _DEBUG
@@ -189,6 +198,7 @@ AnimationClip::~AnimationClip()
 
 void AnimationClip::setAnimation(Ref<Animation> animation_)
 {
+	startTime = 0.0f;
 	if (animation_ && !animation_->queryLoadStatus()) {
 		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());
 	}
@@ -626,8 +636,13 @@ bool Animation::InitializeAnimation()
 }
 
 
+void Animation::SendAssetname(std::string assetname_) {
+	assetname = assetname_;
+}
+
 bool Animation::OnCreate()
 {
+
 	return true;
 }
 

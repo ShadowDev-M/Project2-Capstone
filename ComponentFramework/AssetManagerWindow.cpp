@@ -245,6 +245,9 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 		case 4: // Animation
 			success = AssetManager::getInstance().LoadAsset<Animation>(
 				newAssetName, nullptr, newAnimationPath.c_str());
+
+			AssetManager::getInstance().GetAsset<Animation>(newAssetName)->SendAssetname(newAssetName);
+
 			break;
 
 		default:
@@ -391,7 +394,7 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 			}
 			else if (animation) {
 				if (animation->getName() != "") {
-					std::string command = "start \"\" \"" + std::string((animation->getName())) + "\"";
+					std::string command = "start \"\" \"" + std::string((animation->getFilename())) + "\"";
 					system(command.c_str());
 				}
 			}
@@ -446,7 +449,7 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 
 		}
 		if (animation) {
-			ImGui::Text("Animation Name: %s", animation->getName());
+			ImGui::Text("Animation Filename: %s", animation->getFilename());
 
 		}
 

@@ -132,15 +132,17 @@ void EditorManager::RenderEditorUI() {
 
 	if (isEditMode()) {
 		if (ImGui::ImageButton("##PlayButton", ImTextureID(editorIcons.playIcon->getDiffuseID()), buttonSize)) {
-			SetEditorMode(EditorMode::Play);
+			if (SceneGraph::getInstance().isAllComponentsLoaded()) {
+				SetEditorMode(EditorMode::Play);
 
-			// on play, save data to a temporary save file
-			std::filesystem::create_directory("Game Objects/" + tempSaveFile);
-			sceneGraph->SaveFile(tempSaveFile);
+				// on play, save data to a temporary save file
+					std::filesystem::create_directory("Game Objects/" + tempSaveFile);
+					//sceneGraph->SaveFile(tempSaveFile);
 
-			sceneGraph->Start();
-			Ref<Actor> camera = sceneGraph->GetActor("CamTest");
-			sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
+					sceneGraph->Start();
+					Ref<Actor> camera = sceneGraph->GetActor("CamTest");
+					sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
+			}
 		}
 	}
 	else if (isPlayMode() || isPaused()) {
@@ -151,8 +153,8 @@ void EditorManager::RenderEditorUI() {
 			SetEditorMode(EditorMode::Edit);
 			sceneGraph->Stop();
 
-			sceneGraph->RemoveAllActors();
-			XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
+			//sceneGraph->RemoveAllActors();
+		//	XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
 			
 			sceneGraph->setUsedCamera(nullptr);
 			sceneGraph->checkValidCamera();

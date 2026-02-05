@@ -1,6 +1,6 @@
 <AssetDatabase>
     <Animation>
-        <Asset name="svgvuijwerjtuiew" animationName="example"/>
+        <Asset name="svgvuijwerjtuiew" animationName=""/>
         <Asset name="dancing" animationName="meshes/dancing.gltf"/>
     </Animation>
     <MaterialComponent>
@@ -36,6 +36,7 @@
         <Asset name="script1" scriptName="testScript.lua"/>
         <Asset name="testScriptTwo" scriptName="testScriptTwo.lua"/>
         <Asset name="lerjgklktbl" scriptName="testScript.lua"/>
+        <Asset name="animScript" scriptName="animateTestScript.lua"/>
         <Asset name="testScript" scriptName="testScript.lua"/>
     </ScriptAbstract>
     <ShaderComponent>

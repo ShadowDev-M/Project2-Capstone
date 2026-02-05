@@ -4,7 +4,14 @@
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="0.1" y="0.1" z="0.1"/>
     </TransformComponent>
+    <AnimatorComponent>
+        <startTime time="0"/>
+        <speedMult mult="1"/>
+        <looping state="false"/>
+        <animName name="dancing"/>
+    </AnimatorComponent>
     <MeshComponent name="dancingRobot"/>
     <MaterialComponent name="skeletonTexture"/>
     <ShaderComponent name="S_Multi"/>
+    <ScriptComponent name="animScript"/>
 </Actor>
