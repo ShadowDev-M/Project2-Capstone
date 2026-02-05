@@ -193,11 +193,16 @@ AnimationClip::~AnimationClip()
 	clipsToUpdate.erase(std::remove(clipsToUpdate.begin(), clipsToUpdate.end(), this), clipsToUpdate.end());
 }
 
+void AnimationClip::setAnimationStr(const char* animation_)
+{ setAnimation(AssetManager::getInstance().GetAsset<Animation>(std::string(animation_))); }
 
 
 
 void AnimationClip::setAnimation(Ref<Animation> animation_)
 {
+
+	if (!animation_) return;
+
 	startTime = 0.0f;
 	if (animation_ && !animation_->queryLoadStatus()) {
 		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());

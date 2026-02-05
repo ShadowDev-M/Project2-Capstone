@@ -106,11 +106,7 @@ public:
 class AnimationClip {
 	friend class SceneGraph;
 
-	AnimationClip(const AnimationClip&) = delete;
-	AnimationClip(AnimationClip&&) = delete;
-	AnimationClip& operator = (const AnimationClip&) = delete;
-	AnimationClip& operator = (AnimationClip&&) = delete;
-
+	
 	float clipLength = -1.0f;
 	float startTime = 0.0f;
 	float speedMult = 1.0f;
@@ -123,13 +119,18 @@ class AnimationClip {
 	Ref<Animation> animation;
 
 public:
+	/*AnimationClip(const AnimationClip&) = delete;
+	AnimationClip(AnimationClip&&) = delete;
+	AnimationClip& operator = (const AnimationClip&) = delete;
+	AnimationClip& operator = (AnimationClip&&) = delete;*/
 
 	bool getActiveState();
 
 	AnimationClip();
 	~AnimationClip();
-
 	
+	void setAnimationStr(const char* animation_);
+
 	void setAnimation(Ref<Animation> animation_);
 
 	float getStartTime() { return startTime; }
@@ -173,10 +174,21 @@ public:
 		else { return "LOADING..."; }
 	}
 
+	const char* getAnimNameCStr() const {
+		if (animation && animation->queryLoadStatus()) { return animation->getName(); }
+		else { return "LOADING..."; }
+	}
+
 	std::string getAnimFilename() {
 		if (animation && animation->queryLoadStatus()) { return animation->getFilename(); }
 		else { return "LOADING..."; }
 	}
+
+	const char* getAnimFilenameCStr() const {
+		if (animation && animation->queryLoadStatus()) { return animation->getFilename(); }
+		else { return "LOADING..."; }
+	}
+
 
 
 	bool hasAnim() { return (bool)animation; }
@@ -233,6 +245,9 @@ public:
 	//Ref<AnimationClip> getBaseAsset() { return baseAsset; }
 	AnimatorComponent(Component* parent, float startTime_ = 0.0f, float speedMult_ = 0.0f, bool loop_ = false, std::string assetname_ = "");
 	virtual ~AnimatorComponent();
+
+	AnimationClip getAnimationClip() { return activeClip; }
+	void setAnimationClip(AnimationClip newClip) { activeClip = newClip; }
 
 	void setAnimation(Ref<Animation> animation_) { activeClip.setAnimation(animation_); };
 

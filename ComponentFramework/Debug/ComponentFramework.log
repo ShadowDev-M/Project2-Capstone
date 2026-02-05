@@ -12,35 +12,42 @@ C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComp
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(223,9): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(228,9): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(365,30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(370,30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(388,30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(393,30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(428,19): warning C4018: '<': signed/unsigned mismatch
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(433,19): warning C4018: '<': signed/unsigned mismatch
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(442,19): warning C4018: '<': signed/unsigned mismatch
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(447,19): warning C4018: '<': signed/unsigned mismatch
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(456,19): warning C4018: '<': signed/unsigned mismatch
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(461,19): warning C4018: '<': signed/unsigned mismatch
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(551,18): warning C4018: '<': signed/unsigned mismatch
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(556,18): warning C4018: '<': signed/unsigned mismatch
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(567,18): warning C4018: '<': signed/unsigned mismatch
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(572,18): warning C4018: '<': signed/unsigned mismatch
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(582,18): warning C4018: '<': signed/unsigned mismatch
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(587,18): warning C4018: '<': signed/unsigned mismatch
   (compiling source file '/AnimatorComponent.cpp')
   
-C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(600,56): warning C4018: '<': signed/unsigned mismatch
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.cpp(605,56): warning C4018: '<': signed/unsigned mismatch
   (compiling source file '/AnimatorComponent.cpp')
+  
+  AssetManager.cpp
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/AssetManager.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/AssetManager.cpp')
   
   AssetManagerWindow.cpp
 C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data

@@ -309,6 +309,12 @@ void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
 
 				lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
 				lua["Transform"] = target->GetComponent<TransformComponent>();
+
+				if (target->GetComponent<AnimatorComponent>()) {
+					lua["Animator"] = sol::lua_nil;
+					lua["Animator"] = target->GetComponent<AnimatorComponent>();
+				}
+
 				sol::protected_function update = lua["Update"];
 				if (update.valid()) {
 					auto result = update(deltaTime);
@@ -374,6 +380,25 @@ void ScriptService::loadLibraries()
 
 	);
 
+	lua.new_usertype<AnimationClip>("AnimationClip",
+		sol::constructors<AnimationClip()>(),
+
+
+		"GetPlayState", &AnimationClip::isPlaying,
+		"Length", &AnimationClip::getClipLength,
+		"GetLength", &AnimationClip::getClipLength,
+		"Loop", sol::property(&AnimationClip::getLoopingState, &AnimationClip::setLooping),
+		"CurrentTime", sol::property(&AnimationClip::getCurrentTime, &AnimationClip::setCurrentTime),
+		"StartTime", sol::property(&AnimationClip::getStartTime, &AnimationClip::setStartTime),
+		"SpeedMult", sol::property(&AnimationClip::getSpeedMult, &AnimationClip::setSpeedMult),
+		"SetAnimation", &AnimationClip::setAnimationStr,
+		"GetAnimationName", &AnimationClip::getAnimNameCStr,
+		"GetAnimationFilename", &AnimationClip::getAnimFilename,
+		"GetState", &AnimationClip::getActiveState
+
+
+	);
+
 	lua.new_usertype<AnimatorComponent>("Animator",
 		"Play", &AnimatorComponent::PlayClip,
 		"Stop", &AnimatorComponent::StopClip,
@@ -383,7 +408,8 @@ void ScriptService::loadLibraries()
 		"Loop", sol::property(&AnimatorComponent::getLoopingState, &AnimatorComponent::setLooping),
 		"CurrentTime", sol::property(&AnimatorComponent::getCurrentTime, &AnimatorComponent::setCurrentTime),
 		"StartTime", sol::property(&AnimatorComponent::getStartTime, &AnimatorComponent::setStartTime),
-		"SpeedMult", sol::property(&AnimatorComponent::getSpeedMult, &AnimatorComponent::setSpeedMult)
+		"SpeedMult", sol::property(&AnimatorComponent::getSpeedMult, &AnimatorComponent::setSpeedMult),
+		"Clip", sol::property(&AnimatorComponent::getAnimationClip, &AnimatorComponent::setAnimationClip)
 
 
 	);
@@ -416,6 +442,10 @@ void ScriptService::loadLibraries()
 	//const Vec3 v, const Quaternion& q
 	// 
 	//Vec3 Def
+
+	
+
+	
 
 
 	lua.new_usertype<Vec3>("Vec3",
