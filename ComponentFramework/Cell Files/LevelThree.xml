@@ -113,6 +113,9 @@
             <S_Animated>
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/animationVert.glsl"/>
             </S_Animated>
+			<S_AnimOutline>
+				<Shader frag="shaders/animationVert.glsl" vert="shaders/animationVert.glsl"/>
+			</S_AnimOutline>
         </ShaderComponent>
     </Components>
 </CellFile>

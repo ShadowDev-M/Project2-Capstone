@@ -987,14 +987,25 @@ void SceneGraph::Render() const
 		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
 
-		
-
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
-		if (!isSelected && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
-			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
-			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
+
+		bool isAnimating = (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
+		if (isAnimating) {
+			if (isSelected) {
+				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline");
+
+			}
+			else{
+				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
+			}
 
 		}
+		else if (isSelected) {
+			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline");
+
+		}
+		
 		if (shader) glUseProgram(shader->GetProgram());
 
 		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
@@ -1019,8 +1030,10 @@ void SceneGraph::Render() const
 
 
 			if (isSelected) {
-				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-				glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+				
+				glUseProgram(shader->GetProgram());
+				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+				
 			}
 			else {
 				if (pair.second->GetComponent<ShaderComponent>()) {
@@ -1043,9 +1056,10 @@ void SceneGraph::Render() const
 
 
 
-			if (!isSelected && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
-				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
-				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
+			if (isAnimating) {
+				if (!isSelected) {
+					glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
+				}
 
 				
 

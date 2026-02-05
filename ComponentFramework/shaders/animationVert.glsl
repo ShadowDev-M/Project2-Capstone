@@ -4,21 +4,18 @@
 #define MAX_LIGHTS 4
 #define MAX_BONES 100
 
-// FIXED LOCATIONS like reference (3+4 instead of 5+6)
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec3 aNormal;  
 layout (location = 2) in vec2 aTexCoords;
-layout (location = 3) in ivec4 aBoneIDs;      // CHANGED: location=3
-layout (location = 4) in vec4 aBoneWeights;   // CHANGED: location=4
+layout (location = 3) in ivec4 aBoneIDs;      
+layout (location = 4) in vec4 aBoneWeights;  
 
-// Reference-style uniforms
-uniform mat4 bone_transforms[MAX_BONES];       // CHANGED: bone_transforms
+uniform mat4 bone_transforms[MAX_BONES];      
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 
-// Your lights (UNCHANGED)
 uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec4 diffuse[MAX_LIGHTS];
 uniform vec4 specular[MAX_LIGHTS];
@@ -39,7 +36,6 @@ void main() {
     textureCoords = aTexCoords;
     textureCoords.y *= -1.0f;
     
-    // REFERENCE EXACT SKINNING LOGIC
     mat4 boneTransform = mat4(0.0);
     boneTransform += bone_transforms[int(aBoneIDs.x)] * aBoneWeights.x;
     boneTransform += bone_transforms[int(aBoneIDs.y)] * aBoneWeights.y;
@@ -52,7 +48,6 @@ void main() {
     vec4 worldPos = modelMatrix * skinnedPos;
     vec3 vertPosView = vec3(viewMatrix * worldPos);
     
-    // Your lighting outputs (UNCHANGED)
     vertNormal = normalize(mat3(transpose(inverse(modelMatrix))) * skinnedNormal);
     vertPos = vec3(worldPos);
     eyeDir = normalize(-vertPosView);

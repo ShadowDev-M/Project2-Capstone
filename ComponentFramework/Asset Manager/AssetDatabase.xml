@@ -42,8 +42,9 @@
     <ShaderComponent>
         <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
         <Asset name="S_Multi" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>
-        <Asset name="S_Outline" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/outline.glsl"/>
+        <Asset name="S_Outline" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/outline.glsl"/>
         <Asset name="S_Phong" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/texturePhongFrag.glsl"/>
         <Asset name="S_Animated" vertShader="shaders/animationVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>
+        <Asset name="S_AnimOutline" vertShader="shaders/animationVert.glsl" fragShader="shaders/outline.glsl"/>
     </ShaderComponent>
 </AssetDatabase>

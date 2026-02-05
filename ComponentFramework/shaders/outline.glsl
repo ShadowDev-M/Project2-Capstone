@@ -3,10 +3,14 @@
 
 layout(location = 0) out vec4 fragColor;
 
-layout(location = 0) in vec3 vertNormal;
-layout(location = 1) in vec3 lightDir;
-layout(location = 2) in vec3 eyeDir; 
-layout(location = 3) in vec2 textureCoords; 
+//layout(location = 0) in vec3 vertNormal;
+//layout(location = 1) in vec3 lightDir;
+//layout(location = 2) in vec3 eyeDir; 
+//layout(location = 3) in vec2 textureCoords; 
+layout (location = 0) in vec3 vertNormal;
+layout (location = 1) in vec3 eyeDir;
+layout (location = 2) in vec2 textureCoords;
+layout (location = 3) in vec3 worldPos; 
 
 uniform sampler2D myTexture; 
 
@@ -16,8 +20,11 @@ void main() {
 	vec4 ka = 0.1 * kd;
 	vec4 kt = texture(myTexture, textureCoords); 
 
-	float diff = max(dot(vertNormal, lightDir), 0.0);
-	vec3 reflection = normalize(reflect(-lightDir, vertNormal));
+	vec3 lightWorldPos = normalize(eyeDir); 
+
+
+	float diff = max(dot(vertNormal, lightWorldPos), 0.0);
+	vec3 reflection = normalize(reflect(-lightWorldPos, vertNormal));
 	float spec = max(dot(eyeDir, reflection), 0.0);
 	spec = pow(spec, 14.0);
 
