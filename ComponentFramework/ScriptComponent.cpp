@@ -118,6 +118,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 		if (!std::dynamic_pointer_cast<ScriptComponent>(comp)) continue;
 
 		Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(comp);
+		script->load_lua_file();
 
 		//No point in continuing if its already started
 		Actor* user = dynamic_cast<Actor*>(script->parent);
