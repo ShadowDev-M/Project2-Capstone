@@ -1,3 +1,10 @@
-﻿  ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
+﻿  Scene3GUI.cpp
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/Scene3GUI.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/Scene3GUI.cpp')
+  
+  ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
   C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

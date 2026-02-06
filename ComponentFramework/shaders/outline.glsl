@@ -3,28 +3,50 @@
 
 layout(location = 0) out vec4 fragColor;
 
-//layout(location = 0) in vec3 vertNormal;
-//layout(location = 1) in vec3 lightDir;
-//layout(location = 2) in vec3 eyeDir; 
-//layout(location = 3) in vec2 textureCoords; 
+uniform bool isTiled;
+uniform vec3 uvTiling;
+uniform vec2 tileScale;
+uniform vec2 tileOffset;
+
 layout (location = 0) in vec3 vertNormal;
 layout (location = 1) in vec3 eyeDir;
 layout (location = 2) in vec2 textureCoords;
-layout (location = 3) in vec3 worldPos; 
+layout (location = 3) in vec3 worldPos;
+layout (location = 4) in vec3 localPos;
+layout (location = 5) in vec3 localNormal;
 
 uniform sampler2D myTexture; 
 
 void main() {
     vec4 ks = vec4(1.0, 0.0, 0.0, 0.0);
 	vec4 kd = vec4(0.75, 0.6, 0.6, 0.0);
+	vec4 kt;
 	vec4 ka = 0.1 * kd;
-	vec4 kt = texture(myTexture, textureCoords); 
 
-	vec3 lightWorldPos = normalize(eyeDir); 
+	if (isTiled == true) {
+        vec3 n = abs(localNormal);
+        vec2 tiledTex;
 
+        vec2 finalOffset = tileOffset * tileScale;
 
-	float diff = max(dot(vertNormal, lightWorldPos), 0.0);
-	vec3 reflection = normalize(reflect(-lightWorldPos, vertNormal));
+        vec3 scaledPos = localPos * uvTiling;
+
+        if (n.y > n.x && n.y > n.z)
+            tiledTex = scaledPos.xz * tileScale; // top  
+        else if (n.x > n.z)
+            tiledTex = scaledPos.zy * tileScale; // side
+        else
+            tiledTex = scaledPos.xy * tileScale; // front
+            
+        kt = texture(myTexture, tiledTex + finalOffset);
+	} else {
+		kt = texture(myTexture, textureCoords); 
+	}
+
+	vec3 lightWorldDir = normalize(eyeDir);
+
+	float diff = max(dot(vertNormal, lightWorldDir), 0.0);
+	vec3 reflection = normalize(reflect(-lightWorldDir, vertNormal));
 	float spec = max(dot(eyeDir, reflection), 0.0);
 	spec = pow(spec, 14.0);
 
