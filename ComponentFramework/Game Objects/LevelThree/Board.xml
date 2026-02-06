@@ -1,8 +1,8 @@
 <Actor>
     <TransformComponent>
-        <position x="-4.0160294" y="4.5540032" z="0"/>
+        <position x="-34.345234" y="-4.7911291" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="1" y="1" z="1"/>
+        <scale x="5.0999999" y="1.7" z="1"/>
     </TransformComponent>
     <MeshComponent name="SM_Plane"/>
     <MaterialComponent name="M_ChessBoard"/>

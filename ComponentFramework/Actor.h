@@ -1,5 +1,27 @@
 #pragma once
 class MeshComponent;
+struct TilingSettings {
+	bool isTiled;
+	Vec2 tileScale = Vec2(1, 1);
+	Vec2 tileOffset;
+
+	bool getIsTiled() const { return isTiled; }
+	Vec2 getTileScale() const { return tileScale; }
+	Vec2 getTileOffset() const { return tileOffset; }
+
+	void setIsTiled(bool isTiled_) {
+		isTiled = isTiled_;
+	}
+
+	void setTileScale(Vec2 tileScale_) {
+		tileScale = tileScale_;
+	}
+
+	void setTileOffset(Vec2 tileOffset_) {
+		tileOffset = tileOffset_;
+	}
+};
+
 using namespace MATH;
 
 class Actor : public Component {
@@ -20,7 +42,8 @@ class Actor : public Component {
 	}
 	
 	uint32_t id;  // unique per actor
-
+	
+	TilingSettings tileSettings;
 
 protected:
 	std::vector<Ref<Component>> components;
@@ -29,7 +52,6 @@ protected:
 	std::string actorName;
 	Vec3 selectionColour = Vec3(0.5f,0.5f,0.5f);
 public:
-
 
 	uint32_t getId() const { return id; }
 
@@ -55,7 +77,7 @@ public:
 	// getter for the actor name
 	const std::string& getActorName() { return actorName; }
 	void setActorName(const std::string& actorName_) { actorName = actorName_; }
-
+	void setTileSettings(TilingSettings tileSettings_) { tileSettings = tileSettings_; }
 
 	~Actor();
 	virtual bool OnCreate() override;
@@ -64,6 +86,8 @@ public:
 	virtual void Render() const override;
 
 	Vec3 getSelectionColour() { return selectionColour; }
+	
+	TilingSettings getTileSettings() { return tileSettings; }
 
 	template<typename ComponentTemplate>
 	void AddComponent(Ref<ComponentTemplate> component_) {
@@ -209,6 +233,10 @@ public:
 
 					pushToSceneGraphWorker(newComponent);
 				}
+				if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MaterialComponent") {
+
+					tileSettings = TilingSettings();
+				}
 				return;
 			}
 		}
@@ -216,6 +244,11 @@ public:
 
 			pushToSceneGraphWorker(newComponent);
 		}
+		if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MaterialComponent") {
+
+			tileSettings = TilingSettings();
+		}
+
 		// if the component that is trying to be replaced doesn't exist, add it instead
 		AddComponent(newComponent);
 	}

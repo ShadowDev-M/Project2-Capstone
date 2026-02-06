@@ -584,39 +584,49 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 			ImGui::EndDragDropTarget();
 		}
 
-		static bool isTiled = false;
-
-		Vec2 scale = material->getTileScale();
-		float tileScale[2] = { scale.x, scale.y };
-		
-		Vec2 offset = material->getTileOffset();
-		float tileOffset[2] = { offset.x, offset.y };
-		
-		ImGui::Text("Tiling: ");
-		ImGui::SameLine();
-		
-		if (ImGui::Checkbox("##isTiled", &isTiled)) {
-			material->setIsTiled(isTiled);
-		}
-
-		if (isTiled == true) {
-			ImGui::Text("Tile Scale: ");
+		bool isTiled = false;
+		if (materialState.Count() == 1) {
+			ImGui::Text("Tiling: ");
 			ImGui::SameLine();
+			for (auto& component : materialState.components) {
+				for (const auto& pair : selectedActors_) {
+					// replace the actors material
+					if (pair.second->GetComponent<MaterialComponent>() == component) {
 
-			if (ImGui::DragFloat2("##tileScale", tileScale, 0.01f)) {
-				material->setTileScale(Vec2(tileScale[0], tileScale[1]));
+						TilingSettings tileSettings = pair.second->getTileSettings();
+
+						Vec2 scale = tileSettings.getTileScale();
+						float tileScale[2] = { scale.x, scale.y };
+
+						Vec2 offset = tileSettings.getTileOffset();
+						float tileOffset[2] = { offset.x, offset.y };
+
+						isTiled = tileSettings.getIsTiled();
+
+						if (ImGui::Checkbox("##isTiled", &isTiled)) {
+							tileSettings.setIsTiled(isTiled);
+						}
+
+						if (isTiled == true) {
+							ImGui::Text("Tile Scale: ");
+							ImGui::SameLine();
+
+							if (ImGui::DragFloat2("##tileScale", tileScale, 0.01f)) {
+								tileSettings.setTileScale(Vec2(tileScale[0], tileScale[1]));
+							}
+
+							ImGui::Text("Tile Offset: ");
+							ImGui::SameLine();
+
+							if (ImGui::DragFloat2("##tileOffset", tileOffset, 0.01f)) {
+								tileSettings.setTileOffset(Vec2(tileOffset[0], tileOffset[1]));
+							}
+						}
+						pair.second->setTileSettings(tileSettings);
+					}
+				}
 			}
-
-			ImGui::Text("Tile Offset: ");
-			ImGui::SameLine();
-
-			if (ImGui::DragFloat2("##tileOffset", tileOffset, 0.01f)) {
-				material->setTileOffset(Vec2(tileOffset[0], tileOffset[1]));
-			}
-
-
 		}
-
 	}
 	ImGui::Separator();
 }

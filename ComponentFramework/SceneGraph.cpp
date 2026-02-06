@@ -944,18 +944,34 @@ void SceneGraph::Render() const
 
 		Ref<Actor> actor = pair.second;
 
-		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
 
-		
-
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
-		if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
-			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
-			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
+
+		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
+
+		bool isAnimating = (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
+
+		//replace shader if it should be using another shader for whatever purpose- such as outline.
+
+		if (isAnimating) {
+			if (isSelected) {
+				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline");
+
+			}
+			else {
+				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
+			}
 
 		}
+		else if (isSelected) {
+			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline");
+
+		}
+
 		if (shader) glUseProgram(shader->GetProgram());
+		else continue;
 
 		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
 
@@ -964,70 +980,18 @@ void SceneGraph::Render() const
 		glUniformMatrix4fv(shader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
 		glUniformMatrix4fv(shader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
 
-		// if the actor has a shader, mesh, and mat component then render it
 		if (shader && mesh && material) {
 
 
-			Matrix4 modelMatrix = actor->GetModelMatrix();
-
+			//MODELMATRIX
 			glEnable(GL_DEPTH_TEST);
-
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
-
-			bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
-
-			if (isSelected) {
-				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-				glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-				
-				Vec3 scale = actor->GetComponent<TransformComponent>()->GetScale();
-				glUniform1i(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("isTiled"), material->getIsTiled());
-				glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("uvTiling"), 1, scale);
-
-				Vec2 tileScale = material->getTileScale();
-				glUniform2f(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("tileScale"), tileScale.x, tileScale.y);
-
-				Vec2 tileOffset = material->getTileOffset();
-				glUniform2f(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("tileOffset"), tileOffset.x, tileOffset.y);
-			}
-			else {
-				if (pair.second->GetComponent<ShaderComponent>()) {
-					glUseProgram(shader->GetProgram());
-
-					if (pair.second->GetComponent<ShaderComponent>() == AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")) {
-						// use the new material component elements from the struct
-						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-						
-						Vec3 scale = actor->GetComponent<TransformComponent>()->GetScale();
-						glUniform1i(shader->GetUniformID("isTiled"), material->getIsTiled());
-						glUniform3fv(shader->GetUniformID("uvTiling"), 1, scale);
-
-						Vec2 tileScale = material->getTileScale();
-						glUniform2f(shader->GetUniformID("tileScale"), tileScale.x, tileScale.y);
-						
-						Vec2 tileOffset = material->getTileOffset();
-						glUniform2f(shader->GetUniformID("tileOffset"), tileOffset.x, tileOffset.y);
-
-					}
-					else {
-						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-					}
-				}
-				
+			Matrix4 modelMatrix = actor->GetModelMatrix();
+			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 
 
-				//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
-
-			}
-
-
-
-			if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
-				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
-				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-
-				
-
+			//ANIMATION
+			if (isAnimating) {
 				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
 
 				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
@@ -1036,7 +1000,7 @@ void SceneGraph::Render() const
 				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
 
 
-				
+
 				GLint loc = shader->GetUniformID("bone_transforms[0]");
 				if (loc == -1) {
 					printf("ERROR: bone_transforms uniform not found!\n");
@@ -1046,19 +1010,25 @@ void SceneGraph::Render() const
 					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
 						reinterpret_cast<const float*>(finalBoneMatrices.data()));
 				}
-
-			
-
 			}
 
-			
-			///glUseProgram(pickerShader->GetProgram());
+			TilingSettings tileSettings = actor->getTileSettings();
 
-			//Vec3 idColor = Actor::encodeID(actor->id);
+			//TILING
+			Vec3 scale = actor->GetComponent<TransformComponent>()->GetScale();
+			glUniform1i(shader->GetUniformID("isTiled"), tileSettings.getIsTiled());
+			glUniform3fv(shader->GetUniformID("uvTiling"), 1, scale);
 
+			Vec2 tileScale = tileSettings.getTileScale();
+			glUniform2f(shader->GetUniformID("tileScale"), tileScale.x, tileScale.y);
+
+			Vec2 tileOffset = tileSettings.getTileOffset();
+			glUniform2f(shader->GetUniformID("tileOffset"), tileOffset.x, tileOffset.y);
+
+			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
-			
+
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
 			if (material->getSpecularID() != 0) {
@@ -1069,14 +1039,10 @@ void SceneGraph::Render() const
 			else {
 				glUniform1i(shader->GetUniformID("hasSpec"), 0);
 			}
-			
-			
-			
+
+			//RENDER
 			mesh->Render(GL_TRIANGLES);
 			glBindTexture(GL_TEXTURE_2D, 0);
-
-
-
 		}
 
 	}
@@ -1101,3 +1067,6 @@ bool SceneGraph::OnCreate()
 
 	return true;
 }
+
+
+
