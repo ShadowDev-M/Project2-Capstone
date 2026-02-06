@@ -211,6 +211,18 @@ void AnimationClip::setAnimation(Ref<Animation> animation_)
 
 }
 
+void Animation::preloadAnimation(std::string animationName)
+{
+	Ref<Animation> animation_ = AssetManager::getInstance().GetAsset<Animation>(animationName);
+
+	if (!animation_) return;
+
+	if (animation_ && !animation_->queryLoadStatus()) {
+		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());
+	}
+
+}
+
 void AnimationClip::displayDataTest()
 {
 	

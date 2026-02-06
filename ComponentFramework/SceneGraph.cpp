@@ -982,15 +982,18 @@ void SceneGraph::Render() const
 	for (const auto& pair : Actors) {
 
 		Ref<Actor> actor = pair.second;
-		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
-		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
 
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
 
+		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
+
 		bool isAnimating = (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
 			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
+
+		//replace shader if it should be using another shader for whatever purpose- such as outline.
+
 		if (isAnimating) {
 			if (isSelected) {
 				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline");
@@ -1007,6 +1010,7 @@ void SceneGraph::Render() const
 		}
 		
 		if (shader) glUseProgram(shader->GetProgram());
+		else continue;
 
 		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
 
@@ -1015,54 +1019,18 @@ void SceneGraph::Render() const
 		glUniformMatrix4fv(shader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
 		glUniformMatrix4fv(shader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
 
-		// if the actor has a shader, mesh, and mat component then render it
 		if (shader && mesh && material) {
 
 
-			Matrix4 modelMatrix = actor->GetModelMatrix();
-
-			
-
-
+			//MODELMATRIX
 			glEnable(GL_DEPTH_TEST);
-
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
+			Matrix4 modelMatrix = actor->GetModelMatrix();
+			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 
 
-			if (isSelected) {
-				
-				glUseProgram(shader->GetProgram());
-				glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-				
-			}
-			else {
-				if (pair.second->GetComponent<ShaderComponent>()) {
-					glUseProgram(shader->GetProgram());
-
-					if (pair.second->GetComponent<ShaderComponent>() == AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")) {
-						// use the new material component elements from the struct
-						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-					}
-					else {
-						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-					}
-				}
-				
-
-
-				//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
-
-			}
-
-
-
+			//ANIMATION
 			if (isAnimating) {
-				if (!isSelected) {
-					glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-				}
-
-				
-
 				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
 
 				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
@@ -1081,16 +1049,9 @@ void SceneGraph::Render() const
 					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
 						reinterpret_cast<const float*>(finalBoneMatrices.data()));
 				}
-
-			
-
 			}
 
-			
-			///glUseProgram(pickerShader->GetProgram());
-
-			//Vec3 idColor = Actor::encodeID(actor->id);
-
+			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
 			
@@ -1105,13 +1066,9 @@ void SceneGraph::Render() const
 				glUniform1i(shader->GetUniformID("hasSpec"), 0);
 			}
 			
-			
-			
+			//RENDER
 			mesh->Render(GL_TRIANGLES);
 			glBindTexture(GL_TEXTURE_2D, 0);
-
-
-
 		}
 
 	}
@@ -1121,6 +1078,10 @@ void SceneGraph::Render() const
 		glViewport(0, 0, w, h);
 	}
 
+}
+
+void SceneGraph::Preload(ScriptComponent* script){
+	ScriptService::preloadScript(script);
 }
 
 bool SceneGraph::OnCreate()

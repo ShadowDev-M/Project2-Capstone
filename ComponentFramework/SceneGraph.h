@@ -213,7 +213,9 @@ public:
 	Ref<Actor> pickColour(int mouseX, int mouseY);
 
 	// all const
-	void Render() const; 
+	void Render() const;
+	void Preload(ScriptComponent* script);
+
 
 	bool OnCreate();
 

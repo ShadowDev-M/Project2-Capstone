@@ -13,9 +13,9 @@
     </PhysicsComponent>
     <AnimatorComponent>
         <startTime time="0"/>
-        <speedMult mult="1"/>
-        <looping state="true"/>
-        <animName name="dancing"/>
+        <speedMult mult="0"/>
+        <looping state="false"/>
+        <animName name=""/>
     </AnimatorComponent>
     <MeshComponent name="dancingRobot"/>
     <MaterialComponent name="skeletonTexture"/>

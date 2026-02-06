@@ -33,6 +33,8 @@ bool Scene3GUI::OnCreate() {
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
+
+
 	//AudioManager::getInstance().Initialize();
 	//marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);
 	//SceneGraph::getInstance().GetActor("Mario")->AddComponent<AnimatorComponent>((SceneGraph::getInstance().GetActor("Mario").get()));

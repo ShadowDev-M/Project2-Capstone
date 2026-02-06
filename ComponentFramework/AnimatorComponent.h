@@ -72,6 +72,9 @@ public:
 
 	void BuildSkeletonHierarchy(Skeleton* targetSkeleton, MeshComponent* mesh);
 
+	static void preloadAnimation(std::string animationName);
+
+
 	void LoadAnimation(const char* file);
 
 	Animation(Component* parent, const char* filename_);
@@ -123,6 +126,10 @@ public:
 	AnimationClip(AnimationClip&&) = delete;
 	AnimationClip& operator = (const AnimationClip&) = delete;
 	AnimationClip& operator = (AnimationClip&&) = delete;*/
+
+	void preloadAnimation(const char* animationName) const {
+		Animation::preloadAnimation(animationName);
+	}
 
 	bool getActiveState();
 
