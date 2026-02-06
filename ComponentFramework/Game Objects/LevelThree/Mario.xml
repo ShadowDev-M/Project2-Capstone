@@ -6,5 +6,5 @@
     </TransformComponent>
     <MeshComponent name="dancingRobot"/>
     <MaterialComponent name="skeletonTexture"/>
-    <ShaderComponent name="S_Multi"/>
+    <ShaderComponent name="S_Animated"/>
 </Actor>

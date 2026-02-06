@@ -1,0 +1,15 @@
+<Actor>
+    <TransformComponent>
+        <position x="-5.5313458" y="5.4049921" z="7.9127507"/>
+        <rotation w="0.52492344" x="-0.17055792" y="-0.79307246" z="-0.2576848"/>
+        <scale x="0.60000002" y="0.59999961" z="0.59999961"/>
+    </TransformComponent>
+    <LightComponent>
+        <diffuse x="0.5" y="0.5" z="0.5" w="1"/>
+        <specular x="0" y="0" z="0" w="1"/>
+        <intensity magnitude="4.6999998"/>
+        <LightType type="0"/>
+    </LightComponent>
+    <MeshComponent name="SM_Sphere"/>
+    <ShaderComponent name="S_Multi"/>
+</Actor>

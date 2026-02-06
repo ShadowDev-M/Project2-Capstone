@@ -1,0 +1,17 @@
+<Actor>
+    <TransformComponent>
+        <position x="0.29077071" y="0.49800003" z="0"/>
+        <rotation w="0.94832456" x="0.31730193" y="0" z="0"/>
+        <scale x="10.7" y="10.7" z="10.7"/>
+    </TransformComponent>
+    <PhysicsComponent>
+        <PhysicsState state="0"/>
+        <mass value="1"/>
+        <UsingGravity isUsing="1"/>
+        <drag value="0"/>
+        <angularDrag value="0.050000001"/>
+    </PhysicsComponent>
+    <MeshComponent name="SM_Cube"/>
+    <MaterialComponent name="M_ChessBoard"/>
+    <ShaderComponent name="S_Multi"/>
+</Actor>

@@ -1,9 +1,9 @@
 <CellFile>
     <Actors>
-        <Mario/>
         <Board/>
-        <CamTest/>
+        <Mario/>
         <Cube/>
+        <CamTest/>
         <SkyLight/>
     </Actors>
     <Components>

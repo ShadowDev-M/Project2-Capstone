@@ -970,9 +970,6 @@ void SceneGraph::Render() const
 
 			Matrix4 modelMatrix = actor->GetModelMatrix();
 
-			
-
-
 			glEnable(GL_DEPTH_TEST);
 
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
@@ -982,6 +979,16 @@ void SceneGraph::Render() const
 			if (isSelected) {
 				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
 				glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+				
+				Vec3 scale = actor->GetComponent<TransformComponent>()->GetScale();
+				glUniform1i(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("isTiled"), material->getIsTiled());
+				glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("uvTiling"), 1, scale);
+
+				Vec2 tileScale = material->getTileScale();
+				glUniform2f(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("tileScale"), tileScale.x, tileScale.y);
+
+				Vec2 tileOffset = material->getTileOffset();
+				glUniform2f(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("tileOffset"), tileOffset.x, tileOffset.y);
 			}
 			else {
 				if (pair.second->GetComponent<ShaderComponent>()) {
@@ -990,6 +997,17 @@ void SceneGraph::Render() const
 					if (pair.second->GetComponent<ShaderComponent>() == AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")) {
 						// use the new material component elements from the struct
 						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+						
+						Vec3 scale = actor->GetComponent<TransformComponent>()->GetScale();
+						glUniform1i(shader->GetUniformID("isTiled"), material->getIsTiled());
+						glUniform3fv(shader->GetUniformID("uvTiling"), 1, scale);
+
+						Vec2 tileScale = material->getTileScale();
+						glUniform2f(shader->GetUniformID("tileScale"), tileScale.x, tileScale.y);
+						
+						Vec2 tileOffset = material->getTileOffset();
+						glUniform2f(shader->GetUniformID("tileOffset"), tileOffset.x, tileOffset.y);
+
 					}
 					else {
 						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);

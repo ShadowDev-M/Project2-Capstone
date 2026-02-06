@@ -1,0 +1,10 @@
+<Actor>
+    <TransformComponent>
+        <position x="11.729979" y="-4.684" z="-20.799999"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="0.1" y="0.1" z="0.1"/>
+    </TransformComponent>
+    <MeshComponent name="dancingRobot"/>
+    <MaterialComponent name="skeletonTexture"/>
+    <ShaderComponent name="S_Animated"/>
+</Actor>

@@ -43,7 +43,7 @@ public:
 	void Update(const float deltaTime ) override;
 	void Render() const override;
 
-	inline GLuint GetProgram() const { return shaderID;}
+  	inline GLuint GetProgram() const { return shaderID;}
 
 	// helper functions that return the name of all 
 	const char* GetVertName() const { return vertFilename.c_str(); }
