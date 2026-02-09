@@ -12,9 +12,14 @@ uniform mat4 modelMatrix;
 layout (location = 0) out vec3 vertNormal;
 layout (location = 1) out vec3 eyeDir;
 layout (location = 2) out vec2 textureCoords;
-layout (location = 3) out vec3 worldPos; 
+layout (location = 3) out vec3 worldPos;
+layout (location = 4) out vec3 localPos;
+layout (location = 5) out vec3 localNormal;
 
 void main() {
+    localPos = vVertex.xyz;
+    localNormal = vNormal.xyz;
+
     textureCoords = texCoords;
     textureCoords.y *= -1.0f;
     

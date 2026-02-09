@@ -143,6 +143,7 @@
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="InputCreatorManager.h" />
     <ClInclude Include="MemoryMonitor.h" />
     <ClInclude Include="MemorySize.h" />
     <ClInclude Include="MemoryWindow.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="Debug.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="InputCreatorManager.cpp" />
     <ClCompile Include="MemoryMonitor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

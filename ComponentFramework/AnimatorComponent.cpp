@@ -9,6 +9,7 @@
 #include "MMath.h"
 #include <iostream>
 #include <algorithm>
+#include "AssetManager.h"
 static std::vector<AnimatorComponent*> animators;
 
 void AnimatorComponent::queryAllAnimators(MeshComponent* caller)
@@ -20,7 +21,7 @@ void AnimatorComponent::queryAllAnimators(MeshComponent* caller)
 	}
 }
 
-AnimatorComponent::AnimatorComponent(Component* parent_) : Component(parent_)
+AnimatorComponent::AnimatorComponent(Component* parent_, float startTime_, float speedMult_, bool loop_, std::string assetname_ ) : Component(parent_)
 {
 	animators.push_back(this);
 
@@ -36,6 +37,14 @@ AnimatorComponent::AnimatorComponent(Component* parent_) : Component(parent_)
 			std::cout << mesh->getMeshName() << std::endl;
 		}
 		copySkeletalData();
+		Ref<Animation> animationClip = std::dynamic_pointer_cast<Animation>(AssetManager::getInstance().GetAsset<Animation>(assetname_));
+		if (animationClip)
+			activeClip.setAnimation(animationClip);
+		activeClip.setStartTimeRaw(startTime_);
+		activeClip.setSpeedMult(speedMult_);
+		activeClip.setLooping(loop_);
+		
+		
 	}
 	else {
 #ifdef _DEBUG
@@ -184,15 +193,33 @@ AnimationClip::~AnimationClip()
 	clipsToUpdate.erase(std::remove(clipsToUpdate.begin(), clipsToUpdate.end(), this), clipsToUpdate.end());
 }
 
+void AnimationClip::setAnimationStr(const char* animation_)
+{ setAnimation(AssetManager::getInstance().GetAsset<Animation>(std::string(animation_))); }
 
 
 
 void AnimationClip::setAnimation(Ref<Animation> animation_)
 {
+
+	if (!animation_) return;
+
+	startTime = 0.0f;
 	if (animation_ && !animation_->queryLoadStatus()) {
 		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());
 	}
 	animation = animation_;
+
+}
+
+void Animation::preloadAnimation(std::string animationName)
+{
+	Ref<Animation> animation_ = AssetManager::getInstance().GetAsset<Animation>(animationName);
+
+	if (!animation_) return;
+
+	if (animation_ && !animation_->queryLoadStatus()) {
+		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());
+	}
 
 }
 
@@ -207,14 +234,7 @@ void AnimationClip::displayDataTest()
 
 float AnimationClip::getCurrentTimeInFrames()
 {
-	if (currentTime >= clipLength) {
-		if (loop) currentTime = 0;
-		else {
-			currentTime = clipLength;
-			StopPlaying();
-		}
-		
-	}
+	
 	double ticksPerSecond = animation->getTicksPerSecond();
 	double timeInTicks = currentTime * ticksPerSecond;
 	return timeInTicks;
@@ -231,12 +251,41 @@ void AnimationClip::updateClipTimes(float deltaTime)
 
 				}
 
-				clip->currentTime += deltaTime;
+				clip->currentTime += deltaTime * clip->speedMult;
+
+				if (clip->currentTime > clip->clipLength) {
+					if (clip->loop)
+						clip->currentTime = clip->startTime;
+					else {
+						clip->currentTime = clip->clipLength;
+						clip->StopPlaying();
+					}
+
+				}
+				else if (clip->currentTime < clip->startTime) {
+					if (clip->loop) clip->currentTime = clip->clipLength;
+					else {
+						clip->currentTime = clip->startTime;
+						clip->StopPlaying();
+					}
+
+				}
+
 			}
 		}
 	}
 }
 
+void AnimationClip::InitializeClipLength() {
+	if (animation && animation->queryLoadStatus()) {
+
+		if (clipLength < 0.0f) {
+
+			clipLength = animation->getDuration() / animation->getTicksPerSecond();
+
+		}
+	}
+}
 
 void Animation::LoadAnimation(const char* filename) {
 	Assimp::Importer importer;
@@ -604,8 +653,13 @@ bool Animation::InitializeAnimation()
 }
 
 
+void Animation::SendAssetname(std::string assetname_) {
+	assetname = assetname_;
+}
+
 bool Animation::OnCreate()
 {
+
 	return true;
 }
 

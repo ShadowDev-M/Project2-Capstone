@@ -1,16 +1,17 @@
 <CellFile>
     <Actors>
-        <Mario/>
         <Board/>
-        <CamTest/>
+        <Mario/>
         <Cube/>
         <Sphere/>
+        <CamTest/>
         <SkyLight/>
         <Sphere2D/>
     </Actors>
     <Components>
         <Animation>
             <svgvuijwerjtuiew/>
+            <dancing/>
         </Animation>
         <MaterialComponent>
             <M_Sphere>
@@ -48,6 +49,12 @@
             </gridtexture2>
         </MaterialComponent>
         <MeshComponent>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
+            <SM_Sphere>
+                <Mesh path="meshes/Sphere.obj"/>
+            </SM_Sphere>
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
@@ -57,12 +64,6 @@
             <SM_Mario>
                 <Mesh path="meshes/Mario.obj"/>
             </SM_Mario>
-            <SM_Cube>
-                <Mesh path="meshes/Cube.obj"/>
-            </SM_Cube>
-            <SM_Sphere>
-                <Mesh path="meshes/Sphere.obj"/>
-            </SM_Sphere>
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
@@ -95,6 +96,7 @@
             <script1/>
             <testScriptTwo/>
             <lerjgklktbl/>
+            <animScript/>
             <testScript/>
         </ScriptAbstract>
         <ShaderComponent>
@@ -105,7 +107,7 @@
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
             </S_Multi>
             <S_Outline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/texturePhongVert.glsl"/>
+                <Shader frag="shaders/outline.glsl" vert="shaders/MultiPhongVert.glsl"/>
             </S_Outline>
             <S_Phong>
                 <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
@@ -113,6 +115,9 @@
             <S_Animated>
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/animationVert.glsl"/>
             </S_Animated>
+            <S_AnimOutline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
+            </S_AnimOutline>
         </ShaderComponent>
     </Components>
 </CellFile>

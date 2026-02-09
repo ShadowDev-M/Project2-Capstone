@@ -6,6 +6,8 @@ layout (location = 0) in vec3 vertNormal;
 layout (location = 1) in vec3 eyeDir;
 layout (location = 2) in vec2 textureCoords;
 layout (location = 3) in vec3 worldPos;
+layout (location = 4) in vec3 localPos;
+layout (location = 5) in vec3 localNormal;
 
 uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec4 diffuse[MAX_LIGHTS];
@@ -16,14 +18,44 @@ uniform vec4 ambient;
 uniform uint numLights;
 uniform int hasSpec;
 
-layout (location = 0) out vec4 fragColor;
+uniform bool isTiled;
+uniform vec3 uvTiling;
+uniform vec2 tileScale;
+uniform vec2 tileOffset;
+
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
+
+layout (location = 0) out vec4 fragColor;
+
+
 
 void main() {
     vec3 normal = normalize(vertNormal);
     vec3 viewDir = normalize(eyeDir);
-    vec4 kt = texture(diffuseTexture, textureCoords);
+    vec4 kt;
+
+    if (isTiled == true){
+        vec3 n = abs(localNormal);
+        vec2 tiledTex;
+
+        vec2 finalOffset = tileOffset * tileScale;
+
+        vec3 scaledPos = localPos * uvTiling;
+
+        if (n.y > n.x && n.y > n.z)
+            tiledTex = scaledPos.xz * tileScale; // top  
+        else if (n.x > n.z)
+            tiledTex = scaledPos.zy * tileScale; // side
+        else
+            tiledTex = scaledPos.xy * tileScale; // front
+            
+        kt = texture(diffuseTexture, tiledTex + finalOffset);
+       
+    } else {
+        kt = texture(diffuseTexture, textureCoords);
+    }
+    
     vec4 phongResult = ambient * kt;
     
     if (numLights > 0) {

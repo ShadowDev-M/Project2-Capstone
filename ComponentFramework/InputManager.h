@@ -94,6 +94,10 @@ protected:
 	std::map<int, InputState> keyStates;
 	
 public:
+	virtual InputState getInputState(int keyCode) {
+		return keyStates[keyCode];
+	}
+
 	virtual bool isActive(int keyCode) {
 		//Active == both pressed and held
 		if (keyStates[keyCode] == InputState::Pressed) return true;

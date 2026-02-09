@@ -31,6 +31,8 @@ class ScriptComponent : public Component {
 	//Dangerous to let any actor trigger a script, much better to have a manifest controlled by assetmanager/scenegraph for safety
 	std::vector<Ref<Actor>> users;
 
+	
+
 	void load_lua_file();
 
 	//Only SceneGraph/AssetManager should call update (friend class)
@@ -38,7 +40,20 @@ class ScriptComponent : public Component {
 
 	void setFilenameFromAbstract(Ref<ScriptAbstract> baseScript);
 
+	std::unordered_map<std::string, sol::object> persistentLocals;
+
 public:
+	void setLocal(const std::string& name, sol::object value);
+
+	sol::object getLocal(const std::string& name);
+
+	bool hasLocal(const std::string& name);
+
+	void restoreAll() {
+		for (auto& item : persistentLocals) {
+			lua[item.first] = item.second;
+		}
+	}
 	Ref<ScriptAbstract> getBaseAsset() { return baseAsset; }
 	ScriptComponent(Component* parent, Ref<ScriptAbstract> baseScriptAsset = 0);
 	virtual ~ScriptComponent();
@@ -60,11 +75,14 @@ class ScriptService {
 
 	friend class SceneGraph;
 private:
+	static void preloadScript(ScriptComponent* script_);
 	static void callActorScripts(Ref<Actor> target, float deltaTime);
 	static void startActorScripts(Ref<Actor> target);
 	static void stopActorScripts(Ref<Actor> target);
 
 	static void updateAllScripts(float deltaTime);
+
+	static void defineUsertypes(Actor* user);
 
 public:
 

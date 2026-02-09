@@ -115,6 +115,8 @@ public:
 		return instance;
 	}
 
+	bool isAllComponentsLoaded() { return (finishedQueue.empty() && workerQueue.empty()); }
+
 	bool queryMeshLoadStatus();
 
 	SceneGraph();
@@ -211,7 +213,9 @@ public:
 	Ref<Actor> pickColour(int mouseX, int mouseY);
 
 	// all const
-	void Render() const; 
+	void Render() const;
+	void Preload(ScriptComponent* script);
+
 
 	bool OnCreate();
 

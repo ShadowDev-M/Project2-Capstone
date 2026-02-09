@@ -4,6 +4,10 @@
 #include "InputManager.h"
 #include "AnimatorComponent.h"
 #include "Skeleton.h"
+#include <iostream>
+#include <tuple>
+#include <string>
+
 #include "PhysicsSystem.h"
 #include "ColliderDebug.h"
 
@@ -294,7 +298,9 @@ bool SceneGraph::GetLightExist(Ref<Actor> actor)
 bool SceneGraph::AddActor(Ref<Actor> actor)
 {
 	if (!actor) {
+#ifdef _DEBUG
 		Debug::Error("Attempted to add null actor", __FILE__, __LINE__);
+#endif
 		return false;
 	}
 
@@ -328,32 +334,35 @@ void SceneGraph::Start()
 		ScriptService::startActorScripts(actor.second);
 	}
 
-	// TODO: disabled this line for now, it was crashing the engine on playmode
 	//if (!GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation || !GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation->queryLoadStatus())
 	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "meshes/dancing.gltf"));
 
+
 	//GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.Play();
+
+	// TODO: disabled this line for now, it was crashing the engine on playmode
+	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
 }
 
 
 void SceneGraph::Stop()
 {
-	//GetActor("Mario")->GetComponent<AnimatorComponent>()->displayDataTest();
-	//GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.StopPlaying();
+	GetActor("Mario")->GetComponent<AnimatorComponent>()->displayDataTest();
+	GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.StopPlaying();
 
 	for (auto& actor : Actors) {
 		ScriptService::stopActorScripts(actor.second);
 
 
-		/*Ref<AnimatorComponent> actorAnimator =  actor.second->GetComponent<AnimatorComponent>();
+		Ref<AnimatorComponent> actorAnimator =  actor.second->GetComponent<AnimatorComponent>();
 		if (actorAnimator) {
 			actorAnimator->activeClip.StopPlaying();
 			actorAnimator->activeClip.currentTime = 0.0f;
-		}*/
+		}
 	}
-
 	// Stop physics engine 
 	PhysicsSystem::getInstance().ResetPhysics();
+
 }
 
 void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
@@ -418,6 +427,9 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 	if (XMLObjectFile::hasComponent<LightComponent>(name_)) {
 		std::cout << "Has a Light" << std::endl;
 
+		std::tuple arguments = XMLObjectFile::getComponent<LightComponent>(name_);
+		
+
 		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
 		Ref<LightComponent> lightG = Ref<LightComponent>(std::apply([](auto&&... args) {
 			return new LightComponent(args...);
@@ -429,6 +441,24 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 			//Light will be Added to scenegraph after entire actor is loaded fully to avoid issues (in LoadActor function)
 			
+		}
+
+
+	}
+
+	if (XMLObjectFile::hasComponent<AnimatorComponent>(name_)) {
+		std::cout << "Has an Animator" << std::endl;
+
+		auto test = std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<AnimatorComponent>(name_));
+
+		Ref<AnimatorComponent> animC = Ref<AnimatorComponent>(std::apply([](auto&&... args) {
+			return new AnimatorComponent(args...);
+			}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<AnimatorComponent>(name_))));
+
+		if (!actor_->GetComponent<AnimatorComponent>()) {
+
+			actor_->AddComponent(animC);
+
 		}
 
 
@@ -498,7 +528,9 @@ Ref<Actor> SceneGraph::GetActor(const std::string& actorName) const
 	// try to find the actor by name
 	auto nameIt = ActorNameToId.find(actorName);
 	if (nameIt == ActorNameToId.end()) {
+#ifdef _DEBUG
 		Debug::Error("Can't find requested actor: " + actorName, __FILE__, __LINE__);
+#endif
 		return nullptr;
 	}
 
@@ -511,7 +543,10 @@ Ref<Actor> SceneGraph::GetActor(const std::string& actorName) const
 	}
 
 	// if the actor can't be found by name or by ID
+#ifdef _DEBUG
+
 	Debug::Error("Can't find requested actor: " + actorName, __FILE__, __LINE__);
+#endif
 	return nullptr;
 }
 
@@ -539,7 +574,10 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 	auto actorIt = Actors.find(actorId);
 
 	if (actorIt == Actors.end()) {
+#ifdef _DEBUG
+
 		Debug::Error("Actor: " + actorName + " ID does not exist!", __FILE__, __LINE__);
+#endif
 		return false;
 	}
 
@@ -942,16 +980,34 @@ void SceneGraph::Render() const
 	for (const auto& pair : Actors) {
 
 		Ref<Actor> actor = pair.second;
-
 		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
+
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
-		if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
-			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
-			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
+
+		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
+
+		bool isAnimating = (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
+
+		//replace shader if it should be using another shader for whatever purpose- such as outline.
+
+		if (isAnimating) {
+			if (isSelected) {
+				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline");
+
+			}
+			else {
+				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
+			}
+		}
+		else if (isSelected) {
+			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline");
 
 		}
+
 		if (shader) glUseProgram(shader->GetProgram());
+		else continue;
 
 		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
 
@@ -960,44 +1016,25 @@ void SceneGraph::Render() const
 		glUniformMatrix4fv(shader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
 		glUniformMatrix4fv(shader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
 
-		// if the actor has a shader, mesh, and mat component then render it
 		if (shader && mesh && material) {
-			Matrix4 modelMatrix = actor->GetModelMatrix();
-
+			//MODELMATRIX
 			glEnable(GL_DEPTH_TEST);
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
+			Matrix4 modelMatrix = actor->GetModelMatrix();
+			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 
-			bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
-			if (isSelected) {
-				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-				glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-			}
-			else {
-				if (pair.second->GetComponent<ShaderComponent>()) {
-					glUseProgram(shader->GetProgram());
-
-					if (pair.second->GetComponent<ShaderComponent>() == AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")) {
-						// use the new material component elements from the struct
-						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-					}
-					else {
-						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-					}
-				}
-			}
-
-			if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
-				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
-				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-
+			//ANIMATION
+			if (isAnimating) {
 				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
 
 				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
 
 				std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
 				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
-				
+
+
+
 				GLint loc = shader->GetUniformID("bone_transforms[0]");
 				if (loc == -1) {
 					printf("ERROR: bone_transforms uniform not found!\n");
@@ -1007,17 +1044,14 @@ void SceneGraph::Render() const
 					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
 						reinterpret_cast<const float*>(finalBoneMatrices.data()));
 				}
-
 			}
 
-			
-			///glUseProgram(pickerShader->GetProgram());
 
-			//Vec3 idColor = Actor::encodeID(actor->id);
 
+			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
-			
+
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
 			if (material->getSpecularID() != 0) {
@@ -1028,12 +1062,13 @@ void SceneGraph::Render() const
 			else {
 				glUniform1i(shader->GetUniformID("hasSpec"), 0);
 			}
-			
-			
-			
+
+			//RENDER
 			mesh->Render(GL_TRIANGLES);
 			glBindTexture(GL_TEXTURE_2D, 0);
+
 		}
+
 	}
 
 	// collider debug
@@ -1054,7 +1089,6 @@ void SceneGraph::Render() const
 		if (!TC && !CC) continue;
 
 		ColliderDebug::getInstance().Render(CC, TC, view, projection);
-	}
 
 	glLineWidth(1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -1067,12 +1101,18 @@ void SceneGraph::Render() const
 
 }
 
+void SceneGraph::Preload(ScriptComponent* script){
+	ScriptService::preloadScript(script);
+}
+
 bool SceneGraph::OnCreate()
 {
 	// if an actor was setup wrong throw an error
 	for (auto& actor : Actors) {
 		if (!actor.second->OnCreate()) {
+#ifdef _DEBUG
 			Debug::Error("Actor failed to initialize: " + actor.second->getActorName(), __FILE__, __LINE__);
+#endif
 			return false;
 		}
 	}

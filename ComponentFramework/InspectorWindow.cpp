@@ -4,7 +4,7 @@
 #include "EditorManager.h"
 #include "AnimatorComponent.h"
 #include "PhysicsSystem.h"
-
+#include <algorithm>
 //#include "ScriptComponent.h"
 
 
@@ -127,6 +127,17 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				//	if (!selectedActor->second->GetComponent<ScriptComponent>()) {
 						selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get());
 					//}
+				}
+				if (ImGui::Selectable("Animator Component")) {
+					if (selectedActor->second->GetComponent<MeshComponent>())
+					selectedActor->second->AddComponent<AnimatorComponent>(selectedActor->second.get());
+					else {
+						// if the actor can't be found by name or by ID
+#ifdef _DEBUG
+						Debug::Error("You require a MeshComponent to create an Animator!: " + selectedActor->second->getActorName(), __FILE__, __LINE__);
+#endif
+					}
+
 				}
 				if (ImGui::Selectable("Light Component")) {
 					if (!selectedActor->second->GetComponent<LightComponent>()) {
@@ -700,51 +711,131 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 	for (auto& animator : selectedActors_.begin()->second->GetAllComponent<AnimatorComponent>()) {
 		if (ImGui::CollapsingHeader("AnimatorComponent")) {
-			RightClickContext<ScriptComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
-
-			ImGuiChildFlags skeletonFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY;
-			ImGui::TextWrapped("%s", animator->getSkeletonVisualData().c_str());
-			
-
-			ImGui::Separator();
+			RightClickContext<AnimatorComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
 
 			ImGuiChildFlags detailsFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY;
 			if (ImGui::BeginChild("details_panel", ImVec2(0, 150), detailsFlags)) {
-	
+				if (ImGui::CollapsingHeader("Animation Clip")) {
 
 
-				if (ImGui::CollapsingHeader("Data")) {
-					if (ImGui::BeginChild("databone_details", ImVec2(0, 0), ImGuiChildFlags_Borders)) {
 
-						int boneId = 0;
-						for (auto& boneData : animator->getBoneVisualData()) {
-							ImGui::PushID(("bone_" + std::to_string(boneId)).c_str());
-							std::string boneName = "Bone " + std::to_string(boneId);
-							if (ImGui::CollapsingHeader(boneName.c_str())) {
-								ImGui::TextWrapped("%s", boneData.c_str());
-							}
-							ImGui::PopID();
-							boneId++;
-							ImGui::Separator();
+
+					float clipLength = animator->getClipLength();
+					float startTime = animator->getStartTime();
+					float speedMult = animator->getSpeedMult();
+					float currentTime = animator->getCurrentTime();
+
+					bool isEditingAnim = false;
+
+					//Current Time
+					{
+						ImGui::Text("Current Time:");
+						ImGui::SameLine();
+						bool currentTimeChanged = false;
+
+						if (clipLength >= 0.0f) {
+
+							char displayTimeRatioBuffer[64];
+							std::snprintf(displayTimeRatioBuffer, sizeof(displayTimeRatioBuffer), "%%.3f / %.3f", clipLength);
+
+							currentTimeChanged = ImGui::DragFloat("##CurrentTime", &currentTime,
+								0.1f, 0.0f, clipLength, displayTimeRatioBuffer);
+
+							currentTime = std::clamp(currentTime, 0.0f, clipLength);
+
+						}
+						else {
+							ImGui::Text("NULL");
 						}
 
-						int weightId = 0;
-						for (auto& weightData : animator->getBoneWeightVisualData()) {
-							ImGui::PushID(("weight_" + std::to_string(weightId)).c_str());
-							std::string weightName = "Bone Weight " + std::to_string(weightId);
-							if (ImGui::CollapsingHeader(weightName.c_str())) {
-								ImGui::TextWrapped("%s", weightData.c_str());
-							}
-							ImGui::PopID();
-							ImGui::Separator();
-							weightId++;
+						if (currentTimeChanged) {
+							animator->setCurrentTime(currentTime);
+						}
+						isEditingAnim = ImGui::IsItemActive();
+						ImGui::ActiveItemLockMousePos();
+					}
+
+					//Start Time
+					{
+						ImGui::Text("Start Time:");
+						ImGui::SameLine();
+						bool startTimeChanged = false;
+
+						if (clipLength >= 0.0f) {
+
+							char displayTimeRatioBuffer[64];
+							std::snprintf(displayTimeRatioBuffer, sizeof(displayTimeRatioBuffer), "%%.3f / %.3f", clipLength);
+
+							startTimeChanged = ImGui::DragFloat("##StartTime", &startTime,
+								0.1f, 0.0f, clipLength, displayTimeRatioBuffer);
+
+							startTime = std::clamp(startTime, 0.0f, clipLength);
+
+						}
+						else {
+							ImGui::Text("NULL");
+						}
+
+						if (startTimeChanged) {
+							animator->setStartTime(startTime);
+						}
+						isEditingAnim = ImGui::IsItemActive();
+						ImGui::ActiveItemLockMousePos();
+					}
+					//SPEEDMULT
+					{
+						bool speedMultChanged = false;
+
+						ImGui::Text("Speed Multiplier:");
+						ImGui::SameLine();
+						speedMultChanged = ImGui::DragFloat("##SpeedMult", &speedMult,
+							0.1f, -10, 10);
+						speedMult = std::clamp(speedMult, -10.0f, 10.0f);
+						if (speedMultChanged) {
+							animator->setSpeedMult(speedMult);
+						}
+
+						isEditingAnim = ImGui::IsItemActive();
+						ImGui::ActiveItemLockMousePos();
+					}
+
+					//LOOPING
+					{
+						ImGui::Text("is Looping?:");
+						ImGui::SameLine();
+
+						bool isLooping = animator->getLoopingState();
+						if (ImGui::Checkbox("##Looping", &isLooping)) {
+							animator->setLooping(isLooping);
 						}
 					}
-					ImGui::EndChild(); 
 
+					/*ImGui::TextWrapped("Script Path: %s", script->getPath().c_str());*/
+
+					if (animator->hasAnim()) 
+						ImGui::Text(animator->getAnimName().c_str());
+
+					ImGui::Button("Drop Animation Here", ImVec2(-1, 0));
+
+
+					if (ImGui::BeginDragDropTarget()) {
+						const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ANIMATION_ASSET");
+						if (payload) {
+							// store the payload data
+							const char* droppedAssetName = static_cast<const char*>(payload->Data);
+
+							// get a reference to the asset that has been dropped
+							//ScriptAbstract is the asset in assetmanager that has the name, the actors have the component
+							Ref<Animation> newAnim = AssetManager::getInstance().GetAsset<Animation>(droppedAssetName);
+
+							animator->setAnimation(newAnim);
+						}
+						ImGui::EndDragDropTarget();
+					}
 				}
+				ImGui::Separator();
 			}
-			ImGui::EndChild();  
+			ImGui::EndChild();
 		}
 		ImGui::Separator();
 	}

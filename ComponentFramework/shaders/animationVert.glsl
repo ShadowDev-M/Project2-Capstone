@@ -17,7 +17,6 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
-
 // Your lights (UNCHANGED)
 uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec4 diffuse[MAX_LIGHTS];
@@ -31,11 +30,14 @@ layout (location = 0) out vec3 vertNormal;
 layout (location = 1) out vec3 eyeDir;
 layout (location = 2) out vec2 textureCoords;
 layout (location = 3) out vec3 vertPos;
-layout (location = 4) out vec3 lightDir[MAX_LIGHTS];
-
+//layout (location = 4) out vec3 lightDir[MAX_LIGHTS];
+layout (location = 4) out vec3 localPos;
+layout (location = 5) out vec3 localNormal;
+ 
 void main() {
-    
-    
+    localPos = aPosition;
+    localNormal = aNormal;
+
     textureCoords = aTexCoords;
     textureCoords.y *= -1.0f;
     
@@ -57,16 +59,18 @@ void main() {
     vertPos = vec3(worldPos);
     eyeDir = normalize(-vertPosView);
     
-    if (numLights > 0) {
-        for(uint i = 0u; i < numLights; i++){
-            if (lightType[i] == 0u) {
-                lightDir[i] = normalize((viewMatrix * vec4(-lightPos[i], 0.0f)).xyz);
-            } else {
-                vec3 lightViewPos = (viewMatrix * vec4(lightPos[i], 1.0f)).xyz;
-                lightDir[i] = normalize(lightViewPos - vertPosView);
-            }
-        }
-    }
+//    if (numLights > 0) {
+//        for(uint i = 0u; i < numLights; i++){
+//            if (lightType[i] == 0u) {
+//                lightDir[i] = normalize((viewMatrix * vec4(-lightPos[i], 0.0f)).xyz);
+//            } else {
+//                vec3 lightViewPos = (viewMatrix * vec4(lightPos[i], 1.0f)).xyz;
+//                lightDir[i] = normalize(lightViewPos - vertPosView);
+//            }
+//        }
+//    }
+
+
     
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * skinnedPos;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "SceneGraph.h"
 #include "ScriptComponent.h"
-
+#include "AnimatorComponent.h"
 class InspectorWindow
 {
 	// delete the move and copy constructers
@@ -229,6 +229,7 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 				if constexpr (std::is_same_v<ComponentTemplate, MeshComponent>) {
 					if (pair.second->GetComponent<MeshComponent>()) {
 						pair.second->RemoveComponent<MeshComponent>();
+						
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, MaterialComponent>) {
@@ -261,6 +262,11 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 						sceneGraph->RemoveLight(pair.second);
 						pair.second->DeleteComponent<LightComponent>();
 
+					}
+				}
+				if constexpr (std::is_same_v<ComponentTemplate, AnimatorComponent>) {
+					if (pair.second->GetComponent<AnimatorComponent>()) {
+						pair.second->DeleteComponent<AnimatorComponent>();
 					}
 				}
 			}
