@@ -857,7 +857,7 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 void SceneGraph::Render() const
 {
-	
+
 	int w, h;
 	//SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
 	w = SCENEWIDTH;
@@ -936,7 +936,7 @@ void SceneGraph::Render() const
 			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
 			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
 			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
-			
+
 			glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
 
 			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
@@ -1089,6 +1089,7 @@ void SceneGraph::Render() const
 		if (!TC && !CC) continue;
 
 		ColliderDebug::getInstance().Render(CC, TC, view, projection);
+	}
 
 	glLineWidth(1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -1098,7 +1099,6 @@ void SceneGraph::Render() const
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, w, h);
 	}
-
 }
 
 void SceneGraph::Preload(ScriptComponent* script){

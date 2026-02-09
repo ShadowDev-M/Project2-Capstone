@@ -34,13 +34,13 @@ bool Scene3GUI::OnCreate() {
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
-	SceneGraph::getInstance().GetActor("Sphere")->AddComponent<CollisionComponent>();
-	SceneGraph::getInstance().GetActor("Sphere2D")->AddComponent<CollisionComponent>();
+	//SceneGraph::getInstance().GetActor("Sphere")->AddComponent<CollisionComponent>();
+	//SceneGraph::getInstance().GetActor("Sphere2D")->AddComponent<CollisionComponent>();
 
-	CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere"));
-	CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere2D"));
+	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere"));
+	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere2D"));
 
-	ColliderDebug::getInstance().OnCreate();
+	//ColliderDebug::getInstance().OnCreate();
 
 	//AudioManager::getInstance().Initialize();
 	//marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);
@@ -60,7 +60,7 @@ void Scene3GUI::OnDestroy() {
 	AssetManager::getInstance().SaveAssetDatabaseXML();
 	AssetManager::getInstance().RemoveAllAssets();
 
-	ColliderDebug::getInstance().OnDestroy();
+	//ColliderDebug::getInstance().OnDestroy();
 
 	SceneGraph::getInstance().RemoveAllActors();
 

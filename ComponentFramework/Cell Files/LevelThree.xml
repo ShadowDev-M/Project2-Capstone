@@ -1,25 +1,23 @@
 <CellFile>
     <Actors>
-        <Board/>
         <Mario/>
-        <Cube/>
-        <Sphere/>
+        <Board/>
         <CamTest/>
+        <Cube/>
         <SkyLight/>
-        <Sphere2D/>
     </Actors>
     <Components>
         <Animation>
-            <svgvuijwerjtuiew/>
             <dancing/>
+            <svgvuijwerjtuiew/>
         </Animation>
         <MaterialComponent>
-            <M_Sphere>
-                <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
-            </M_Sphere>
             <M_Moon>
                 <Texture diff="textures/moon.jpg" spec=""/>
             </M_Moon>
+            <M_Sphere>
+                <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
+            </M_Sphere>
             <M_MarioFire>
                 <Texture diff="textures/mario_fire.png" spec=""/>
             </M_MarioFire>
@@ -49,12 +47,12 @@
             </gridtexture2>
         </MaterialComponent>
         <MeshComponent>
-            <SM_Cube>
-                <Mesh path="meshes/Cube.obj"/>
-            </SM_Cube>
             <SM_Sphere>
                 <Mesh path="meshes/Sphere.obj"/>
             </SM_Sphere>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
