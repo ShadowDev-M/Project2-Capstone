@@ -10,47 +10,20 @@ using namespace MATH;
 // collider they want for the specific object, and it'll show the specific variables for that
 // The benefits of option 2 is that it simplifies alot of things, i.e XML component save & load
 
+// TODO: Inspector window, switch different states
+enum class ColliderState {
+	Discrete,
+	Continuous
+	// ContinuousDynamic (will implment later if issues with fast moving objects)
+};
+
 // Different collider types
 // TODO: Inspector window, switch different types
 enum class ColliderType {
 	Sphere,
-	Cylinder,
 	Capsule,
 	AABB,
 	OBB
-};
-
-// Creating different structs for the different collider types
-// the structs will mostly be used in the collision system to help out 
-// with collision detection of different collider types
-
-// MATHEX library has a sphere.h, but I want to keep everything inline so creating my own struct
-struct Sphere {
-	Vec3 centre;
-	float radius;
-};
-
-struct Cylinder {
-	float radius;
-	Vec3 capCentrePosA;
-	Vec3 capCentrePosB;
-};
-
-struct Capsule {
-	float radius;
-	Vec3 sphereCentrePosA;
-	Vec3 sphereCentrePosB;
-};
-
-struct AABB {
-	Vec3 centre;
-	Vec3 halfExtents;
-};
-
-struct OBB {
-	Vec3 centre;
-	Vec3 halfExtents;
-	Quaternion orientation;
 };
 
 class CollisionComponent : public Component {
@@ -60,25 +33,52 @@ class CollisionComponent : public Component {
 	CollisionComponent& operator = (const CollisionComponent&) = delete;
 	CollisionComponent& operator = (CollisionComponent&&) = delete;
 protected:
-	ColliderType colliderType; 
-	
-	bool isTrigger; // determines the type of response 
+	ColliderState colliderState = ColliderState::Discrete;
+	ColliderType colliderType = ColliderType::Sphere; 
 
-	float radius; /// Sphere, Cylinder, Capsule
+	bool isTrigger = false; // determines the type of response 
+
+	float radius; /// Sphere, Capsule
 	Vec3 centre; // Sphere, AABB, OBB
-	Vec3 centrePosA; // Cylinder, Capsule
-	Vec3 centrePosB; // Cylinder, Capsule
+	Vec3 centrePosA; // Capsule
+	Vec3 centrePosB; // Capsule
 	Vec3 halfExtents; /// AABB, OBB
 	Quaternion orientation; // OBB 
 
-	// should centre and orientation be tranform position and orientation? search it up
+private:
+	// Local vs World Coords
+	// all the variables can be exposed locally in the inspector or in scripts
+	// but they all need to be converted to world coords when doing calculations
+	// this is similar to how unity does it where it has the exposed local variables,
+	// and in editor when you change the actors pos, scale, rotation etc, the collider follows suit, 
+	// but the local variables remain the same
+	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const { return transform_->GetTransformMatrix() * Vec4(centre, 1.0f); }
+	float getWorldRadius(Ref<TransformComponent> transform_) const {
+		Vec3 scale = transform_->GetScale();
+		float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
+		return radius * maxScale;
+	}
 
 public:
-	CollisionComponent(Component* parent_ = nullptr, ColliderType type_ = ColliderType::Sphere, float radius_ = 0.0f, Vec3 centre_ = Vec3(0.0f, 0.0f, 0.0f),
-		Vec3 centrePosA_ = Vec3(0.0f, 0.0f, 0.0f), Vec3 centrePosB_ = Vec3(0.0f, 0.0f, 0.0f), Vec3 halfExtents_ = Vec3(0.0f, 0.0f, 0.0f), Quaternion orientation_ = Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)));
+	CollisionComponent(Component* parent_ = nullptr, ColliderState state_ = ColliderState::Continuous, ColliderType type_ = ColliderType::Sphere, bool isTrigger_ = false, float radius_ = 1.0f, Vec3 centre_ = Vec3(0.0f, 0.0f, 0.0f),
+		Vec3 centrePosA_ = Vec3(0.0f, 1.0f, 0.0f), Vec3 centrePosB_ = Vec3(0.0f, -1.0f, 0.0f), Vec3 halfExtents_ = Vec3(0.0f, 0.0f, 0.0f), Quaternion orientation_ = Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)));
 
 	bool OnCreate() { return true; }
 	void OnDestroy() {}
 	void Update(const float deltaTime_) {}
 	void Render()const {}
+
+	// getters
+	ColliderState getState() const { return colliderState; }
+	ColliderType getType() const { return colliderType; }
+	bool getIsTrigger() const { return isTrigger; }
+	float getRadius() const { return radius; }
+	Vec3 getCentre() const { return centre; }
+	Vec3 getCentrePosA() const { return centrePosA; }
+	Vec3 getCentrePosB() const { return centrePosB; }
+	Vec3 getHalfExtents() const { return halfExtents; }
+	Quaternion getOrientation() const { return orientation; }
+
+	// setters
+	void setCentre(Vec3 centre_) { centre = centre_; }
 };

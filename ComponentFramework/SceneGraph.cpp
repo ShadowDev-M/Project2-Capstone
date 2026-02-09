@@ -4,10 +4,9 @@
 #include "InputManager.h"
 #include "AnimatorComponent.h"
 #include "Skeleton.h"
-
-
-
 #include "PhysicsSystem.h"
+#include "ColliderDebug.h"
+
 void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
 
 	if (!mesh->queryLoadStatus()) {
@@ -946,9 +945,6 @@ void SceneGraph::Render() const
 
 		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
 		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
-
-		
-
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
 		if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
 			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
@@ -966,15 +962,9 @@ void SceneGraph::Render() const
 
 		// if the actor has a shader, mesh, and mat component then render it
 		if (shader && mesh && material) {
-
-
 			Matrix4 modelMatrix = actor->GetModelMatrix();
 
-			
-
-
 			glEnable(GL_DEPTH_TEST);
-
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 
 			bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
@@ -995,20 +985,11 @@ void SceneGraph::Render() const
 						glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
 					}
 				}
-				
-
-
-				//				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Phong")->GetProgram());
-
 			}
-
-
 
 			if (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
 				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState()) {
 				glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-
-				
 
 				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
 
@@ -1016,8 +997,6 @@ void SceneGraph::Render() const
 
 				std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
 				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
-
-
 				
 				GLint loc = shader->GetUniformID("bone_transforms[0]");
 				if (loc == -1) {
@@ -1028,8 +1007,6 @@ void SceneGraph::Render() const
 					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
 						reinterpret_cast<const float*>(finalBoneMatrices.data()));
 				}
-
-			
 
 			}
 
@@ -1056,13 +1033,33 @@ void SceneGraph::Render() const
 			
 			mesh->Render(GL_TRIANGLES);
 			glBindTexture(GL_TEXTURE_2D, 0);
-
-
-
 		}
-
 	}
 
+	// collider debug
+	glDisable(GL_DEPTH_TEST);
+	glLineWidth(2.0f);
+
+	Matrix4 view = getUsedCamera()->GetViewMatrix();
+	Matrix4 projection = getUsedCamera()->GetProjectionMatrix();
+
+	for (const auto& selectedPair : debugSelectedAssets) {
+		auto actorIt = Actors.find(selectedPair.first);
+		if (actorIt == Actors.end()) continue;
+
+		Ref<Actor> actor = actorIt->second;
+		Ref<TransformComponent> TC = actor->GetComponent<TransformComponent>();
+		Ref<CollisionComponent> CC = actor->GetComponent<CollisionComponent>();
+
+		if (!TC && !CC) continue;
+
+		ColliderDebug::getInstance().Render(CC, TC, view, projection);
+	}
+
+	glLineWidth(1.0f);
+	glEnable(GL_DEPTH_TEST);
+
+	//
 	if (!RENDERMAINSCREEN) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, w, h);

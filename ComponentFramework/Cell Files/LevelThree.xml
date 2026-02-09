@@ -4,16 +4,15 @@
         <Board/>
         <CamTest/>
         <Cube/>
+        <Sphere/>
         <SkyLight/>
+        <Sphere2D/>
     </Actors>
     <Components>
         <Animation>
             <svgvuijwerjtuiew/>
         </Animation>
         <MaterialComponent>
-            <mountgrass>
-                <Texture diff="textures/mountgrass.jpg" spec=""/>
-            </mountgrass>
             <M_Sphere>
                 <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
             </M_Sphere>

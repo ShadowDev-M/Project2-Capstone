@@ -138,6 +138,7 @@
     <ClInclude Include="AssetManagerWindow.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="CameraComponent.h" />
+    <ClInclude Include="ColliderDebug.h" />
     <ClInclude Include="CollisionComponent.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Component.h" />
@@ -191,6 +192,7 @@
     <ClCompile Include="AssetManagerWindow.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="ColliderDebug.cpp" />
     <ClCompile Include="CollisionComponent.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Component.cpp">
@@ -267,6 +269,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\animationVert.glsl" />
+    <None Include="shaders\colliderDebugFrag.glsl" />
+    <None Include="shaders\colliderDebugVert.glsl" />
     <None Include="shaders\colourPickFrag.glsl" />
     <None Include="shaders\colourPickVert.glsl" />
     <None Include="shaders\defaultFrag.glsl" />

@@ -221,6 +221,9 @@
     <ClInclude Include="AudioManager.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
+    <ClInclude Include="ColliderDebug.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -355,6 +358,9 @@
     <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="ColliderDebug.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\colourPickFrag.glsl">
@@ -400,6 +406,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="shaders\animationVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\colliderDebugFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\colliderDebugVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

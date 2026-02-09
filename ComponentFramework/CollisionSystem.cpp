@@ -29,8 +29,136 @@ void CollisionSystem::RemoveActor(Ref<Actor> actor_) {
 	}
 }
 
+bool CollisionSystem::CollisionDetection(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	Ref<CollisionComponent> CC1 = s1->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = s2->GetComponent<CollisionComponent>();
+	
+	if (CC1->getState() == ColliderState::Continuous || CC2->getState() == ColliderState::Continuous) {
+		return SphereSphereContinuous(s1, s2, data);
+	}
+	else {
+		return SphereSphereDiscrete(s1, s2, data);
+	}
+}
 
+bool CollisionSystem::SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	// Real-Time Collision Detection Ericson 4.3.1
 
+	Ref<TransformComponent> TC1 = s1->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC2 = s2->GetComponent<TransformComponent>();
+
+	Ref<CollisionComponent> CC1 = s1->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = s2->GetComponent<CollisionComponent>();
+
+	// Calculate squared distance between centers
+	Vec3 d = CC1->getWorldCentre(TC1) - CC2->getWorldCentre(TC2);
+	float dist2 = VMath::dot(d, d);
+
+	// Spheres intersect if squared distance is less than squared sum of radii
+	float radiusSum = CC1->getWorldRadius(TC1) + CC2->getWorldRadius(TC2);
+	if (dist2 <= (radiusSum * radiusSum)) {
+		// Collision data
+		// 13.3.1 Colliding Two Spheres Ian Millington
+		data.isColliding = true;
+		data.contactNormal = VMath::normalize(d);
+		data.contactPoint = CC1->getWorldCentre(TC1) + d * VMath::mag(d) * 0.5f;
+		data.penetration = radiusSum - VMath::mag(d);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionSystem::SphereSphereContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	// Real-Time Collision Detection Ericson 5.5.5
+
+	Ref<TransformComponent> TC1 = s1->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC2 = s2->GetComponent<TransformComponent>();
+	
+	Ref<PhysicsComponent> PC1 = s1->GetComponent<PhysicsComponent>();
+	Ref<PhysicsComponent> PC2 = s2->GetComponent<PhysicsComponent>();
+
+	Ref<CollisionComponent> CC1 = s1->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = s2->GetComponent<CollisionComponent>();
+
+	// Expand sphere s1 by the radius of s0
+	float expRadi = CC2->getWorldRadius(TC2) + CC1->getWorldRadius(TC1);
+	// Subtract movement of s1 from both s0 and s1, making s1 stationary
+	Vec3 v = PC1->getVel() - PC2->getVel();
+	
+	// divide by zero check (inital velocity will start at 0, also works as a fallback)
+	if (VMath::mag(v) < VERY_SMALL) {
+		return SphereSphereDiscrete(s1, s2, data);
+	}
+
+	// Can now test directed segment s = s0.c + tv, v = (v0-v1)/||v0-v1|| against
+	// the expanded sphere for intersection
+	float vlen = VMath::mag(v) * deltaTime;
+	
+	Vec3 m = CC1->getWorldCentre(TC1) - CC2->getWorldCentre(TC2);
+	float b = VMath::dot(m, v / vlen);
+	float c = VMath::dot(m, m) - CC2->getWorldRadius(TC2) * CC2->getWorldRadius(TC2);
+	// Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
+	if (c > 0.0f && b > 0.0f) return 0;
+	float discr = b * b - c;
+	// A negative discriminant corresponds to ray missing sphere
+	if (discr < 0.0f) return 0;
+	// Ray now found to intersect sphere, compute smallest t value of intersection
+	float t = -b - sqrt(discr);
+	// If t is negative, ray started inside sphere so clamp t to zero
+	if (t < 0.0f) t = 0.0f;
+
+	//IntersectRaySphere(Point p, Vector d, Sphere s, float &t, Point &q)
+
+	// IntersectRaySphere(s0.c, v / vlen, s1, t, q)
+
+	return true;
+}
+
+void CollisionSystem::Update(float deltaTime) {
+	// pass deltatime
+	this->deltaTime = deltaTime;
+
+	// loop through all colliding actors, two times cause two objects colliding
+	for (size_t i = 0; i < collidingActors.size(); i++) {
+		for (size_t j = i + 1; j < collidingActors.size(); j++) {
+
+			Ref<Actor> a1 = collidingActors[i];
+			Ref<Actor> a2 = collidingActors[j];
+			
+			// get the transform components from the colliding actors
+			Ref<TransformComponent> TC1 = collidingActors[i]->GetComponent<TransformComponent>();
+			Ref<TransformComponent> TC2 = collidingActors[j]->GetComponent<TransformComponent>();
+
+			// get the collision component from the colliding actors
+			Ref<CollisionComponent> CC1 = a1->GetComponent<CollisionComponent>();
+			Ref<CollisionComponent> CC2 = a2->GetComponent<CollisionComponent>();
+
+			
+
+			// if both collider types are spheres...
+			if (CC1->colliderType == ColliderType::Sphere &&
+				CC2->colliderType == ColliderType::Sphere) {
+				
+				CollisionData data;
+
+				// if collisison was detected between the two spheres, do response
+				if (CollisionDetection(a1, a2, data)) {
+					
+					//printf("x: %f, y: %f, z: %f\n", data.contactNormal.x, data.contactNormal.y, data.contactNormal.z);
+
+					//std::cout << data.penetration << std::endl;
+					std::cout << "COLLSION DETECTED!" << std::endl;
+				}
+			}
+		}
+
+	}
+}
 
 /*
 
@@ -49,22 +177,22 @@ Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
 			Sphere s1;
 
 			//Get position is unreliable due to parenting altering the transform
-			//s1.center = transform->GetPosition();
+			//s1.centre = transform->GetPosition();
 			s1.r = collider->radius;
 
 			Matrix4 modelMatrix = obj->GetModelMatrix();
 
-			// Apply transforms before checking, the origin should be 0,0,0 and must be the center
-			s1.center = Vec3(modelMatrix * Vec4(Vec3(0.0f,0.0f,0.0f), 1.0f));
+			// Apply transforms before checking, the origin should be 0,0,0 and must be the centre
+			s1.centre = Vec3(modelMatrix * Vec4(Vec3(0.0f,0.0f,0.0f), 1.0f));
 
 
-			Vec3 toPoint = s1.center - start;
+			Vec3 toPoint = s1.centre - start;
 
 			float t = VMath::dot(toPoint, dir) / VMath::dot(dir, dir);  // projection scalar
 
 			Vec3 closestPoint = start + dir * t;
 
-			float distance = VMath::distance(s1.center, closestPoint);
+			float distance = VMath::distance(s1.centre, closestPoint);
 			std::cout << obj->getActorName() << std::endl;
 			std::cout <<distance << " < " << s1.r << std::endl;
 			if (distance < s1.r) { return obj; }
@@ -75,187 +203,6 @@ Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
 	return nullptr;
 }
 
-
-bool CollisionSystem::CollisionDetection(const Sphere& s1, const Sphere& s2) const
-{
-	// from semester 2 but also from the Real-Time Collision Detection book 4.5.1 "Sphere-swept Volume Intersection"
-
-	// Step 1
-	// Find the distance between the two bodies
-	float distance = VMath::distance(s1.center, s2.center);
-	// Step 2
-	// Compare the distance to the sum of the radii
-	// If distance <= r1 + r2, then result = true
-	float radius = s1.r + s2.r;
-	return distance <= radius * radius;
-}
-
-bool CollisionSystem::CollisionDetection(const AABB& bb1, const AABB& bb2 ) const {
-	
-	// from Real-Time Collision Detection 4.2.1 "AABB-AABB Intersection" 
-
-	if (abs(bb1.center.x - bb2.center.x) > (bb1.halfExtents.x + bb2.halfExtents.x)) return false;
-	if (abs(bb1.center.y - bb2.center.y) > (bb1.halfExtents.y + bb2.halfExtents.y)) return false;
-	if (abs(bb1.center.z - bb2.center.z) > (bb1.halfExtents.z + bb2.halfExtents.z)) return false;
-
-	return true;
-}
-
-bool CollisionSystem::CollisionDetection(const Sphere s1, const Plane p1) const
-{
-	// from Real-Time Collision Detection 5.2.2 "Testing Sphere Against Plane"
-
-	// For a normalized plane (|p.n| = 1), evaluating the plane equation
-	Plane p1Norm = PMath::normalize(p1);
-	
-	// for a point gives the signed distance of the point to the plane
-	float dist = PMath::distance(s1.center, p1Norm);
-	
-	// If sphere center within +/-radius from plane, plane intersects sphere
-	return abs(dist) <= s1.r;
-}
-
-void CollisionSystem::SphereSphereCollisionResponse(Ref<Actor> s1, Ref<Actor> s2)
-{
-	// get the physics and transform components from the actors
-
-	Ref<PhysicsComponent> PC1 = s1->GetComponent<PhysicsComponent>();
-	Ref<PhysicsComponent> PC2 = s2->GetComponent<PhysicsComponent>();
-
-	Ref<TransformComponent> TC1 = s1->GetComponent<TransformComponent>();
-	Ref<TransformComponent> TC2 = s2->GetComponent<TransformComponent>();
-
-	// this code is from semester 2 when umer taught spheresphere collision response, I just modified it a bit
-
-	// Step 1, find the normal vector (vector from body2 to body1)
-	Vec3 normal = TC2->GetPosition() - (VMath::normalize(TC1->GetPosition()));
-	
-	// Step 2, find the relative velocity
-	Vec3 relVel = PC1->getVel() - PC2->getVel();
-
-	// if relvel = 0, 
-
-	// Step 3, find relative velocity along the normal
-	float relVelAlongNormal = VMath::dot(relVel, normal);
-	// Step 4, ignore everything if relVelAlongNormal < 0
-	// We don't care about collisions if the objects
-	// are moving away from each other
-	if (relVelAlongNormal < 0) {
-		return; // get outta here
-	}
-	// Step 5, calculate J using my assignment notes
-	float E = 1.0f; // coefficent of resitition
-	float J = (-(1.0f + E) * relVelAlongNormal) / ((1.0f / PC1->getMass()) + (1.0f / PC2->getMass()));
-	// Step 6, update the velocities
-	PC1->setVel(PC1->getVel() + (J / PC1->getMass()) * normal);
-	PC2->setVel(PC2->getVel() - (J / PC2->getMass()) * normal);
-
-}
-
-void CollisionSystem::AABBAABBCollisionResponse(Ref<Actor> bb1, Ref<Actor> bb2)
-{
-	std::cout << "COLLISION DETECTED" << std::endl;
-}
-
-void CollisionSystem::SpherePlaneCollisionResponse(Ref<Actor> s1, Ref<Actor> p1)
-{
-	std::cout << "COLLISION DETECTED" << std::endl;
-}
-
-void CollisionSystem::Update(const float deltaTime)
-{
-	// loop through all colliding actors, two times cause two objects colliding
-	for (size_t i = 0; i < collidingActors.size(); i++) {
-		for (size_t j = i + 1; j < collidingActors.size(); j++) {
-
-			// get the collision component from the colliding actors
-			Ref<CollisionComponent> CC1 = collidingActors[i]->GetComponent<CollisionComponent>();
-			Ref<CollisionComponent> CC2 = collidingActors[j]->GetComponent<CollisionComponent>();
-
-			// if both collider types are spheres...
-			if (CC1->colliderType == ColliderType::SPHERE &&
-				CC2->colliderType == ColliderType::SPHERE) {
-
-				// get the transform components from the colliding actors
-				Ref<TransformComponent> TC1 = collidingActors[i]->GetComponent<TransformComponent>();
-				Ref<TransformComponent> TC2 = collidingActors[j]->GetComponent<TransformComponent>();
-
-				// this is setting up all the info for the spheres
-				Sphere s1, s2;
-
-				s1.center = TC1->GetPosition();
-				s1.r = CC1->radius;
-
-				s2.center = TC2->GetPosition();
-				s2.r = CC2->radius;
-
-				// if collisison was detected between the two spheres, do response
-				if (CollisionDetection(s1, s2)) {
-					SphereSphereCollisionResponse(collidingActors[i], collidingActors[j]);
-				}
-
-			}
-
-			// if both collider types are AABBs...
-			if (CC1->colliderType == ColliderType::AABB &&
-				CC2->colliderType == ColliderType::AABB) {
-
-				// get the transform components from the colliding actors
-				Ref<TransformComponent> TC1 = collidingActors[i]->GetComponent<TransformComponent>();
-				Ref<TransformComponent> TC2 = collidingActors[j]->GetComponent<TransformComponent>();
-
-				// this is setting up all the info for the AABBs
-				AABB bb1, bb2;
-
-				bb1.center = TC1->GetPosition();
-				bb1.halfExtents = CC1->halfExtents;
-
-				bb2.center = TC1->GetPosition();
-				bb2.halfExtents = CC2->halfExtents;
-
-				// if collision was detected between the two AABBs, do response
-				if (CollisionDetection(bb1, bb2)) {
-					AABBAABBCollisionResponse(collidingActors[i], collidingActors[j]);
-				}
-				// debug check to see if collision is being detected
-				//else {
-				//	std::cout << "NO COLLISION DETECTED" << std::endl;
-				//}
-
-			}
-
-			// if theres a sphere and plane collider...
-			if (CC1->colliderType == ColliderType::SPHERE &&
-				CC2->colliderType == ColliderType::PLANE) {
-
-				// get the transform components from the colliding actors
-				Ref<TransformComponent> TC1 = collidingActors[i]->GetComponent<TransformComponent>();
-				Ref<TransformComponent> TC2 = collidingActors[j]->GetComponent<TransformComponent>();
-
-				// set up all the info for the sphere and the plane
-				Sphere s1;
-				Plane p1;
-
-				s1.center = TC1->GetPosition();
-				s1.r = CC1->radius;
-
-				// p1
-
-				// if collision was detected between the sphere and the plane, do response
-				if (CollisionDetection(s1, p1)) {
-					SpherePlaneCollisionResponse(collidingActors[i], collidingActors[j]);
-				}
-				// debug to check if collision is detected
-				//else {
-				//	std::cout << "NO COLLISION DETECTED" << std::endl;
-				//}
-
-			}
-
-		}
-	}
-
-}
 
 */
 

@@ -135,8 +135,8 @@ void EditorManager::RenderEditorUI() {
 			SetEditorMode(EditorMode::Play);
 
 			// on play, save data to a temporary save file
-			std::filesystem::create_directory("Game Objects/" + tempSaveFile);
-			sceneGraph->SaveFile(tempSaveFile);
+			//std::filesystem::create_directory("Game Objects/" + tempSaveFile);
+			//sceneGraph->SaveFile(tempSaveFile);
 
 			sceneGraph->Start();
 			Ref<Actor> camera = sceneGraph->GetActor("CamTest");
@@ -152,7 +152,8 @@ void EditorManager::RenderEditorUI() {
 			sceneGraph->Stop();
 
 			sceneGraph->RemoveAllActors();
-			XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
+			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
+			//XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
 			
 			sceneGraph->setUsedCamera(nullptr);
 			sceneGraph->checkValidCamera();
@@ -160,8 +161,8 @@ void EditorManager::RenderEditorUI() {
 			sceneGraph->useDebugCamera();
 
 			// removing temporary save file data
-			std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
-			std::filesystem::remove_all("Game Objects/" + tempSaveFile);
+			//std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
+			//std::filesystem::remove_all("Game Objects/" + tempSaveFile);
 		}
 
 		ImGui::PopStyleColor();

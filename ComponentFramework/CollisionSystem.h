@@ -2,64 +2,152 @@
 #include "CollisionComponent.h"
 #include "PhysicsComponent.h"
 #include "Actor.h"
+#include <set>
 
 using namespace MATH;
 
+// holds all the information about a given collision 
+// Game Physics Engine Development Ian Millington 13.2.2
+struct CollisionData {
+	bool isColliding = false;
+	Vec3 contactPoint; // Holds the position of the contact in world coordinates.
+	Vec3 contactNormal; // Holds the direction of the contact in world coordinates.
+	float penetration = 0.0f;
+	float timeOfImpact = 0.0f; // for continous detection
+	Vec3 relVel;
+};
+
+// struct for raycasting, holds all informationn about a raycast
+// mostly based off unity, (I stole the name from unity) and old physics raycast code
+// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RaycastHit.html
+struct RaycastHit {
+	bool didHit = false;
+	Ref<CollisionComponent> hitCollider = nullptr; // return the hit collider, might as well 
+	Ref<Actor> hitActor = nullptr; // unity returns specific components of the hit collider, but why not just return the actor too
+	float distance = 0.0f; // The distance from the ray's origin to the impact point.
+	Vec3 normal; // The normal of the surface the ray hit.
+	Vec3 point; // The impact point in world space where the ray hit the collider.
+};
+
+// this is mostly to help out with collision detection event functions,
+// like OnCollisionEnter/OnCollisionExit, this will keep track of the collided actors current state
+struct CollidedPair {
+	// id pair of the actors 
+	uint32_t idA;
+	uint32_t idB;
+
+	// have to store whatever has the smallest id first
+	CollidedPair(uint32_t a, uint32_t b) {
+		idA = std::min(a, b);
+		idB = std::max(a, b);
+	}
+
+	bool operator<(const CollidedPair& other) const {
+		if (idA != other.idA) return idA < other.idA;
+		return idB < other.idB;
+	}
+
+	bool operator==(const CollidedPair& other) const {
+		return idA == other.idA && idB == other.idB;
+	}
+};
+
 class CollisionSystem {
-private:
-	std::vector<Ref<Actor>> collidingActors;
-
-	// collision response functions,
-	// called in update when collision is detected
-	
-	/*
-	void CollisionResponse(Ref<Actor> sphere1, Ref<Actor> sphere2);
-	void CollisionResponse(Ref<Actor> sphere_, Ref<Actor> cylinder_);
-	void CollisionResponse(Ref<Actor> sphere_, Ref<Actor> capsule_);
-	void CollisionResponse(Ref<Actor> sphere_, Ref<Actor> aabb_);
-	void CollisionResponse(Ref<Actor> sphere_, Ref<Actor> obb_);
-	void CollisionResponse(Ref<Actor> cylinder1, Ref<Actor> cylinder2);
-	void CollisionResponse(Ref<Actor> cylinder_, Ref<Actor> capsule_);
-	void CollisionResponse(Ref<Actor> cylinder_, Ref<Actor> aabb_);
-	void CollisionResponse(Ref<Actor> cylinder_, Ref<Actor> obb_);
-	void CollisionResponse(Ref<Actor> capsule1, Ref<Actor> capsule2);
-	void CollisionResponse(Ref<Actor> capsule_, Ref<Actor> aabb_);
-	void CollisionResponse(Ref<Actor> capsule_, Ref<Actor> obb_);
-	void CollisionResponse(Ref<Actor> aabb1, Ref<Actor> aabb2);
-	void CollisionResponse(Ref<Actor> aabb_, Ref<Actor> obb_);
-	void CollisionResponse(Ref<Actor> obb1, Ref<Actor> obb2);
-	*/
-
 public:
+	// Meyers Singleton (from JPs class)
+	static CollisionSystem& getInstance() {
+		static CollisionSystem instance;
+		return instance;
+	}
+
 	/// This function will check the actor being added is new and has the all proper components 
 	void AddActor(Ref<Actor> actor_);
 	void RemoveActor(Ref<Actor> actor_);
+	void ClearActors() { collidingActors.clear(); }
 
-
-	// collision detection functions,
-	
-	/*
-	void CollisionDetection(const Sphere& sphere1, const Sphere& sphere2);
-	void CollisionDetection(const Sphere& sphere_, const Cylinder& cylinder_);
-	void CollisionDetection(const Sphere& sphere_, const Capsule& capsule_);
-	void CollisionDetection(const Sphere& sphere_, const AABB& aabb_);
-	void CollisionDetection(const Sphere& sphere_, const OBB& obb_);
-	void CollisionDetection(const Cylinder& cylinder1, const Cylinder& cylinder2);
-	void CollisionDetection(const Cylinder& cylinder_, const Capsule& capsule_);
-	void CollisionDetection(const Cylinder& cylinder_, const AABB& aabb_);
-	void CollisionDetection(const Cylinder& cylinder_, const OBB& obb_);
-	void CollisionDetection(const Capsule& capsule1, const Capsule& capsule2);
-	void CollisionDetection(const Capsule& capsule_, const AABB& aabb_);
-	void CollisionDetection(const Capsule& capsule_, const OBB& obb_);
-	void CollisionDetection(const AABB& aabb1, const AABB& aabb2);
-	void CollisionDetection(const AABB& aabb_, const OBB& obb_);
-	void CollisionDetection(const OBB& obb1, const OBB& obb2);
-	*/
-	
-	
-	// raycasting functions
-	//Ref<Actor> PhysicsRaycast(Vec3 start, Vec3 end);
-	 
 	void Update(const float deltaTime);
 
+private:
+	// deleting copy and move constructers, setting up singleton
+	CollisionSystem() = default;
+	CollisionSystem(const CollisionSystem&) = delete;
+	CollisionSystem(CollisionSystem&&) = delete;
+	CollisionSystem& operator=(const CollisionSystem&) = delete;
+	CollisionSystem& operator=(CollisionSystem&&) = delete;
+
+	std::vector<Ref<Actor>> collidingActors;
+	// to help keep track of colliding actors for onhit event functions
+	std::set<CollidedPair> currentCollidingActors;
+	std::set<CollidedPair> previousCollidingActors;
+	
+	// continous detection checks between frames, and sudo-raycasts to look at whats ahead,
+	// so deltatime is needed to see what is ahead before it actually happens in Update
+	float deltaTime = 0.0f; 
+
+public: 
+	// main collision detection function,
+	// will delegate which collisiond are detected by checking collider type and state
+	// and will call response/resolution functions as needed
+	bool CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionData& data);
+
+	//TODO: add actor tags or some way of filtering out certain actors,
+	// I mean technically we can just get the name of the hit actor and use that as a filter
+	
+	// main raycast function (using unity as reference https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Physics.Raycast.html)
+	// returns whatever was hit first
+	RaycastHit Raycast(const Vec3& origin, const Vec3& direction, float maxDistance = FLT_MAX);
+	// returns all hits
+	std::vector<RaycastHit> RaycastAll(const Vec3& origin, const Vec3& direction, float maxDistance = FLT_MAX);
+
+	// collision and trigger on enter/stay/exit functions (scripting)
+	// not sure if these should be public or private, just change it to whatever is needed for scripting
+	// these functions will be called in collision systems update
+	// the actual functions themselves won't have much actual code, 
+	// they will just be callbacks for the scripts, then collsiion systems Update calls them
+	// can rename if needed
+	// void OnCollisionEnter(Collision collision) / void OnCollisionExit(Collision collisionInfo)
+	// Update will give the functions the actors and data associtated with the collision 
+	void OnCollisionEnter(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	void OnCollisionStay(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	void OnCollisionExit(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	void OnTriggerEnter(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	void OnTriggerStay(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	void OnTriggerExit(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	
+private:
+	// rest of the collision detection functions
+	bool SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereSphereContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+
+	bool SphereCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+
+	bool CapsuleCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool CapsuleCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+
+	bool CapsuleAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool CapsuleAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool CapsuleOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool CapsuleOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+
+	bool AABBAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool AABBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool OBBOBBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+
+	// collision resolution
+	void ResolveCollision(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	
+	// shape raycast functions (reusing raycast code from last semester)
+	// this is not like unitys SphereCast function,
+	// that casts a sphere along a ray and checks for collisions
+	// these functions instead just cast a ray out, 
+	// and then determines what type of collider/shape they hit based on the function
+	Ref<Actor> RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	Ref<Actor> RaycastCapsule(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	Ref<Actor> RaycastAABB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	Ref<Actor> RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);	
 };

@@ -30,8 +30,10 @@ private:
 	float drag;
 	float angularDrag;
 
-	// TODO: use in collision system
-	//float friction;
+	// TODO: add rest of physics, inspector, and XML code
+	// used in the collsion system for contact resolution
+	float friction;
+	float restitution;
 
 	// linear motion 
 	Vec3 vel;

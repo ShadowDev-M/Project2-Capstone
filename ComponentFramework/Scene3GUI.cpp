@@ -7,9 +7,10 @@
 #include "CameraComponent.h"
 #include "MemorySize.h"
 #include "AnimatorComponent.h"
+
 #include "PhysicsSystem.h"
-
-
+#include "CollisionSystem.h"
+#include "ColliderDebug.h"
 
 Scene3GUI::Scene3GUI() {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -33,6 +34,14 @@ bool Scene3GUI::OnCreate() {
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
+	SceneGraph::getInstance().GetActor("Sphere")->AddComponent<CollisionComponent>();
+	SceneGraph::getInstance().GetActor("Sphere2D")->AddComponent<CollisionComponent>();
+
+	CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere"));
+	CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere2D"));
+
+	ColliderDebug::getInstance().OnCreate();
+
 	//AudioManager::getInstance().Initialize();
 	//marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);
 
@@ -47,12 +56,11 @@ void Scene3GUI::OnDestroy() {
 
 	Debug::Info("Deleting assets Scene3GUI: ", __FILE__, __LINE__);
 
-	
-
-
 	// save all the assets in the assetmanager to the xml file then remove them all locally
 	AssetManager::getInstance().SaveAssetDatabaseXML();
 	AssetManager::getInstance().RemoveAllAssets();
+
+	ColliderDebug::getInstance().OnDestroy();
 
 	SceneGraph::getInstance().RemoveAllActors();
 
@@ -72,7 +80,7 @@ void Scene3GUI::Update(const float deltaTime) {
 
 	if (EditorManager::getInstance().isPlayMode()) {
 		PhysicsSystem::getInstance().Update(deltaTime);
-		
+		CollisionSystem::getInstance().Update(deltaTime);
 		//SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->ApplyForce(Vec3(0.0f, -9.8f, 0.0f));
 		//std::cout << SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->getMass();
 	}
