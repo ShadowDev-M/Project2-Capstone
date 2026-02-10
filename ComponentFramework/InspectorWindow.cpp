@@ -437,7 +437,7 @@ void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, 
 				for (auto& component : transformState.components) {
 					Vec3 currentScale = component->GetScale();
 					float updatedUniformScale = currentScale.x + uniformDelta; 
-					component->SetTransform(Vec3(updatedUniformScale, updatedUniformScale, updatedUniformScale));
+					component->SetScale(Vec3(updatedUniformScale, updatedUniformScale, updatedUniformScale));
 				}
 
 				lastScale = lastScale + Vec3(uniformDelta, uniformDelta, uniformDelta);
@@ -449,7 +449,7 @@ void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, 
 
 				for (auto& component : transformState.components) {
 					Vec3 currentScale = component->GetScale();
-					component->SetTransform(Vec3(currentScale.x + delta.x, currentScale.y + delta.y, currentScale.z + delta.z));
+					component->SetScale(Vec3(currentScale.x + delta.x, currentScale.y + delta.y, currentScale.z + delta.z));
 				}
 
 				lastScale = Vec3(scale[0], scale[1], scale[2]);

@@ -33,7 +33,7 @@ void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttri
             //restore scale 
             Vec3 reScale = std::get<3>(tupleArgs);
 
-            oldTransform->SetTransform(reScale);
+            oldTransform->SetScale(reScale);
         }
         else {
             //create new transform
@@ -145,7 +145,7 @@ void XMLObjectFile::createActorFromElement(SceneGraph* sceneGraph, XMLElement* a
         //restore scale 
         Vec3 reScale = std::get<3>(tupleArgs);
 
-        oldTransform->SetTransform(reScale);
+        oldTransform->SetScale(reScale);
     }
     else {
         //create new transform

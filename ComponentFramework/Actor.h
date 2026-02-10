@@ -123,6 +123,20 @@ public:
 		return Ref<ComponentTemplate>(nullptr);
 	}
 
+	///for scripting
+	template<typename ComponentTemplate>
+	ComponentTemplate* GetComponentRaw() const {
+		for (auto& component : components) {
+			if (dynamic_cast<ComponentTemplate*>(component.get())) {
+				/// This is a dynamic cast designed for shared_ptr's
+				/// https://en.cppreference.com/w/cpp/memory/shared_ptr/pointer_cast
+				return dynamic_cast<ComponentTemplate*>(component.get());
+			}
+		}
+		return nullptr;
+	}
+
+
 	template<typename ComponentTemplate>
 	std::vector<Ref<ComponentTemplate>> GetAllComponent() const {
 		std::vector<Ref<ComponentTemplate>> componentListReturn;

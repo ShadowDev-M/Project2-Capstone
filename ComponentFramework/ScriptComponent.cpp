@@ -318,15 +318,11 @@ void ScriptService::defineUsertypes(Actor* user) {
 	lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
 	lua["Transform"] = user->GetComponent<TransformComponent>().get();
 
-	lua["Animator"] = sol::lua_nil;
-	if (user->GetComponent<AnimatorComponent>()) {
-		lua["Animator"] = user->GetComponent<AnimatorComponent>().get();
-	}
+	lua["GameObject"] = sol::lua_nil;  // Reset first or it'll not be consistent 
+	lua["GameObject"] = user;
 
-	lua["Rigidbody"] = sol::lua_nil;
-	if (user->GetComponent<PhysicsComponent>()) {
-		lua["Rigidbody"] = user->GetComponent<PhysicsComponent>().get();
-	}
+	lua["Game"] = sol::lua_nil;
+	lua["Game"] = &SceneGraph::getInstance();
 
 }
 
@@ -515,8 +511,8 @@ void ScriptService::loadLibraries()
 	lua.new_usertype<TransformComponent>("Transform",
 		//Write new functions to include parent's transform and get global transforms
 		"Position", sol::property(&TransformComponent::GetPosition, TRANSFORM_SETPOSVEC3),
-		"Rotation", sol::property(&TransformComponent::GetQuaternion, &TransformComponent::SetOrientation)
-
+		"Rotation", sol::property(&TransformComponent::GetQuaternion, &TransformComponent::SetOrientation),
+		"Scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale)
 
 	);
 
@@ -539,12 +535,20 @@ void ScriptService::loadLibraries()
 	);
 
 
+	lua.new_usertype<CameraComponent>("Camera",
+		"FOV", sol::property(&CameraComponent::getFOV, &CameraComponent::setFOV),
+		"NearClipPlane", sol::property(&CameraComponent::getNearClipPlane, &CameraComponent::setNearClipPlane),
+		"FarClipPlane", sol::property(&CameraComponent::getFarClipPlane, &CameraComponent::setFarClipPlane),
+		"AspectRatio", sol::property(&CameraComponent::getAspectRatio, &CameraComponent::setAspectRatio),
+		"GetTransform", &CameraComponent::GetUserActorTransform
+	);
+
 	lua.new_usertype<AnimationClip>("AnimationClip",
 		sol::constructors<AnimationClip()>(),
 
 
 		"GetPlayState", &AnimationClip::isPlaying,
-		"Length", &AnimationClip::getClipLength,
+		"Length", sol::property(& AnimationClip::getClipLength),
 		"GetLength", &AnimationClip::getClipLength,
 		"Loop", sol::property(&AnimationClip::getLoopingState, &AnimationClip::setLooping),
 		"CurrentTime", sol::property(&AnimationClip::getCurrentTime, &AnimationClip::setCurrentTime),
@@ -555,27 +559,38 @@ void ScriptService::loadLibraries()
 		"GetAnimationFilename", &AnimationClip::getAnimFilename,
 		"GetState", &AnimationClip::getActiveState,
 		"PreloadAnimation", &AnimationClip::preloadAnimation
-
-
 	);
 
 	lua.new_usertype<AnimatorComponent>("Animator",
 		"Play", &AnimatorComponent::PlayClip,
 		"Stop", &AnimatorComponent::StopClip,
 		"GetPlayState", &AnimatorComponent::isPlaying,
-		"Length", &AnimatorComponent::getClipLength,
+		"Length", sol::property(&AnimatorComponent::getClipLength),
 		"GetLength", &AnimatorComponent::getClipLength,
 		"Loop", sol::property(&AnimatorComponent::getLoopingState, &AnimatorComponent::setLooping),
 		"CurrentTime", sol::property(&AnimatorComponent::getCurrentTime, &AnimatorComponent::setCurrentTime),
 		"StartTime", sol::property(&AnimatorComponent::getStartTime, &AnimatorComponent::setStartTime),
 		"SpeedMult", sol::property(&AnimatorComponent::getSpeedMult, &AnimatorComponent::setSpeedMult),
 		"Clip", sol::property(&AnimatorComponent::getAnimationClip, &AnimatorComponent::setAnimationClip)
+	);
 
 
+
+	lua.new_usertype<Actor>("GameObject",
+		"Transform", sol::property(&Actor::GetComponentRaw<TransformComponent>),
+		"Camera", sol::property(&Actor::GetComponentRaw<CameraComponent>),
+		"Animator", sol::property(&Actor::GetComponentRaw<AnimatorComponent>),
+		"Rigidbody", sol::property(& Actor::GetComponentRaw<PhysicsComponent>)
 	);
 
 	
+	
 
+	lua.new_usertype<SceneGraph>("Game",
+		"Find", &SceneGraph::GetActorRaw, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
+		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera().get(); })
+	);
+	
 
 	//put overload parametres in the second brackets of the LHS
 	const Vec3(Vec3::*VEC3_UNARY_MINUS)() const = &Vec3::operator-;
@@ -611,6 +626,7 @@ void ScriptService::loadLibraries()
 	
 
 	
+
 
 
 	lua.new_usertype<Vec3>("Vec3",

@@ -177,6 +177,8 @@ public:
 
 	Ref<Actor> MeshRaycast(Vec3 start, Vec3 end);
 
+	Actor* GetActorRaw(const char* actorName) const;
+
 	Ref<Actor> GetActor(const std::string& actorName) const;
 
 	Ref<Actor> GetActorById(uint32_t actorId) const {

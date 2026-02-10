@@ -523,6 +523,11 @@ Ref<Actor> SceneGraph::MeshRaycast(Vec3 start, Vec3 end)
 	return nullptr;
 }
 
+Actor* SceneGraph::GetActorRaw(const char* actorName) const {
+	return GetActor(actorName).get();
+}
+
+
 Ref<Actor> SceneGraph::GetActor(const std::string& actorName) const
 {
 	// try to find the actor by name

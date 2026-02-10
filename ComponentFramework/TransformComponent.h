@@ -58,7 +58,7 @@ public:
 		orientation = orientation_;
 	}
 
-	void SetTransform(Vec3 scale_ = Vec3(1.0f, 1.0f, 1.0f)) {
+	void SetScale(Vec3 scale_ = Vec3(1.0f, 1.0f, 1.0f)) {
 		scale = scale_;
 	}
 
