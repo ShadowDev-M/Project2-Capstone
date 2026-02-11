@@ -32,8 +32,8 @@ private:
 
 	// TODO: add rest of physics, inspector, and XML code
 	// used in the collsion system for contact resolution
-	float friction;
-	float restitution;
+	float friction = 0.5f;
+	float restitution = 0.0f;
 
 	// linear motion 
 	Vec3 vel;
@@ -64,6 +64,9 @@ public:
 	void setDrag(float drag_) { drag = drag_; }
 	void setAngularDrag(float angDrag_) { angularDrag = angDrag_; }
 
+	void setFriction(float friction_) { friction = friction_; }
+	void setRestitution(float restitution_) { restitution = restitution_; }
+
 	void setVel(const Vec3& vel_) { vel = vel_; }
 	void setAccel(const Vec3& accel_) { accel = accel_; }
 	void setAngularVel(const Vec3& angularVel_) { angularVel = angularVel_; }
@@ -76,6 +79,9 @@ public:
 
 	float getDrag() const { return drag; }
 	float getAngularDrag() const { return angularDrag; }
+
+	float getFriction() const { return friction; }
+	float getRestitution() const { return restitution; }
 
 	Vec3 getVel() { return vel; }
 	Vec3 getAccel() { return accel; }

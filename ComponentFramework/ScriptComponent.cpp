@@ -352,7 +352,7 @@ void ScriptService::loadLibraries()
 	lua.new_usertype<TransformComponent>("Transform",
 		//Write new functions to include parent's transform and get global transforms
 		"Position", sol::property(&TransformComponent::GetPosition, &TransformComponent::SetPos),
-		"Rotation", sol::property(&TransformComponent::GetQuaternion, &TransformComponent::SetOrientation)
+		"Rotation", sol::property(&TransformComponent::GetOrientation, &TransformComponent::SetOrientation)
 
 
 	);

@@ -9,4 +9,8 @@ PhysicsComponent::PhysicsComponent(Component* parent_, PhysicsState state_, floa
 	accel = Vec3(0.0f, 0.0f, 0.0f);
 	angularVel = Vec3(0.0f, 0.0f, 0.0f);
 	angularAcc = Vec3(0.0f, 0.0f, 0.0f);
+
+	//TODO
+	friction = 0.5f;
+	restitution = 0.0f;
 }

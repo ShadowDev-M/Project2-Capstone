@@ -260,7 +260,7 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	if (auto transform = original_->GetComponent<TransformComponent>()) {
 		copy->AddComponent<TransformComponent>(nullptr,
 			transform->GetPosition(),
-			transform->GetQuaternion(),
+			transform->GetOrientation(),
 			transform->GetScale());
 	}
 

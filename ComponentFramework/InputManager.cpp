@@ -187,7 +187,7 @@ bool InputManager::debugTapInputTranslation(std::pair<KeyBinding, std::tuple<Vec
 		//Put a slider here for stud based movement
 		Vec3 inputVector = keyPressVector * studMultiplier; //<- slider multiplier here
 
-		Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
+		Quaternion q = camera->GetComponent<TransformComponent>()->GetOrientation();
 
 		Quaternion rotation = (QMath::normalize(q));
 		//	camera->GetComponent<TransformComponent>()->GetPosition().print();
@@ -203,7 +203,7 @@ bool InputManager::debugTapInputTranslation(std::pair<KeyBinding, std::tuple<Vec
 
 				obj.second->GetComponent<TransformComponent>()->SetTransform(
 					obj.second->GetComponent<TransformComponent>()->GetPosition() + worldForward,
-					obj.second->GetComponent<TransformComponent>()->GetQuaternion(),
+					obj.second->GetComponent<TransformComponent>()->GetOrientation(),
 					obj.second->GetComponent<TransformComponent>()->GetScale()
 				);
 				hasMoved = true;
@@ -228,7 +228,7 @@ bool InputManager::debugCamInputTranslation(std::pair<KeyBinding, std::tuple<Vec
 		//Put a slider here for stud based movement
 		Vec3 inputVector = keyPressVector * studMultiplier; //<- slider multiplier here
 
-		Quaternion q = camera->GetComponent<TransformComponent>()->GetQuaternion();
+		Quaternion q = camera->GetComponent<TransformComponent>()->GetOrientation();
 
 		Quaternion rotation = (QMath::normalize(q));
 		//	camera->GetComponent<TransformComponent>()->GetPosition().print();

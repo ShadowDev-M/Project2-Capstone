@@ -30,7 +30,13 @@ void ColliderDebug::Render(Ref<CollisionComponent> collision_, Ref<TransformComp
         case ColliderType::Sphere:
             newShape = GenerateSphere(collision_);
             break;
-        // case
+            // TODO:
+        case ColliderType::AABB:
+            newShape = GenerateAABB(collision_);
+            break;
+        case ColliderType::OBB:
+            newShape = GenerateOBB(collision_);
+            break;
         }
 
         colliderCache[collision_] = newShape;
@@ -49,7 +55,7 @@ void ColliderDebug::Render(Ref<CollisionComponent> collision_, Ref<TransformComp
 
     if (collision_->getType() == ColliderType::Sphere) {
         Vec3 position = transform_->GetPosition();
-        Quaternion rotation = transform_->GetQuaternion();
+        Quaternion rotation = transform_->GetOrientation();
         Vec3 scale = transform_->GetScale();
 
         // converting local to world
@@ -168,6 +174,146 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateSphere(const Ref<CollisionCo
 
     shape.dataLength = vertices.size();
 
+    StoreShapeData(shape, vertices);
+
+    return shape;
+}
+
+ColliderDebug::ColliderShape ColliderDebug::GenerateAABB(const Ref<CollisionComponent>& collision_)
+{
+    ColliderShape shape;
+    std::vector<Vec3> vertices;
+    
+    Vec3 centre = collision_->getCentre();
+    Vec3 halfExtents = collision_->getHalfExtents();
+
+    // Box.cpp
+    // calculating the 8 corner positions of the box	
+    // to get the location of a specific point on the cube, I need to subtract or add the halfextents from the center (halfExtents represent the distance from the centre)
+    Vec3 min = centre - halfExtents;
+    Vec3 max = centre + halfExtents;
+
+    // simplyfing corner creation
+    Vec3 corners[8] = {
+        Vec3(min.x, min.y, min.z), Vec3(max.x, min.y, min.z),
+        Vec3(max.x, max.y, min.z), Vec3(min.x, max.y, min.z),
+        Vec3(min.x, min.y, max.z), Vec3(max.x, min.y, max.z),
+        Vec3(max.x, max.y, max.z), Vec3(min.x, max.y, max.z)
+    };
+        
+    // instead of trinangles, doing lines, so have to push back in a certain order
+    
+    // Bottom face
+    vertices.push_back(corners[0]); 
+    vertices.push_back(corners[1]);
+    vertices.push_back(corners[1]); 
+    vertices.push_back(corners[5]);
+    vertices.push_back(corners[5]); 
+    vertices.push_back(corners[4]);
+    vertices.push_back(corners[4]); 
+    vertices.push_back(corners[0]);
+
+    // Top face
+    vertices.push_back(corners[3]); 
+    vertices.push_back(corners[2]);
+    vertices.push_back(corners[2]); 
+    vertices.push_back(corners[6]);
+    vertices.push_back(corners[6]); 
+    vertices.push_back(corners[7]);
+    vertices.push_back(corners[7]); 
+    vertices.push_back(corners[3]);
+
+    // Edges
+    vertices.push_back(corners[0]); 
+    vertices.push_back(corners[3]);
+    vertices.push_back(corners[1]); 
+    vertices.push_back(corners[2]);
+    vertices.push_back(corners[5]); 
+    vertices.push_back(corners[6]);
+    vertices.push_back(corners[4]); 
+    vertices.push_back(corners[7]);
+
+    shape.dataLength = vertices.size();
+
+    StoreShapeData(shape, vertices);
+
+    return shape;
+}
+
+ColliderDebug::ColliderShape ColliderDebug::GenerateOBB(const Ref<CollisionComponent>& collision_)
+{
+    ColliderShape shape;
+    std::vector<Vec3> vertices;
+
+    Vec3 centre = collision_->getCentre();
+    Vec3 halfExtents = collision_->getHalfExtents();
+    Quaternion orientation = collision_->getOrientation();
+
+    // basically the extact same as the AABB, but this time with local axes... wow!
+
+    // rotating the orienation around x,y,z axis in order to get local coords
+    Vec3 localCoords[3] = { QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), orientation),
+    QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), orientation),
+    QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), orientation) };
+
+    // calculating the 8 corner positions of the box	
+    // to get the location of a specific point on the cube, I need to subtract or add the halfextents from the center (halfExtents represent the distance from the centre)
+    // I'm also multiplying each halfextent axis by its local coord axis in order to transform it back into world coords
+
+    // I did corners for the aabb so now I have to reformat this, but it's easier that way, and less confusing tbh, 
+    // (when I had the variables as like topLeftFront or bottomLeftBack I could never figure out what the correct corner vertice actually was, but numbers are easy)
+    // other than that though this is litteraly just ripped code from what I did last semester
+    Vec3 corners[8];
+    corners[0] = centre + (-halfExtents.x * localCoords[0]) + (-halfExtents.y * localCoords[1]) + (-halfExtents.z * localCoords[2]);
+    corners[1] = centre + (halfExtents.x * localCoords[0]) + (-halfExtents.y * localCoords[1]) + (-halfExtents.z * localCoords[2]);
+    corners[2] = centre + (halfExtents.x * localCoords[0]) + (halfExtents.y * localCoords[1]) + (-halfExtents.z * localCoords[2]);
+    corners[3] = centre + (-halfExtents.x * localCoords[0]) + (halfExtents.y * localCoords[1]) + (-halfExtents.z * localCoords[2]);
+    corners[4] = centre + (-halfExtents.x * localCoords[0]) + (-halfExtents.y * localCoords[1]) + (halfExtents.z * localCoords[2]);
+    corners[5] = centre + (halfExtents.x * localCoords[0]) + (-halfExtents.y * localCoords[1]) + (halfExtents.z * localCoords[2]);
+    corners[6] = centre + (halfExtents.x * localCoords[0]) + (halfExtents.y * localCoords[1]) + (halfExtents.z * localCoords[2]);
+    corners[7] = centre + (-halfExtents.x * localCoords[0]) + (halfExtents.y * localCoords[1]) + (halfExtents.z * localCoords[2]);
+
+    // instead of trinangles, doing lines, so have to push back in a certain order
+
+    // Bottom face
+    vertices.push_back(corners[0]);
+    vertices.push_back(corners[1]);
+    vertices.push_back(corners[1]);
+    vertices.push_back(corners[5]);
+    vertices.push_back(corners[5]);
+    vertices.push_back(corners[4]);
+    vertices.push_back(corners[4]);
+    vertices.push_back(corners[0]);
+
+    // Top face
+    vertices.push_back(corners[3]);
+    vertices.push_back(corners[2]);
+    vertices.push_back(corners[2]);
+    vertices.push_back(corners[6]);
+    vertices.push_back(corners[6]);
+    vertices.push_back(corners[7]);
+    vertices.push_back(corners[7]);
+    vertices.push_back(corners[3]);
+
+    // Edges
+    vertices.push_back(corners[0]);
+    vertices.push_back(corners[3]);
+    vertices.push_back(corners[1]);
+    vertices.push_back(corners[2]);
+    vertices.push_back(corners[5]);
+    vertices.push_back(corners[6]);
+    vertices.push_back(corners[4]);
+    vertices.push_back(corners[7]);
+
+    shape.dataLength = vertices.size();
+
+    StoreShapeData(shape, vertices);
+
+    return shape;
+}
+
+void ColliderDebug::StoreShapeData(ColliderDebug::ColliderShape& shape, std::vector<MATH::Vec3>& vertices)
+{
     /// create and bind the VAO
     glGenVertexArrays(1, &shape.vao);
     // Bind means, hey! Im talking to you!
@@ -190,8 +336,6 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateSphere(const Ref<CollisionCo
     // need a very brutal reinterpret_cast means Dammit!
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), reinterpret_cast<void*>(0));
     glBindVertexArray(0);
-
-    return shape;
 }
 
 void ColliderDebug::ClearAll() {

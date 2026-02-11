@@ -37,9 +37,12 @@ private:
 
 	ColliderShape GenerateSphere(const Ref<CollisionComponent>& collision_);
 	//ColliderShape GenerateCapsule(const Ref<CollisionComponent>& collision_);
-	//ColliderShape GenerateAABB(const Ref<CollisionComponent>& collision_);
-	//ColliderShape GenerateOBB(const Ref<CollisionComponent>& collision_);
+	ColliderShape GenerateAABB(const Ref<CollisionComponent>& collision_);
+	ColliderShape GenerateOBB(const Ref<CollisionComponent>& collision_);
 
+	// helper function for pushing vertices to gpu
+	void StoreShapeData(ColliderDebug::ColliderShape& shape, std::vector<MATH::Vec3>& vertices);
+	
 	// cleans up data for a shape
 	void ClearShape(ColliderShape& shape_);
 

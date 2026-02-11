@@ -45,23 +45,31 @@ protected:
 	Vec3 halfExtents; /// AABB, OBB
 	Quaternion orientation; // OBB 
 
-private:
+public:
 	// Local vs World Coords
 	// all the variables can be exposed locally in the inspector or in scripts
 	// but they all need to be converted to world coords when doing calculations
 	// this is similar to how unity does it where it has the exposed local variables,
 	// and in editor when you change the actors pos, scale, rotation etc, the collider follows suit, 
 	// but the local variables remain the same
-	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const { return transform_->GetTransformMatrix() * Vec4(centre, 1.0f); }
+	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centre, 1.0f)); }
 	float getWorldRadius(Ref<TransformComponent> transform_) const {
 		Vec3 scale = transform_->GetScale();
 		float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
 		return radius * maxScale;
 	}
+	Vec3 getWorldCentrePosA(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centrePosA, 1.0f)); }
+	Vec3 getWorldCentrePosB(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centrePosB, 1.0f)); }
+	Vec3 getWorldHalfExtents(Ref<TransformComponent> transform_) const {
+		Vec3 scale = transform_->GetScale();
+		return Vec3(halfExtents.x * scale.x, halfExtents.y * scale.y, halfExtents.z * scale.z);
+	}
+	Quaternion getWorldOrientation(Ref<TransformComponent> transform_) const { return transform_->GetOrientation() * orientation; }
+
 
 public:
-	CollisionComponent(Component* parent_ = nullptr, ColliderState state_ = ColliderState::Continuous, ColliderType type_ = ColliderType::Sphere, bool isTrigger_ = false, float radius_ = 1.0f, Vec3 centre_ = Vec3(0.0f, 0.0f, 0.0f),
-		Vec3 centrePosA_ = Vec3(0.0f, 1.0f, 0.0f), Vec3 centrePosB_ = Vec3(0.0f, -1.0f, 0.0f), Vec3 halfExtents_ = Vec3(0.0f, 0.0f, 0.0f), Quaternion orientation_ = Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)));
+	CollisionComponent(Component* parent_ = nullptr, ColliderState state_ = ColliderState::Discrete, ColliderType type_ = ColliderType::Sphere, bool isTrigger_ = false, float radius_ = 1.0f, Vec3 centre_ = Vec3(0.0f, 0.0f, 0.0f),
+		Vec3 centrePosA_ = Vec3(0.0f, 1.0f, 0.0f), Vec3 centrePosB_ = Vec3(0.0f, -1.0f, 0.0f), Vec3 halfExtents_ = Vec3(1.0f, 1.0f, 1.0f), Quaternion orientation_ = Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)));
 
 	bool OnCreate() { return true; }
 	void OnDestroy() {}
@@ -80,5 +88,13 @@ public:
 	Quaternion getOrientation() const { return orientation; }
 
 	// setters
+	void setState(ColliderState state_) { colliderState = state_;}
+	void setType(ColliderType type_) { colliderType = type_; }
+	void setIsTrigger(bool trigger_) { isTrigger = trigger_; }
+	void setRadius(float radius_) { radius = radius_; }
 	void setCentre(Vec3 centre_) { centre = centre_; }
+	void setCentrePosA(Vec3 centreA_) { centrePosA = centreA_; }
+	void setCentrePosB(Vec3 centreB_) { centrePosB = centreB_; }
+	void setHalfExtents(Vec3 halfExtents_) { halfExtents = halfExtents_; }
+	void setOrientation(Quaternion ori_) { orientation = ori_; }
 };
