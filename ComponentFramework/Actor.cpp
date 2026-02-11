@@ -104,11 +104,11 @@ void Actor::pushToSceneGraphWorker(Ref<Component> component)
 	Ref<Animation> animation = std::dynamic_pointer_cast<Animation>(component);
 
 	if (mesh) {
-		SceneGraph::getInstance().pushMeshToWorker(mesh.get());
+		SceneGraph::getInstance().pushMeshToWorker(mesh);
 	}
 	else if (animation) {
 
-		SceneGraph::getInstance().pushAnimationToWorker(animation.get());
+		SceneGraph::getInstance().pushAnimationToWorker(animation);
 
 	}
 

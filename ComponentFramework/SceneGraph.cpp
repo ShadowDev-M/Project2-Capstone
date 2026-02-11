@@ -11,23 +11,21 @@
 #include "PhysicsSystem.h"
 #include "ColliderDebug.h"
 
-void SceneGraph::pushMeshToWorker(MeshComponent* mesh) {
+void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
 
 	if (!mesh->queryLoadStatus()) {
 		auto it = std::find(workerQueue.begin(), workerQueue.end(), mesh);
-		auto itsecond = std::find(finishedQueue.begin(), finishedQueue.end(), mesh);
-		if (it == workerQueue.end() && itsecond == finishedQueue.end()) {
+		if (it == workerQueue.end()) {
 			workerQueue.push_back(mesh); 
 		}
 	}
 }
 
-void SceneGraph::pushAnimationToWorker(Animation* animation) {
+void SceneGraph::pushAnimationToWorker(Ref<Animation> animation) {
 
 	if (!animation->queryLoadStatus()) {
 		auto it = std::find(workerQueue.begin(), workerQueue.end(), animation);
-		auto itsecond = std::find(finishedQueue.begin(), finishedQueue.end(), animation);
-		if (it == workerQueue.end() && itsecond == finishedQueue.end()) {
+		if (it == workerQueue.end()) {
 			workerQueue.push_back(animation);
 		}
 	}
@@ -45,8 +43,8 @@ void SceneGraph::meshLoadingWorker()
 {
 	while (!shouldStop) {
 
-		MeshComponent* model = nullptr;
-		Animation* animation = nullptr;
+		Ref<MeshComponent> model = nullptr;
+		Ref<Animation> animation = nullptr;
 
 		{
 			std::lock_guard<std::mutex> lock(queueMutex);
@@ -56,8 +54,10 @@ void SceneGraph::meshLoadingWorker()
 			}
 
 
-			model = dynamic_cast<MeshComponent*>(workerQueue.back());
-			animation = dynamic_cast<Animation*>(workerQueue.back());
+			model = std::dynamic_pointer_cast<MeshComponent>(workerQueue.back());
+			animation = std::dynamic_pointer_cast<Animation>(workerQueue.back());
+			workerQueue.pop_back();
+
 		}
 
 		if (model) {
@@ -65,7 +65,6 @@ void SceneGraph::meshLoadingWorker()
 			std::cout << "Loading Model: " << model->getMeshName() << std::endl;
 
 			model->InitializeMesh();
-			workerQueue.pop_back();
 
 			scheduleOnMain([model]() {
 
@@ -76,13 +75,11 @@ void SceneGraph::meshLoadingWorker()
 			std::cout << "Loading Animation: " << animation << std::endl;
 
 			animation->InitializeAnimation();
-			workerQueue.pop_back();
 
 			
 
 		}
 		else {
-			workerQueue.pop_back();
 
 		}
 	
@@ -109,13 +106,13 @@ void SceneGraph::scheduleOnMain(std::function<void()> task)
 
 void SceneGraph::storeInitializedMeshData() {
 
-	while (!finishedQueue.empty()) {
+	/*while (!finishedQueue.empty()) {
 
-		if (dynamic_cast<MeshComponent*> (finishedQueue.back())) {
-			dynamic_cast<MeshComponent*> (finishedQueue.back())->storeLoadedModel();
+		if (std::dynamic_pointer_cast<MeshComponent>(finishedQueue.back())) {
+			std::dynamic_pointer_cast<MeshComponent>(finishedQueue.back())->storeLoadedModel();
 		}
 
-	}
+	}*/
 
 }
 

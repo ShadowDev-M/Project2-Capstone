@@ -205,7 +205,7 @@ void AnimationClip::setAnimation(Ref<Animation> animation_)
 
 	startTime = 0.0f;
 	if (animation_ && !animation_->queryLoadStatus()) {
-		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());
+		SceneGraph::getInstance().pushAnimationToWorker(animation_);
 	}
 	animation = animation_;
 
@@ -218,7 +218,7 @@ void Animation::preloadAnimation(std::string animationName)
 	if (!animation_) return;
 
 	if (animation_ && !animation_->queryLoadStatus()) {
-		SceneGraph::getInstance().pushAnimationToWorker(animation_.get());
+		SceneGraph::getInstance().pushAnimationToWorker(animation_);
 	}
 
 }

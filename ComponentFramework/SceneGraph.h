@@ -73,8 +73,8 @@ private:
 		ActorNameToId[newName_] = actorID_;
 	}
 
-	std::vector<Component*> workerQueue;
-	std::vector<Component*> finishedQueue;
+	std::vector<Ref<Component>> workerQueue;
+	//std::vector<Ref<Component>> finishedQueue;
 
 
 	std::queue<std::function<void()>> mainThreadTasks;
@@ -98,9 +98,9 @@ public:
 
 	bool queryMeshLoadStatus(std::string name);
 
-	void pushMeshToWorker(MeshComponent* mesh);
+	void pushMeshToWorker(Ref<MeshComponent> mesh);
 
-	void pushAnimationToWorker(Animation* animation);
+	void pushAnimationToWorker(Ref<Animation> animation);
 
 	//Hardcode the screen height and width rather than using SDL_GetWindowSize, as at lot of the code is designed for 1280 x 720
 	static const int SCENEWIDTH = 1280;
@@ -115,7 +115,7 @@ public:
 		return instance;
 	}
 
-	bool isAllComponentsLoaded() { return (finishedQueue.empty() && workerQueue.empty()); }
+	bool isAllComponentsLoaded() { return (workerQueue.empty()); }
 
 	bool queryMeshLoadStatus();
 
