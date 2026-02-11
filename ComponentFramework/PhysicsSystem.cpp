@@ -113,7 +113,7 @@ void PhysicsSystem::UpdateOrientation(Ref<Actor> actor_, float deltaTime)
 	// Build a quaternion
 	Quaternion rotation = QMath::angleAxisRotation(angleDegrees, axis);
 	// Update the orientation
-	Quaternion newOri = rotation * TC->GetQuaternion();
+	Quaternion newOri = rotation * TC->GetOrientation();
 	TC->SetOrientation(newOri);
 }
 

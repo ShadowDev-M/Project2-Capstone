@@ -651,7 +651,7 @@ public:
             XMLElement* rotation;
             rotation = doc.NewElement("rotation");
 
-            Quaternion rot = componentToWrite->GetQuaternion();
+            Quaternion rot = componentToWrite->GetOrientation();
 
             rotation->SetAttribute("w", rot.w);
             rotation->SetAttribute("x", rot.ijk.x);

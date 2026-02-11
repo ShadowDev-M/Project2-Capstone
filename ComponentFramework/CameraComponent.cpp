@@ -42,7 +42,7 @@ void CameraComponent::fixCameraToTransform() {
 		Ref<TransformComponent> transform = userActor->GetComponent<TransformComponent>();
 
 		position = transform->GetPosition();
-		orientation = transform->GetQuaternion();
+		orientation = transform->GetOrientation();
 
 		Matrix4 cameraWorldTransform = MMath::translate(position) * MMath::toMatrix4(orientation);
 

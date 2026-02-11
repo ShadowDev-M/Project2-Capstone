@@ -63,8 +63,7 @@ public:
 	/// This function will check the actor being added is new and has the all proper components 
 	void AddActor(Ref<Actor> actor_);
 	void RemoveActor(Ref<Actor> actor_);
-	void ClearActors() { collidingActors.clear(); }
-
+	void ClearActors();
 	void Update(const float deltaTime);
 
 private:
@@ -118,29 +117,30 @@ private:
 	// rest of the collision detection functions
 	bool SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool SphereSphereContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-
-	bool SphereCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool SphereCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool SphereAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool SphereAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool SphereOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool SphereOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-
 	bool CapsuleCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-
+	bool AABBAABBDiscrete(Ref<Actor> aabb1, Ref<Actor> aabb2, CollisionData& data);
+	bool OBBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	
+	bool SphereCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereAABBDiscrete(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data);
+	bool SphereAABBContinuous(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data);
+	bool SphereOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-
-	bool AABBAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool AABBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool OBBOBBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 
 	// collision resolution
-	void ResolveCollision(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
-	
+	void ResolveCollision(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data);
+	void ResolvePenetration(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data);
+	void ResolveImpulse(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data);
+	void ApplyFriction(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data, float impulse_);
+
+
 	// shape raycast functions (reusing raycast code from last semester)
 	// this is not like unitys SphereCast function,
 	// that casts a sphere along a ray and checks for collisions
@@ -150,4 +150,21 @@ private:
 	Ref<Actor> RaycastCapsule(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
 	Ref<Actor> RaycastAABB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
 	Ref<Actor> RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);	
+	
+
+	// helper functions from Real-Time Collision Detetcion book
+	
+	Vec3 ClosestPtPointAABB(const Vec3& p, const Vec3& aabbMin, const Vec3& aabbMax);
+	
+	// struct for raybox intersection
+	struct RayAABBIntersection {
+		bool didIntersect = false;
+		float tMin = 0.0f;
+		float tMax = 0.0f;
+		int hitAxis = -1;
+		bool hitMaxFace = false;
+	};
+	
+	// also works for OBBs
+	RayAABBIntersection IntersectRayAABB(const Vec3& rayOri_, const Vec3& rayDir_, const Vec3& boxMin_, const Vec3& boxMax_, float maxDistance = FLT_MAX);
 };

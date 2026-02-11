@@ -35,10 +35,21 @@ bool Scene3GUI::OnCreate() {
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
 	//SceneGraph::getInstance().GetActor("Sphere")->AddComponent<CollisionComponent>();
+	//SceneGraph::getInstance().GetActor("Sphere")->GetComponent<PhysicsComponent>()->setRestitution(0.5f);
+	//SceneGraph::getInstance().GetActor("Sphere")->GetComponent<CollisionComponent>()->setType(ColliderType::Sphere);
+	//SceneGraph::getInstance().GetActor("Sphere")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
 	//SceneGraph::getInstance().GetActor("Sphere2D")->AddComponent<CollisionComponent>();
-
+	//SceneGraph::getInstance().GetActor("Sphere2D")->GetComponent<CollisionComponent>()->setType(ColliderType::OBB);
+	//SceneGraph::getInstance().GetActor("Sphere2D")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
+	//
+	//SceneGraph::getInstance().GetActor("Cube")->AddComponent<CollisionComponent>();
+	//SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->setRestitution(0.5f);
+	//SceneGraph::getInstance().GetActor("Cube")->GetComponent<CollisionComponent>()->setType(ColliderType::OBB);
+	//SceneGraph::getInstance().GetActor("Cube")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
+	//
 	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere"));
 	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere2D"));
+	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Cube"));
 
 	//ColliderDebug::getInstance().OnCreate();
 

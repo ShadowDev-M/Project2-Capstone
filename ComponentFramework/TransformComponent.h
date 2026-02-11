@@ -30,7 +30,7 @@ public:
 	Actor* getParent();
 
 	Vec3 GetScale() const { return scale; }
-	Quaternion GetQuaternion() const { return orientation; }
+	Quaternion GetOrientation() const { return orientation; }
 	Matrix4 GetTransformMatrix() const;
 	void SetTransform(Vec3 pos_, Quaternion orientation_, Vec3 scale_ = Vec3(1.0f, 1.0f, 1.0f) ) {
 		pos = pos_;

@@ -350,12 +350,12 @@ void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, 
 		ImGui::ActiveItemLockMousePos();
 
 		//Rotation
-		bool hasMixedRot = transformState.HasMixedQuaternion(&TransformComponent::GetQuaternion);
+		bool hasMixedRot = transformState.HasMixedQuaternion(&TransformComponent::GetOrientation);
 
 		if (!isEditingRotation) {
 			// get the quaternions rotation when not edting anything
 			if (!ImGui::IsAnyItemActive()) {
-				Quaternion firstQuat = transformState.GetFirst()->GetQuaternion();
+				Quaternion firstQuat = transformState.GetFirst()->GetOrientation();
 				Euler quatEuler = EMath::toEuler(firstQuat);
 				eulerAngles = Vec3(quatEuler.xAxis, quatEuler.yAxis, quatEuler.zAxis);
 			}
@@ -389,11 +389,11 @@ void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, 
 				transformState.GetFirst()->SetOrientation(QMath::normalize(newOrientation));
 			}
 			else {
-				Quaternion firstQuat = transformState.GetFirst()->GetQuaternion();
+				Quaternion firstQuat = transformState.GetFirst()->GetOrientation();
 				Quaternion delta = newOrientation * QMath::inverse(firstQuat);
 
 				for (auto& component : transformState.components) {
-					Quaternion currentQuat = component->GetQuaternion();
+					Quaternion currentQuat = component->GetOrientation();
 					Quaternion updatedQuat = delta * currentQuat;
 					component->SetOrientation(QMath::normalize(updatedQuat));
 				}
