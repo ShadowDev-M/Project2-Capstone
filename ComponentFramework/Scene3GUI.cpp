@@ -91,7 +91,7 @@ void Scene3GUI::Update(const float deltaTime) {
 
 	if (EditorManager::getInstance().isPlayMode()) {
 		PhysicsSystem::getInstance().Update(deltaTime);
-		CollisionSystem::getInstance().Update(deltaTime);
+		//CollisionSystem::getInstance().Update(deltaTime);
 		//SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->ApplyForce(Vec3(0.0f, -9.8f, 0.0f));
 		//std::cout << SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->getMass();
 	}
