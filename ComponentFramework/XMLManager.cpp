@@ -13,7 +13,8 @@ void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttri
         std::string nameStr = (attribute->Value());       
 
        
-        std::tuple tupleArgs = XMLObjectFile::getComponent<TransformComponent>(nameStr);
+        std::tuple tupleArgs = std::tuple_cat(std::make_tuple(actorToAdd.get()), XMLObjectFile::getComponent<TransformComponent>(nameStr));
+            
 
         //If the transform exists, the transform should be overwritten vs created
         if (actorToAdd->GetComponent<TransformComponent>()) {
@@ -125,7 +126,7 @@ void XMLObjectFile::createActorFromElement(SceneGraph* sceneGraph, XMLElement* a
     std::string nameStr = (actorElement->Name());
 
     //arguements for transform component
-    std::tuple tupleArgs = XMLObjectFile::getComponent<TransformComponent>(nameStr);
+    std::tuple tupleArgs = std::tuple_cat(std::make_tuple(actorToAdd.get()), XMLObjectFile::getComponent<TransformComponent>(nameStr));
 
     //If the transform exists, the transform should be overwritten vs created
     if (actorToAdd->GetComponent<TransformComponent>()) {

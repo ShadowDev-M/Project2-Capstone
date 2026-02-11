@@ -230,7 +230,7 @@ void SceneGraph::checkValidCamera()
 
 			std::cout << "DebugCam is invalid" << std::endl;
 			debugCamera = std::make_shared<Actor>(nullptr, "cameraDebugOne");
-			debugCamera->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			debugCamera->AddComponent<TransformComponent>(debugCamera.get(), Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 			debugCamera->OnCreate();
 
 			//doesn't need to be added to the sceneGraph
@@ -347,9 +347,6 @@ void SceneGraph::Start()
 
 void SceneGraph::Stop()
 {
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->displayDataTest();
-	GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.StopPlaying();
-
 	for (auto& actor : Actors) {
 		ScriptService::stopActorScripts(actor.second);
 
@@ -362,6 +359,11 @@ void SceneGraph::Stop()
 	}
 	// Stop physics engine 
 	PhysicsSystem::getInstance().ResetPhysics();
+
+
+	//for (auto& actor : Actors) {
+//		ScriptService::preloadActorScripts(actor.second);
+	//}
 
 }
 
@@ -413,9 +415,18 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}
 	}
 	
-	actor_->AddComponent<TransformComponent>(std::apply([](auto&&... args) {
+
+
+	/*Ref<TransformComponent> transfC = Ref<TransformComponent>(std::apply([](auto&&... args) {
 		return new TransformComponent(args...);
-		}, XMLObjectFile::getComponent<TransformComponent>(name_)));
+		}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TransformComponent>(name_))));*/
+
+	
+
+
+	actor_->AddComponent<TransformComponent>(Ref<TransformComponent>(std::apply([](auto&&... args) {
+		return new TransformComponent(args...);
+		}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TransformComponent>(name_)))));
 	
 
 
@@ -662,7 +673,8 @@ void SceneGraph::Update(const float deltaTime)
 	//	std::cout << usedCamera << std::endl;
 
 
-	//ScriptService::callActorScripts(GetActor("Cube"), deltaTime);
+	//ScriptService::callActorScripts(GetActor("Cube"), deltaTime)
+	
 	ScriptService::updateAllScripts(deltaTime);
 
 	for (auto& pair : Actors) {

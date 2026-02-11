@@ -446,8 +446,7 @@ public:
             );
 
             //return the tuple to act as arguments
-            auto args = std::make_tuple(nullptr,
-                posArg,
+            auto args = std::make_tuple(posArg,
                 rotationArg,
                 scaleArg);
             return args;

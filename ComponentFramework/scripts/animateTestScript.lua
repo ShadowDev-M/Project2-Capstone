@@ -2,6 +2,7 @@
 
 animclip = AnimationClip.new()
 animclip:PreloadAnimation("dancing")
+local printtest = animclip:GetAnimationName()
 
 function Preload()
 	--animclip:PreloadAnimation("dancing")
@@ -10,64 +11,73 @@ end
 
 
 
+
 function Start()
 
 
 
 	animclip:SetAnimation("dancing")
-	local printtest = animclip:GetAnimationName()
+	--local printtest = animclip:GetAnimationName()
 	print(printtest)
+
+	
 
 	GameObject.Animator.Clip = animclip
 
 	GameObject.Animator:Play()
 
-	testobj = Game:Find("Cube")
 
-	print(testobj.Transform.Position)
+	print(Game:Find("Cube").Transform.GameObject.Transform.Position)
 
 end
 
 --Rigidbody is the Physics Component of the script's user actor. Set and get the properties with Rigidbody.YOURVARIABLE 
 
+--Game Handler Script 
+
 function Update(deltaTime) 
-	--print(VMath.Distance(Vec3.new(1,1,0), Vec3.new()))
+
+	--Lets make a speed for our camera to move
+	local speed = 5
+	
 
 	--"W" key input is held (2)
-	if Input.GetInputState("W") == 2 then
-		--Set the actor's Rigidbody velocity to a new Vec3 that preserves the old x value but changes the y.
-		--Rigidbody.Vel = Vec3.new(Rigidbody.Vel.x, 10, 0)
-		oldPos = Game.UsedCamera:GetTransform().Position
-		print(oldPos)
-		Game.UsedCamera:GetTransform().Position = Vec3.new(oldPos.x, oldPos.y + 5 * deltaTime, oldPos.z)
+	if Game.Input.GetInputState("W") == 2 then
+		--lets store our current UsedCamera's Position
+		local originalPos = Game.UsedCamera.Transform.Position
+
+
+		--lets set the UsedCamera's Position to the originalPos but shifted up in the y axis by the speed * deltaTime (To move in real time) 
+		Game.UsedCamera.Transform.Position = Vec3.new(originalPos.x, originalPos.y + speed * deltaTime, originalPos.z)
 	end
 
 	--"S" key input is held (2)
-	if Input.GetInputState("S") == 2 then
-		--Set the actor's Rigidbody velocity to a new Vec3 that preserves the old x value but changes the y.
-		--Rigidbody.Vel = Vec3.new(Rigidbody.Vel.x, -10, 0)
-		oldPos = Game.UsedCamera:GetTransform().Position
-		Game.UsedCamera:GetTransform().Position = Vec3.new(oldPos.x, oldPos.y - 5 * deltaTime, oldPos.z)
+	if Game.Input.GetInputState("S") == 2 then
+		--lets store our current UsedCamera's Position
+		local originalPos = Game.UsedCamera.Transform.Position
+
+		--lets set the UsedCamera's Position to the originalPos but shifted down in the y axis by the speed * deltaTime (To move in real time) 
+		Game.UsedCamera.Transform.Position = Vec3.new(originalPos.x, originalPos.y - speed * deltaTime, originalPos.z)
 
 	end
 
 	--"A" key input is held (2)
-	if Input.GetInputState("A") == 2 then
-		--Set the actor's Rigidbody velocity to a new Vec3 that preserves the old y value but changes the x.
+	if Game.Input.GetInputState("A") == 2 then
+		--lets store our current UsedCamera's Position
+		local originalPos = Game.UsedCamera.Transform.Position
 
-		--Rigidbody.Vel = Vec3.new(-10, Rigidbody.Vel.y, 0)
-		oldPos = Game.UsedCamera:GetTransform().Position
-		Game.UsedCamera:GetTransform().Position = Vec3.new(oldPos.x - 5 * deltaTime, oldPos.y, oldPos.z)
+		--lets set the UsedCamera's Position to the originalPos but shifted left in the x axis by the speed * deltaTime (To move in real time) 
+		Game.UsedCamera.Transform.Position = Vec3.new(originalPos.x - speed * deltaTime, originalPos.y, originalPos.z)
 
 	end
 
 	--"D" key input is held (2)
-	if Input.GetInputState("D") == 2 then
-		--Set the actor's Rigidbody velocity to a new Vec3 that preserves the old y value but changes the x.
-		--Rigidbody.Vel = Vec3.new(10, Rigidbody.Vel.y, 0)
+	if Game.Input.GetInputState("D") == 2 then
+		--lets store our current UsedCamera's Position
+		local originalPos = Game.UsedCamera.Transform.Position
 
-		oldPos = Game.UsedCamera:GetTransform().Position
-		Game.UsedCamera:GetTransform().Position = Vec3.new(oldPos.x + 5 * deltaTime, oldPos.y, oldPos.z)
+		--lets set the UsedCamera's Position to the originalPos but shifted right in the x axis by the speed * deltaTime (To move in real time) 
+		Game.UsedCamera.Transform.Position = Vec3.new(originalPos.x + speed * deltaTime, originalPos.y, originalPos.z)
 
 	end
 

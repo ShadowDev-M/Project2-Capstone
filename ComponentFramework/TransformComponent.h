@@ -1,5 +1,7 @@
 #pragma once
 
+class Actor;
+
 using namespace MATH;
 class TransformComponent : public Component {
 	friend class XMLtest;
@@ -25,6 +27,7 @@ public:
 	float GetY() const { return pos.y; }
 	float GetZ() const { return pos.z; }
 
+	Actor* getParent();
 
 	Vec3 GetScale() const { return scale; }
 	Quaternion GetQuaternion() const { return orientation; }

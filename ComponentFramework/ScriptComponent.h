@@ -80,6 +80,8 @@ private:
 	static void startActorScripts(Ref<Actor> target);
 	static void stopActorScripts(Ref<Actor> target);
 
+	static void preloadActorScripts(Ref<Actor> target);
+
 	static void updateAllScripts(float deltaTime);
 
 	static void defineUsertypes(Actor* user);

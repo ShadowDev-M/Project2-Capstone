@@ -50,11 +50,14 @@ void ScriptComponent::setFilenameFromAbstract(Ref<ScriptAbstract> baseScript)
 	load_lua_file();
 	std::vector<ScriptComponent*>::iterator it = std::find(scriptsInUse.begin(), scriptsInUse.end(), this);
 
+
+
 	if (it != scriptsInUse.end()) {
 		//script is in already
 	}
 	else {
 		//script is not considered valid, add to list of valid
+
 		scriptsInUse.push_back(this);
 		SceneGraph::getInstance().Preload(this);
 	}
@@ -131,10 +134,16 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 
 	for (auto& comp : target->components) {
 
+
+
 		//filter out non scripts, but don't break as we want to check for multiple scripts on an actor
 		if (!std::dynamic_pointer_cast<ScriptComponent>(comp)) continue;
 
 		Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(comp);
+
+		//lets preload an extra time in case you changed the script. Should be fine as the first preload was mainly for preloading animations or meshes.
+		//ScriptService::preloadScript(script.get());
+
 		script->load_lua_file();
 
 		//No point in continuing if its already started
@@ -184,7 +193,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 )");
 
 
-			//	loaded_script();
+				loaded_script();
 				script->restoreAll();
 
 
@@ -202,6 +211,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 				//Disable play mode 
 			}
 		}
+
 	}
 }
 
@@ -217,13 +227,26 @@ void ScriptService::stopActorScripts(Ref<Actor> target)
 		//No point in continuing if its already started
 		script->isCreated = false;
 
-		
 
+		//Safety check if script crashes it sometimes wouldn't remove itself on stop from valid script use vector
+		std::vector<ScriptComponent*>::iterator it = std::find(scriptsInUse.begin(), scriptsInUse.end(), script.get());
+
+		if (it != scriptsInUse.end()) {
+			scriptsInUse.erase(it);
+		}
 		
 	}
 }
 
+void ScriptService::preloadActorScripts(Ref<Actor> target) {
+	for (auto& comp : target->components) {
+		if (!std::dynamic_pointer_cast<ScriptComponent>(comp)) continue;
+		Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(comp);
 
+		ScriptService::preloadScript(script.get());
+
+	}
+}
 
 void ScriptService::updateAllScripts(float deltaTime) {
 	for (auto& script : scriptsInUse) {
@@ -512,7 +535,8 @@ void ScriptService::loadLibraries()
 		//Write new functions to include parent's transform and get global transforms
 		"Position", sol::property(&TransformComponent::GetPosition, TRANSFORM_SETPOSVEC3),
 		"Rotation", sol::property(&TransformComponent::GetQuaternion, &TransformComponent::SetOrientation),
-		"Scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale)
+		"Scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale),
+		"GameObject", sol::property(&TransformComponent::getParent)
 
 	);
 
@@ -540,7 +564,7 @@ void ScriptService::loadLibraries()
 		"NearClipPlane", sol::property(&CameraComponent::getNearClipPlane, &CameraComponent::setNearClipPlane),
 		"FarClipPlane", sol::property(&CameraComponent::getFarClipPlane, &CameraComponent::setFarClipPlane),
 		"AspectRatio", sol::property(&CameraComponent::getAspectRatio, &CameraComponent::setAspectRatio),
-		"GetTransform", &CameraComponent::GetUserActorTransform
+		"Transform", sol::property(&CameraComponent::GetUserActorTransform)
 	);
 
 	lua.new_usertype<AnimationClip>("AnimationClip",
@@ -584,11 +608,14 @@ void ScriptService::loadLibraries()
 	);
 
 	
-	
+	sol::table tab = lua.create_table();
+	tab.set_function("GetInputState", &InputCreatorManager::getInputState);
+
 
 	lua.new_usertype<SceneGraph>("Game",
 		"Find", &SceneGraph::GetActorRaw, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
-		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera().get(); })
+		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera().get(); }),
+		"Input", tab
 	);
 	
 
@@ -675,9 +702,9 @@ void ScriptService::loadLibraries()
 
 	);
 
-	lua["Input"] = sol::new_table();
+
 	
-	lua["Input"]["GetInputState"].set_function(&InputCreatorManager::getInputState);
+	
 	
 
 	

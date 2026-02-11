@@ -50,7 +50,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 				std::string newActorName = GenerateDuplicateName(actorName);
 
 				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
-				newActor->AddComponent<TransformComponent>(nullptr, Vec3(0.0f, 0.0f, 0.0f),
+				newActor->AddComponent<TransformComponent>(newActor.get(), Vec3(0.0f, 0.0f, 0.0f),
 					Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 				newActor->OnCreate();
 				sceneGraph->AddActor(newActor);
@@ -258,7 +258,7 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	Ref<Actor> copy = std::make_shared<Actor>(original_->getParentActor(), newName_);
 
 	if (auto transform = original_->GetComponent<TransformComponent>()) {
-		copy->AddComponent<TransformComponent>(nullptr,
+		copy->AddComponent<TransformComponent>(copy.get(),
 			transform->GetPosition(),
 			transform->GetQuaternion(),
 			transform->GetScale());

@@ -1,9 +1,17 @@
 #include "pch.h"
 #include "TransformComponent.h"
-
+#include "Actor.h"
 using namespace MATH;
 
 TransformComponent::TransformComponent(Component* parent_):Component(parent_) {
+
+
+	if (!parent) {
+#ifdef _DEBUG
+		Debug::Error("Transform created with no parent: ", __FILE__, __LINE__);
+#endif
+	}
+
 	pos = Vec3(0.0f, 0.0f, 0.0f);
 	orientation = Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f));
 	scale = Vec3(1.0f, 1.0f, 1.0f);
@@ -11,7 +19,12 @@ TransformComponent::TransformComponent(Component* parent_):Component(parent_) {
 
 TransformComponent::TransformComponent(Component* parent_, Vec3 pos_, Quaternion orientation_, Vec3 scale_):
 	Component{ parent_ }, pos{ pos_ }, orientation{ orientation_ }, scale{ scale_ } {
-
+	
+	if (!parent) {
+#ifdef _DEBUG
+		Debug::Error("Transform created with no parent: ", __FILE__, __LINE__);
+#endif
+	}
 	
 }
 
@@ -30,6 +43,18 @@ void TransformComponent::Update(const float deltaTime) {
 }
 
 void TransformComponent::Render()const {}
+
+Actor* TransformComponent::getParent()
+{
+	if (!parent) {
+#ifdef _DEBUG
+		Debug::Error("Transform exists with no parent: ", __FILE__, __LINE__);
+#endif
+
+
+	}
+	return dynamic_cast<Actor*>(parent);
+}
 
 Matrix4 TransformComponent::GetTransformMatrix() const {
 	// T * R * S
