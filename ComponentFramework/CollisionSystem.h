@@ -117,8 +117,8 @@ private:
 	// rest of the collision detection functions
 	bool SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool SphereSphereContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool CapsuleCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool CapsuleCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool CapsuleCapsuleDiscrete(Ref<Actor> c1, Ref<Actor> c2, CollisionData& data);
+	bool CapsuleCapsuleContinuous(Ref<Actor> c1, Ref<Actor> c2, CollisionData& data);
 	bool AABBAABBDiscrete(Ref<Actor> aabb1, Ref<Actor> aabb2, CollisionData& data);
 	bool OBBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	
@@ -126,13 +126,15 @@ private:
 	bool SphereCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool SphereAABBDiscrete(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data);
 	bool SphereAABBContinuous(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data);
-	bool SphereOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool SphereOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereOBBDiscrete(Ref<Actor> s, Ref<Actor> obb, CollisionData& data);
+	bool SphereOBBContinuous(Ref<Actor> s, Ref<Actor> obb, CollisionData& data);
 	bool CapsuleAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	bool CapsuleOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool AABBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool AABBOBBDiscrete(Ref<Actor> ab, Ref<Actor> ob, CollisionData& data);
+
+	// TODO: continous functions for aabbaabb and obbobb
 
 	// collision resolution
 	void ResolveCollision(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data);
@@ -154,6 +156,9 @@ private:
 
 	// helper functions from Real-Time Collision Detetcion book
 	
+	float ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2, 
+								  float& s, float& t, Vec3& c1, Vec3& c2);
+
 	Vec3 ClosestPtPointAABB(const Vec3& p, const Vec3& aabbMin, const Vec3& aabbMax);
 	
 	// struct for raybox intersection

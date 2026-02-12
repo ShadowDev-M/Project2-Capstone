@@ -95,6 +95,22 @@ bool CollisionSystem::CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_,
 			collisionDetected = SphereAABBDiscrete(actor1_, actor2_, data);
 		}
 	}
+	else if (type1 == ColliderType::Sphere && type2 == ColliderType::OBB) {
+		if (isContinuous) {
+			collisionDetected = SphereOBBContinuous(actor1_, actor2_, data);
+		}
+		else {
+			collisionDetected = SphereOBBDiscrete(actor1_, actor2_, data);
+		}
+	}
+	else if (type1 == ColliderType::Capsule && type2 == ColliderType::Capsule) {
+		if (isContinuous) {
+			collisionDetected = CapsuleCapsuleContinuous(actor1_, actor2_, data);
+		}
+		else {
+			collisionDetected = CapsuleCapsuleDiscrete(actor1_, actor2_, data);
+		}
+	}
 	else if (type1 == ColliderType::AABB && type2 == ColliderType::AABB) {
 		collisionDetected = AABBAABBDiscrete(actor1_, actor2_, data);
 	}
@@ -448,154 +464,44 @@ bool CollisionSystem::SphereSphereContinuous(Ref<Actor> s1, Ref<Actor> s2, Colli
 	return true;
 }
 
-bool CollisionSystem::SphereAABBDiscrete(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data)
+bool CollisionSystem::CapsuleCapsuleDiscrete(Ref<Actor> c1, Ref<Actor> c2, CollisionData& data)
 {
-	// Real-Time Collision Detection Ericson 5.2.5 Testing Sphere Against AABB
+	// 4.5.1 Sphere-swept Volume Intersection
 
-	Ref<TransformComponent> sTC = s->GetComponent<TransformComponent>();
-	Ref<TransformComponent> abTC = aabb->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC1 = c1->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC2 = c2->GetComponent<TransformComponent>();
+								  
+	Ref<CollisionComponent> CC1 = c1->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = c2->GetComponent<CollisionComponent>();
 
-	Ref<CollisionComponent> sCC = s->GetComponent<CollisionComponent>();
-	Ref<CollisionComponent> abCC = aabb->GetComponent<CollisionComponent>();
+	Vec3 p1 = CC1->getWorldCentrePosA(TC1);
+	Vec3 q1 = CC1->getWorldCentrePosB(TC1);
+	Vec3 p2 = CC2->getWorldCentrePosA(TC2);
+	Vec3 q2 = CC2->getWorldCentrePosB(TC2);
 
-	Vec3 minAABB = abCC->getWorldCentre(abTC) - abCC->getWorldHalfExtents(abTC);
-	Vec3 maxAABB = abCC->getWorldCentre(abTC) + abCC->getWorldHalfExtents(abTC);
+	// Compute (squared) distance between the inner structures of the capsules
+	float s, t;
+	Vec3 C1, C2;
+	float dist2 = ClosestPtSegmentSegment(p1, q1, p2, q2, s, t, C1, C2);
 
-	// Find point p on AABB closest to sphere center
-	Vec3 closestPoint = ClosestPtPointAABB(sCC->getWorldCentre(sTC), minAABB, maxAABB);
+	// If (squared) distance smaller than (squared) sum of radii, they collide
+	float radius = CC1->getWorldCapsuleRadius(TC1) + CC2->getWorldCapsuleRadius(TC2);
+	if (dist2 <= (radius * radius)) {
+		Vec3 d = C1 - C2;
+		float dist = sqrt(dist2);
 
-	// Sphere and AABB intersect if the (squared) distance from sphere
-	// center to point p is less than the (squared) sphere radius
-	Vec3 d = sCC->getWorldCentre(sTC) - closestPoint;
-	float dist2 = VMath::dot(d, d);
-	if (dist2 <= (sCC->getWorldRadius(sTC) * sCC->getWorldRadius(sTC))) {
-		// Collision data
-		// 13.3.4 Colliding a Box and a Sphere Ian Millington
 		data.isColliding = true;
-		
-		// adding edge case for if the sphere centre somehow gets inside the aabb
-		if (sqrt(dist2) < VERY_SMALL) {
-			Vec3 min = sCC->getWorldCentre(sTC) - minAABB;
-			Vec3 max = maxAABB - sCC->getWorldCentre(sTC);
-
-			float minD = min.x;
-			data.contactNormal = Vec3(-1.0f, 0.0f, 0.0f);
-
-			// if sphere is inside the aabb, have to find the closest face and push it out
-			if (max.x < minD) { minD = max.x; data.contactNormal = Vec3(1.0f, 0.0f, 0.0f); }
-			if (min.y < minD) { minD = min.y; data.contactNormal = Vec3(0.0f, -1.0f, 0.0f); }
-			if (max.y < minD) { minD = max.y; data.contactNormal = Vec3(0.0f, 1.0f, 0.0f); }
-			if (min.z < minD) { minD = min.z; data.contactNormal = Vec3(0.0f, 0.0f, -1.0f); }
-			if (max.z < minD) { minD = max.z; data.contactNormal = Vec3(0.0f, 0.0f, 1.0f); }
-
-			data.penetration = sCC->getWorldRadius(sTC) + minD;
-			data.contactPoint = sCC->getWorldCentre(sTC) - data.contactNormal * sCC->getWorldRadius(sTC);
-		} 
-		else {
-			data.contactNormal = VMath::normalize(d);
-			data.contactPoint = closestPoint;
-			data.penetration = sCC->getWorldRadius(sTC) - VMath::mag(d);
-		}
+		data.contactNormal = (dist > VERY_SMALL) ? VMath::normalize(d) : Vec3(0.0f, 1.0f, 0.0f);
+		data.contactPoint = C2 + data.contactNormal * CC2->getWorldCapsuleRadius(TC2);
+		data.penetration = radius - dist; 
 
 		return true;
 	}
-	
+
 	return false;
 }
 
-bool CollisionSystem::SphereAABBContinuous(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data)
-{
-	// Real-Time Collision Detection Ericson 5.5.7 Intersecting Moving Sphere Against AABB
-
-	Ref<TransformComponent> TC1 = s->GetComponent<TransformComponent>();
-	Ref<TransformComponent> TC2 = aabb->GetComponent<TransformComponent>();
-
-	Ref<PhysicsComponent> PC1 = s->GetComponent<PhysicsComponent>();
-	Ref<PhysicsComponent> PC2 = aabb->GetComponent<PhysicsComponent>();
-
-	Ref<CollisionComponent> CC1 = s->GetComponent<CollisionComponent>();
-	Ref<CollisionComponent> CC2 = aabb->GetComponent<CollisionComponent>();
-
-	Vec3 sCentre = CC1->getWorldCentre(TC1);
-	float sRadius = CC1->getWorldRadius(TC1);
-	Vec3 abCentre = CC2->getWorldCentre(TC2);
-	Vec3 abHalfExtents = CC2->getWorldHalfExtents(TC2);
-
-	// getting previous position 
-	Vec3 previousPosA = sCentre - (PC1->getVel() * deltaTime); // (displacement) d=vt
-
-	// Subtract movement of s1 from both s0 and s1, making s1 stationary
-	Vec3 relVel = PC1->getVel() - PC2->getVel();
-
-	// divide by zero check (inital velocity will start at 0, also works as a fallback)
-	if (VMath::mag(relVel) < VERY_SMALL) {
-		return SphereAABBDiscrete(s, aabb, data);
-	}
-
-	// Compute the AABB resulting from expanding b by sphere radius r
-	Vec3 abMin = (abCentre - abHalfExtents);
-	Vec3 abMax = (abCentre + abHalfExtents);
-
-	Vec3 expandedMin = abMin - Vec3(sRadius, sRadius, sRadius);
-	Vec3 expandedMax = abMax + Vec3(sRadius, sRadius, sRadius);
-
-	// Intersect ray against expanded AABB e. Exit with no intersection if ray
-	// misses e, else get intersection point p and time t as result
-	RayAABBIntersection intersection = IntersectRayAABB(previousPosA, relVel, expandedMin, expandedMax, deltaTime);
-	
-	if (!intersection.didIntersect) return false;
-
-	// If t is negative, ray started inside sphere so clamp t to zero (fallback to discrete)
-	if (intersection.tMin < VERY_SMALL) {
-		return SphereAABBDiscrete(s, aabb, data);
-	}
-
-	if (intersection.tMin > deltaTime) return false;
-
-	data.isColliding = true;
-	data.timeOfImpact = intersection.tMin / deltaTime;
-
-	// getting what the positions are at the time of the impact
-	Vec3 spherePosAtImpact = previousPosA + relVel * intersection.tMin;
-
-	// Find point p on AABB closest to sphere center
-	Vec3 closestPoint = ClosestPtPointAABB(spherePosAtImpact, abMin, abMax);
-
-	// Sphere and AABB intersect if the (squared) distance from sphere
-	// center to point p is less than the (squared) sphere radius
-	Vec3 d = spherePosAtImpact - closestPoint;
-	float dist = VMath::mag(d);
-	
-	// edge case
-	if (dist < VERY_SMALL) {
-		data.contactNormal = Vec3(0.0f, 0.0f, 0.0f);
-		if (intersection.hitAxis == 0) {
-			data.contactNormal.x = intersection.hitMaxFace ? 1.0f : -1.0f;
-		}
-		else if (intersection.hitAxis == 1) {
-			data.contactNormal.y = intersection.hitMaxFace ? 1.0f : -1.0f;
-		}
-		else {
-			data.contactNormal.z = intersection.hitMaxFace ? 1.0f : -1.0f;
-		}
-	}
-	else {
-		data.contactNormal = VMath::normalize(d); // d / dist;
-	}
-
-	data.contactPoint = closestPoint;
-	data.penetration = 0.0f;
-	data.relVel = relVel;
-
-	return true;
-}
-
-bool CollisionSystem::SphereOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
-{
-	return false;
-}
-
-bool CollisionSystem::SphereOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::CapsuleCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
 {
 	return false;
 }
@@ -750,9 +656,457 @@ bool CollisionSystem::OBBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData
 	return true;
 }
 
-bool CollisionSystem::AABBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::SphereCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
 {
 	return false;
+}
+
+bool CollisionSystem::SphereCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	return false;
+}
+
+bool CollisionSystem::SphereAABBDiscrete(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data)
+{
+	// Real-Time Collision Detection Ericson 5.2.5 Testing Sphere Against AABB
+
+	Ref<TransformComponent> sTC = s->GetComponent<TransformComponent>();
+	Ref<TransformComponent> abTC = aabb->GetComponent<TransformComponent>();
+
+	Ref<CollisionComponent> sCC = s->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> abCC = aabb->GetComponent<CollisionComponent>();
+
+	Vec3 minAABB = abCC->getWorldCentre(abTC) - abCC->getWorldHalfExtents(abTC);
+	Vec3 maxAABB = abCC->getWorldCentre(abTC) + abCC->getWorldHalfExtents(abTC);
+
+	// Find point p on AABB closest to sphere center
+	Vec3 closestPoint = ClosestPtPointAABB(sCC->getWorldCentre(sTC), minAABB, maxAABB);
+
+	// Sphere and AABB intersect if the (squared) distance from sphere
+	// center to point p is less than the (squared) sphere radius
+	Vec3 d = sCC->getWorldCentre(sTC) - closestPoint;
+	float dist2 = VMath::dot(d, d);
+	if (dist2 <= (sCC->getWorldRadius(sTC) * sCC->getWorldRadius(sTC))) {
+		// Collision data
+		// 13.3.4 Colliding a Box and a Sphere Ian Millington
+		data.isColliding = true;
+		
+		// adding edge case for if the sphere centre somehow gets inside the aabb
+		if (sqrt(dist2) < VERY_SMALL) {
+			Vec3 min = sCC->getWorldCentre(sTC) - minAABB;
+			Vec3 max = maxAABB - sCC->getWorldCentre(sTC);
+
+			float minD = min.x;
+			data.contactNormal = Vec3(-1.0f, 0.0f, 0.0f);
+
+			// if sphere is inside the aabb, have to find the closest face and push it out
+			if (max.x < minD) { minD = max.x; data.contactNormal = Vec3(1.0f, 0.0f, 0.0f); }
+			if (min.y < minD) { minD = min.y; data.contactNormal = Vec3(0.0f, -1.0f, 0.0f); }
+			if (max.y < minD) { minD = max.y; data.contactNormal = Vec3(0.0f, 1.0f, 0.0f); }
+			if (min.z < minD) { minD = min.z; data.contactNormal = Vec3(0.0f, 0.0f, -1.0f); }
+			if (max.z < minD) { minD = max.z; data.contactNormal = Vec3(0.0f, 0.0f, 1.0f); }
+
+			data.penetration = sCC->getWorldRadius(sTC) + minD;
+			data.contactPoint = sCC->getWorldCentre(sTC) - data.contactNormal * sCC->getWorldRadius(sTC);
+		} 
+		else {
+			data.contactNormal = VMath::normalize(d);
+			data.contactPoint = closestPoint;
+			data.penetration = sCC->getWorldRadius(sTC) - VMath::mag(d);
+		}
+
+		return true;
+	}
+	
+	return false;
+}
+
+bool CollisionSystem::SphereAABBContinuous(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data)
+{
+	// Real-Time Collision Detection Ericson 5.5.7 Intersecting Moving Sphere Against AABB
+
+	Ref<TransformComponent> TC1 = s->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC2 = aabb->GetComponent<TransformComponent>();
+
+	Ref<PhysicsComponent> PC1 = s->GetComponent<PhysicsComponent>();
+	Ref<PhysicsComponent> PC2 = aabb->GetComponent<PhysicsComponent>();
+
+	Ref<CollisionComponent> CC1 = s->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = aabb->GetComponent<CollisionComponent>();
+
+	Vec3 sCentre = CC1->getWorldCentre(TC1);
+	float sRadius = CC1->getWorldRadius(TC1);
+	Vec3 abCentre = CC2->getWorldCentre(TC2);
+	Vec3 abHalfExtents = CC2->getWorldHalfExtents(TC2);
+
+	// getting previous position 
+	Vec3 previousPosA = sCentre - (PC1->getVel() * deltaTime); // (displacement) d=vt
+
+	// Subtract movement of s1 from both s0 and s1, making s1 stationary
+	Vec3 relVel = PC1->getVel() - PC2->getVel();
+
+	// divide by zero check (inital velocity will start at 0, also works as a fallback)
+	if (VMath::mag(relVel) < VERY_SMALL) {
+		return SphereAABBDiscrete(s, aabb, data);
+	}
+
+	// Compute the AABB resulting from expanding b by sphere radius r
+	Vec3 abMin = (abCentre - abHalfExtents);
+	Vec3 abMax = (abCentre + abHalfExtents);
+
+	Vec3 expandedMin = abMin - Vec3(sRadius, sRadius, sRadius);
+	Vec3 expandedMax = abMax + Vec3(sRadius, sRadius, sRadius);
+
+	// Intersect ray against expanded AABB e. Exit with no intersection if ray
+	// misses e, else get intersection point p and time t as result
+	RayAABBIntersection intersection = IntersectRayAABB(previousPosA, relVel, expandedMin, expandedMax, deltaTime);
+	
+	if (!intersection.didIntersect) return false;
+
+	// If t is negative, ray started inside sphere so clamp t to zero (fallback to discrete)
+	if (intersection.tMin < VERY_SMALL) {
+		return SphereAABBDiscrete(s, aabb, data);
+	}
+
+	if (intersection.tMin > deltaTime) return false;
+
+	data.isColliding = true;
+	data.timeOfImpact = intersection.tMin / deltaTime;
+
+	// getting what the positions are at the time of the impact
+	Vec3 spherePosAtImpact = previousPosA + relVel * intersection.tMin;
+
+	// Find point p on AABB closest to sphere center
+	Vec3 closestPoint = ClosestPtPointAABB(spherePosAtImpact, abMin, abMax);
+
+	// Sphere and AABB intersect if the (squared) distance from sphere
+	// center to point p is less than the (squared) sphere radius
+	Vec3 d = spherePosAtImpact - closestPoint;
+	float dist = VMath::mag(d);
+	
+	// edge case
+	if (dist < VERY_SMALL) {
+		data.contactNormal = Vec3(0.0f, 0.0f, 0.0f);
+		if (intersection.hitAxis == 0) {
+			data.contactNormal.x = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else if (intersection.hitAxis == 1) {
+			data.contactNormal.y = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else {
+			data.contactNormal.z = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+	}
+	else {
+		data.contactNormal = VMath::normalize(d); // d / dist;
+	}
+
+	data.contactPoint = closestPoint;
+	data.penetration = 0.0f;
+	data.relVel = relVel;
+
+	return true;
+}
+
+bool CollisionSystem::SphereOBBDiscrete(Ref<Actor> s, Ref<Actor> obb, CollisionData& data)
+{
+	// 5.2.6 Testing Sphere Against OBB Real-Time Collision Detection
+
+	Ref<TransformComponent> sTC = s->GetComponent<TransformComponent>();
+	Ref<TransformComponent> obbTC = obb->GetComponent<TransformComponent>();
+
+	Ref<CollisionComponent> sCC = s->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> obbCC = obb->GetComponent<CollisionComponent>();
+
+	Vec3 sCentre = sCC->getWorldCentre(sTC);
+	float sRadius = sCC->getWorldRadius(sTC);
+
+	Vec3 obbCentre = obbCC->getWorldCentre(obbTC);
+	Vec3 obbHalfExtents = obbCC->getWorldHalfExtents(obbTC);
+	Quaternion obbOri = obbCC->getWorldOrientation(obbTC);
+	
+	// setting up variables
+	Vec3 v = sCentre - obbCentre;
+	
+	// rotating the orienation around x,y,z axis in order to get local coords
+	Vec3 obblocalCoords[3] = {
+		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
+	};
+
+	Vec3 sLocal(VMath::dot(v, obblocalCoords[0]),
+		VMath::dot(v, obblocalCoords[1]),
+		VMath::dot(v, obblocalCoords[2]));
+
+	// Ericson has a closestpointOBB function
+	// but its basically the same just making the halfextents negative
+	// so reusing aabb function for closest point
+	Vec3 closestPoint = ClosestPtPointAABB(sLocal, -obbHalfExtents, obbHalfExtents);
+	Vec3 wClosestPoint = obbCentre + obblocalCoords[0] * closestPoint.x + obblocalCoords[1] * closestPoint.y + obblocalCoords[2] * closestPoint.z;
+
+	// Sphere and OBB intersect if the (squared) distance from sphere
+	// center to point p is less than the (squared) sphere radius
+	Vec3 d = sCentre - wClosestPoint;
+	float dist2 = VMath::dot(d, d);
+	if (dist2 <= (sRadius * sRadius)) {
+		// Collision data
+		// 13.3.4 Colliding a Box and a Sphere Ian Millington
+		data.isColliding = true;
+
+		// adding edge case for if the sphere centre somehow gets inside the obb
+		if (sqrt(dist2) < VERY_SMALL) {
+			Vec3 min = sLocal + obbHalfExtents;
+			Vec3 max = obbHalfExtents - sLocal;
+
+			float minD = min.x;
+			Vec3 localNorm = Vec3(-1.0f, 0.0f, 0.0f);
+
+			// if sphere is inside the aabb, have to find the closest face and push it out
+			if (max.x < minD) { minD = max.x; localNorm = Vec3(1.0f, 0.0f, 0.0f); }
+			if (min.y < minD) { minD = min.y; localNorm = Vec3(0.0f, -1.0f, 0.0f); }
+			if (max.y < minD) { minD = max.y; localNorm = Vec3(0.0f, 1.0f, 0.0f); }
+			if (min.z < minD) { minD = min.z; localNorm = Vec3(0.0f, 0.0f, -1.0f); }
+			if (max.z < minD) { minD = max.z; localNorm = Vec3(0.0f, 0.0f, 1.0f); }
+
+			data.contactNormal = obblocalCoords[0] * localNorm.x + obblocalCoords[1] * localNorm.y + obblocalCoords[2] * localNorm.z;
+			data.penetration = sRadius + minD;
+			data.contactPoint = sCentre - data.contactNormal * sRadius;
+		}
+		else {
+			data.contactNormal = VMath::normalize(d);
+			data.contactPoint = wClosestPoint;
+			data.penetration = sRadius - VMath::mag(d);
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionSystem::SphereOBBContinuous(Ref<Actor> s, Ref<Actor> obb, CollisionData& data)
+{
+	// Real-Time Collision Detection Ericson 5.5.7 Intersecting Moving Sphere Against AABB
+
+	Ref<TransformComponent> TC1 = s->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC2 = obb->GetComponent<TransformComponent>();
+
+	Ref<PhysicsComponent> PC1 = s->GetComponent<PhysicsComponent>();
+	Ref<PhysicsComponent> PC2 = obb->GetComponent<PhysicsComponent>();
+
+	Ref<CollisionComponent> CC1 = s->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = obb->GetComponent<CollisionComponent>();
+
+	Vec3 sCentre = CC1->getWorldCentre(TC1);
+	float sRadius = CC1->getWorldRadius(TC1);
+
+	Vec3 obCentre = CC2->getWorldCentre(TC2);
+	Vec3 obHalfExtents = CC2->getWorldHalfExtents(TC2);
+	Quaternion obbOri = CC2->getWorldOrientation(TC2);
+
+	// getting previous position 
+	Vec3 previousPosA = sCentre - (PC1->getVel() * deltaTime); // (displacement) d=vt
+
+	// Subtract movement of s1 from both s0 and s1, making s1 stationary
+	Vec3 relVel = PC1->getVel() - PC2->getVel();
+
+	// divide by zero check (inital velocity will start at 0, also works as a fallback)
+	if (VMath::mag(relVel) < VERY_SMALL) {
+		return SphereOBBDiscrete(s, obb, data);
+	}
+
+	// rotating the orienation around x,y,z axis in order to get local coords
+	Vec3 obblocalCoords[3] = {
+		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
+	};
+
+	// previous pos local coords
+	Vec3 v = previousPosA - obCentre;
+	Vec3 prevALocal(VMath::dot(v, obblocalCoords[0]),
+		VMath::dot(v, obblocalCoords[1]),
+		VMath::dot(v, obblocalCoords[2]));
+
+	Vec3 relVelLocal(VMath::dot(relVel, obblocalCoords[0]),
+		VMath::dot(relVel, obblocalCoords[1]),
+		VMath::dot(relVel, obblocalCoords[2]));
+
+	// Compute the AABB resulting from expanding b by sphere radius r
+	Vec3 expandedMin = -obHalfExtents - Vec3(sRadius, sRadius, sRadius);
+	Vec3 expandedMax = obHalfExtents + Vec3(sRadius, sRadius, sRadius);
+
+	// Intersect ray against expanded AABB e. Exit with no intersection if ray
+	// misses e, else get intersection point p and time t as result
+	RayAABBIntersection intersection = IntersectRayAABB(prevALocal, relVelLocal, expandedMin, expandedMax, deltaTime);
+
+	if (!intersection.didIntersect) return false;
+
+	// If t is negative, ray started inside sphere so clamp t to zero (fallback to discrete)
+	if (intersection.tMin < VERY_SMALL) {
+		return SphereOBBDiscrete(s, obb, data);
+	}
+
+	if (intersection.tMin > deltaTime) return false;
+
+	data.isColliding = true;
+	data.timeOfImpact = intersection.tMin / deltaTime;
+
+	// getting what the positions are at the time of the impact
+	Vec3 spherePosAtImpact = prevALocal + relVelLocal * intersection.tMin;
+
+	// Find point p on AABB closest to sphere center
+	Vec3 closestPoint = ClosestPtPointAABB(spherePosAtImpact, -obHalfExtents, obHalfExtents);
+
+	// Sphere and AABB intersect if the (squared) distance from sphere
+	// center to point p is less than the (squared) sphere radius
+	Vec3 d = spherePosAtImpact - closestPoint;
+	float dist = VMath::mag(d);
+
+	// edge case
+	Vec3 normLocal;
+	if (dist < VERY_SMALL) {
+		normLocal = Vec3(0.0f, 0.0f, 0.0f);
+		if (intersection.hitAxis == 0) {
+			normLocal.x = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else if (intersection.hitAxis == 1) {
+			normLocal.y = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else {
+			normLocal.z = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+	}
+	else {
+		normLocal = VMath::normalize(d); // d / dist;
+	}
+
+	data.contactNormal = obblocalCoords[0] * normLocal.x + obblocalCoords[1] * normLocal.y + obblocalCoords[2] * normLocal.z;
+	data.contactPoint = obCentre + obblocalCoords[0] * closestPoint.x + obblocalCoords[1] * closestPoint.y + obblocalCoords[2] * closestPoint.z;
+	data.penetration = 0.0f;
+	data.relVel = relVel;
+
+	return true;
+}
+
+bool CollisionSystem::CapsuleAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	return false;
+}
+
+bool CollisionSystem::CapsuleAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	return false;
+}
+
+bool CollisionSystem::CapsuleOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	return false;
+}
+
+bool CollisionSystem::CapsuleOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+{
+	return false;
+}
+
+bool CollisionSystem::AABBOBBDiscrete(Ref<Actor> ab, Ref<Actor> ob, CollisionData& data)
+{
+	// litteraly the extact same as the obb-obb test, just with the aabb having default axes
+
+	Ref<TransformComponent> TC1 = ab->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC2 = ob->GetComponent<TransformComponent>();
+
+	Ref<CollisionComponent> CC1 = ab->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = ob->GetComponent<CollisionComponent>();
+
+	// setting up variables
+	Vec3 centre1 = CC1->getWorldCentre(TC1);
+	Vec3 halfExtents1 = CC1->getWorldHalfExtents(TC1);
+	// aabb just giving it default axes
+	Vec3 axes1[3] = {
+		Vec3(1.0f, 0.0f, 0.0f),
+		Vec3(0.0f, 1.0f, 0.0f),
+		Vec3(0.0f, 0.0f, 1.0f)
+	};
+
+	Vec3 centre2 = CC2->getWorldCentre(TC2);
+	Vec3 halfExtents2 = CC2->getWorldHalfExtents(TC2);
+	Quaternion ori2 = CC2->getWorldOrientation(TC2);
+	// rotating the orienation around x,y,z axis in order to get local coords
+	Vec3 axes2[3] = {
+		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), ori2),
+		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), ori2),
+		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), ori2)
+	};
+
+	// Compute translation vector t
+	Vec3 t = centre2 - centre1;
+
+	float minPen = FLT_MAX;
+	Vec3 seperationAxis;
+
+	// lambda function to help with seperating axis tests
+	// was originally going to make this into a function, something similar to the IntersectRayAABB function
+	// but unlike that function, this is only used like twice, while the other one is used like 4-5 times, for both collision detection and raycasting
+	// while this function is only used once here for obb-obb detection and once for aabb-obb detection, 
+	// so no point in refactoring, might as well copy and paste, however if I ever need a test axis function for anything else then I'll convert it
+	auto testAxis = [&](const Vec3& axis) -> bool {
+		// Bring translation into a’s coordinate frame
+		float axisLengthSqr = VMath::dot(axis, axis);
+		// Compute common subexpressions. Add in an epsilon term to
+		// counteract arithmetic errors when two edges are parallel and
+		// their cross product is (near) null (see text for details)
+		if (axisLengthSqr < VERY_SMALL) return true;
+		Vec3 normAxis = axis / sqrt(axisLengthSqr);
+
+		// checking for any intersections by projecting the obbs onto the axis
+		float t1 = halfExtents1.x * fabs(VMath::dot(axes1[0], normAxis)) +
+			halfExtents1.y * fabs(VMath::dot(axes1[1], normAxis)) +
+			halfExtents1.z * fabs(VMath::dot(axes1[2], normAxis));
+
+		float t2 = halfExtents2.x * fabs(VMath::dot(axes2[0], normAxis)) +
+			halfExtents2.y * fabs(VMath::dot(axes2[1], normAxis)) +
+			halfExtents2.z * fabs(VMath::dot(axes2[2], normAxis));
+
+		float proCentre = fabs(VMath::dot(t, normAxis));
+
+		if (proCentre > t1 + t2) return false;
+
+		float penetration = (t1 + t2) - proCentre;
+		if (penetration < minPen) {
+			minPen = penetration;
+			seperationAxis = normAxis;
+			if (VMath::dot(t, seperationAxis) > 0) {
+				// fliping the sign
+				seperationAxis = seperationAxis * -1.0f;
+			}
+		}
+
+		return true;
+		};
+
+	// 15 separating axis tests needed to determine OBB-OBB intersection
+
+	for (int i = 0; i < 3; i++) {
+		if (!testAxis(axes1[i])) return false;
+		if (!testAxis(axes2[i])) return false;
+	}
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (!testAxis(VMath::cross(axes1[i], axes2[j]))) return false;
+		}
+	}
+
+	// Game Physics Engine Development Ian Millington 13.4.2 Colliding Two Boxes
+	data.isColliding = true;
+	data.contactNormal = seperationAxis;
+	data.contactPoint = centre1 + seperationAxis * (minPen * 0.5f);
+	data.penetration = minPen;
+
+	// Since no separating axis is found, the OBBs must be intersecting
+	return true;
 }
 
 /*
@@ -800,6 +1154,72 @@ Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
 
 
 */
+
+// Computes closest points C1 and C2 of S1(s)=P1+s*(Q1-P1) and
+// S2(t)=P2+t*(Q2-P2), returning s and t. Function result is squared
+// distance between between S1(s) and S2(t
+float CollisionSystem::ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2,
+											   float& s, float& t, Vec3& c1, Vec3& c2)
+{
+	// 5.1.9 Closest Points of Two Line Segments
+
+	Vec3 d1 = q1 - p1; // Direction vector of segment S1
+	Vec3 d2 = q2 - p2; // Direction vector of segment S2
+	Vec3 r = p1 - p2;
+	float a = VMath::dot(d1, d1); // Squared length of segment S1, always nonnegative
+	float e = VMath::dot(d2, d2); // Squared length of segment S2, always nonnegative
+	float f = VMath::dot(d2, r);
+	// Check if either or both segments degenerate into points
+	if (a <= VERY_SMALL && e <= VERY_SMALL) {
+		// Both segments degenerate into points
+		s = t = 0.0f;
+		c1 = p1;
+		c2 = p2; 
+		return VMath::dot(c1 - c2, c1 - c2);
+	}
+	if (a <= VERY_SMALL) {
+		// First segment degenerates into a point
+		s = 0.0f;
+		t = f / e; // s = 0 => t = (b*s + f) / e = f / e
+		t = std::max(0.0f, std::min(1.0f, t));
+	}
+	else {
+		float c = VMath::dot(d1, r);
+		if (e <= VERY_SMALL) {
+			// Second segment degenerates into a point
+			t = 0.0f;
+			s = std::max(0.0f, std::min(1.0f, -c / a)); // t = 0 => s = (b*t - c) / a = -c / a
+		}
+		else {
+			// The general nondegenerate case starts here
+			float b = VMath::dot(d1, d2);
+			float denom = a * e - b * b; // Always nonnegative
+			// If segments not parallel, compute closest point on L1 to L2 and
+			// clamp to segment S1. Else pick arbitrary s (here 0)
+			if (denom != 0.0f) {
+				s = std::max(0.0f, std::min(1.0f, (b * f - c * e) / denom));
+			}
+			else s = 0.0f;
+			// Compute point on L2 closest to S1(s) using
+			// t = Dot((P1 + D1*s) - P2,D2) / Dot(D2,D2) = (b*s + f) / e
+			t = (b * s + f) / e;// If t in [0,1] done. Else clamp t, recompute s for the new value
+			// of t using s = Dot((P2 + D2*t) - P1,D1) / Dot(D1,D1)= (t*b - c) / a
+			// and clamp s to [0, 1]
+			if (t < 0.0f) {
+				t = 0.0f;
+				s = std::max(0.0f, std::min(1.0f, -c / a));
+			}
+			else if (t > 1.0f) {
+				t = 1.0f;
+				s = std::max(0.0f, std::min(1.0f, (b - c) / a));
+			}
+		}
+	}
+
+	c1 = p1 + d1 * s;
+	c2 = p2 + d2 * t;
+	return VMath::dot(c1 - c2, c1 - c2);
+}
 
 // Given point p, return the point q on or in AABB b that is closest to p
 Vec3 CollisionSystem::ClosestPtPointAABB(const Vec3& p, const Vec3& aabbMin, const Vec3& aabbMax)

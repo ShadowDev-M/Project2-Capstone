@@ -308,7 +308,7 @@ void MeshComponent::StoreMeshData(GLenum drawmode_) {
     }
 
     dataLength = vertices.size();
-    vertices.clear(); normals.clear(); uvCoords.clear();
+    //vertices.clear(); normals.clear(); uvCoords.clear();
 }
 
 void MeshComponent::Render() const {

@@ -57,7 +57,12 @@ public:
 		Vec3 scale = transform_->GetScale();
 		float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
 		return radius * maxScale;
-	}
+	} 
+	float getWorldCapsuleRadius(Ref<TransformComponent> transform_) const {
+		Vec3 scale = transform_->GetScale();
+		float maxScale = std::max(scale.x, scale.z);
+		return radius * maxScale;
+	} 
 	Vec3 getWorldCentrePosA(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centrePosA, 1.0f)); }
 	Vec3 getWorldCentrePosB(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centrePosB, 1.0f)); }
 	Vec3 getWorldHalfExtents(Ref<TransformComponent> transform_) const {
