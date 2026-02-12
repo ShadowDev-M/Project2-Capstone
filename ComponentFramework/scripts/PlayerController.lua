@@ -30,11 +30,12 @@ function Update(deltaTime)
 	
 	GameObject.Rigidbody.Vel = newVel
 
-	
-
-	if VMath.Magnitude(GameObject.Rigidbody.Vel) > 0.1 then
-		Transform.Rotation = QMath.LookAt(-VMath.Normalize(GameObject.Rigidbody.Vel), Vec3.new(0,1,0))
+	if math.abs(GameObject.Rigidbody.Vel.x) > 0.1 then
+		local uniDirection = Vec3.new(GameObject.Rigidbody.Vel.x,0.0,0.0)
+		Transform.Rotation = QMath.LookAt(-VMath.Normalize(uniDirection), Vec3.new(0,1,0))
 	end
+
+	
 
 end
 

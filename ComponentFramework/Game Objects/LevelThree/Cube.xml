@@ -1,8 +1,8 @@
 <Actor>
     <TransformComponent>
-        <position x="-2.4831667" y="0" z="0"/>
-        <rotation w="0.94832426" x="0.31730285" y="0" z="0"/>
-        <scale x="1" y="0.99999982" z="0.99999982"/>
+        <position x="6.5547581" y="-7.296279" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="20" y="1" z="20"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>

@@ -1,13 +1,13 @@
 <Actor>
     <TransformComponent>
-        <position x="11.252" y="-2.4902625" z="-20.799999"/>
+        <position x="11.252" y="-2.4902625" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="0.1" y="0.1" z="0.1"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
         <mass value="1"/>
-        <UsingGravity isUsing="0"/>
+        <UsingGravity isUsing="1"/>
         <drag value="10"/>
         <angularDrag value="0.050000001"/>
     </PhysicsComponent>
