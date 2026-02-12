@@ -27,7 +27,7 @@ public:
 
 	Ref<Actor> GetUserActor() { return userActor; }
 
-	TransformComponent* GetUserActorTransform() { return userActor->GetComponent<TransformComponent>().get(); }
+	Ref<TransformComponent> GetUserActorTransform() { return userActor->GetComponent<TransformComponent>(); }
 
 
 	Matrix4 GetProjectionMatrix() const { return projectionMatrix; }

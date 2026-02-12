@@ -8,7 +8,7 @@
         <PhysicsState state="0"/>
         <mass value="1"/>
         <UsingGravity isUsing="1"/>
-        <drag value="10"/>
+        <drag value="1"/>
         <angularDrag value="0.050000001"/>
     </PhysicsComponent>
     <AnimatorComponent>

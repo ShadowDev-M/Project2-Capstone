@@ -1,12 +1,11 @@
 #pragma once
 #include "Actor.h"
-
 //lua handler
 static sol::state lua;
 
 //should be called before any lua scripts are added
-
 class ScriptAbstract;
+enum class CollisionDetectionState;
 
 class ScriptComponent : public Component {
 	//Make SceneGraph friend class to allow SceneGraph to authorize/deauthorize an actor's usage of a script by adding/removing it to users
@@ -76,7 +75,6 @@ class ScriptService {
 	friend class SceneGraph;
 private:
 	static void preloadScript(ScriptComponent* script_);
-	static void callActorScripts(Ref<Actor> target, float deltaTime);
 	static void startActorScripts(Ref<Actor> target);
 	static void stopActorScripts(Ref<Actor> target);
 
@@ -86,9 +84,15 @@ private:
 
 	static void defineUsertypes(Actor* user);
 
+	static void callScriptCollision(Ref<ScriptComponent> script, Ref<Actor> other, CollisionDetectionState type);
+
+
+
 public:
 
 	static void loadLibraries();
+	static void registerCollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionDetectionState type);
+
 
 
 };

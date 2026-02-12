@@ -27,7 +27,7 @@ public:
 	float GetY() const { return pos.y; }
 	float GetZ() const { return pos.z; }
 
-	Actor* getParent();
+	Ref<Actor> getParent();
 
 	Vec3 GetScale() const { return scale; }
 	Quaternion GetOrientation() const { return orientation; }

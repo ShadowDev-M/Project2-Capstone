@@ -6,6 +6,13 @@
 
 using namespace MATH;
 
+
+enum class CollisionDetectionState {
+	Enter,
+	Stay,
+	Exit 
+};
+
 // holds all the information about a given collision 
 // Game Physics Engine Development Ian Millington 13.2.2
 struct CollisionData {

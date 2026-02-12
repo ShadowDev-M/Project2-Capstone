@@ -1,6 +1,9 @@
 
 speed = 10
 
+
+public testobj = GameObject
+
 function Preload()
 
 end	
@@ -13,6 +16,9 @@ end
 
 function Update(deltaTime) 
 	
+	print(testobj.Name)
+
+
 	local newVel = GameObject.Rigidbody.Vel
 
 	if Game.Input.GetInputState("D") == 2 then
@@ -40,3 +46,12 @@ function Update(deltaTime)
 end
 
 
+function OnCollisionEnter(other) 
+	testobj = other
+
+	print("hi")
+	print(other)
+	print(other.Name)
+
+
+end

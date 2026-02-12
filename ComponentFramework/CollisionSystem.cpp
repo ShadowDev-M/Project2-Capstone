@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CollisionSystem.h"
-
+#include "ScriptComponent.h"
 void CollisionSystem::AddActor(Ref<Actor> actor_) {
 	if (actor_->GetComponent<CollisionComponent>().get() == nullptr) {
 		Debug::Error("The Actor must have a CollisionComponent - ignored ", __FILE__, __LINE__);
@@ -343,11 +343,19 @@ void CollisionSystem::Update(float deltaTime) {
 					//std::cout << data.penetration << std::endl;
 					ResolveCollision(a1, a2, data);
 					std::cout << "COLLSION DETECTED!" << std::endl;
+
+
+					ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::Enter);
 				}
 			
 		}
 
 	}
+}
+
+void CollisionSystem::OnCollisionEnter(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_)
+{
+
 }
 
 bool CollisionSystem::SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)

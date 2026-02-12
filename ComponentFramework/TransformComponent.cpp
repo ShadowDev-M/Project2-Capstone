@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TransformComponent.h"
 #include "Actor.h"
+#include "SceneGraph.h"
 using namespace MATH;
 
 TransformComponent::TransformComponent(Component* parent_):Component(parent_) {
@@ -44,7 +45,7 @@ void TransformComponent::Update(const float deltaTime) {
 
 void TransformComponent::Render()const {}
 
-Actor* TransformComponent::getParent()
+Ref<Actor> TransformComponent::getParent()
 {
 	if (!parent) {
 #ifdef _DEBUG
@@ -53,7 +54,9 @@ Actor* TransformComponent::getParent()
 
 
 	}
-	return dynamic_cast<Actor*>(parent);
+
+	
+	return SceneGraph::getInstance().GetActorById(dynamic_cast<Actor*>(parent)->getId());
 }
 
 Matrix4 TransformComponent::GetTransformMatrix() const {

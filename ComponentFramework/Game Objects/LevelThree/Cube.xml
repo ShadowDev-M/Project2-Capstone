@@ -5,8 +5,8 @@
         <scale x="20" y="1" z="20"/>
     </TransformComponent>
     <PhysicsComponent>
-        <PhysicsState state="0"/>
-        <mass value="1"/>
+        <PhysicsState state="2"/>
+        <mass value="3.4028235e+38"/>
         <UsingGravity isUsing="0"/>
         <drag value="0.80000001"/>
         <angularDrag value="0.050000001"/>

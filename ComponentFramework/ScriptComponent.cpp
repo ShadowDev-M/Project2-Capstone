@@ -4,6 +4,7 @@
 #include "ScriptAbstract.h"
 #include "InputCreatorManager.h"
 #include "InputManager.h"
+#include "CollisionSystem.h"
 static std::vector<ScriptComponent*> scriptsInUse;
 
 ScriptComponent::ScriptComponent(Component* parent_, Ref<ScriptAbstract> baseScriptAsset) :
@@ -70,6 +71,12 @@ void ScriptComponent::Render()const {}
 
 void ScriptComponent::setLocal(const std::string& name, sol::object value) {
 	persistentLocals[name] = value;
+	if (persistentLocals[name].get_type() != sol::type::function) {
+		if (name._Starts_with("PUBLIC__")) {
+			std::cout << name << std::endl;
+		}
+	}
+
 }
 
 sol::object ScriptComponent::getLocal(const std::string& name) {
@@ -99,6 +106,20 @@ void ScriptComponent::load_lua_file() {
 	std::stringstream buffer;
 	buffer << file.rdbuf(); // read the entire file into the stringstream
 	code = buffer.str();    // return as a std::string
+
+
+	std::string from("public ");
+	std::string to("PUBLIC__");
+
+
+	if (!from.empty()) {
+		size_t start_pos = 0;
+		while ((start_pos = code.find(from, start_pos)) != std::string::npos) {
+			code.replace(start_pos, from.length(), to);
+			// Advance the starting position past the new 'to' string to avoid infinite loops
+			start_pos += to.length();
+		}
+	}
 }
 
 ///Use as the function to compile, isCreated will turn false if the function script has a compilation error.
@@ -264,18 +285,7 @@ void ScriptService::updateAllScripts(float deltaTime) {
 		sol::load_result loaded_script = lua.load(script->code);
 
 
-		if (!loaded_script.valid()) {
-
-			sol::error err = loaded_script;
-#ifdef _DEBUG
-			std::cerr << "[ERROR] Lua compile error: " << err.what() << std::endl;
-#endif
-			//Disable script by setting isCreated to false
-			script->isCreated = false;
-			continue;
-		}
-		else {
-
+		
 			//Script should be good to run
 			try {
 				lua["Script"] = script;
@@ -332,22 +342,37 @@ void ScriptService::updateAllScripts(float deltaTime) {
 				script->isCreated = false;
 				// Consider recreating lua state here for safety
 			}
-		}
-
 	}
+
+	
 }
 
 void ScriptService::defineUsertypes(Actor* user) {
+
+	
+	lua.script(R"(
+    setmetatable(_G, {
+    __index = function(t, k) 
+        return Script:GetLocal(k) or rawget(t, k)
+    end,
+    __newindex = function(t, k, v) 
+    end
+})
+)");
+
 	lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
-	lua["Transform"] = user->GetComponent<TransformComponent>().get();
+	lua["Transform"] = user->GetComponent<TransformComponent>();
+
 
 	lua["GameObject"] = sol::lua_nil;  // Reset first or it'll not be consistent 
 	lua["GameObject"] = user;
 
 	lua["Game"] = sol::lua_nil;
 	lua["Game"] = &SceneGraph::getInstance();
-
+	
 }
+
+
 
 void ScriptService::preloadScript(ScriptComponent* script) {
 
@@ -397,6 +422,8 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 				//load the original script. Don't use for start and update as that will reset all the stored variables
 				loaded_script();
 
+
+
 				sol::protected_function preload = lua["Preload"];
 				if (preload.valid()) {
 					auto result = preload();
@@ -432,78 +459,7 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 	
 }
 
-void ScriptService::callActorScripts(Ref<Actor> target, float deltaTime)
-{
-	//Verify the script is a component of the target before calling
-	for (auto& comp : target->components) {
 
-		if (!std::dynamic_pointer_cast<ScriptComponent>(comp)) continue;
-
-		Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(comp);
-
-
-		if (script->isCreated == false) continue;
-
-		sol::load_result loaded_script = lua.load(script->code);
-
-		
-		if (!loaded_script.valid()) {
-
-			sol::error err = loaded_script; 
-#ifdef _DEBUG
-			std::cerr << "[ERROR] Lua compile error: " << err.what() << std::endl;
-#endif
-
-			//Disable script by setting isCreated to false
-			script->isCreated = false;
-			continue;
-		}
-		else {
-
-			//Script should be good to run
-			try {
-				
-
-				loaded_script();
-
-				defineUsertypes(target.get());
-
-
-				sol::protected_function update = lua["Update"];
-				if (update.valid()) {
-					auto result = update(deltaTime);
-					if (!result.valid()) {
-						sol::error err = result;
-#ifdef _DEBUG
-						std::cerr << "[ERROR] Update failed: " << err.what() << std::endl;
-#endif
-						script->isCreated = false;
-						continue;
-					}
-				}
-
-			}
-			catch (const sol::error& e) {
-#ifdef _DEBUG
-				std::cerr << "[ERROR] Lua runtime error: " << e.what() << std::endl;
-#endif
-				//Runtime error, so disable script
-				script->isCreated = false;
-
-				//Disable play mode 
-			}
-			catch (...) {
-#ifdef _DEBUG
-				std::cerr << "[ERROR] Unknown Lua panic - state corrupted!" << std::endl;
-#endif
-				script->isCreated = false;
-				// Consider recreating lua state here for safety
-			}
-		}
-
-	}
-	
-}
 
 bool ScriptService::libLoaded = false;
 
@@ -601,10 +557,11 @@ void ScriptService::loadLibraries()
 
 
 	lua.new_usertype<Actor>("GameObject",
-		"Transform", sol::property(&Actor::GetComponentRaw<TransformComponent>),
-		"Camera", sol::property(&Actor::GetComponentRaw<CameraComponent>),
-		"Animator", sol::property(&Actor::GetComponentRaw<AnimatorComponent>),
-		"Rigidbody", sol::property(& Actor::GetComponentRaw<PhysicsComponent>)
+		"Transform", sol::property(&Actor::GetComponent<TransformComponent>),
+		"Camera", sol::property(&Actor::GetComponent<CameraComponent>),
+		"Animator", sol::property(&Actor::GetComponent<AnimatorComponent>),
+		"Rigidbody", sol::property(& Actor::GetComponent<PhysicsComponent>),
+		"Name", sol::property(&Actor::getActorName)
 	);
 
 	
@@ -613,8 +570,8 @@ void ScriptService::loadLibraries()
 
 
 	lua.new_usertype<SceneGraph>("Game",
-		"Find", &SceneGraph::GetActorRaw, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
-		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera().get(); }),
+		"Find", &SceneGraph::GetActorCStr, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
+		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera(); }),
 		"Input", tab
 	);
 	
@@ -750,4 +707,86 @@ void ScriptService::loadLibraries()
 	}
 
 
+}
+
+void ScriptService::callScriptCollision(Ref<ScriptComponent> script, Ref<Actor> other, CollisionDetectionState type) {
+
+
+		//No point in continuing if its already started
+		Actor* user = dynamic_cast<Actor*>(script->parent);
+
+		if (script->isCreated == false) return;
+
+
+			try {
+
+				lua["Script"] = script;
+
+				//restore the variables previously set
+
+				//define AFTER so that we don't accidentally give an unusable reference
+				defineUsertypes(user);
+
+				lua.script(R"(
+    setmetatable(_G, {
+    __index = function(t, k) 
+        return Script:GetLocal(k) or rawget(t, k)
+    end,
+    __newindex = function(t, k, v) 
+        Script:SetLocal(k, v)  -- Breakpoint FIRES!
+    end
+})
+)");
+
+
+				script->restoreAll();
+
+
+				switch (type) {
+
+				case CollisionDetectionState::Enter:
+					lua["OnCollisionEnter"](other);
+
+					break;
+				case CollisionDetectionState::Stay:
+					lua["OnCollisionStay"](other);
+
+					break;
+				case CollisionDetectionState::Exit:
+					lua["OnCollisionExit"](other);
+
+					break;
+				default:
+
+					break;
+				}
+
+
+			}
+			catch (const sol::error& e) {
+#ifdef _DEBUG
+				std::cerr << "[ERROR] Lua runtime error: " << e.what() << std::endl;
+#endif
+				//Runtime error, so disable script
+				script->isCreated = false;
+				//Disable play mode 
+			}
+		
+
+	
+}
+
+
+void ScriptService::registerCollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionDetectionState type)
+{
+	if (actor1_->GetComponent<ScriptComponent>()) {
+		for (auto& script : actor1_->GetAllComponent<ScriptComponent>()) {
+			callScriptCollision(script, actor2_, type);
+		}
+	}
+	if (actor2_->GetComponent<ScriptComponent>()) {
+		for (auto& script : actor2_->GetAllComponent<ScriptComponent>()) {
+			callScriptCollision(script, actor1_, type);
+		}
+	}
 }
