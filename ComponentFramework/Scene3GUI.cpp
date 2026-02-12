@@ -34,28 +34,27 @@ bool Scene3GUI::OnCreate() {
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
-	//SceneGraph::getInstance().GetActor("Sphere")->AddComponent<CollisionComponent>();
+	SceneGraph::getInstance().GetActor("Sphere")->AddComponent<CollisionComponent>();
 	//SceneGraph::getInstance().GetActor("Sphere")->GetComponent<PhysicsComponent>()->setRestitution(0.5f);
-	//SceneGraph::getInstance().GetActor("Sphere")->GetComponent<CollisionComponent>()->setType(ColliderType::Sphere);
-	//SceneGraph::getInstance().GetActor("Sphere")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
-	//SceneGraph::getInstance().GetActor("Sphere2D")->AddComponent<CollisionComponent>();
-	//SceneGraph::getInstance().GetActor("Sphere2D")->GetComponent<CollisionComponent>()->setType(ColliderType::OBB);
-	//SceneGraph::getInstance().GetActor("Sphere2D")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
-	//
-	//SceneGraph::getInstance().GetActor("Cube")->AddComponent<CollisionComponent>();
+	SceneGraph::getInstance().GetActor("Sphere")->GetComponent<CollisionComponent>()->setType(ColliderType::Capsule);
+	SceneGraph::getInstance().GetActor("Sphere")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
+	SceneGraph::getInstance().GetActor("Sphere2D")->AddComponent<CollisionComponent>();
+	SceneGraph::getInstance().GetActor("Sphere2D")->GetComponent<CollisionComponent>()->setType(ColliderType::Capsule);
+	SceneGraph::getInstance().GetActor("Sphere2D")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
+	
+	SceneGraph::getInstance().GetActor("Cube")->AddComponent<CollisionComponent>();
 	//SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->setRestitution(0.5f);
-	//SceneGraph::getInstance().GetActor("Cube")->GetComponent<CollisionComponent>()->setType(ColliderType::OBB);
-	//SceneGraph::getInstance().GetActor("Cube")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
-	//
-	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere"));
-	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere2D"));
-	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Cube"));
+	SceneGraph::getInstance().GetActor("Cube")->GetComponent<CollisionComponent>()->setType(ColliderType::Capsule);
+	SceneGraph::getInstance().GetActor("Cube")->GetComponent<CollisionComponent>()->setState(ColliderState::Discrete);
+	
+	CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere"));
+	CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Sphere2D"));
+	CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Cube"));
 
-	//ColliderDebug::getInstance().OnCreate();
+	ColliderDebug::getInstance().OnCreate();
 
 	//AudioManager::getInstance().Initialize();
 	//marioSFX = AudioManager::getInstance().Play3D("audio/mario.wav", SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition(), true);
-	//SceneGraph::getInstance().GetActor("Mario")->AddComponent<AnimatorComponent>((SceneGraph::getInstance().GetActor("Mario").get()));
 	return true;
 }
 
@@ -71,7 +70,7 @@ void Scene3GUI::OnDestroy() {
 	AssetManager::getInstance().SaveAssetDatabaseXML();
 	AssetManager::getInstance().RemoveAllAssets();
 
-	//ColliderDebug::getInstance().OnDestroy();
+	ColliderDebug::getInstance().OnDestroy();
 
 	SceneGraph::getInstance().RemoveAllActors();
 
@@ -91,9 +90,7 @@ void Scene3GUI::Update(const float deltaTime) {
 
 	if (EditorManager::getInstance().isPlayMode()) {
 		PhysicsSystem::getInstance().Update(deltaTime);
-		//CollisionSystem::getInstance().Update(deltaTime);
-		//SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->ApplyForce(Vec3(0.0f, -9.8f, 0.0f));
-		//std::cout << SceneGraph::getInstance().GetActor("Cube")->GetComponent<PhysicsComponent>()->getMass();
+		CollisionSystem::getInstance().Update(deltaTime);
 	}
 
 	Ref<Actor> cameraActor = SceneGraph::getInstance().getUsedCamera()->GetUserActor();

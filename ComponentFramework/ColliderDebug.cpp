@@ -22,64 +22,71 @@ void ColliderDebug::Render(Ref<CollisionComponent> collision_, Ref<TransformComp
 {
     if (!collision_ || !debugShader || !transform_) return;
 
-    // finding cached collider shape
-    auto it = colliderCache.find(collision_);
-    if (it == colliderCache.end()) {
-        ColliderShape newShape;
-        switch (collision_->getType()) {
-        case ColliderType::Sphere:
-            newShape = GenerateSphere(collision_);
-            break;
-            // TODO:
-        case ColliderType::AABB:
-            newShape = GenerateAABB(collision_);
-            break;
-        case ColliderType::OBB:
-            newShape = GenerateOBB(collision_);
-            break;
-        }
-
-        colliderCache[collision_] = newShape;
-        it = colliderCache.find(collision_);
-    }
-
-    const ColliderShape& shape = it->second;
-    if (shape.vao == 0) return;
-
-    // this is a hacky fix for sphere radius scaling
-    // this will probably need to be applied to the capsule at some point, but honestly,
-    // if you scaling a capsules x and z to that point, you might as well use a sphere collider
-
-    // basically making a homebrew modelmatrix
+    // well I did another hacky fix for the capsule, the axis were stretching out and it didn't look right,
+    // so time to build another model matrix
     Matrix4 modelMatrix;
+    ColliderShape tempShape;
+    const ColliderShape* renderShape = nullptr;
 
-    if (collision_->getType() == ColliderType::Sphere) {
-        Vec3 position = transform_->GetPosition();
-        Quaternion rotation = transform_->GetOrientation();
-        Vec3 scale = transform_->GetScale();
-
-        // converting local to world
-        float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
-        float worldRadius = collision_->getRadius() * maxScale;
-
-        // manually creating a transformation matrix
-        Matrix4 translationMatrix = MMath::translate(position);
-        Matrix4 rotationMatrix = MMath::toMatrix4(rotation);
-        Matrix4 scaleMatrix = MMath::scale(worldRadius, worldRadius, worldRadius);
-
-        // converting local to world
-        Matrix4 worldCentre = MMath::translate(collision_->getCentre() * maxScale);
-
-        // creating model matrix
-        modelMatrix = translationMatrix * rotationMatrix * worldCentre * scaleMatrix;
+    if (collision_->getType() == ColliderType::Capsule) {
+        tempShape = GenerateCapsule(collision_, transform_);
+        renderShape = &tempShape;
+        modelMatrix = Matrix4();
     }
     else {
-        modelMatrix = transform_->GetTransformMatrix();
+        // finding cached collider shape
+        auto it = colliderCache.find(collision_);
+        if (it == colliderCache.end()) {
+            ColliderShape newShape;
+            switch (collision_->getType()) {
+            case ColliderType::Sphere:
+                newShape = GenerateSphere(collision_);
+                break;
+            case ColliderType::AABB:
+                newShape = GenerateAABB(collision_);
+                break;
+            case ColliderType::OBB:
+                newShape = GenerateOBB(collision_);
+                break;
+            }
+            colliderCache[collision_] = newShape;
+            it = colliderCache.find(collision_);
+        }
+        renderShape = &it->second;
 
-        // converting local to world
-        Matrix4 worldCentre = MMath::translate(collision_->getCentre());
-        modelMatrix = modelMatrix * worldCentre;
+        // this is a hacky fix for sphere radius scaling
+        // this will probably need to be applied to the capsule at some point, but honestly,
+        // if you scaling a capsules x and z to that point, you might as well use a sphere collider
+        if (collision_->getType() == ColliderType::Sphere) {
+            Vec3 position = transform_->GetPosition();
+            Quaternion rotation = transform_->GetOrientation();
+            Vec3 scale = transform_->GetScale();
+
+            // converting local to world
+            float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
+            float worldRadius = collision_->getRadius() * maxScale;
+
+            // manually creating a transformation matrix
+            Matrix4 translationMatrix = MMath::translate(position);
+            Matrix4 rotationMatrix = MMath::toMatrix4(rotation);
+            Matrix4 scaleMatrix = MMath::scale(worldRadius, worldRadius, worldRadius);
+
+            // converting local to world
+            Matrix4 worldCentre = MMath::translate(collision_->getCentre() * maxScale);
+
+            // creating model matrix
+            modelMatrix = translationMatrix * rotationMatrix * worldCentre * scaleMatrix;
+        }
+        else {
+            modelMatrix = transform_->GetTransformMatrix();
+
+            // converting local to world
+            Matrix4 worldCentre = MMath::translate(collision_->getCentre());
+            modelMatrix = modelMatrix * worldCentre;
+        }
     }
+
+    if (!renderShape || renderShape->vao == 0) return;
 
     glUseProgram(debugShader->GetProgram());
 
@@ -91,9 +98,14 @@ void ColliderDebug::Render(Ref<CollisionComponent> collision_, Ref<TransformComp
     glUniform3fv(debugShader->GetUniformID("colliderColor"), 1, &color.x);
     glUniform1f(debugShader->GetUniformID("uAlpha"), 0.8f);
 
-    glBindVertexArray(shape.vao);
-    glDrawArrays(GL_LINES, 0, shape.dataLength);
+    glBindVertexArray(renderShape->vao);
+    glDrawArrays(GL_LINES, 0, renderShape->dataLength);
     glBindVertexArray(0);
+
+    if (collision_->getType() == ColliderType::Capsule) {
+        ColliderShape temp = tempShape;
+        ClearShape(temp);
+    }
 }
 
 void ColliderDebug::UpdateDebug(Ref<CollisionComponent> collision_)
@@ -171,6 +183,86 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateSphere(const Ref<CollisionCo
     convertCircleToLines(xyCircle);
     convertCircleToLines(xzCircle);
     convertCircleToLines(yzCircle);
+
+    shape.dataLength = vertices.size();
+
+    StoreShapeData(shape, vertices);
+
+    return shape;
+}
+
+ColliderDebug::ColliderShape ColliderDebug::GenerateCapsule(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_)
+{
+    ColliderShape shape;
+    std::vector<Vec3> vertices;
+
+    // this function is a bit different from the others
+    // getting the world positions for this one,
+    // then in render giving it a macgyvered model matrix
+    Vec3 centrePosA = collision_->getWorldCentrePosA(transform_);
+    Vec3 centrePosB = collision_->getWorldCentrePosB(transform_);
+    
+    // manually converting radius to world coords, because of the y 
+    Vec3 scale = transform_->GetScale();
+    float radius = collision_->getRadius() * std::max(scale.x, scale.z);
+
+    // Capsule.cpp
+    // get the axis
+    Vec3 axis = centrePosB - centrePosA;
+    // normalize the axis to get the axisDirection
+    Vec3 axisDirection = VMath::normalize(axis);
+
+    // generating circles for sphere end caps
+    std::vector<Vec3> bottomCircle = GenerateCircle(centrePosA, radius, axisDirection);
+    std::vector<Vec3> topCircle = GenerateCircle(centrePosB, radius, axisDirection);
+
+    // lambda function to help with converting old vertice points to new lines
+    auto convertCircleToLines = [&vertices](const std::vector<Vec3>& circle) {
+        for (size_t i = 0; i < circle.size() - 1; i++) {
+            vertices.push_back(circle[i]);
+            vertices.push_back(circle[i + 1]);
+        }
+        };
+
+    convertCircleToLines(bottomCircle);
+    convertCircleToLines(topCircle);
+
+    // creating vertical lines that will connect the two circles
+    int numVert = 4;
+    int step = bottomCircle.size() / numVert;
+    for (int i = 0; i < numVert; i++) {
+        int iStep = i * step;
+        if (iStep < bottomCircle.size()) {
+            vertices.push_back(bottomCircle[iStep]);
+            vertices.push_back(topCircle[iStep]);
+        }
+    }
+
+    // creating arced lines for the hemispheres
+    const int numArcs = 4;
+    const int arcSegments = 8;
+
+    for (int arc = 0; arc < numArcs; arc++) {
+        // linear interpolation/lerp to get the center of the current cylinders ring at the current height
+        int iRing = arc * ((int)bottomCircle.size() / numArcs);
+        Vec3 tangent = VMath::normalize(bottomCircle[iRing] - centrePosA);
+
+        for (float seg = 0.0f; seg < arcSegments; seg++) {
+            float phi1 = (seg / arcSegments) * (M_PI / 2.0f);
+            float phi2 = ((seg + 1) / arcSegments) * (M_PI / 2.0f);
+            
+            // getting the x,y for the local coords
+            Vec3 top1 = centrePosB + axisDirection * (radius * sin(phi1)) + tangent * (radius * cos(phi1));
+            Vec3 top2 = centrePosB + axisDirection * (radius * sin(phi2)) + tangent * (radius * cos(phi2));
+            vertices.push_back(top1);
+            vertices.push_back(top2);
+
+            Vec3 bot1 = centrePosA - axisDirection * (radius * sin(phi1)) + tangent * (radius * cos(phi1));
+            Vec3 bot2 = centrePosA - axisDirection * (radius * sin(phi2)) + tangent * (radius * cos(phi2));
+            vertices.push_back(bot1);
+            vertices.push_back(bot2);
+        }
+    }
 
     shape.dataLength = vertices.size();
 

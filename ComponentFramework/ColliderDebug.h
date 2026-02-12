@@ -36,7 +36,7 @@ private:
 	std::vector<Vec3> GenerateCircle(const Vec3& centre_, float radius_, const Vec3& axis_, int segments_ = 16);
 
 	ColliderShape GenerateSphere(const Ref<CollisionComponent>& collision_);
-	//ColliderShape GenerateCapsule(const Ref<CollisionComponent>& collision_);
+	ColliderShape GenerateCapsule(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_);
 	ColliderShape GenerateAABB(const Ref<CollisionComponent>& collision_);
 	ColliderShape GenerateOBB(const Ref<CollisionComponent>& collision_);
 
