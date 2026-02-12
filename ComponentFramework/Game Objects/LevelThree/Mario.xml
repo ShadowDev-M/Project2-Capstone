@@ -1,6 +1,6 @@
 <Actor>
     <TransformComponent>
-        <position x="9.7521982" y="-2.4902625" z="-20.799999"/>
+        <position x="11.252" y="-2.4902625" z="-20.799999"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="0.1" y="0.1" z="0.1"/>
     </TransformComponent>
@@ -8,7 +8,7 @@
         <PhysicsState state="0"/>
         <mass value="1"/>
         <UsingGravity isUsing="0"/>
-        <drag value="0.2"/>
+        <drag value="10"/>
         <angularDrag value="0.050000001"/>
     </PhysicsComponent>
     <AnimatorComponent>
@@ -21,4 +21,6 @@
     <MaterialComponent name="skeletonTexture"/>
     <ShaderComponent name="S_Multi"/>
     <ScriptComponent name="animScript"/>
+    <ScriptComponent name="FixCamera"/>
+    <ScriptComponent name="PlayerController"/>
 </Actor>

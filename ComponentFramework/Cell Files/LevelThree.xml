@@ -1,9 +1,9 @@
 <CellFile>
     <Actors>
-        <Board/>
         <Mario/>
-        <Cube/>
+        <Board/>
         <CamTest/>
+        <Cube/>
         <SkyLight/>
     </Actors>
     <Components>
@@ -92,10 +92,12 @@
         </MeshComponent>
         <ScriptAbstract>
             <script1/>
+            <PlayerController/>
             <testScriptTwo/>
             <lerjgklktbl/>
             <animScript/>
             <testScript/>
+            <FixCamera/>
         </ScriptAbstract>
         <ShaderComponent>
             <S_Default>
