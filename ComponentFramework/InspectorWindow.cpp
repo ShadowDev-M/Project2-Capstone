@@ -527,6 +527,8 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 
 			ImGui::TextWrapped("Diffuse ID: %u", material->getDiffuseID());
 			if (material->getSpecularID() != 0) ImGui::TextWrapped("Specular ID: %u", material->getSpecularID());
+			if (material->getNormalID() != 0) ImGui::TextWrapped("Normal ID: %u", material->getNormalID());
+			if (material->getRoughnessID() != 0) ImGui::TextWrapped("Roughness ID: %u", material->getRoughnessID());
 		}
 		else if (materialState.allHaveComponent) {
 			ImGui::TextWrapped("All Selected Actors Have a MaterialComponent");

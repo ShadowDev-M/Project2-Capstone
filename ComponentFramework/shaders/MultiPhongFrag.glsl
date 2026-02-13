@@ -96,6 +96,19 @@ void main() {
             phongResult += lightContrib;
         }
     }
-    
-    fragColor = phongResult;
+
+//    if (testDiff == true) {
+//        fragColor = kd;
+//    }
+//    else if (testSpec == true) {
+//        fragColor = ks;
+//    }
+//    else if (testTexture == true) {
+//        fragColor = kt;
+//    } 
+//    else if (testNormal == true) {
+//        fragColor = kn;
+//    } else {
+        fragColor = phongResult;
+//    }
 }

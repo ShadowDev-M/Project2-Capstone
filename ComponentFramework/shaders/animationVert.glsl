@@ -10,6 +10,8 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 layout (location = 3) in ivec4 aBoneIDs;      // CHANGED: location=3
 layout (location = 4) in vec4 aBoneWeights;   // CHANGED: location=4
+layout (location = 5) in vec3 aTangents;
+layout (location = 6) in vec3 aBitangents;
 
 // Reference-style uniforms
 uniform mat4 bone_transforms[MAX_BONES];       // CHANGED: bone_transforms

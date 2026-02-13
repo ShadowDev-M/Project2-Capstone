@@ -100,7 +100,8 @@ void MeshComponent::LoadModel(const char* filename) {
     }
 
     aiMesh* mesh = scene->mMeshes[0];
-    vertices.clear(); normals.clear(); uvCoords.clear();
+    vertices.clear(); normals.clear(); uvCoords.clear(); tangents.clear();
+    //bitangents.clear(); // maybe not needed
 
     printf("Mesh vertices: %u, faces: %u\n", mesh->mNumVertices, mesh->mNumFaces);
 
@@ -112,6 +113,10 @@ void MeshComponent::LoadModel(const char* filename) {
             unsigned int uniqueIdx = face.mIndices[j];
             vertices.push_back({ mesh->mVertices[uniqueIdx].x, mesh->mVertices[uniqueIdx].y, mesh->mVertices[uniqueIdx].z });
             normals.push_back({ mesh->mNormals[uniqueIdx].x, mesh->mNormals[uniqueIdx].y, mesh->mNormals[uniqueIdx].z });
+
+            tangents.push_back({ mesh->mTangents[uniqueIdx].x, mesh->mTangents[uniqueIdx].y, mesh->mTangents[uniqueIdx].z });
+            //bitangents.push_back({ mesh->mBitangents[uniqueIdx].x, mesh->mBitangents[uniqueIdx].y, mesh->mBitangents[uniqueIdx].z }); // ???
+
             if (mesh->HasTextureCoords(0))
                 uvCoords.push_back({ mesh->mTextureCoords[0][uniqueIdx].x, mesh->mTextureCoords[0][uniqueIdx].y });
             else
@@ -265,6 +270,8 @@ void MeshComponent::StoreMeshData(GLenum drawmode_) {
             interleaved[i].boneWeights[2] = (i * 4 + 2 < boneWeights.size()) ? boneWeights[i * 4 + 2] : 0.0f;
             interleaved[i].boneWeights[3] = (i * 4 + 3 < boneWeights.size()) ? boneWeights[i * 4 + 3] : 1.0f; // Default identity
 
+            interleaved[i].tangents = tangents[i];
+            //interleaved[i].bitangents = bitangents[i];
         }
 
         // SINGLE BUFFER - totalSize = vertices * sizeof(Vertex)
@@ -282,33 +289,43 @@ void MeshComponent::StoreMeshData(GLenum drawmode_) {
         glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6 * 4));
         glEnableVertexAttribArray(3); glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (void*)(8 * 4));   // boneIds
         glEnableVertexAttribArray(4); glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(12 * 4)); // boneWeights
+        glEnableVertexAttribArray(5); glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(15 * 4)); // tangents
+        //glEnableVertexAttribArray(6); glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(18 * 4)); // bitangents
 
     }
     else {
         // NON-SKINNED - use your existing sequential layout
         size_t totalSize = vertices.size() * sizeof(Vec3) +
             normals.size() * sizeof(Vec3) +
-            uvCoords.size() * sizeof(Vec2);  // SIMPLIFIED
+            uvCoords.size() * sizeof(Vec2) +
+            tangents.size() * sizeof(Vec3);
+            //bitangents.size() * sizeof(Vec3);  // SIMPLIFIED
 
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, totalSize, nullptr, GL_STATIC_DRAW);
 
         size_t offset = 0;
-        glBufferSubData(GL_ARRAY_BUFFER, offset, vertices.size() * sizeof(Vec3), vertices.data()); offset += vertices.size() * sizeof(Vec3);
+          glBufferSubData(GL_ARRAY_BUFFER, offset, vertices.size() * sizeof(Vec3), vertices.data()); offset += vertices.size() * sizeof(Vec3);
         glBufferSubData(GL_ARRAY_BUFFER, offset, normals.size() * sizeof(Vec3), normals.data()); offset += normals.size() * sizeof(Vec3);
-        glBufferSubData(GL_ARRAY_BUFFER, offset, uvCoords.size() * sizeof(Vec2), uvCoords.data());
+        glBufferSubData(GL_ARRAY_BUFFER, offset, uvCoords.size() * sizeof(Vec2), uvCoords.data()); offset += uvCoords.size() * sizeof(Vec2);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, tangents.size() * sizeof(Vec3), tangents.data()); offset += tangents.size() * sizeof(Vec3);
+        //glBufferSubData(GL_ARRAY_BUFFER, offset, bitangents.size() * sizeof(Vec3), bitangents.data());
 
-        glEnableVertexAttribArray(0); glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(vertices.size() * sizeof(Vec3)));
-        glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
+        offset = 0;
+        glEnableVertexAttribArray(0); glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += vertices.size() * sizeof(Vec3);
+        glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += normals.size() * sizeof(Vec3);
+        glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += uvCoords.size() * sizeof(Vec2);
+        glEnableVertexAttribArray(5); glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));    //tangents
+        //glEnableVertexAttribArray(6); glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 
         glDisableVertexAttribArray(3); glVertexAttribI4i(3, 0, 0, 0, 0);
         glDisableVertexAttribArray(4); glVertexAttrib4f(4, 0, 0, 0, 1);
+
     }
 
     dataLength = vertices.size();
-    vertices.clear(); normals.clear(); uvCoords.clear();
+    vertices.clear(); normals.clear(); uvCoords.clear(); tangents.clear(); //bitangents.clear();
 }
 
 void MeshComponent::Render() const {

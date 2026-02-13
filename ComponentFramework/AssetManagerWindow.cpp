@@ -124,6 +124,8 @@ void AssetManagerWindow::ShowAddAssetDialog()
 			ImGui::InputText("##DiffusePath", &newDiffuseMapPath);
 			ImGui::Text("Specular Map (Optional):");
 			ImGui::InputText("##SpecularPath", &newSpecularMapPath);
+			ImGui::Text("Normal Map (Optional):");
+			ImGui::InputText("##NormalPath", &newNormalMapPath);
 			ImGui::TextWrapped("Example: textures/Texture.png");
 		}
 		else if (selectedAssetType == 2) {
@@ -203,6 +205,7 @@ void AssetManagerWindow::ResetInput()
 	newAssetPath.clear();
 	newDiffuseMapPath.clear();
 	newSpecularMapPath.clear();
+	newNormalMapPath.clear();
 	newVertShaderPath.clear();
 	newFragShaderPath.clear();
 	newScriptPath.clear();
@@ -227,10 +230,15 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 			if (newSpecularMapPath.empty()) {
 				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
 					newAssetName, nullptr, newDiffuseMapPath.c_str());
-			} else {
+			} 
+			else if (!newSpecularMapPath.empty() && newNormalMapPath.empty()) {
 				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
 					newAssetName, nullptr, newDiffuseMapPath.c_str(), newSpecularMapPath.c_str());
+			} else {
+				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
+					newAssetName, nullptr, newDiffuseMapPath.c_str(), newSpecularMapPath.c_str(), newNormalMapPath.c_str());
 			}
+
 			break;
 
 		case 2: // Shader Component
