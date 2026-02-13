@@ -6,6 +6,8 @@
 #include "PhysicsSystem.h"
 #include <algorithm>
 //#include "ScriptComponent.h"
+#include "CollisionComponent.h"
+#include "ColliderDebug.h"
 
 
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
@@ -59,6 +61,11 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			// physics (rigidbody)
 			if (selectedActor->second->GetComponent<PhysicsComponent>()) {
 				DrawPhysicsComponent(sceneGraph->debugSelectedAssets);
+			}
+
+			// collision
+			if (selectedActor->second->GetComponent<CollisionComponent>()) {
+				DrawCollisionComponent(sceneGraph->debugSelectedAssets);
 			}
 
 			// camera
@@ -115,6 +122,14 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				if (ImGui::Selectable("Physics Component")) {
 					if (!selectedActor->second->GetComponent<PhysicsComponent>()) {
 						selectedActor->second->AddComponent<PhysicsComponent>();
+						PhysicsSystem::getInstance().AddActor(selectedActor->second);
+					}
+				}
+
+				if (ImGui::Selectable("Collision Component")) {
+					if (!selectedActor->second->GetComponent<CollisionComponent>()) {
+						selectedActor->second->AddComponent<CollisionComponent>();
+						CollisionSystem::getInstance().AddActor(selectedActor->second);
 					}
 				}
 
@@ -177,6 +192,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 			DrawMaterialComponent(sceneGraph->debugSelectedAssets);
 			DrawShaderComponent(sceneGraph->debugSelectedAssets);
 			DrawPhysicsComponent(sceneGraph->debugSelectedAssets);
+			DrawCollisionComponent(sceneGraph->debugSelectedAssets);
 			DrawScriptComponent(sceneGraph->debugSelectedAssets);
 			DrawCameraComponent(sceneGraph->debugSelectedAssets);
 			DrawLightComponent(sceneGraph->debugSelectedAssets);
@@ -198,6 +214,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				ComponentState<MaterialComponent> materialState(sceneGraph->debugSelectedAssets);
 				ComponentState<ShaderComponent> shaderState(sceneGraph->debugSelectedAssets);
 				ComponentState<PhysicsComponent> physicsState(sceneGraph->debugSelectedAssets);
+				ComponentState<CollisionComponent> collisionState(sceneGraph->debugSelectedAssets);
 				ComponentState<CameraComponent> cameraState(sceneGraph->debugSelectedAssets);
 				ComponentState<ScriptComponent> scriptState(sceneGraph->debugSelectedAssets);
 				ComponentState<LightComponent> lightState(sceneGraph->debugSelectedAssets);
@@ -237,6 +254,16 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<PhysicsComponent>()) {
 								pair.second->AddComponent<PhysicsComponent>();
+							}
+						}
+					}
+				}
+
+				if (collisionState.noneHaveComponent || collisionState.someHaveComponent) {
+					if (ImGui::Selectable("Collision Component")) {
+						for (const auto& pair : sceneGraph->debugSelectedAssets) {
+							if (!pair.second->GetComponent<CollisionComponent>()) {
+								pair.second->AddComponent<CollisionComponent>();
 							}
 						}
 					}
@@ -1042,7 +1069,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 
 	if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen)) {
 		RightClickContext<PhysicsComponent>("##PhysicsPopup", sceneGraph->debugSelectedAssets);
-		
+
 		ImGui::Text("Physics State");
 		ImGui::SameLine();
 
@@ -1056,19 +1083,19 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		// dropdown for states
 		if (ImGui::Combo("##PhysicsStates", &stateIndex, stateModes, 3)) {
 			PhysicsState newState = static_cast<PhysicsState>(stateIndex);
-			
+
 			for (auto& component : physicsState.components) {
 				component->setState(newState);
 			}
 		}
 
-		// Mass
 
-		// only showing mass if its not static
+		// static objects are not affected by mass, drag, gravity (dont show those variables)
 		if (physicsState.GetFirst()->getState() != PhysicsState::Static) {
+			// Mass
 			ImGui::Text("Mass");
 			ImGui::SameLine();
-		
+
 			bool hasMixedMass = physicsState.HasMixedFloat(&PhysicsComponent::getMass);
 			float displayMass = physicsState.GetFirst()->getMass();
 			float mass = displayMass;
@@ -1086,41 +1113,107 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 
 			isEditingMass = ImGui::IsItemActive();
 			ImGui::ActiveItemLockMousePos();
-		}
-	
-		// Drag
-		ImGui::Text("Drag");
-		ImGui::SameLine();
 
-		bool hasMixedDrag = physicsState.HasMixedFloat(&PhysicsComponent::getDrag);
-		float displayDrag = physicsState.GetFirst()->getDrag();
-		float drag = displayDrag;
+			// Drag
+			ImGui::Text("Drag");
+			ImGui::SameLine();
 
-		if (hasMixedDrag && !isEditingDrag) {
-			ImGui::DragFloat("##Drag", &drag, 0.1f, 0.0f, 100.0f, "---");
-		}
-		else { // no delta (might add later)
-			if (ImGui::DragFloat("##Drag", &drag, 0.1f, 0.1f, 100.0f)) {
+			bool hasMixedDrag = physicsState.HasMixedFloat(&PhysicsComponent::getDrag);
+			float displayDrag = physicsState.GetFirst()->getDrag();
+			float drag = displayDrag;
+
+			if (hasMixedDrag && !isEditingDrag) {
+				ImGui::DragFloat("##Drag", &drag, 0.1f, 0.0f, 2.0f, "---");
+			}
+			else { // no delta (might add later)
+				if (ImGui::DragFloat("##Drag", &drag, 0.1f, 0.1f, 2.0f)) {
+					for (auto& component : physicsState.components) {
+						component->setDrag(drag);
+					}
+				}
+			}
+
+			isEditingDrag = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+
+			// Angular Drag
+			ImGui::Text("Angular Drag (NOT IMPLEMENTED YET)");
+			ImGui::SameLine();
+
+			bool hasMixedAngularDrag = physicsState.HasMixedFloat(&PhysicsComponent::getAngularDrag);
+			float displayAngularDrag = physicsState.GetFirst()->getAngularDrag();
+			float angularDrag = displayAngularDrag;
+
+			if (hasMixedAngularDrag && !isEditingAngularDrag) {
+				ImGui::DragFloat("##AngularDrag", &angularDrag, 0.01f, 0.0f, 2.0f, "---");
+			}
+			else { // no delta (might add later)
+				if (ImGui::DragFloat("##AngularDrag", &angularDrag, 0.01f, 0.1f, 2.0f)) {
+					for (auto& component : physicsState.components) {
+						component->setAngularDrag(angularDrag);
+					}
+				}
+			}
+
+			isEditingAngularDrag = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+
+			// Apply gravity
+			ImGui::Text("Use Gravity");
+			ImGui::SameLine();
+
+			bool useGravity = physicsState.GetFirst()->getUseGravity();
+
+			if (ImGui::Checkbox("##UseGrav", &useGravity)) {
 				for (auto& component : physicsState.components) {
-					component->setDrag(drag);
+					component->setUseGravity(useGravity);
 				}
 			}
 		}
 
-		isEditingMass = ImGui::IsItemActive();
-		ImGui::ActiveItemLockMousePos();
-
-		// Apply gravity
-		ImGui::Text("Use Gravity");
+		// Friction
+		ImGui::Text("Friction");
 		ImGui::SameLine();
 
-		bool useGravity = physicsState.GetFirst()->getUseGravity();
+		bool hasMixedFriction = physicsState.HasMixedFloat(&PhysicsComponent::getFriction);
+		float displayFriction = physicsState.GetFirst()->getFriction();
+		float friction = displayFriction;
 
-		if (ImGui::Checkbox("##UseGrav", &useGravity)) {
-			for (auto& component : physicsState.components) {
-				component->setUseGravity(useGravity);
+		if (hasMixedFriction && !isEditingFriction) {
+			ImGui::DragFloat("##Friction", &friction, 0.01f, 0.0f, 1.0f, "---");
+		}
+		else { // no delta (might add later)
+			if (ImGui::DragFloat("##Friction", &friction, 0.01f, 0.1f, 1.0f)) {
+				for (auto& component : physicsState.components) {
+					component->setFriction(friction);
+				}
 			}
 		}
+
+		isEditingFriction = ImGui::IsItemActive();
+		ImGui::ActiveItemLockMousePos();
+
+		// Restitution 
+		ImGui::Text("Restitution");
+		ImGui::SameLine();
+
+		bool hasMixedRestitution = physicsState.HasMixedFloat(&PhysicsComponent::getRestitution);
+		float displayRestitution = physicsState.GetFirst()->getRestitution();
+		float restitution = displayRestitution;
+
+		if (hasMixedRestitution && !isEditingRestitution) {
+			ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.0f, 1.0f, "---");
+		}
+		else { // no delta (might add later)
+			if (ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.1f, 1.0f)) {
+				for (auto& component : physicsState.components) {
+					component->setRestitution(restitution);
+				}
+			}
+		}
+
+		isEditingFriction = ImGui::IsItemActive();
+		ImGui::ActiveItemLockMousePos();
 
 		// additional info, check things like velocity and acceleration (not editable)		
 		if (ImGui::TreeNode("Info")) {			
@@ -1130,6 +1223,290 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			ImGui::Text("Velocity: (%.1f, %.1f, %.1f)", physicsState.GetFirst()->getVel().x, physicsState.GetFirst()->getVel().y, physicsState.GetFirst()->getVel().z);
 			
 			ImGui::TreePop();
+		}
+	}
+
+	ImGui::Separator();
+}
+
+void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
+{
+	ComponentState<CollisionComponent> collisionState(selectedActors_);
+
+	if (collisionState.noneHaveComponent) return;
+
+	if (ImGui::CollapsingHeader("Collision", ImGuiTreeNodeFlags_DefaultOpen)) {
+		RightClickContext<CollisionComponent>("##CollisionPopup", sceneGraph->debugSelectedAssets);
+
+		ImGui::Text("Collision State");
+		ImGui::SameLine();
+
+		// Collision Type 
+		ColliderType currentType = collisionState.GetFirst()->getType();
+
+		// creating a dropdown, tracking current type name
+		const char* typeModes[] = { "Sphere", "Capsule", "AABB", "OBB" };
+		int typeIndex = static_cast<int>(currentType);
+
+		// dropdown for types
+		if (ImGui::Combo("##ColliderTypes", &typeIndex, typeModes, 4)) {
+			ColliderType newType = static_cast<ColliderType>(typeIndex);
+
+			for (auto& component : collisionState.components) {
+				component->setType(newType);
+				ColliderDebug::getInstance().UpdateDebug(component);
+			}
+		}
+
+		// Collision State
+		ColliderState currentState = collisionState.GetFirst()->getState();
+
+		// creating a dropdown, tracking current state name
+		const char* stateModes[] = { "Discrete", "Continuous" };
+		int stateIndex = static_cast<int>(currentState);
+
+		// dropdown for states
+		if (ImGui::Combo("##ColliderStates", &stateIndex, stateModes, 2)) {
+			ColliderState newState = static_cast<ColliderState>(stateIndex);
+
+			for (auto& component : collisionState.components) {
+				component->setState(newState);
+				ColliderDebug::getInstance().UpdateDebug(component);
+			}
+		}
+
+		// is trigger
+		ImGui::Text("Is Trigger");
+		ImGui::SameLine();
+
+		bool isTrigger = collisionState.GetFirst()->getIsTrigger();
+
+		if (ImGui::Checkbox("##isTrigger", &isTrigger)) {
+			for (auto& component : collisionState.components) {
+				component->setIsTrigger(isTrigger);
+				ColliderDebug::getInstance().UpdateDebug(component);
+			}
+		}
+
+		if (collisionState.GetFirst()->getType() == ColliderType::Sphere || collisionState.GetFirst()->getType() == ColliderType::Capsule) {
+			// Radius
+			ImGui::Text("Radius");
+			ImGui::SameLine();
+
+			bool hasMixedRadius = collisionState.HasMixedFloat(&CollisionComponent::getRadius);
+			float displayRadius = collisionState.GetFirst()->getRadius();
+			float radius = displayRadius;
+
+			if (hasMixedRadius && !isEditingRadius) {
+				ImGui::DragFloat("##Radius", &radius, 0.1f, 0.0f, 100.0f, "---");
+			}
+			else { // no delta (might add later)
+				if (ImGui::DragFloat("##Radius", &radius, 0.1f, 0.1f, 100.0f)) {
+					for (auto& component : collisionState.components) {
+						component->setRadius(radius);
+						ColliderDebug::getInstance().UpdateDebug(component);
+					}
+				}
+			}
+
+			isEditingRadius = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+		}
+
+		if (collisionState.GetFirst()->getType() == ColliderType::Sphere || collisionState.GetFirst()->getType() == ColliderType::AABB || collisionState.GetFirst()->getType() == ColliderType::OBB) {
+			// Centre
+			bool hasMixedCentre = collisionState.HasMixedVec3(&CollisionComponent::getCentre);
+
+			Vec3 displayCentre = collisionState.GetFirst()->getCentre();
+			lastCentrePosA = displayCentre;
+
+			float centre[3] = { displayCentre.x, displayCentre.y, displayCentre.z };
+
+			ImGui::Text("Centre");
+			ImGui::SameLine();
+
+			if (hasMixedCentre && !isEditingCentre) {
+				ImGui::DragFloat3("##Centre", centre, 0.1f, 0.0f, 0.0f, "---");
+			}
+			else {
+				if (ImGui::DragFloat3("##Centre", centre, 0.1f)) {
+					Vec3 newPos(centre[0], centre[1], centre[2]);
+					Vec3 delta = newPos - lastCentrePosA;
+
+					for (auto& component : collisionState.components) {
+						Vec3 currentPos = component->getCentre();
+						Vec3 updatedPos = currentPos + delta;
+						component->setCentre(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
+						ColliderDebug::getInstance().UpdateDebug(component);
+					}
+
+					lastCentrePosA = newPos;
+				}
+			}
+
+			isEditingCentre = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+		}
+		
+		if (collisionState.GetFirst()->getType() == ColliderType::Capsule) {
+			// CentrePosA
+			bool hasMixedCentrePosA = collisionState.HasMixedVec3(&CollisionComponent::getCentrePosA);
+
+			Vec3 displayCentrePosA = collisionState.GetFirst()->getCentrePosA();
+			lastCentrePosA = displayCentrePosA;
+
+			float centrePosA[3] = { displayCentrePosA.x, displayCentrePosA.y, displayCentrePosA.z };
+
+			ImGui::Text("CentrePosA");
+			ImGui::SameLine();
+
+			if (hasMixedCentrePosA && !isEditingCentrePosA) {
+				ImGui::DragFloat3("##CentrePosA", centrePosA, 0.1f, 0.0f, 0.0f, "---");
+			}
+			else {
+				if (ImGui::DragFloat3("##CentrePosA", centrePosA, 0.1f)) {
+					Vec3 newPos(centrePosA[0], centrePosA[1], centrePosA[2]);
+					Vec3 delta = newPos - lastCentrePosA;
+
+					for (auto& component : collisionState.components) {
+						Vec3 currentPos = component->getCentrePosA();
+						Vec3 updatedPos = currentPos + delta;
+						component->setCentrePosA(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
+						ColliderDebug::getInstance().UpdateDebug(component);
+					}
+
+					lastCentrePosA = newPos;
+				}
+			}
+
+			isEditingCentrePosA = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+
+			// CentrePosB
+			bool hasMixedCentrePosB = collisionState.HasMixedVec3(&CollisionComponent::getCentrePosB);
+
+			Vec3 displayCentrePosB = collisionState.GetFirst()->getCentrePosB();
+			lastCentrePosB = displayCentrePosB;
+
+			float centrePosB[3] = { displayCentrePosB.x, displayCentrePosB.y, displayCentrePosB.z };
+
+			ImGui::Text("CentrePosB");
+			ImGui::SameLine();
+
+			if (hasMixedCentrePosB && !isEditingCentrePosB) {
+				ImGui::DragFloat3("##CentrePosB", centrePosB, 0.1f, 0.0f, 0.0f, "---");
+			}
+			else {
+				if (ImGui::DragFloat3("##CentrePosB", centrePosB, 0.1f)) {
+					Vec3 newPos(centrePosB[0], centrePosB[1], centrePosB[2]);
+					Vec3 delta = newPos - lastCentrePosB;
+
+					for (auto& component : collisionState.components) {
+						Vec3 currentPos = component->getCentrePosB();
+						Vec3 updatedPos = currentPos + delta;
+						component->setCentrePosB(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
+						ColliderDebug::getInstance().UpdateDebug(component);
+					}
+
+					lastCentrePosB = newPos;
+				}
+			}
+
+			isEditingCentrePosB = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+		}
+
+		if (collisionState.GetFirst()->getType() == ColliderType::AABB || collisionState.GetFirst()->getType() == ColliderType::OBB) {
+			// Half Extents
+			bool hasMixedHalfExtents = collisionState.HasMixedVec3(&CollisionComponent::getHalfExtents);
+
+			Vec3 displayHalfExtents = collisionState.GetFirst()->getHalfExtents();
+			lastHalfExtents = displayHalfExtents;
+
+			float halfExtents[3] = { displayHalfExtents.x, displayHalfExtents.y, displayHalfExtents.z };
+
+			ImGui::Text("HalfExtents");
+			ImGui::SameLine();
+
+			if (hasMixedHalfExtents && !isEditingHalfExtents) {
+				ImGui::DragFloat3("##HalfExtents", halfExtents, 0.1f, 0.0f, 0.0f, "---");
+			}
+			else {
+				if (ImGui::DragFloat3("##HalfExtents", halfExtents, 0.1f)) {
+					Vec3 newPos(halfExtents[0], halfExtents[1], halfExtents[2]);
+					Vec3 delta = newPos - lastHalfExtents;
+
+					for (auto& component : collisionState.components) {
+						Vec3 currentPos = component->getHalfExtents();
+						Vec3 updatedPos = currentPos + delta;
+						component->setHalfExtents(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
+						ColliderDebug::getInstance().UpdateDebug(component);
+					}
+
+					lastHalfExtents = newPos;
+				}
+			}
+
+			isEditingHalfExtents = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
+		}
+
+		if (collisionState.GetFirst()->getType() == ColliderType::OBB) {
+			// Orientation
+			bool hasMixedOri = collisionState.HasMixedQuaternion(&CollisionComponent::getOrientation);
+
+			if (!isEditingOrientation) {
+				// get the quaternions rotation when not edting anything
+				if (!ImGui::IsAnyItemActive()) {
+					Quaternion firstQuat = collisionState.GetFirst()->getOrientation();
+					Euler quatEuler = EMath::toEuler(firstQuat);
+					oriEulerAngles = Vec3(quatEuler.xAxis, quatEuler.yAxis, quatEuler.zAxis);
+				}
+			}
+
+			float orientation[3] = { oriEulerAngles.x, oriEulerAngles.y, oriEulerAngles.z };
+
+			ImGui::Text("Orientation");
+			ImGui::SameLine();
+
+			bool rotationChanged = false;
+
+			if (hasMixedOri && !isEditingOrientation) {
+				ImGui::DragFloat3("##Orientation", orientation, 0.1f, 0.0f, 0.0f, "---");
+			}
+			else {
+				rotationChanged = ImGui::DragFloat3("##Orientation", orientation, 1.0f);
+			}
+
+			if (rotationChanged) {
+				// store the euler angles
+				oriEulerAngles.x = orientation[0];
+				oriEulerAngles.y = orientation[1];
+				oriEulerAngles.z = orientation[2];
+
+				// convert euler to quaternion
+				Euler eulerRot(orientation[0], orientation[1], orientation[2]);
+				Quaternion newOrientation = QMath::toQuaternion(eulerRot);
+
+				if (collisionState.components.size() == 1) {
+					collisionState.GetFirst()->setOrientation(QMath::normalize(newOrientation));
+				}
+				else {
+					Quaternion firstQuat = collisionState.GetFirst()->getOrientation();
+					Quaternion delta = newOrientation * QMath::inverse(firstQuat);
+
+					for (auto& component : collisionState.components) {
+						Quaternion currentQuat = component->getOrientation();
+						Quaternion updatedQuat = delta * currentQuat;
+						component->setOrientation(QMath::normalize(updatedQuat));
+						ColliderDebug::getInstance().UpdateDebug(component);
+					}
+				}
+
+			}
+
+			isEditingOrientation = ImGui::IsItemActive();
+			ImGui::ActiveItemLockMousePos();
 		}
 	}
 

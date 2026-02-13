@@ -4,6 +4,7 @@
 #include "CameraComponent.h"  
 #include "LightComponent.h"  
 #include "ScriptComponent.h"
+#include "CollisionComponent.h"
 #include "SceneGraph.h"
 
 
@@ -460,6 +461,8 @@ public:
             XMLElement* useGravityElement = component->FirstChildElement("UsingGravity");
             XMLElement* dragElement = component->FirstChildElement("drag");
             XMLElement* angularDragElement = component->FirstChildElement("angularDrag");
+            XMLElement* frictionElement = component->FirstChildElement("friction");
+            XMLElement* restitutionElement = component->FirstChildElement("restitution");
 
             // physics state
             PhysicsState physicsStateArg = static_cast<PhysicsState>(GetAttrF(stateElement, "state"));
@@ -475,6 +478,12 @@ public:
 
             // angular drag
             float angularDragArg = GetAttrF(angularDragElement, "value");
+            
+            // friciton
+            float frictionArg = GetAttrF(frictionElement, "value");
+            
+            // restitution
+            float restitutionArg = GetAttrF(restitutionElement, "value");
 
             //return the tuple to act as arguments
             auto args = std::make_tuple(nullptr,
@@ -482,7 +491,86 @@ public:
                 massArg,
                 useGravityArg,
                 dragArg,
-                angularDragArg
+                angularDragArg,
+                frictionArg,
+                restitutionArg
+            );
+            return args;
+        }
+        else if constexpr (std::is_same_v<ComponentTemplate, CollisionComponent>) {
+            // collision
+
+            XMLElement* stateElement = component->FirstChildElement("CollisionState");
+            XMLElement* typeElement = component->FirstChildElement("CollisionType");
+            XMLElement* isTriggerElement = component->FirstChildElement("isTrigger");
+            XMLElement* radiusElement = component->FirstChildElement("radius");
+            XMLElement* centreElement = component->FirstChildElement("centre");
+            XMLElement* centrePosAElement = component->FirstChildElement("centrePosA");
+            XMLElement* centrePosBElement = component->FirstChildElement("centrePosB");
+            XMLElement* halfExtentsElement = component->FirstChildElement("halfExtents");
+            XMLElement* orientationElement = component->FirstChildElement("orientation");
+
+            // collision state
+            ColliderState collisionStateArg = static_cast<ColliderState>(GetAttrF(stateElement, "state"));
+            
+            // collision state
+            ColliderType typeArg = static_cast<ColliderType>(GetAttrF(typeElement, "type"));
+
+            // is trigger
+            bool isTriggerArg = static_cast<bool>(GetAttrF(isTriggerElement, "trigger"));
+
+            // radius
+            float radiusArg = GetAttrF(radiusElement, "value");
+
+            // centre
+            Vec3 centreArg = Vec3(
+                GetAttrF(centreElement, "x"),
+                GetAttrF(centreElement, "y"),
+                GetAttrF(centreElement, "z")
+            );
+
+            // centrePosA
+            Vec3 centrePosAArg = Vec3(
+                GetAttrF(centrePosAElement, "x"),
+                GetAttrF(centrePosAElement, "y"),
+                GetAttrF(centrePosAElement, "z")
+            );
+            
+            // centrePosB
+            Vec3 centrePosBArg = Vec3(
+                GetAttrF(centrePosBElement, "x"),
+                GetAttrF(centrePosBElement, "y"),
+                GetAttrF(centrePosBElement, "z")
+            );
+
+            // half extents
+            Vec3 halfExtentsArg = Vec3(
+                GetAttrF(halfExtentsElement, "x"),
+                GetAttrF(halfExtentsElement, "y"),
+                GetAttrF(halfExtentsElement, "z")
+            );
+
+            // orientation
+            Quaternion orientationArg = Quaternion(
+                GetAttrF(orientationElement, "w"),
+                Vec3(
+                    GetAttrF(orientationElement, "x"),
+                    GetAttrF(orientationElement, "y"),
+                    GetAttrF(orientationElement, "z")
+                )
+            );
+
+            //return the tuple to act as arguments
+            auto args = std::make_tuple(nullptr,
+                collisionStateArg,
+                typeArg,
+                isTriggerArg,
+                radiusArg,
+                centreArg,
+                centrePosAArg,
+                centrePosBArg,
+                halfExtentsArg,
+                orientationArg
             );
             return args;
         }
@@ -703,6 +791,104 @@ public:
             angularDragElement = doc.NewElement("angularDrag");
             angularDragElement->SetAttribute("value", componentToWrite->getAngularDrag());
             componentElement->InsertEndChild(angularDragElement);
+            
+            // friction
+            XMLElement* frictionElement;
+            frictionElement = doc.NewElement("friction");
+            frictionElement->SetAttribute("value", componentToWrite->getFriction());
+            componentElement->InsertEndChild(frictionElement);
+            
+            // restitution
+            XMLElement* restitutionElement;
+            restitutionElement = doc.NewElement("restitution");
+            restitutionElement->SetAttribute("value", componentToWrite->getRestitution());
+            componentElement->InsertEndChild(restitutionElement);
+        }
+        else if constexpr (std::is_same_v<ComponentTemplate, CollisionComponent>) {
+            CollisionComponent* componentToWrite = dynamic_cast<CollisionComponent*>(toWrite);
+
+            // collision state
+            XMLElement* stateElement;
+            stateElement = doc.NewElement("CollisionState");
+            stateElement->SetAttribute("state", static_cast<int>(componentToWrite->getState()));
+            componentElement->InsertEndChild(stateElement);
+
+            // collision type
+            XMLElement* typeElement;
+            typeElement = doc.NewElement("CollisionType");
+            typeElement->SetAttribute("type", static_cast<int>(componentToWrite->getType()));
+            componentElement->InsertEndChild(typeElement);
+
+            // is trigger
+            XMLElement* isTriggerElement;
+            isTriggerElement = doc.NewElement("isTrigger");
+            isTriggerElement->SetAttribute("trigger", static_cast<int>(componentToWrite->getIsTrigger()));
+            componentElement->InsertEndChild(isTriggerElement);
+
+            // radius
+            XMLElement* radiusElement;
+            radiusElement = doc.NewElement("radius");
+            radiusElement->SetAttribute("value", componentToWrite->getRadius());
+            componentElement->InsertEndChild(radiusElement);
+
+            // centre
+            XMLElement* centre;
+            centre = doc.NewElement("centre");
+
+            Vec3 vCentre = componentToWrite->getCentre();
+            centre->SetAttribute("x", vCentre.x);
+            centre->SetAttribute("y", vCentre.y);
+            centre->SetAttribute("z", vCentre.z);
+
+            componentElement->InsertEndChild(centre);
+
+            // centrePosA
+            XMLElement* centrePosA;
+            centrePosA = doc.NewElement("centrePosA");
+
+            Vec3 vCentrePosA = componentToWrite->getCentrePosA();
+            centrePosA->SetAttribute("x", vCentrePosA.x);
+            centrePosA->SetAttribute("y", vCentrePosA.y);
+            centrePosA->SetAttribute("z", vCentrePosA.z);
+
+            componentElement->InsertEndChild(centrePosA);
+
+            // centrePosB
+            XMLElement* centrePosB;
+            centrePosB = doc.NewElement("centrePosB");
+
+            Vec3 vcentrePosB = componentToWrite->getCentrePosB();
+            centrePosB->SetAttribute("x", vcentrePosB.x);
+            centrePosB->SetAttribute("y", vcentrePosB.y);
+            centrePosB->SetAttribute("z", vcentrePosB.z);
+
+            componentElement->InsertEndChild(centrePosB);
+
+            // half extents
+            XMLElement* halfExtents;
+            halfExtents = doc.NewElement("halfExtents");
+
+            Vec3 vhalfExtents = componentToWrite->getHalfExtents();
+            halfExtents->SetAttribute("x", vhalfExtents.x);
+            halfExtents->SetAttribute("y", vhalfExtents.y);
+            halfExtents->SetAttribute("z", vhalfExtents.z);
+
+            componentElement->InsertEndChild(halfExtents);
+
+            // orientation
+            XMLElement* orientation;
+            orientation = doc.NewElement("orientation");
+
+            Quaternion ori = componentToWrite->getOrientation();
+
+            orientation->SetAttribute("w", ori.w);
+            orientation->SetAttribute("x", ori.ijk.x);
+            orientation->SetAttribute("y", ori.ijk.y);
+            orientation->SetAttribute("z", ori.ijk.z);
+
+            componentElement->InsertEndChild(orientation);
+
+
         }
         else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
         

@@ -277,6 +277,9 @@ void SceneGraph::SaveFile(std::string name) const {
         if (GetActor(obj.first)->GetComponent<PhysicsComponent>())
             XMLObjectFile::writeUniqueComponent<PhysicsComponent>(obj.first, GetActor(obj.first)->GetComponent<PhysicsComponent>().get());
 
+        if (GetActor(obj.first)->GetComponent<CollisionComponent>())
+            XMLObjectFile::writeUniqueComponent<CollisionComponent>(obj.first, GetActor(obj.first)->GetComponent<CollisionComponent>().get());
+
         //write camera as unique as there's no camera 'asset'
         if (GetActor(obj.first)->GetComponent<CameraComponent>())
             XMLObjectFile::writeUniqueComponent<CameraComponent>(obj.first, GetActor(obj.first)->GetComponent<CameraComponent>().get());

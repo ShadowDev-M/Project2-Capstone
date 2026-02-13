@@ -38,12 +38,12 @@ protected:
 
 	bool isTrigger = false; // determines the type of response 
 
-	float radius; /// Sphere, Capsule
-	Vec3 centre; // Sphere, AABB, OBB
-	Vec3 centrePosA; // Capsule
-	Vec3 centrePosB; // Capsule
-	Vec3 halfExtents; /// AABB, OBB
-	Quaternion orientation; // OBB 
+	float radius = 1.0f; /// Sphere, Capsule
+	Vec3 centre = Vec3(0.0f, 0.0f, 0.0f); // Sphere, AABB, OBB
+	Vec3 centrePosA = Vec3(0.0f, 1.0f, 0.0f); // Capsule
+	Vec3 centrePosB = Vec3(0.0f, -1.0f, 0.0f); // Capsule
+	Vec3 halfExtents = Vec3(1.0f, 1.0f, 1.0f); /// AABB, OBB
+	Quaternion orientation = Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)); // OBB 
 
 public:
 	// Local vs World Coords
