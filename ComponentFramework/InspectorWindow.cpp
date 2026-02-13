@@ -1108,6 +1108,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 
 		ImGui::Text("Physics State");
 		ImGui::SameLine();
+		ImGui::SetNextItemWidth(labelWidth);
 
 		// Physics State
 		PhysicsState currentState = physicsState.GetFirst()->getState();
@@ -1131,6 +1132,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			// Mass
 			ImGui::Text("Mass");
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(labelWidth);
 
 			bool hasMixedMass = physicsState.HasMixedFloat(&PhysicsComponent::getMass);
 			float displayMass = physicsState.GetFirst()->getMass();
@@ -1153,6 +1155,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			// Drag
 			ImGui::Text("Drag");
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(labelWidth);
 
 			bool hasMixedDrag = physicsState.HasMixedFloat(&PhysicsComponent::getDrag);
 			float displayDrag = physicsState.GetFirst()->getDrag();
@@ -1174,7 +1177,6 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 
 			// Angular Drag
 			ImGui::Text("Angular Drag (NOT IMPLEMENTED YET)");
-			ImGui::SameLine();
 
 			bool hasMixedAngularDrag = physicsState.HasMixedFloat(&PhysicsComponent::getAngularDrag);
 			float displayAngularDrag = physicsState.GetFirst()->getAngularDrag();
@@ -1197,6 +1199,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			// Apply gravity
 			ImGui::Text("Use Gravity");
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(labelWidth);
 
 			bool useGravity = physicsState.GetFirst()->getUseGravity();
 
@@ -1210,6 +1213,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		// Friction
 		ImGui::Text("Friction");
 		ImGui::SameLine();
+		ImGui::SetNextItemWidth(labelWidth);
 
 		bool hasMixedFriction = physicsState.HasMixedFloat(&PhysicsComponent::getFriction);
 		float displayFriction = physicsState.GetFirst()->getFriction();
@@ -1232,6 +1236,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		// Restitution 
 		ImGui::Text("Restitution");
 		ImGui::SameLine();
+		ImGui::SetNextItemWidth(labelWidth);
 
 		bool hasMixedRestitution = physicsState.HasMixedFloat(&PhysicsComponent::getRestitution);
 		float displayRestitution = physicsState.GetFirst()->getRestitution();
@@ -1274,8 +1279,9 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 	if (ImGui::CollapsingHeader("Collision", ImGuiTreeNodeFlags_DefaultOpen)) {
 		RightClickContext<CollisionComponent>("##CollisionPopup", sceneGraph->debugSelectedAssets);
 
-		ImGui::Text("Collision State");
+		ImGui::Text("Colldier Type");
 		ImGui::SameLine();
+		ImGui::SetNextItemWidth(labelWidth);
 
 		// Collision Type 
 		ColliderType currentType = collisionState.GetFirst()->getType();
@@ -1290,9 +1296,12 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 			for (auto& component : collisionState.components) {
 				component->setType(newType);
-				ColliderDebug::getInstance().UpdateDebug(component);
 			}
 		}
+
+		ImGui::Text("Collider Detection");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(labelWidth);
 
 		// Collision State
 		ColliderState currentState = collisionState.GetFirst()->getState();
@@ -1307,20 +1316,19 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 			for (auto& component : collisionState.components) {
 				component->setState(newState);
-				ColliderDebug::getInstance().UpdateDebug(component);
 			}
 		}
 
 		// is trigger
 		ImGui::Text("Is Trigger");
 		ImGui::SameLine();
+		ImGui::SetNextItemWidth(labelWidth);
 
 		bool isTrigger = collisionState.GetFirst()->getIsTrigger();
 
 		if (ImGui::Checkbox("##isTrigger", &isTrigger)) {
 			for (auto& component : collisionState.components) {
 				component->setIsTrigger(isTrigger);
-				ColliderDebug::getInstance().UpdateDebug(component);
 			}
 		}
 
@@ -1328,6 +1336,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 			// Radius
 			ImGui::Text("Radius");
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(labelWidth);
 
 			bool hasMixedRadius = collisionState.HasMixedFloat(&CollisionComponent::getRadius);
 			float displayRadius = collisionState.GetFirst()->getRadius();
@@ -1340,7 +1349,6 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 				if (ImGui::DragFloat("##Radius", &radius, 0.1f, 0.1f, 100.0f)) {
 					for (auto& component : collisionState.components) {
 						component->setRadius(radius);
-						ColliderDebug::getInstance().UpdateDebug(component);
 					}
 				}
 			}
@@ -1373,7 +1381,6 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 						Vec3 currentPos = component->getCentre();
 						Vec3 updatedPos = currentPos + delta;
 						component->setCentre(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
-						ColliderDebug::getInstance().UpdateDebug(component);
 					}
 
 					lastCentrePosA = newPos;
@@ -1408,7 +1415,6 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 						Vec3 currentPos = component->getCentrePosA();
 						Vec3 updatedPos = currentPos + delta;
 						component->setCentrePosA(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
-						ColliderDebug::getInstance().UpdateDebug(component);
 					}
 
 					lastCentrePosA = newPos;
@@ -1441,7 +1447,6 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 						Vec3 currentPos = component->getCentrePosB();
 						Vec3 updatedPos = currentPos + delta;
 						component->setCentrePosB(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
-						ColliderDebug::getInstance().UpdateDebug(component);
 					}
 
 					lastCentrePosB = newPos;
@@ -1476,7 +1481,6 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 						Vec3 currentPos = component->getHalfExtents();
 						Vec3 updatedPos = currentPos + delta;
 						component->setHalfExtents(Vec3(updatedPos.x, updatedPos.y, updatedPos.z));
-						ColliderDebug::getInstance().UpdateDebug(component);
 					}
 
 					lastHalfExtents = newPos;
@@ -1535,7 +1539,6 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 						Quaternion currentQuat = component->getOrientation();
 						Quaternion updatedQuat = delta * currentQuat;
 						component->setOrientation(QMath::normalize(updatedQuat));
-						ColliderDebug::getInstance().UpdateDebug(component);
 					}
 				}
 

@@ -28,17 +28,16 @@ private:
 		GLuint vbo = 0;
 		size_t dataLength = 0;
 	};
-	std::unordered_map<Ref<CollisionComponent>, ColliderShape> colliderCache;
 
 	Ref<ShaderComponent> debugShader = nullptr;
 
 	// helper function for generating circles (used for sphere and capsule end caps)
 	std::vector<Vec3> GenerateCircle(const Vec3& centre_, float radius_, const Vec3& axis_, int segments_ = 16);
 
-	ColliderShape GenerateSphere(const Ref<CollisionComponent>& collision_);
+	ColliderShape GenerateSphere(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_);
 	ColliderShape GenerateCapsule(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_);
-	ColliderShape GenerateAABB(const Ref<CollisionComponent>& collision_);
-	ColliderShape GenerateOBB(const Ref<CollisionComponent>& collision_);
+	ColliderShape GenerateAABB(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_);
+	ColliderShape GenerateOBB(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_);
 
 	// helper function for pushing vertices to gpu
 	void StoreShapeData(ColliderDebug::ColliderShape& shape, std::vector<MATH::Vec3>& vertices);
@@ -56,6 +55,4 @@ public:
 	bool OnCreate();
 	void OnDestroy();
 	void Render(Ref<CollisionComponent> collision_, Ref<TransformComponent> transform_, const Matrix4& viewMatrix_, const Matrix4& projectionMatrix_);
-	void UpdateDebug(Ref<CollisionComponent> collision_);
-	void ClearAll();
 };
