@@ -574,6 +574,30 @@ public:
             );
             return args;
         }
+        else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
+            XMLElement* fovElement = component->FirstChildElement("fov");
+            XMLElement* nearElement = component->FirstChildElement("near");
+            XMLElement* farElement = component->FirstChildElement("far");
+
+            // fov
+            float fovArg = GetAttrF(fovElement, "value");
+
+            // near
+            float nearArg = GetAttrF(nearElement, "value");
+
+            // far
+            float farArg = GetAttrF(farElement, "value");
+
+            //return the tuple to act as arguments
+            auto args = std::make_tuple(nullptr,
+                fovArg,
+                (16.0f / 9.0f),
+                nearArg,
+                farArg
+            );
+            return args;
+
+        }
         else if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
             //LIGHT
 
@@ -891,7 +915,25 @@ public:
 
         }
         else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
-        
+            CameraComponent* componentToWrite = dynamic_cast<CameraComponent*>(toWrite);
+
+            // radius
+            XMLElement* fovElement;
+            fovElement = doc.NewElement("fov");
+            fovElement->SetAttribute("value", componentToWrite->getFOV());
+            componentElement->InsertEndChild(fovElement);
+
+            // near
+            XMLElement* nearElement;
+            nearElement = doc.NewElement("near");
+            nearElement->SetAttribute("value", componentToWrite->getNearClipPlane());
+            componentElement->InsertEndChild(nearElement);
+
+            // far
+            XMLElement* farElement;
+            farElement = doc.NewElement("far");
+            farElement->SetAttribute("value", componentToWrite->getFarClipPlane());
+            componentElement->InsertEndChild(farElement);
         }
         else if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
             LightComponent* componentToWrite = dynamic_cast<LightComponent*>(toWrite);

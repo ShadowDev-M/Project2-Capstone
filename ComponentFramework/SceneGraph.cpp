@@ -429,8 +429,14 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 
 	if (XMLObjectFile::hasComponent<CameraComponent>(name_)) {
-		std::cout << "Has a Camera" << std::endl; 
-		actor_->AddComponent<CameraComponent>(actor_, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+		Ref<CameraComponent> CamC = Ref<CameraComponent>(std::apply([](auto&&... args) {
+			return new CameraComponent(args...);
+			}, XMLObjectFile::getComponent<CameraComponent>(name_)));
+
+		if (!actor_->GetComponent<CameraComponent>()) {
+			actor_->AddComponent(CamC);
+			actor_->GetComponent<CameraComponent>()->setUserActor(actor_);
+		}
 	}
 
 	if (XMLObjectFile::hasComponent<LightComponent>(name_)) {
@@ -473,8 +479,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 	}
 
-	if (XMLObjectFile::hasComponent<PhysicsComponent>(name_)) {
-		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
+	if (XMLObjectFile::hasComponent<PhysicsComponent>(name_)) {		
 		Ref<PhysicsComponent> PC = Ref<PhysicsComponent>(std::apply([](auto&&... args) {
 			return new PhysicsComponent(args...);
 			}, XMLObjectFile::getComponent<PhysicsComponent>(name_)));
@@ -485,8 +490,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}
 	}
 
-	if (XMLObjectFile::hasComponent<CollisionComponent>(name_)) {
-		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
+	if (XMLObjectFile::hasComponent<CollisionComponent>(name_)) {		
 		Ref<CollisionComponent> CC = Ref<CollisionComponent>(std::apply([](auto&&... args) {
 			return new CollisionComponent(args...);
 			}, XMLObjectFile::getComponent<CollisionComponent>(name_)));
