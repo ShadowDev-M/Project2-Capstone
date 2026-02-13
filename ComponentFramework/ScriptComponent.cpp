@@ -73,11 +73,32 @@ void ScriptComponent::setLocal(const std::string& name, sol::object value) {
 	persistentLocals[name] = value;
 	if (persistentLocals[name].get_type() != sol::type::function) {
 		if (name._Starts_with("PUBLIC__")) {
-			std::cout << name << std::endl;
+
+			//if you have public before a variable itll add that variable to a special list that can be edited the script menu
+			if (!publicVariables[name.substr(8)].valid())
+			publicVariables[name.substr(8)] = value;
 		}
 	}
 
+
 }
+
+void ScriptComponent::setPublicReference(const std::string refName, float ref)
+{
+	if (publicVariables[refName].valid()) {		
+		lua.registry().set(refName, ref);                         
+
+		publicVariables[refName] = lua.registry()[refName];
+		
+		std::cout << publicVariables[refName].as<float>() << std::endl;
+	}
+}
+
+std::unordered_map<std::string, sol::object> ScriptComponent::getPublicReferences() {
+	return publicVariables;
+}
+
+
 
 sol::object ScriptComponent::getLocal(const std::string& name) {
 	auto it = persistentLocals.find(name);
@@ -108,6 +129,9 @@ void ScriptComponent::load_lua_file() {
 	code = buffer.str();    // return as a std::string
 
 
+
+	
+
 	std::string from("public ");
 	std::string to("PUBLIC__");
 
@@ -120,6 +144,8 @@ void ScriptComponent::load_lua_file() {
 			start_pos += to.length();
 		}
 	}
+
+	
 }
 
 ///Use as the function to compile, isCreated will turn false if the function script has a compilation error.
@@ -165,13 +191,14 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 		//lets preload an extra time in case you changed the script. Should be fine as the first preload was mainly for preloading animations or meshes.
 		//ScriptService::preloadScript(script.get());
 
-		script->load_lua_file();
+		ScriptService::preloadScript(script.get());
 
 		//No point in continuing if its already started
 		Actor* user = dynamic_cast<Actor*>(script->parent);
 
 		if (script->isCreated == true) continue;
 
+		
 		
 
 		sol::load_result loaded_script = lua.load(script->code);
@@ -214,12 +241,15 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 )");
 
 
-				loaded_script();
+
+				script->restorePublicVars();
+
 				script->restoreAll();
 
 
 				lua["Start"]();
 				script->isCreated = true;
+
 
 
 			}
@@ -350,7 +380,7 @@ void ScriptService::updateAllScripts(float deltaTime) {
 void ScriptService::defineUsertypes(Actor* user) {
 
 	
-	lua.script(R"(
+	/*lua.script(R"(
     setmetatable(_G, {
     __index = function(t, k) 
         return Script:GetLocal(k) or rawget(t, k)
@@ -358,7 +388,7 @@ void ScriptService::defineUsertypes(Actor* user) {
     __newindex = function(t, k, v) 
     end
 })
-)");
+)");*/
 
 	lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
 	lua["Transform"] = user->GetComponent<TransformComponent>();
@@ -455,6 +485,9 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 				// Consider recreating lua state here for safety
 			}
 		}
+		
+		
+		script->restorePublicVars();
 
 	
 }

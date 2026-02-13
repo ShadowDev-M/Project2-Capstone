@@ -41,18 +41,35 @@ class ScriptComponent : public Component {
 
 	std::unordered_map<std::string, sol::object> persistentLocals;
 
+	std::unordered_map<std::string, sol::object> publicVariables;
+
+
 public:
 	void setLocal(const std::string& name, sol::object value);
+
+
+
+	
 
 	sol::object getLocal(const std::string& name);
 
 	bool hasLocal(const std::string& name);
 
 	void restoreAll() {
+		
 		for (auto& item : persistentLocals) {
-			lua[item.first] = item.second;
+			lua.registry().set(item.first, item.second);
+		}
+		
+	}
+	void restorePublicVars() {
+
+		for (auto item : publicVariables) {
+			persistentLocals[item.first] = item.second;
 		}
 	}
+
+
 	Ref<ScriptAbstract> getBaseAsset() { return baseAsset; }
 	ScriptComponent(Component* parent, Ref<ScriptAbstract> baseScriptAsset = 0);
 	virtual ~ScriptComponent();
@@ -64,6 +81,9 @@ public:
 	bool OnCreate();
 	void OnDestroy();
 	void Render() const;
+
+	void setPublicReference(const std::string refName, float ref);
+	std::unordered_map<std::string, sol::object> getPublicReferences();
 
 };
 
