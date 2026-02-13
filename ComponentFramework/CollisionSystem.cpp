@@ -42,8 +42,8 @@ void CollisionSystem::RemoveActor(Ref<Actor> actor_) {
 
 void CollisionSystem::ClearActors() {
 	collidingActors.clear();
-	currentCollidingActors.clear();
-	previousCollidingActors.clear();
+	//currentCollidingActors.clear();
+	//previousCollidingActors.clear();
 }
 
 bool CollisionSystem::CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionData& data)

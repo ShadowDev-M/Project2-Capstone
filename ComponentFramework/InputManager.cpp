@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "InputManager.h"
+#include "EditorManager.h"
 
 bool PoolBindObject::call() {
 	//Normally i'd place this code within the internal structure, however, due to compiling stuff, InputManager can't be accessed if the struct has <typename> above it and i don't want to overcomplicate
@@ -432,8 +433,8 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 {
 	//std::cout << dockingClicked << std
 
-		//Just checking if the title bar is clicked, just for convenience.
-	if (!dockingHovered || (sdlEvent.motion.y >= dockingPos.y && sdlEvent.motion.y <= (dockingPos.y + frameHeight))) {
+	//Just checking if the title bar is clicked, just for convenience.
+	if ((!dockingHovered) || (sdlEvent.motion.y >= dockingPos.y && sdlEvent.motion.y <= (dockingPos.y + frameHeight))) {
 
 		//if (dockingClicked) { std::cout << "eee \n"; }
 

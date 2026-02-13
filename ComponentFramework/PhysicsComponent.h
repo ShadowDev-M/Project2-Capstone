@@ -30,10 +30,9 @@ private:
 	float drag;
 	float angularDrag;
 
-	// TODO: add rest of physics, inspector, and XML code
 	// used in the collsion system for contact resolution
-	float friction = 0.5f;
-	float restitution = 0.0f;
+	float friction;
+	float restitution;
 
 	// linear motion 
 	Vec3 vel;
@@ -48,7 +47,7 @@ private:
 
 public:
 	PhysicsComponent(Component* parent_ = nullptr, PhysicsState state_ = PhysicsState::Dynamic, float mass_ = 1.0f, 
-		bool useGrav_ = true, float drag_ = 0.0f, float angularDrag_ = 0.05f);
+		bool useGrav_ = true, float drag_ = 0.0f, float angularDrag_ = 0.05f, float friction_ = 0.5f, float restitution_ = 0.0f);
 	~PhysicsComponent() {};
 
 	bool OnCreate() { return true; }

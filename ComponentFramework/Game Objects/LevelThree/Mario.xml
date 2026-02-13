@@ -8,9 +8,22 @@
         <PhysicsState state="0"/>
         <mass value="1"/>
         <UsingGravity isUsing="1"/>
-        <drag value="1"/>
+        <drag value="0"/>
         <angularDrag value="0.050000001"/>
+        <friction value="0.5"/>
+        <restitution value="0"/>
     </PhysicsComponent>
+    <CollisionComponent>
+        <CollisionState state="1"/>
+        <CollisionType type="0"/>
+        <isTrigger trigger="0"/>
+        <radius value="10"/>
+        <centre x="0" y="10" z="0"/>
+        <centrePosA x="0" y="1" z="0"/>
+        <centrePosB x="0" y="-1" z="0"/>
+        <halfExtents x="1" y="1" z="1"/>
+        <orientation w="1" x="0" y="0" z="0"/>
+    </CollisionComponent>
     <AnimatorComponent>
         <startTime time="0"/>
         <speedMult mult="0"/>

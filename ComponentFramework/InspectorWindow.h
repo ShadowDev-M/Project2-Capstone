@@ -62,7 +62,7 @@ private:
 				if (fabs(firstValue.x - currentValue.x) > VERY_SMALL ||
 					fabs(firstValue.y - currentValue.y) > VERY_SMALL ||
 					fabs(firstValue.z - currentValue.z) > VERY_SMALL) {
-					return true; 
+					return true;
 				}
 			}
 			return false;
@@ -89,7 +89,7 @@ private:
 			return false;
 		}
 
-		
+
 		// checks to see if multiple quaternion values (w ijk) are equal or not
 		bool HasMixedQuaternion(Quaternion(ComponentTemplate::* getter)() const) const {
 			if (components.size() <= 1) {
@@ -128,8 +128,8 @@ private:
 				float currentValue = (components[i].get()->*getter)();
 
 				// floating point check against each vec3s xyz
-				if (fabs(firstValue - currentValue) > VERY_SMALL) { 
-					return true; 
+				if (fabs(firstValue - currentValue) > VERY_SMALL) {
+					return true;
 				}
 			}
 			return false;
@@ -184,6 +184,22 @@ private:
 	// physics states
 	bool isEditingMass = false;
 	bool isEditingDrag = false;
+	bool isEditingAngularDrag = false;
+	bool isEditingFriction = false;
+	bool isEditingRestitution = false;
+
+	// collider states
+	bool isEditingRadius = false;
+	bool isEditingCentre = false;
+	bool isEditingCentrePosA = false;
+	bool isEditingCentrePosB = false;
+	bool isEditingHalfExtents = false;
+	bool isEditingOrientation = false;
+	Vec3 lastCentre;
+	Vec3 lastCentrePosA;
+	Vec3 lastCentrePosB;
+	Vec3 lastHalfExtents;
+	Vec3 oriEulerAngles;
 
 	// header for renaming, isactive
 	void DrawActorHeader(Ref<Actor> actor_);
@@ -197,6 +213,7 @@ private:
 	void DrawLightComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawShaderComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawPhysicsComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
+	void DrawCollisionComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawAnimatorComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 
 	// right click popup menu
@@ -211,7 +228,7 @@ public:
 };
 
 template<typename ComponentTemplate>
-inline void InspectorWindow::RightClickContext(const char * popupName_, const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
+inline void InspectorWindow::RightClickContext(const char* popupName_, const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
 {
 	if (ImGui::BeginPopupContextItem(popupName_)) {
 		ComponentState<ComponentTemplate> componentState(selectedActors_);
@@ -229,7 +246,7 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 				if constexpr (std::is_same_v<ComponentTemplate, MeshComponent>) {
 					if (pair.second->GetComponent<MeshComponent>()) {
 						pair.second->RemoveComponent<MeshComponent>();
-						
+
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, MaterialComponent>) {
@@ -271,9 +288,9 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 				}
 			}
 		}
-	
+
 		if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
-			
+
 			// making sure that this only works when 1 actor is selected
 			if (componentState.allHaveComponent && selectedActors_.size() == 1)
 			{
@@ -282,7 +299,7 @@ inline void InspectorWindow::RightClickContext(const char * popupName_, const st
 					sceneGraph->setUsedCamera(componentState.GetFirst());
 				}
 			}
-			
+
 		}
 
 

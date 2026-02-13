@@ -9,6 +9,7 @@
 #include <string>
 
 #include "PhysicsSystem.h"
+#include "CollisionSystem.h"
 #include "ColliderDebug.h"
 
 void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
@@ -484,6 +485,18 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}
 	}
 
+	if (XMLObjectFile::hasComponent<CollisionComponent>(name_)) {
+		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
+		Ref<CollisionComponent> CC = Ref<CollisionComponent>(std::apply([](auto&&... args) {
+			return new CollisionComponent(args...);
+			}, XMLObjectFile::getComponent<CollisionComponent>(name_)));
+
+		if (!actor_->GetComponent<CollisionComponent>()) {
+			actor_->AddComponent(CC);
+			CollisionSystem::getInstance().AddActor(actor_);
+		}
+	}
+
 	actor_->OnCreate();
 	AddActor(actor_);
 
@@ -600,6 +613,10 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 	if (actorToRemove->GetComponent<PhysicsComponent>()) {
 		PhysicsSystem::getInstance().RemoveActor(actorToRemove);
 	}
+	// check to see if actor is in physicssystem and remove it
+	if (actorToRemove->GetComponent<CollisionComponent>()) {
+		CollisionSystem::getInstance().RemoveActor(actorToRemove);
+	}
 
 	actorToRemove->DeleteComponent<CameraComponent>();
 
@@ -641,6 +658,8 @@ void SceneGraph::RemoveAllActors()
 	std::cout << "Deleting All Actors In The Scene" << std::endl;
 
 	PhysicsSystem::getInstance().ClearActors();
+	// TODO: fix clear actors
+	CollisionSystem::getInstance().ClearActors();
 
 	// call the OnDestroy for each actor 
 	for (auto& pair : Actors) {
