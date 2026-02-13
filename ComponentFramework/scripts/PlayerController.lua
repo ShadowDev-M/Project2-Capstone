@@ -2,7 +2,9 @@
 speed = 10
 
 
-public testobj = GameObject
+public testvar = 1.0
+
+
 
 function Preload()
 
@@ -16,7 +18,8 @@ end
 
 function Update(deltaTime) 
 	
-	print(testobj.Name)
+	print(testvar)
+
 
 
 	local newVel = GameObject.Rigidbody.Vel

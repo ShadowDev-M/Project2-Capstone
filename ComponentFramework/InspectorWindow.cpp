@@ -695,6 +695,42 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 					}
 					ImGui::EndDragDropTarget();
 				}
+
+				std::unordered_map<std::string, sol::object> pubRefMap = script->getPublicReferences();
+
+				for (auto& pair : pubRefMap) {
+
+					auto& obj = pair.second;
+						
+					if (pair.second.is<float>()) {
+
+						float objVar = pair.second.as<float>();
+
+						bool isEditingAnim = false;
+
+						{
+							bool valChanged = false;
+
+							ImGui::Text("%s:", pair.first.c_str());
+							ImGui::SameLine();
+							valChanged = ImGui::DragFloat("##FloatVar", &objVar,
+								0.1f, -10, 10);
+							if (valChanged) {
+								script->setPublicReference(pair.first, objVar);
+							}
+
+							isEditingAnim = ImGui::IsItemActive();
+							ImGui::ActiveItemLockMousePos();
+						}
+						
+
+					}
+					
+					
+					
+					
+				}
+
 			}
 			ImGui::Separator();
 
