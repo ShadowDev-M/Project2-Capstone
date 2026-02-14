@@ -160,6 +160,9 @@ private:
 	// thumbnail size, assetmanager also has this, possibly find a way to make it so they share the same thing incase I edit
 	const float thumbnailSize = 64;
 
+	// line width for allignment
+	const float labelWidth = 130.0f;
+
 	bool scaleLock = false;
 
 	// rename variables

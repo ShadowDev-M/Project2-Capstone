@@ -16,12 +16,8 @@ private:
 	// camera member variables to be accesed by imgui
 	float m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane;
 
-	//
-	Quaternion orientation;
-	Vec3 position;
-
 public:
-	CameraComponent(Ref<Actor> userActor_, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f);
+	CameraComponent(Ref<Actor> userActor_ = nullptr, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f);
 	~CameraComponent();
 	bool OnCreate();
 
@@ -49,11 +45,14 @@ public:
 	void UpdateProjectionMatrix() {
 		projectionMatrix = MMath::perspective(m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane);
 	}
-
+	
+	Ref<Actor> getUserActor() const { return userActor; }
 	float getFOV() const { return m_fov; }
 	float getAspectRatio() const { return m_aspectRatio; }
 	float getNearClipPlane() const { return m_nearClipPlane; }
 	float getFarClipPlane() const { return m_farClipPlane; }
+
+	void setUserActor(Ref<Actor> actor_) { userActor = actor_; }
 
 	void setFOV(float fov_) { 
 		m_fov = fov_;

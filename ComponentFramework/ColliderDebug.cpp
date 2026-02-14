@@ -10,8 +10,6 @@ bool ColliderDebug::OnCreate() {
 }
 
 void ColliderDebug::OnDestroy() {
-    ClearAll();
-
     if (debugShader) {
         debugShader->OnDestroy();
         debugShader = nullptr;
@@ -22,71 +20,27 @@ void ColliderDebug::Render(Ref<CollisionComponent> collision_, Ref<TransformComp
 {
     if (!collision_ || !debugShader || !transform_) return;
 
-    // well I did another hacky fix for the capsule, the axis were stretching out and it didn't look right,
-    // so time to build another model matrix
+    ColliderShape shape;
+    
+    switch (collision_->getType()) {
+    case ColliderType::Sphere:
+        shape = GenerateSphere(collision_, transform_);
+        break;
+    case ColliderType::Capsule:
+        shape = GenerateSphere(collision_, transform_);
+        break;
+    case ColliderType::AABB:
+        shape = GenerateAABB(collision_, transform_);
+        break;
+    case ColliderType::OBB:
+        shape = GenerateOBB(collision_, transform_);
+        break;
+    }
+
+    if (shape.vao == 0) return;
+
+    // identity model matrix just to pass into shader
     Matrix4 modelMatrix;
-    ColliderShape tempShape;
-    const ColliderShape* renderShape = nullptr;
-
-    if (collision_->getType() == ColliderType::Capsule) {
-        tempShape = GenerateCapsule(collision_, transform_);
-        renderShape = &tempShape;
-        modelMatrix = Matrix4();
-    }
-    else {
-        // finding cached collider shape
-        auto it = colliderCache.find(collision_);
-        if (it == colliderCache.end()) {
-            ColliderShape newShape;
-            switch (collision_->getType()) {
-            case ColliderType::Sphere:
-                newShape = GenerateSphere(collision_);
-                break;
-            case ColliderType::AABB:
-                newShape = GenerateAABB(collision_);
-                break;
-            case ColliderType::OBB:
-                newShape = GenerateOBB(collision_);
-                break;
-            }
-            colliderCache[collision_] = newShape;
-            it = colliderCache.find(collision_);
-        }
-        renderShape = &it->second;
-
-        // this is a hacky fix for sphere radius scaling
-        // this will probably need to be applied to the capsule at some point, but honestly,
-        // if you scaling a capsules x and z to that point, you might as well use a sphere collider
-        if (collision_->getType() == ColliderType::Sphere) {
-            Vec3 position = transform_->GetPosition();
-            Quaternion rotation = transform_->GetOrientation();
-            Vec3 scale = transform_->GetScale();
-
-            // converting local to world
-            float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
-            float worldRadius = collision_->getRadius() * maxScale;
-
-            // manually creating a transformation matrix
-            Matrix4 translationMatrix = MMath::translate(position);
-            Matrix4 rotationMatrix = MMath::toMatrix4(rotation);
-            Matrix4 scaleMatrix = MMath::scale(worldRadius, worldRadius, worldRadius);
-
-            // converting local to world
-            Matrix4 worldCentre = MMath::translate(collision_->getCentre() * maxScale);
-
-            // creating model matrix
-            modelMatrix = translationMatrix * rotationMatrix * worldCentre * scaleMatrix;
-        }
-        else {
-            modelMatrix = transform_->GetTransformMatrix();
-
-            // converting local to world
-            Matrix4 worldCentre = MMath::translate(collision_->getCentre());
-            modelMatrix = modelMatrix * worldCentre;
-        }
-    }
-
-    if (!renderShape || renderShape->vao == 0) return;
 
     glUseProgram(debugShader->GetProgram());
 
@@ -98,23 +52,11 @@ void ColliderDebug::Render(Ref<CollisionComponent> collision_, Ref<TransformComp
     glUniform3fv(debugShader->GetUniformID("colliderColor"), 1, &color.x);
     glUniform1f(debugShader->GetUniformID("uAlpha"), 0.8f);
 
-    glBindVertexArray(renderShape->vao);
-    glDrawArrays(GL_LINES, 0, renderShape->dataLength);
+    glBindVertexArray(shape.vao);
+    glDrawArrays(GL_LINES, 0, shape.dataLength);
     glBindVertexArray(0);
 
-    if (collision_->getType() == ColliderType::Capsule) {
-        ColliderShape temp = tempShape;
-        ClearShape(temp);
-    }
-}
-
-void ColliderDebug::UpdateDebug(Ref<CollisionComponent> collision_)
-{
-    auto it = colliderCache.find(collision_);
-    if (it != colliderCache.end()) {
-        ClearShape(it->second);
-        colliderCache.erase(it);
-    }
+    ClearShape(shape);
 }
 
 std::vector<Vec3> ColliderDebug::GenerateCircle(const Vec3& centre_, float radius_, const Vec3& axis_, int segments_)
@@ -159,13 +101,13 @@ std::vector<Vec3> ColliderDebug::GenerateCircle(const Vec3& centre_, float radiu
     return vertices;
 }
 
-ColliderDebug::ColliderShape ColliderDebug::GenerateSphere(const Ref<CollisionComponent>& collision_)
+ColliderDebug::ColliderShape ColliderDebug::GenerateSphere(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_)
 {
     ColliderShape shape;
     std::vector<Vec3> vertices;
 
-    Vec3 centre = collision_->getCentre();
-    float radius = collision_->getRadius();
+    Vec3 centre = collision_->getWorldCentre(transform_);
+    float radius = collision_->getWorldRadius(transform_);
 
     // generating circles for each axis
     std::vector<Vec3> xyCircle = GenerateCircle(centre, radius, Vec3(0, 0, 1));
@@ -185,9 +127,7 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateSphere(const Ref<CollisionCo
     convertCircleToLines(yzCircle);
 
     shape.dataLength = vertices.size();
-
     StoreShapeData(shape, vertices);
-
     return shape;
 }
 
@@ -196,15 +136,9 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateCapsule(const Ref<CollisionC
     ColliderShape shape;
     std::vector<Vec3> vertices;
 
-    // this function is a bit different from the others
-    // getting the world positions for this one,
-    // then in render giving it a macgyvered model matrix
+    float radius = collision_->getWorldCapsuleRadius(transform_);
     Vec3 centrePosA = collision_->getWorldCentrePosA(transform_);
     Vec3 centrePosB = collision_->getWorldCentrePosB(transform_);
-    
-    // manually converting radius to world coords, because of the y 
-    Vec3 scale = transform_->GetScale();
-    float radius = collision_->getRadius() * std::max(scale.x, scale.z);
 
     // Capsule.cpp
     // get the axis
@@ -265,19 +199,17 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateCapsule(const Ref<CollisionC
     }
 
     shape.dataLength = vertices.size();
-
     StoreShapeData(shape, vertices);
-
     return shape;
 }
 
-ColliderDebug::ColliderShape ColliderDebug::GenerateAABB(const Ref<CollisionComponent>& collision_)
+ColliderDebug::ColliderShape ColliderDebug::GenerateAABB(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_)
 {
     ColliderShape shape;
     std::vector<Vec3> vertices;
     
-    Vec3 centre = collision_->getCentre();
-    Vec3 halfExtents = collision_->getHalfExtents();
+    Vec3 centre = collision_->getWorldCentre(transform_);
+    Vec3 halfExtents = collision_->getWorldHalfExtents(transform_);
 
     // Box.cpp
     // calculating the 8 corner positions of the box	
@@ -326,20 +258,18 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateAABB(const Ref<CollisionComp
     vertices.push_back(corners[7]);
 
     shape.dataLength = vertices.size();
-
     StoreShapeData(shape, vertices);
-
     return shape;
 }
 
-ColliderDebug::ColliderShape ColliderDebug::GenerateOBB(const Ref<CollisionComponent>& collision_)
+ColliderDebug::ColliderShape ColliderDebug::GenerateOBB(const Ref<CollisionComponent>& collision_, const Ref<TransformComponent>& transform_)
 {
     ColliderShape shape;
     std::vector<Vec3> vertices;
 
-    Vec3 centre = collision_->getCentre();
-    Vec3 halfExtents = collision_->getHalfExtents();
-    Quaternion orientation = collision_->getOrientation();
+    Vec3 centre = collision_->getWorldCentre(transform_);
+    Vec3 halfExtents = collision_->getWorldHalfExtents(transform_);
+    Quaternion orientation = collision_->getWorldOrientation(transform_);
 
     // basically the extact same as the AABB, but this time with local axes... wow!
 
@@ -398,9 +328,7 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateOBB(const Ref<CollisionCompo
     vertices.push_back(corners[7]);
 
     shape.dataLength = vertices.size();
-
     StoreShapeData(shape, vertices);
-
     return shape;
 }
 
@@ -428,13 +356,6 @@ void ColliderDebug::StoreShapeData(ColliderDebug::ColliderShape& shape, std::vec
     // need a very brutal reinterpret_cast means Dammit!
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), reinterpret_cast<void*>(0));
     glBindVertexArray(0);
-}
-
-void ColliderDebug::ClearAll() {
-    for (auto& pair : colliderCache) {
-        ClearShape(pair.second);
-    }
-    colliderCache.clear();
 }
 
 void ColliderDebug::ClearShape(ColliderShape& shape_)
