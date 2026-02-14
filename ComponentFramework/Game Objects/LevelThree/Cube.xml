@@ -1,16 +1,16 @@
 <Actor>
     <TransformComponent>
-        <position x="6.5547581" y="-7.296279" z="0"/>
+        <position x="-1.4118961" y="3.4247704" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="20" y="1" z="20"/>
+        <scale x="3" y="3" z="3"/>
     </TransformComponent>
     <PhysicsComponent>
-        <PhysicsState state="2"/>
-        <mass value="3.4028235e+38"/>
-        <UsingGravity isUsing="0"/>
-        <drag value="0"/>
+        <PhysicsState state="0"/>
+        <mass value="1"/>
+        <UsingGravity isUsing="1"/>
+        <drag value="0.2"/>
         <angularDrag value="0.050000001"/>
-        <friction value="0.5"/>
+        <friction value="1"/>
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>

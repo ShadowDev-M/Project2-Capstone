@@ -191,7 +191,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 		//lets preload an extra time in case you changed the script. Should be fine as the first preload was mainly for preloading animations or meshes.
 		//ScriptService::preloadScript(script.get());
 
-		ScriptService::preloadScript(script.get());
+	//	ScriptService::preloadScript(script.get());
 
 		//No point in continuing if its already started
 		Actor* user = dynamic_cast<Actor*>(script->parent);
@@ -239,7 +239,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
     end
 })
 )");
-
+				loaded_script();
 
 
 				script->restorePublicVars();

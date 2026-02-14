@@ -69,6 +69,8 @@ void PhysicsSystem::Update(float deltaTime)
 		ApplyForce(actor, netForce);
 
 		UpdateVel(actor, deltaTime);
+
+
 		UpdatePos(actor, deltaTime);
 
 		// TODO: check with umer to make sure angular calculations are correct
@@ -77,6 +79,10 @@ void PhysicsSystem::Update(float deltaTime)
 
 		// updating orientation/angular velocity
 		UpdateOrientation(actor, deltaTime);
+		
+
+		ApplyForce(actor, -netForce);
+
 	}
 }
 
@@ -124,7 +130,7 @@ void PhysicsSystem::ApplyForce(Ref<Actor> actor_, const Vec3& force)
 	// if actor doesnt have a physics component or isnt dynamic then return
 	if (!PC || PC->getState() != PhysicsState::Dynamic) return;
 
-	PC->accel = force / PC->mass;
+	PC->accel += (force / PC->mass);
 }
 
 void PhysicsSystem::ApplyImpulse(Ref<Actor> actor_, const Vec3& impulse)

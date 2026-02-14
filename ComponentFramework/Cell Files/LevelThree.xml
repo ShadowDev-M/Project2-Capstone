@@ -2,31 +2,39 @@
     <Actors>
         <Board/>
         <Mario/>
+        <Cube_1D/>
         <Cube/>
         <CamTest/>
         <SkyLight/>
     </Actors>
     <Components>
         <Animation>
-            <dancing/>
             <svgvuijwerjtuiew/>
+            <dancing/>
+            <falling/>
+            <walking/>
+            <idle/>
+            <land/>
+            <jump/>
+            <roll/>
+            <idle2/>
         </Animation>
         <MaterialComponent>
-            <M_Moon>
-                <Texture diff="textures/moon.jpg" spec=""/>
-            </M_Moon>
             <M_Sphere>
                 <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
             </M_Sphere>
-            <M_MarioFire>
-                <Texture diff="textures/mario_fire.png" spec=""/>
-            </M_MarioFire>
             <M_Hammer>
                 <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
             </M_Hammer>
+            <M_MarioFire>
+                <Texture diff="textures/mario_fire.png" spec=""/>
+            </M_MarioFire>
             <M_MarioN>
                 <Texture diff="textures/mario_main.png" spec=""/>
             </M_MarioN>
+            <M_Moon>
+                <Texture diff="textures/moon.jpg" spec=""/>
+            </M_Moon>
             <M_ChessBoard>
                 <Texture diff="textures/8x8_checkered_board.png" spec=""/>
             </M_ChessBoard>
@@ -53,6 +61,9 @@
             <SM_Cube>
                 <Mesh path="meshes/Cube.obj"/>
             </SM_Cube>
+            <SM_King>
+                <Mesh path="meshes/King.obj"/>
+            </SM_King>
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
@@ -65,9 +76,6 @@
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
-            <SM_King>
-                <Mesh path="meshes/King.obj"/>
-            </SM_King>
             <SM_Rook>
                 <Mesh path="meshes/Rook.obj"/>
             </SM_Rook>

@@ -52,7 +52,7 @@ public:
 	// this is similar to how unity does it where it has the exposed local variables,
 	// and in editor when you change the actors pos, scale, rotation etc, the collider follows suit, 
 	// but the local variables remain the same
-	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centre, 1.0f)); }
+	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(2*centre, 1.0f)); }
 	float getWorldRadius(Ref<TransformComponent> transform_) const {
 		Vec3 scale = transform_->GetScale();
 		float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
