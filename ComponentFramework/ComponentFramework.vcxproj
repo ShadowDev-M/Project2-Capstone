@@ -149,6 +149,7 @@
     <ClInclude Include="MemoryWindow.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PhysicsSystem.h" />
+    <ClInclude Include="QuadraticSolver.h" />
     <ClInclude Include="SceneWindow.h" />
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="ScriptAbstract.h" />
@@ -212,6 +213,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="PhysicsSystem.cpp" />
+    <ClCompile Include="QuadraticSolver.cpp" />
     <ClCompile Include="SceneWindow.cpp" />
     <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="ScriptAbstract.cpp" />

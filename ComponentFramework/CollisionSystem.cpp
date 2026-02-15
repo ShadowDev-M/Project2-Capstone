@@ -1,6 +1,11 @@
 ﻿#include "pch.h"
 #include "CollisionSystem.h"
 #include "ScriptComponent.h"
+#include "QuadraticSolver.h"
+#include "SceneGraph.h"
+
+using namespace GEOMETRY;
+
 void CollisionSystem::AddActor(Ref<Actor> actor_) {
 	if (actor_->GetComponent<CollisionComponent>().get() == nullptr) {
 		Debug::Error("The Actor must have a CollisionComponent - ignored ", __FILE__, __LINE__);
@@ -86,7 +91,14 @@ bool CollisionSystem::CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_,
 			collisionDetected = SphereSphereDiscrete(actor1_, actor2_, data);
 		}
 	}
-	// TODO: sphere-capsule
+	else if (type1 == ColliderType::Sphere && type2 == ColliderType::Capsule) {
+		if (isContinuous) {
+			collisionDetected = SphereCapsuleContinuous(actor1_, actor2_, data);
+		}
+		else {
+			collisionDetected = SphereCapsuleDiscrete(actor1_, actor2_, data);
+		}
+	}
 	else if (type1 == ColliderType::Sphere && type2 == ColliderType::AABB) {
 		if (isContinuous) {
 			collisionDetected = SphereAABBContinuous(actor1_, actor2_, data);
@@ -109,6 +121,22 @@ bool CollisionSystem::CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_,
 		}
 		else {
 			collisionDetected = CapsuleCapsuleDiscrete(actor1_, actor2_, data);
+		}
+	}
+	else if (type1 == ColliderType::Capsule && type2 == ColliderType::AABB) {
+		if (isContinuous) {
+			collisionDetected = CapsuleAABBContinuous(actor1_, actor2_, data);
+		}
+		else {
+			collisionDetected = CapsuleAABBDiscrete(actor1_, actor2_, data);
+		}
+	}
+	else if (type1 == ColliderType::Capsule && type2 == ColliderType::OBB) {
+		if (isContinuous) {
+			collisionDetected = CapsuleOBBContinuous(actor1_, actor2_, data);
+		}
+		else {
+			collisionDetected = CapsuleOBBDiscrete(actor1_, actor2_, data);
 		}
 	}
 	else if (type1 == ColliderType::AABB && type2 == ColliderType::AABB) {
@@ -309,53 +337,106 @@ void CollisionSystem::ApplyFriction(Ref<Actor> actor1_, Ref<Actor> actor2_, cons
 }
 
 void CollisionSystem::Update(float deltaTime) {
-	// TODO: rework
-	
 	// pass deltatime
 	this->deltaTime = deltaTime;
+
+	// set up for previous/current frame actor collisons
+	// used for on hit events
+	previousCollidingActors = currentCollidingActors;
+	currentCollidingActors.clear();
 
 	// loop through all colliding actors, two times cause two objects colliding
 	for (size_t i = 0; i < collidingActors.size(); i++) {
 		for (size_t j = i + 1; j < collidingActors.size(); j++) {
-
 			Ref<Actor> a1 = collidingActors[i];
 			Ref<Actor> a2 = collidingActors[j];
 			
-			// get the transform components from the colliding actors
-			Ref<TransformComponent> TC1 = collidingActors[i]->GetComponent<TransformComponent>();
-			Ref<TransformComponent> TC2 = collidingActors[j]->GetComponent<TransformComponent>();
-
 			// get the collision component from the colliding actors
 			Ref<CollisionComponent> CC1 = a1->GetComponent<CollisionComponent>();
 			Ref<CollisionComponent> CC2 = a2->GetComponent<CollisionComponent>();
 
-			
+			if (!CC1 || !CC2) continue;
 
-			
+			Ref<PhysicsComponent> PC1 = a1->GetComponent<PhysicsComponent>();
+			Ref<PhysicsComponent> PC2 = a2->GetComponent<PhysicsComponent>();
 				
-				CollisionData data;
-
-				// if collisison was detected between the two spheres, do response
-				if (CollisionDetection(a1, a2, data)) {
-					
-					//printf("x: %f, y: %f, z: %f\n", data.contactNormal.x, data.contactNormal.y, data.contactNormal.z);
-
-					//std::cout << data.penetration << std::endl;
-					ResolveCollision(a1, a2, data);
-				//	std::cout << "COLLSION DETECTED!" << std::endl;
-
-
-					ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::Enter);
+			// static check
+			if (PC1 && PC2) {
+				if (PC1->getState() == PhysicsState::Static && PC2->getState() == PhysicsState::Static) {
+					continue;
 				}
-			
-		}
+			}
 
+			CollisionData data;
+			bool isColliding = CollisionDetection(a1, a2, data);
+
+			if (isColliding) {
+				// adding current colliding actor pair to vector
+				CollidedPair pair(a1->getId(), a2->getId());
+				currentCollidingActors.insert(pair);
+
+				bool isTrigger = CC1->getIsTrigger() || CC2->getIsTrigger();
+
+				// if the collider is a trigger, then no response is applied,
+				// just call the events
+				if (isTrigger) {
+					// actors just started to collide
+					if (previousCollidingActors.find(pair) == previousCollidingActors.end()) {
+						// Placeholder: trigger enter event goes here
+					}
+					// actors are still colliding
+					else {
+						// placeholder trigger stay event goes here
+					}
+				}
+				else {
+					ResolveCollision(a1, a2, data);
+
+					// actors just started to collide
+					if (previousCollidingActors.find(pair) == previousCollidingActors.end()) {
+						// Placeholder: collision enter event goes here
+					}
+					// actors are still colliding
+					else {
+						// placeholder collision stay event goes here
+					}
+				}
+			}
+		}
+	}
+
+	// trying to find any collisions that have just ended in the current frame
+	// if the collisions have ended, then fire off exit events
+	for (const CollidedPair& pair : previousCollidingActors) {
+		if (currentCollidingActors.find(pair) == currentCollidingActors.end()) {
+			Ref<Actor> a1 = SceneGraph::getInstance().GetActorById(pair.idA);
+			Ref<Actor> a2 = SceneGraph::getInstance().GetActorById(pair.idB);
+		
+			if (!a1 || !a2) continue;
+
+			Ref<CollisionComponent> CC1 = a1->GetComponent<CollisionComponent>();
+			Ref<CollisionComponent> CC2 = a2->GetComponent<CollisionComponent>();
+
+			if (!CC1 || !CC2) continue;
+
+			bool isTrigger = CC1->getIsTrigger() || CC2->getIsTrigger();
+
+			// if the collider is a trigger, then no response is applied,
+			// just call the events
+			if (isTrigger) {
+				// placeholder for fire trigger exit event
+			}
+			else {
+				// placeholder for fire collision exit event
+			}
+		}
 	}
 }
 
+// technically don't need this, could just call script function for all the on hit events
 void CollisionSystem::OnCollisionEnter(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_)
 {
-
+	ScriptService::registerCollisionDetection(actor1_, actor2_, CollisionDetectionState::Enter);
 }
 
 bool CollisionSystem::SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
@@ -509,9 +590,102 @@ bool CollisionSystem::CapsuleCapsuleDiscrete(Ref<Actor> c1, Ref<Actor> c2, Colli
 	return false;
 }
 
-bool CollisionSystem::CapsuleCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::CapsuleCapsuleContinuous(Ref<Actor> c1, Ref<Actor> c2, CollisionData& data)
 {
-	return false;
+	Ref<TransformComponent> TC1 = c1->GetComponent<TransformComponent>();
+	Ref<TransformComponent> TC2 = c2->GetComponent<TransformComponent>();
+
+	Ref<PhysicsComponent> PC1 = c1->GetComponent<PhysicsComponent>();
+	Ref<PhysicsComponent> PC2 = c2->GetComponent<PhysicsComponent>();
+
+	Ref<CollisionComponent> CC1 = c1->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> CC2 = c2->GetComponent<CollisionComponent>();
+	
+	// Subtract movement of s1 from both s0 and s1, making s1 stationary
+	Vec3 relVel = PC1->getVel() - PC2->getVel();
+
+	// divide by zero check, also if relative velocity is less then 0 then the objects must be ontop or close to eachother
+	if (VMath::mag(relVel) < VERY_SMALL) {
+		return CapsuleCapsuleDiscrete(c1, c2, data);
+	}
+
+	// doing two checks for capsule-capsule interaction
+	// a closest point test for previous and current frames,
+	// then a binary search test to find the earliest moment the actors collide
+
+	Vec3 p1 = CC1->getWorldCentrePosA(TC1);
+	Vec3 q1 = CC1->getWorldCentrePosB(TC1);
+	Vec3 p2 = CC2->getWorldCentrePosA(TC2);
+	Vec3 q2 = CC2->getWorldCentrePosB(TC2);
+
+	// Compute (squared) distance between the inner structures of the capsules
+	float s, t;
+	Vec3 C1, C2;
+	float dist2 = ClosestPtSegmentSegment(p1, q1, p2, q2, s, t, C1, C2);
+
+	// If (squared) distance smaller than (squared) sum of radii, they collide
+	float radius = CC1->getWorldCapsuleRadius(TC1) + CC2->getWorldCapsuleRadius(TC2);
+	if (dist2 > (radius * radius)) return false;
+
+	// checking previous frame
+	
+	// previous pos for capsule1
+	Vec3 prevP1 = p1 - relVel * deltaTime;
+	Vec3 prevQ1 = q1 - relVel * deltaTime;
+
+	// Compute (squared) distance between the inner structures of the capsules
+	float prevS, prevT;
+	Vec3 prevC1, prevC2;
+	float prevDist2 = ClosestPtSegmentSegment(prevP1, prevQ1, p2, q2, prevS, prevT, prevC1, prevC2);
+
+	// If (squared) distance smaller than (squared) sum of radii, they collide
+	if (prevDist2 <= (radius * radius)) {
+		return CapsuleCapsuleDiscrete(c1, c2, data);
+	}
+
+	// trying to find the earlist moment of collision
+	float tmin = 0.0f;
+	float tmax = deltaTime;
+
+	for (int i = 0; i < 10; i++) {
+		float T = (tmin + tmax) * 0.5f;
+
+		Vec3 pMin = prevP1 + relVel * T;
+		Vec3 qMin = prevQ1 + relVel * T;
+
+		float sMin, tMin;
+		Vec3 cMin1, cMin2;
+		float minDist = ClosestPtSegmentSegment(pMin, qMin, p2, q2, sMin, tMin, cMin1, cMin2);
+
+		if (minDist > (radius * radius)) {
+			tmin = T;
+		}
+		else {
+			tmax = T;
+		}
+	}
+
+	float timeOfImpact = tmax;
+	if (timeOfImpact > deltaTime) return false;
+
+	Vec3 pImpact = prevP1 + relVel * timeOfImpact;
+	Vec3 qImpact = prevQ1 + relVel * timeOfImpact;
+
+	float sImpact, tImpact;
+	Vec3 impactC1, impactC2;
+	ClosestPtSegmentSegment(pImpact, qImpact, p2, q2, sImpact, tImpact, impactC1, impactC2);
+
+	Vec3 d = impactC1 - impactC2;
+	float dist = VMath::mag(d);
+
+	data.isColliding = true;
+	data.timeOfImpact = timeOfImpact / deltaTime;
+	data.contactNormal = (dist > VERY_SMALL) ? VMath::normalize(d) : Vec3(0.0f, 1.0f, 0.0f);
+	data.contactPoint = impactC2 + data.contactNormal * CC2->getWorldCapsuleRadius(TC2);
+	data.penetration = 0.0f;
+	data.relVel = relVel;
+
+	return true;
 }
 
 bool CollisionSystem::AABBAABBDiscrete(Ref<Actor> aabb1, Ref<Actor> aabb2, CollisionData& data)
@@ -664,14 +838,122 @@ bool CollisionSystem::OBBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData
 	return true;
 }
 
-bool CollisionSystem::SphereCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::SphereCapsuleDiscrete(Ref<Actor> s, Ref<Actor> c, CollisionData& data)
 {
+	Ref<TransformComponent> sTC = s->GetComponent<TransformComponent>();
+	Ref<TransformComponent> cTC = c->GetComponent<TransformComponent>();
+
+	Ref<CollisionComponent> sCC = s->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> cCC = c->GetComponent<CollisionComponent>();
+
+	float sRadius = sCC->getWorldRadius(sTC);
+	Vec3 sCentre = sCC->getWorldCentre(sTC);
+
+	float cRadius = cCC->getWorldCapsuleRadius(cTC);
+	Vec3 cCentreA = cCC->getWorldCentrePosA(cTC);
+	Vec3 cCentreB = cCC->getWorldCentrePosB(cTC);
+	
+	// checking for closest point on a line segment
+	Vec3 closestPoint = ClosestPtPointSegment(cCentreA, cCentreB, sCentre);
+
+	Vec3 d = sCentre - closestPoint;
+	float dist2 = VMath::dot(d, d);
+
+	// If (squared) distance smaller than (squared) sum of radii, they collide
+	float radius = sRadius + cRadius;
+	if (dist2 <= (radius * radius)) {
+		data.isColliding = true;
+		data.contactNormal = (sqrt(dist2) > VERY_SMALL) ? VMath::normalize(d) : Vec3(0.0f, 1.0f, 0.0f);
+		data.contactPoint = closestPoint + data.contactNormal * cRadius;
+		data.penetration = radius - sqrt(dist2);
+
+		return true;
+	}
+
 	return false;
 }
 
-bool CollisionSystem::SphereCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::SphereCapsuleContinuous(Ref<Actor> s, Ref<Actor> c, CollisionData& data)
 {
-	return false;
+	Ref<TransformComponent> sTC = s->GetComponent<TransformComponent>();
+	Ref<TransformComponent> cTC = c->GetComponent<TransformComponent>();
+
+	Ref<PhysicsComponent> sPC = s->GetComponent<PhysicsComponent>();
+	Ref<PhysicsComponent> cPC = c->GetComponent<PhysicsComponent>();
+
+	Ref<CollisionComponent> sCC = s->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> cCC = c->GetComponent<CollisionComponent>();
+
+	float sRadius = sCC->getWorldRadius(sTC);
+	Vec3 sCentre = sCC->getWorldCentre(sTC);
+
+	float cRadius = cCC->getWorldCapsuleRadius(cTC);
+	Vec3 cCentreA = cCC->getWorldCentrePosA(cTC);
+	Vec3 cCentreB = cCC->getWorldCentrePosB(cTC);
+
+	// Subtract movement of s1 from both s0 and s1, making s1 stationary
+	Vec3 relVel = sPC->getVel() - cPC->getVel();
+
+	// divide by zero check, also if relative velocity is less then 0 then the objects must be ontop or close to eachother
+	if (VMath::mag(relVel) < VERY_SMALL) {
+		return SphereCapsuleDiscrete(s, c, data);
+	}
+
+	// checking segmentsegment and pointsegment for any hits
+	Vec3 prevSpherePos = sCentre - relVel * deltaTime;
+	
+	// Compute (squared) distance between the inner structures of the capsules
+	float prevS, prevT;
+	Vec3 C1, C2;
+	float dist2 = ClosestPtSegmentSegment(prevSpherePos, sCentre, cCentreA, cCentreB, prevS, prevT, C1, C2);
+
+	// If (squared) distance smaller than (squared) sum of radii, they collide
+	float radius = sRadius + cRadius;
+	if (dist2 > (radius * radius)) return false;
+
+	// checking for closest point on a line segment
+	Vec3 closestPoint = ClosestPtPointSegment(cCentreA, cCentreB, prevSpherePos);
+
+	Vec3 currentD = prevSpherePos - closestPoint;
+	if (VMath::dot(currentD, currentD) <= (radius * radius)) {
+		return SphereCapsuleDiscrete(s, c, data);
+	}
+
+	// trying to find the earlist moment of collision
+	float tmin = 0.0f;
+	float tmax = prevS * deltaTime;
+
+	for (int i = 0; i < 10; i++) {
+		float T = (tmin + tmax) * 0.5f;
+
+		Vec3 pMin = prevSpherePos + relVel * T;
+		Vec3 qMin = ClosestPtPointSegment(cCentreA, cCentreB, pMin);
+		Vec3 minDist = pMin - qMin;
+
+		if (VMath::dot(minDist, minDist) > (radius * radius)) {
+			tmin = T;
+		}
+		else {
+			tmax = T;
+		}
+	}
+
+	float timeOfImpact = tmax;
+	if (timeOfImpact > deltaTime) return false;
+
+	Vec3 sphereImpactPos = prevSpherePos + relVel * timeOfImpact;
+	Vec3 capsuleImpactPos = ClosestPtPointSegment(cCentreA, cCentreB, sphereImpactPos);
+	Vec3 d = sphereImpactPos - capsuleImpactPos;
+	float dist = VMath::mag(d);
+
+	data.isColliding = true;
+	data.timeOfImpact = timeOfImpact / deltaTime;
+	data.contactNormal = (dist > VERY_SMALL) ? VMath::normalize(d) : Vec3(0.0f, 1.0f, 0.0f);
+	data.contactPoint = capsuleImpactPos + data.contactNormal * cRadius;
+	data.penetration = 0.0f;
+	data.relVel = relVel;
+
+	return true;
 }
 
 bool CollisionSystem::SphereAABBDiscrete(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data)
@@ -998,24 +1280,419 @@ bool CollisionSystem::SphereOBBContinuous(Ref<Actor> s, Ref<Actor> obb, Collisio
 	return true;
 }
 
-bool CollisionSystem::CapsuleAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::CapsuleAABBDiscrete(Ref<Actor> c, Ref<Actor> ab, CollisionData& data)
 {
+	Ref<TransformComponent> cTC = c->GetComponent<TransformComponent>();
+	Ref<TransformComponent> abTC = ab->GetComponent<TransformComponent>();
+
+	Ref<CollisionComponent> cCC = c->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> abCC = ab->GetComponent<CollisionComponent>();
+
+	float cRadius = cCC->getWorldCapsuleRadius(cTC);
+	Vec3 cCentreA = cCC->getWorldCentrePosA(cTC);
+	Vec3 cCentreB = cCC->getWorldCentrePosB(cTC);
+
+	Vec3 abCentre = abCC->getWorldCentre(abTC);
+	Vec3 abHalfExtents = abCC->getWorldHalfExtents(abTC);
+
+	Vec3 abMin = abCentre - abHalfExtents;
+	Vec3 abMax = abCentre + abHalfExtents;
+
+	// Find point p on AABB closest to capsule center
+	Vec3 closestPtCap = ClosestPtPointSegment(cCentreA, cCentreB, abCentre);
+	// finding point on aabb
+	Vec3 closestPtAB = ClosestPtPointAABB(closestPtCap, abMin, abMax);
+	// running a couple of iterations to find the closest point
+	for (int i = 0; i < 4; i++) {
+		closestPtCap = ClosestPtPointSegment(cCentreA, cCentreB, closestPtAB);
+		closestPtAB = ClosestPtPointAABB(closestPtCap, abMin, abMax);
+	}
+	
+	// Capsule and AABB intersect if the (squared) distance from capsule
+	// center to point p is less than the (squared) capsule radius
+	Vec3 d = closestPtCap - closestPtAB;
+	float dist2 = VMath::dot(d, d);
+	
+	// now indivually testing the two points
+	Vec3 abPointA = ClosestPtPointAABB(cCentreA, abMin, abMax);
+	Vec3 dA = cCentreA - abPointA;
+	float dist2A = VMath::dot(dA, dA);
+
+	Vec3 abPointB = ClosestPtPointAABB(cCentreB, abMin, abMax);
+	Vec3 dB = cCentreB - abPointB;
+	float dist2B = VMath::dot(dB, dB);
+
+	Vec3 dBest = d;
+	Vec3 abPtBest = closestPtAB;
+	float bestDist2 = dist2;
+
+	if (dist2A < bestDist2) {
+		dBest = dA;
+		abPtBest = abPointA;
+		bestDist2 = dist2A;
+	}
+
+	if (dist2B < bestDist2) {
+		dBest = dB;
+		abPtBest = abPointB;
+		bestDist2 = dist2B;
+	}
+	
+	if (dist2 <= (cRadius * cRadius)) {
+		float dist = sqrt(bestDist2);
+		data.isColliding = true;
+
+		// adding edge case for if the capsule centre somehow gets inside the aabb
+		if (dist < VERY_SMALL) {
+			Vec3 contactPt = (bestDist2 == dist2A) ? cCentreA : (bestDist2 == dist2B) ? cCentreB : closestPtCap;
+			Vec3 min = contactPt - abMin;
+			Vec3 max = abMax - contactPt;
+
+			float minD = min.x;
+			data.contactNormal = Vec3(-1.0f, 0.0f, 0.0f);
+
+			// if sphere is inside the aabb, have to find the closest face and push it out
+			if (max.x < minD) { minD = max.x; data.contactNormal = Vec3(1.0f, 0.0f, 0.0f); }
+			if (min.y < minD) { minD = min.y; data.contactNormal = Vec3(0.0f, -1.0f, 0.0f); }
+			if (max.y < minD) { minD = max.y; data.contactNormal = Vec3(0.0f, 1.0f, 0.0f); }
+			if (min.z < minD) { minD = min.z; data.contactNormal = Vec3(0.0f, 0.0f, -1.0f); }
+			if (max.z < minD) { minD = max.z; data.contactNormal = Vec3(0.0f, 0.0f, 1.0f); }
+
+			data.penetration = cRadius + minD;
+		}
+		else {
+			data.contactNormal = dBest / dist;
+			data.penetration = cRadius - dist;
+		}
+		data.contactPoint = abPtBest;
+
+		return true;
+	}
+
 	return false;
 }
 
-bool CollisionSystem::CapsuleAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::CapsuleAABBContinuous(Ref<Actor> c, Ref<Actor> ab, CollisionData& data)
 {
+	// mostly based off sphere-aabb
+
+	Ref<TransformComponent> cTC = c->GetComponent<TransformComponent>();
+	Ref<TransformComponent> abTC = ab->GetComponent<TransformComponent>();
+
+	Ref<PhysicsComponent> cPC = c->GetComponent<PhysicsComponent>();
+	Ref<PhysicsComponent> abPC = ab->GetComponent<PhysicsComponent>();
+
+	Ref<CollisionComponent> cCC = c->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> abCC = ab->GetComponent<CollisionComponent>();
+
+	Vec3 relVel = cPC->getVel() - abPC->getVel();
+
+	if (VMath::mag(relVel) < VERY_SMALL) {
+		return CapsuleAABBDiscrete(c, ab, data);
+	}
+
+	float cRadius = cCC->getWorldCapsuleRadius(cTC);
+	Vec3 cCentreA = cCC->getWorldCentrePosA(cTC);
+	Vec3 cCentreB = cCC->getWorldCentrePosB(cTC);
+
+	Vec3 abCentre = abCC->getWorldCentre(abTC);
+	Vec3 abHalfExtents = abCC->getWorldHalfExtents(abTC);
+
+	Vec3 abMin = abCentre - abHalfExtents;
+	Vec3 abMax = abCentre + abHalfExtents;
+
+	Vec3 expandedMin = abMin - Vec3(cRadius, cRadius, cRadius);
+	Vec3 expandedMax = abMax + Vec3(cRadius, cRadius, cRadius);
+
+	Vec3 prevPosA = cCentreA - relVel * deltaTime;
+	Vec3 prevPosB = cCentreB - relVel * deltaTime;
+
+	// Intersect ray against expanded AABB e. Exit with no intersection if ray
+	// misses e, else get intersection point p and time t as result
+	// doing two hits for both ends
+	RayAABBIntersection hitA = IntersectRayAABB(prevPosA, relVel, expandedMin, expandedMax, deltaTime);
+	RayAABBIntersection hitB = IntersectRayAABB(prevPosB, relVel, expandedMin, expandedMax, deltaTime);
+
+	if (!hitA.didIntersect && !hitB.didIntersect) return false;
+
+	// checking for best hit
+	RayAABBIntersection bestHit;
+	Vec3 bestPrevPos;
+	if (hitA.didIntersect && hitB.didIntersect) {
+		bestHit = (hitA.tMin <= hitB.tMin) ? hitA : hitB;
+		bestPrevPos = (hitA.tMin <= hitB.tMin) ? prevPosA : prevPosB;
+	}
+	else {
+		bestHit = hitA.didIntersect ? hitA : hitB;
+		bestPrevPos = hitA.didIntersect ? prevPosA : prevPosB;
+	}
+
+	// If t is negative, ray started inside sphere so clamp t to zero (fallback to discrete)
+	if (bestHit.tMin < VERY_SMALL) return CapsuleAABBDiscrete(c, ab, data);
+	if (bestHit.tMin > deltaTime) return false;
+
+	data.isColliding = true;
+	data.timeOfImpact = bestHit.tMin / deltaTime;
+
+	Vec3 pointAtImpact = bestPrevPos + relVel * bestHit.tMin;
+	Vec3 closestPoint = ClosestPtPointAABB(pointAtImpact, abMin, abMax);
+	Vec3 d = pointAtImpact - closestPoint;
+	float dist = VMath::mag(d);
+
+	// edge case
+	if (dist < VERY_SMALL) {
+		data.contactNormal = Vec3(0.0f, 0.0f, 0.0f);
+		if (bestHit.hitAxis == 0) {
+			data.contactNormal.x = bestHit.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else if (bestHit.hitAxis == 1) {
+			data.contactNormal.y = bestHit.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else {
+			data.contactNormal.z = bestHit.hitMaxFace ? 1.0f : -1.0f;
+		}
+	}
+	else {
+		data.contactNormal = d / dist; // VMath::normalize(d) they are both the same pretty but
+	}
+
+	data.contactPoint = closestPoint;
+	data.penetration = 0.0f;
+	data.relVel = relVel;
+
+	return true;
+}
+
+bool CollisionSystem::CapsuleOBBDiscrete(Ref<Actor> c, Ref<Actor> ob, CollisionData& data)
+{
+	Ref<TransformComponent> cTC = c->GetComponent<TransformComponent>();
+	Ref<TransformComponent> obTC = ob->GetComponent<TransformComponent>();
+
+	Ref<CollisionComponent> cCC = c->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> obCC = ob->GetComponent<CollisionComponent>();
+
+	float cRadius = cCC->getWorldCapsuleRadius(cTC);
+	Vec3 cCentreA = cCC->getWorldCentrePosA(cTC);
+	Vec3 cCentreB = cCC->getWorldCentrePosB(cTC);
+
+	Vec3 obCentre = obCC->getWorldCentre(obTC);
+	Vec3 obHalfExtents = obCC->getWorldHalfExtents(obTC);
+	Quaternion obbOri = obCC->getWorldOrientation(obTC);
+
+
+	// rotating the orienation around x,y,z axis in order to get local coords
+	Vec3 obblocalCoords[3] = {
+		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
+	};
+	
+	Vec3 posARel = cCentreA - obCentre;
+	Vec3 posBRel = cCentreB - obCentre;
+	
+	Vec3 localPosA(
+		VMath::dot(posARel, obblocalCoords[0]),
+		VMath::dot(posARel, obblocalCoords[1]),
+		VMath::dot(posARel, obblocalCoords[2])
+	);
+
+	Vec3 localPosB(
+		VMath::dot(posBRel, obblocalCoords[0]),
+		VMath::dot(posBRel, obblocalCoords[1]),
+		VMath::dot(posBRel, obblocalCoords[2])
+	);
+
+	// Find point p on obb closest to capsule center
+	Vec3 closestPtCap = ClosestPtPointSegment(localPosA, localPosB, Vec3(0.0f, 0.0f, 0.0f));
+	// finding point on obb
+	Vec3 closestPtOB = ClosestPtPointAABB(closestPtCap, -obHalfExtents, obHalfExtents);
+	// running a couple of iterations to find the closest point
+	for (int i = 0; i < 4; i++) {
+		closestPtCap = ClosestPtPointSegment(localPosA, localPosB, closestPtOB);
+		closestPtOB = ClosestPtPointAABB(closestPtCap, -obHalfExtents, obHalfExtents);
+	}
+	
+	// Capsule and AABB intersect if the (squared) distance from capsule
+	// center to point p is less than the (squared) capsule radius
+	Vec3 d = closestPtCap - closestPtOB;
+	float dist2 = VMath::dot(d, d);
+	
+	// now indivually testing the two points
+	Vec3 obbPointA = ClosestPtPointAABB(localPosA, -obHalfExtents, obHalfExtents);
+	Vec3 dA = localPosA - obbPointA;
+	float dist2A = VMath::dot(dA, dA);
+
+	Vec3 obbPointB = ClosestPtPointAABB(localPosB, -obHalfExtents, obHalfExtents);
+	Vec3 dB = localPosB - obbPointB;
+	float dist2B = VMath::dot(dB, dB);
+	
+	// trying to find what the best distance is between all 3 tests
+	Vec3 dBest = d;
+	Vec3 obbPtBest = closestPtOB;
+	float bestDist2 = dist2;
+
+	if (dist2A < bestDist2) {
+		dBest = dA;
+		obbPtBest = obbPointA;
+		bestDist2 = dist2A;
+	}
+
+	if (dist2B < bestDist2) {
+		dBest = dB;
+		obbPtBest = obbPointB;
+		bestDist2 = dist2B;
+	}
+
+	if (bestDist2 <= (cRadius * cRadius)) {
+		float dist = sqrt(bestDist2);
+		data.isColliding = true;
+
+		// adding edge case for if the capsule centre somehow gets inside the aabb
+		if (dist < VERY_SMALL) {
+			Vec3 contactPt = (bestDist2 == dist2A) ? localPosA : (bestDist2 == dist2B) ? localPosB : closestPtCap;
+			Vec3 min = contactPt + obHalfExtents;
+			Vec3 max = obHalfExtents - contactPt;
+
+			float minD = min.x;
+			Vec3 localNorm = Vec3(-1.0f, 0.0f, 0.0f);
+
+			// if sphere is inside the aabb, have to find the closest face and push it out
+			if (max.x < minD) { minD = max.x; localNorm = Vec3(1.0f, 0.0f, 0.0f); }
+			if (min.y < minD) { minD = min.y; localNorm = Vec3(0.0f, -1.0f, 0.0f); }
+			if (max.y < minD) { minD = max.y; localNorm = Vec3(0.0f, 1.0f, 0.0f); }
+			if (min.z < minD) { minD = min.z; localNorm = Vec3(0.0f, 0.0f, -1.0f); }
+			if (max.z < minD) { minD = max.z; localNorm = Vec3(0.0f, 0.0f, 1.0f); }
+
+			data.contactNormal = obblocalCoords[0] * localNorm.x + obblocalCoords[1] * localNorm.y + obblocalCoords[2] * localNorm.z;
+			data.penetration = cRadius + minD;
+		}
+		else {
+			Vec3 worldNorm = obblocalCoords[0] * dBest.x + obblocalCoords[1] * dBest.y + obblocalCoords[2] * dBest.z;
+			data.contactNormal = worldNorm / dist;
+			data.penetration = cRadius - dist;
+		}
+		data.contactPoint = obCentre + obblocalCoords[0] * obbPtBest.x + obblocalCoords[1] * obbPtBest.y + obblocalCoords[2] * obbPtBest.z;
+
+		return true;
+	}
+
 	return false;
 }
 
-bool CollisionSystem::CapsuleOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
+bool CollisionSystem::CapsuleOBBContinuous(Ref<Actor> c, Ref<Actor> ob, CollisionData& data)
 {
-	return false;
-}
+	Ref<TransformComponent> cTC = c->GetComponent<TransformComponent>();
+	Ref<TransformComponent> obTC = ob->GetComponent<TransformComponent>();
 
-bool CollisionSystem::CapsuleOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
-{
-	return false;
+	Ref<PhysicsComponent> cPC = c->GetComponent<PhysicsComponent>();
+	Ref<PhysicsComponent> obPC = ob->GetComponent<PhysicsComponent>();
+
+	Ref<CollisionComponent> cCC = c->GetComponent<CollisionComponent>();
+	Ref<CollisionComponent> obCC = ob->GetComponent<CollisionComponent>();
+
+	Vec3 relVel = cPC->getVel() - obPC->getVel();
+
+	if (VMath::mag(relVel) < VERY_SMALL) {
+		return CapsuleOBBDiscrete(c, ob, data);
+	}
+
+	float cRadius = cCC->getWorldCapsuleRadius(cTC);
+	Vec3 cCentreA = cCC->getWorldCentrePosA(cTC);
+	Vec3 cCentreB = cCC->getWorldCentrePosB(cTC);
+
+	Vec3 obCentre = obCC->getWorldCentre(obTC);
+	Vec3 obHalfExtents = obCC->getWorldHalfExtents(obTC);
+	Quaternion obbOri = obCC->getWorldOrientation(obTC);
+
+	// rotating the orienation around x,y,z axis in order to get local coords
+	Vec3 obblocalCoords[3] = {
+		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
+	};
+
+	Vec3 localRelVel(
+		VMath::dot(relVel, obblocalCoords[0]),
+		VMath::dot(relVel, obblocalCoords[1]),
+		VMath::dot(relVel, obblocalCoords[2])
+	);
+
+	Vec3 relA = cCentreA - relVel * deltaTime;
+	Vec3 posARel = relA - obCentre;
+	Vec3 relB = cCentreB - relVel * deltaTime;
+	Vec3 posBRel = relB - obCentre;
+
+	Vec3 localPosA(
+		VMath::dot(posARel, obblocalCoords[0]),
+		VMath::dot(posARel, obblocalCoords[1]),
+		VMath::dot(posARel, obblocalCoords[2])
+	);
+
+	Vec3 localPosB(
+		VMath::dot(posBRel, obblocalCoords[0]),
+		VMath::dot(posBRel, obblocalCoords[1]),
+		VMath::dot(posBRel, obblocalCoords[2])
+	);
+
+	Vec3 expandedMin = -obHalfExtents - Vec3(cRadius, cRadius, cRadius);
+	Vec3 expandedMax = obHalfExtents + Vec3(cRadius, cRadius, cRadius);
+	
+	// Intersect ray against expanded AABB e. Exit with no intersection if ray
+	// misses e, else get intersection point p and time t as result
+	// doing two hits for both ends
+	RayAABBIntersection hitA = IntersectRayAABB(localPosA, localRelVel, expandedMin, expandedMax, deltaTime);
+	RayAABBIntersection hitB = IntersectRayAABB(localPosB, localRelVel, expandedMin, expandedMax, deltaTime);
+
+	if (!hitA.didIntersect && !hitB.didIntersect) return false;
+
+	// checking for best hit
+	RayAABBIntersection bestHit;
+	Vec3 bestPrevPos;
+	if (hitA.didIntersect && hitB.didIntersect) {
+		bestHit = (hitA.tMin <= hitB.tMin) ? hitA : hitB;
+		bestPrevPos = (hitA.tMin <= hitB.tMin) ? localPosA : localPosB;
+	}
+	else {
+		bestHit = hitA.didIntersect ? hitA : hitB;
+		bestPrevPos = hitA.didIntersect ? localPosA : localPosB;
+	}
+
+	// If t is negative, ray started inside sphere so clamp t to zero (fallback to discrete)
+	if (bestHit.tMin < VERY_SMALL) return CapsuleOBBDiscrete(c, ob, data);
+	if (bestHit.tMin > deltaTime) return false;
+
+	data.isColliding = true;
+	data.timeOfImpact = bestHit.tMin / deltaTime;
+
+	Vec3 pointAtImpact = bestPrevPos + localRelVel * bestHit.tMin;
+	Vec3 closestPoint = ClosestPtPointAABB(pointAtImpact, -obHalfExtents, obHalfExtents);
+	Vec3 d = pointAtImpact - closestPoint;
+	float dist = VMath::mag(d);
+
+	// edge case
+	Vec3 normLocal;
+	if (dist < VERY_SMALL) {
+		normLocal = Vec3(0.0f, 0.0f, 0.0f);
+		if (bestHit.hitAxis == 0) {
+			normLocal.x = bestHit.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else if (bestHit.hitAxis == 1) {
+			normLocal.y = bestHit.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else {
+			normLocal.z = bestHit.hitMaxFace ? 1.0f : -1.0f;
+		}
+	}
+	else {
+		normLocal = d / dist; // VMath::normalize(d) they are both the same pretty but
+	}
+
+	data.contactNormal = obblocalCoords[0] * normLocal.x + obblocalCoords[1] * normLocal.y + obblocalCoords[2] * normLocal.z;
+	data.contactPoint = obCentre + obblocalCoords[0] * closestPoint.x + obblocalCoords[1] * closestPoint.y + obblocalCoords[2] * closestPoint.z;
+	data.penetration = 0.0f;
+	data.relVel = relVel;
+
+	return true;
 }
 
 bool CollisionSystem::AABBOBBDiscrete(Ref<Actor> ab, Ref<Actor> ob, CollisionData& data)
@@ -1117,58 +1794,445 @@ bool CollisionSystem::AABBOBBDiscrete(Ref<Actor> ab, Ref<Actor> ob, CollisionDat
 	return true;
 }
 
-/*
+RaycastHit CollisionSystem::Raycast(const Vec3& origin, const Vec3& direction, float maxDistance)
+{
+	RaycastHit closestHit;
+	closestHit.isIntersected = false;
+	float closestDistance = maxDistance;
 
-Ref<Actor> CollisionSystem::PhysicsRaycast(Vec3 start, Vec3 end) {
+	Vec3 normDir = VMath::normalize(direction);
 
-	for (Ref<Actor> obj : collidingActors) {
-		//std::cout << obj->getActorName();
-		Vec3 dir = end - start;
+	for (const Ref<Actor>& actor : collidingActors) {
+		Ref<CollisionComponent> CC = actor->GetComponent<CollisionComponent>();
+
+		RaycastHit hit;
+		bool didHit = false;
+
+		switch (CC->colliderType) {
+		case ColliderType::Sphere:
+			didHit = RaycastSphere(origin, normDir, actor, hit);
+			break;
+		case ColliderType::Capsule:
+			didHit = RaycastCapsule(origin, normDir, actor, hit);
+			break;
+		case ColliderType::AABB:
+			didHit = RaycastAABB(origin, normDir, actor, hit);
+			break;
+		case ColliderType::OBB:
+			didHit = RaycastOBB(origin, normDir, actor, hit);
+			break;
+		default:
+			continue;
+		}
 		
-		Ref<TransformComponent> transform = obj->GetComponent<TransformComponent>();
-		Ref<CollisionComponent> collider = obj->GetComponent<CollisionComponent>();
-
-		if (collider && transform && collider->colliderType == ColliderType::SPHERE) {
-
-			//make a sphere clickable construct
-			Sphere s1;
-
-			//Get position is unreliable due to parenting altering the transform
-			//s1.centre = transform->GetPosition();
-			s1.r = collider->radius;
-
-			Matrix4 modelMatrix = obj->GetModelMatrix();
-
-			// Apply transforms before checking, the origin should be 0,0,0 and must be the centre
-			s1.centre = Vec3(modelMatrix * Vec4(Vec3(0.0f,0.0f,0.0f), 1.0f));
-
-
-			Vec3 toPoint = s1.centre - start;
-
-			float t = VMath::dot(toPoint, dir) / VMath::dot(dir, dir);  // projection scalar
-
-			Vec3 closestPoint = start + dir * t;
-
-			float distance = VMath::distance(s1.centre, closestPoint);
-			std::cout << obj->getActorName() << std::endl;
-			std::cout <<distance << " < " << s1.r << std::endl;
-			if (distance < s1.r) { return obj; }
-
-			
+		if (didHit && hit.t < closestDistance && hit.t >= 0.0f) {
+			closestDistance = hit.t;
+			closestHit = hit;
+			closestHit.hitActor = actor;
 		}
 	}
-	return nullptr;
+	
+	return closestHit;
 }
 
+std::vector<RaycastHit> CollisionSystem::RaycastAll(const Vec3& origin, const Vec3& direction, float maxDistance)
+{
+	std::vector<RaycastHit> allHits;
+	Vec3 normDir = VMath::normalize(direction);
 
-*/
+	for (const Ref<Actor>& actor : collidingActors) {
+		Ref<CollisionComponent> CC = actor->GetComponent<CollisionComponent>();
+
+		RaycastHit hit;
+		bool didHit = false;
+
+		switch (CC->colliderType) {
+		case ColliderType::Sphere:
+			didHit = RaycastSphere(origin, normDir, actor, hit);
+			break;
+		case ColliderType::Capsule:
+			didHit = RaycastCapsule(origin, normDir, actor, hit);
+			break;
+		case ColliderType::AABB:
+			didHit = RaycastAABB(origin, normDir, actor, hit);
+			break;
+		case ColliderType::OBB:
+			didHit = RaycastOBB(origin, normDir, actor, hit);
+			break;
+		default:
+			continue;
+		}
+
+		if (didHit && hit.t < maxDistance && hit.t >= 0.0f) {
+			hit.hitActor = actor;
+			allHits.push_back(hit);
+		}
+	}
+
+	// sorting vector in order of cloest hit first
+	std::sort(allHits.begin(), allHits.end(), [](const RaycastHit& a, const RaycastHit& b) {
+		return a.t < b.t;
+		});
+
+	return allHits;
+}
+
+bool CollisionSystem::RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
+{
+	// Reference: Real Time Collisions 5.3.2 Intersecting Ray or Segment Against Sphere
+
+	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
+	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
+	
+	Vec3 centre = CC->getWorldCentre(TC);
+	float radius = CC->getWorldRadius(TC);
+
+	Vec3 p = origin;
+	Vec3 d = direction;
+	
+	Vec3 m = p - centre;
+
+	// for sphere ray intersection ericon cancels out a by simplifying d · d into equaling 1
+	// I'm just going to include a here for the sake of the quadratic solver
+	float a = VMath::dot(d, d);
+	float b = 2.0f * VMath::dot(m, d);
+	float c = VMath::dot(m, m) - (radius * radius);
+	
+	QuadraticSolution solver;
+	solver.solveQuadratic(a, b, c);
+
+	// checks to make sure the ray is positive
+	if (solver.numSolutions == NumSolutions::one) {
+		if (solver.firstSolution > 0.0f) {
+			hit.t = solver.firstSolution;
+			hit.isIntersected = true;
+		}
+	}
+	// if there are two intersection points, get the smallest positive ray
+	else if (solver.numSolutions == NumSolutions::two) {
+		// I made the quadratic solver already make sure that the first solution is the smallest (uses std::min) but if the ray is negative, then it can get skewed 
+		// this checks for the smallest positive ray
+		float t1 = solver.firstSolution;
+		float t2 = solver.secondSolution;
+
+		if (t1 > 0.0f && t2 > 0.0f) {
+			hit.t = std::min(t1, t2);
+			hit.isIntersected = true;
+		}
+		else if (t1 > 0.0f) {
+			hit.t = t1;
+			hit.isIntersected = true;
+		}
+		else if (t2 > 0.0f) {
+			hit.t = t2;
+			hit.isIntersected = true;
+		}
+	}
+
+	if (hit.isIntersected) {
+		//rayInfo.intersectionPoint = p + rayInfo.t * d;
+		hit.intersectionPoint = origin + hit.t * direction;
+		hit.normal = VMath::normalize(hit.intersectionPoint - centre);
+		hit.hitActor = actor_;
+		hit.hitCollider = CC;
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionSystem::RaycastCapsule(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
+{
+	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
+	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
+
+	Vec3 centrePosA = CC->getWorldCentrePosA(TC);
+	Vec3 centrePosB = CC->getWorldCentrePosB(TC);
+	float radius = CC->getWorldCapsuleRadius(TC);
+
+	RaycastHit infiniteCylinder;
+
+	checkInfiniteCylinder(origin, direction, actor_, infiniteCylinder);
+
+	// check to see if ray intersected on the infinite cylinder
+	if (!infiniteCylinder.isIntersected) {
+		return false;
+	}
+
+	// get the axis
+	Vec3 axis = centrePosB - centrePosA;
+
+	// get the height from the axis by getting its magnitude
+	float cylinderheight = VMath::mag(axis);
+
+	// normalize the axis to get the axisDirection
+	Vec3 axisDirection = VMath::normalize(axis);
+
+	// points from end cap a to the intersection point on the infinite cylinder
+	Vec3 AP = infiniteCylinder.intersectionPoint - centrePosA;
+
+	float rayLength = VMath::dot(AP, axisDirection);
+
+	// check if the ray intersection is inside the 'real' cylinder
+	if (rayLength >= 0.0f && rayLength <= cylinderheight) {
+		hit = infiniteCylinder;
+		return true;
+	}
+
+	RaycastHit sphereCapA;
+	RaycastHit sphereCapB;
+
+	checkEndSphere(origin, direction, actor_, sphereCapA);
+	checkEndSphere(origin, direction, actor_, sphereCapB);
+
+	// check if ray hit both sphere caps
+	if (sphereCapA.isIntersected && sphereCapB.isIntersected) {
+		// if endcap as hit is a closer/smaller hit on the capsule
+		if (sphereCapA.t < sphereCapB.t) {
+			hit = sphereCapA;
+		}
+		// endcapb is closer
+		else {
+			hit = sphereCapB;
+		}
+	}
+	// just sphereCapA is hit
+	else if (sphereCapA.isIntersected) {
+		hit = sphereCapA;
+	}
+	// just sphereCapB is hit
+	else if (sphereCapB.isIntersected) {
+		hit = sphereCapB;
+	}
+
+	if (hit.isIntersected) {
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionSystem::RaycastAABB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
+{
+	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
+	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
+
+	Vec3 centre = CC->getWorldCentre(TC);
+	Vec3 halfExtents = CC->getWorldHalfExtents(TC);
+	Vec3 aabbMin = centre - halfExtents;
+	Vec3 aabbMax = centre + halfExtents;
+	
+	RayAABBIntersection intersection = IntersectRayAABB(origin, direction, aabbMin, aabbMax);
+	
+	if (intersection.didIntersect) {
+		hit.isIntersected = true;
+		hit.t = intersection.tMin;
+		hit.intersectionPoint = origin + hit.t * direction;
+		
+		hit.normal = Vec3(0.0f, 0.0f, 0.0f);
+		if (intersection.hitAxis == 0) {
+			hit.normal.x = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else if (intersection.hitAxis == 1) {
+			hit.normal.y = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else {
+			hit.normal.z = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+
+		hit.hitActor = actor_;
+		hit.hitCollider = CC;
+
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionSystem::RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
+{
+	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
+	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
+	
+	Vec3 obCentre = CC->getWorldCentre(TC);
+	Vec3 obHalfExtents = CC->getWorldHalfExtents(TC);
+	Quaternion obbOri = CC->getWorldOrientation(TC);
+
+	Vec3 obblocalCoords[3] = {
+		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
+		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
+	};
+
+	Vec3 originRel = origin - obCentre;
+	Vec3 originLocal(
+		VMath::dot(originRel, obblocalCoords[0]),
+		VMath::dot(originRel, obblocalCoords[1]),
+		VMath::dot(originRel, obblocalCoords[2])
+	);
+
+	Vec3 directionLocal(
+		VMath::dot(direction, obblocalCoords[0]),
+		VMath::dot(direction, obblocalCoords[1]),
+		VMath::dot(direction, obblocalCoords[2])
+	);
+
+	RayAABBIntersection intersection = IntersectRayAABB(origin, direction, -obHalfExtents, obHalfExtents);
+
+	if (intersection.didIntersect) {
+		hit.isIntersected = true;
+		hit.t = intersection.tMin;
+		hit.intersectionPoint = origin + hit.t * direction;
+
+		Vec3 normLocal = Vec3(0.0f, 0.0f, 0.0f);
+		if (intersection.hitAxis == 0) {
+			normLocal.x = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else if (intersection.hitAxis == 1) {
+			normLocal.y = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		else {
+			normLocal.z = intersection.hitMaxFace ? 1.0f : -1.0f;
+		}
+		hit.normal = obblocalCoords[0] * normLocal.x + obblocalCoords[1] * normLocal.y + obblocalCoords[2] * normLocal.z;
+
+		hit.hitActor = actor_;
+		hit.hitCollider = CC;
+
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionSystem::checkInfiniteCylinder(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
+{
+	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
+	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
+
+	Vec3 centrePosA = CC->getWorldCentrePosA(TC);
+	Vec3 centrePosB = CC->getWorldCentrePosB(TC);
+	float radius = CC->getWorldCapsuleRadius(TC);
+
+	Vec3 S = origin;
+	Vec3 V = direction;
+
+	Vec3 AB = VMath::normalize(centrePosB - centrePosA);
+	Vec3 AS = S - centrePosA;
+
+	QuadraticSolution solver;
+
+	float a = VMath::dot(V, V) - pow(VMath::dot(V, AB), 2);
+	float b = 2.0f * (VMath::dot(AS, V) - (VMath::dot(V, AB) * VMath::dot(AS, AB)));
+	float c = VMath::dot(AS, AS) - pow(VMath::dot(AS, AB), 2) - (radius * radius);
+
+	solver.solveQuadratic(a, b, c);
+
+	// checks to make sure the ray is positive
+	if (solver.numSolutions == NumSolutions::one) {
+		if (solver.firstSolution > 0.0f) { //
+			hit.t = solver.firstSolution;
+			hit.isIntersected = true;
+		}
+	}
+	// if there are two intersection points, get the smallest positive ray
+	else if (solver.numSolutions == NumSolutions::two) {
+		// I made the quadratic solver already make sure that the first solution is the smallest (uses std::min) but if the ray is negative, then it can get skewed 
+		// this checks for the smallest positive ray
+		float t1 = solver.firstSolution;
+		float t2 = solver.secondSolution;
+
+		if (t1 > 0.0f && t2 > 0.0f) {
+			hit.t = std::min(t1, t2);
+			hit.isIntersected = true;
+		}
+		else if (t1 > 0.0f) {
+			hit.t = t1;
+			hit.isIntersected = true;
+		}
+		else if (t2 > 0.0f) {
+			hit.t = t2;
+			hit.isIntersected = true;
+		}
+	}
+
+	if (hit.isIntersected) {
+		//rayInfo.intersectionPoint = S + rayInfo.t * V;
+		hit.intersectionPoint = S + hit.t * V;
+		hit.normal = VMath::normalize(hit.intersectionPoint) - AB;
+		hit.hitActor = actor_;
+		hit.hitCollider = CC;
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
+{
+	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
+	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
+
+	Vec3 centre = CC->getWorldCentre(TC);
+	float radius = CC->getWorldCapsuleRadius(TC);
+	
+	// Reference: Real Time Collisions 5.3.2 Intersecting Ray or Segment Against Sphere
+	Vec3 p = origin;
+	Vec3 d = direction;
+
+	Vec3 m = p - centre;
+
+	float a = VMath::dot(d, d);
+	float b = 2.0f * VMath::dot(m, d);
+	float c = VMath::dot(m, m) - (radius * radius);
+
+	QuadraticSolution solver;
+	solver.solveQuadratic(a, b, c);
+
+	// checks to make sure the ray is positive
+	if (solver.numSolutions == NumSolutions::one) {
+		if (solver.firstSolution > 0.0f) { //
+			hit.t = solver.firstSolution;
+			hit.isIntersected = true;
+		}
+	}
+	// if there are two intersection points, get the smallest positive ray
+	else if (solver.numSolutions == NumSolutions::two) {
+		// I made the quadratic solver already make sure that the first solution is the smallest (uses std::min) but if the ray is negative, then it can get skewed 
+		// this checks for the smallest positive ray
+		float t1 = solver.firstSolution;
+		float t2 = solver.secondSolution;
+
+		if (t1 > 0.0f && t2 > 0.0f) {
+			hit.t = std::min(t1, t2);
+			hit.isIntersected = true;
+		}
+		else if (t1 > 0.0f) {
+			hit.t = t1;
+			hit.isIntersected = true;
+		}
+		else if (t2 > 0.0f) {
+			hit.t = t2;
+			hit.isIntersected = true;
+		}
+	}
+
+	if (hit.isIntersected) {
+		//rayInfo.intersectionPoint = p + rayInfo.t * d;
+		hit.intersectionPoint = p + hit.t * d;
+		hit.normal = VMath::normalize(hit.intersectionPoint - centre);
+		hit.hitActor = actor_;
+		hit.hitCollider = CC;
+		return true;
+	}
+	
+	return false;
+}
 
 // Computes closest points C1 and C2 of S1(s)=P1+s*(Q1-P1) and
 // S2(t)=P2+t*(Q2-P2), returning s and t. Function result is squared
 // distance between between S1(s) and S2(t
-float CollisionSystem::ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2,
-											   float& s, float& t, Vec3& c1, Vec3& c2)
-{
+float CollisionSystem::ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2, float& s, float& t, Vec3& c1, Vec3& c2) {
 	// 5.1.9 Closest Points of Two Line Segments
 
 	Vec3 d1 = q1 - p1; // Direction vector of segment S1
@@ -1227,6 +2291,37 @@ float CollisionSystem::ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q
 	c1 = p1 + d1 * s;
 	c2 = p2 + d2 * t;
 	return VMath::dot(c1 - c2, c1 - c2);
+}
+
+// Given segment ab and point c, computes closest point d on ab.
+// Also returns t for the position of d, d(t) = a + t*(b - a)
+Vec3 CollisionSystem::ClosestPtPointSegment(Vec3 a, Vec3 b, Vec3 c)
+{
+	// 5.1.2 Closest Point on Line Segment to Point
+
+	Vec3 ab = b - a;
+	// Project c onto ab, computing parameterized position d(t) = a + t*(b – a)
+	float t = VMath::dot(c - a, ab) / VMath::dot(ab, ab);
+	// If outside segment, clamp t (and therefore d) to the closest endpoint
+	if (t < 0.0f) t = 0.0f;
+	if (t > 1.0f) t = 1.0f;
+	// Compute projected position from the clamped t
+	return a + t * ab;
+}
+
+// Returns the squared distance between point c and segment ab
+float CollisionSystem::SqDistPointSegment(Vec3 a, Vec3 b, Vec3 c)
+{
+	// 5.1.2.1 Distance of Point to Segment
+
+	Vec3 ab = b - a, ac = c - a, bc = c - b;	
+	float e = VMath::dot(ac, ab);
+	// Handle cases where c projects outside ab
+	if (e <= 0.0f) return VMath::dot(ac, ac);
+	float f = VMath::dot(ab, ab);
+	if (e >= f) return VMath::dot(bc, bc);
+	// Handle cases where c projects onto ab
+	return VMath::dot(ac, ac) - e * e / f;
 }
 
 // Given point p, return the point q on or in AABB b that is closest to p

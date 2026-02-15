@@ -46,7 +46,6 @@ public:
 		projectionMatrix = MMath::perspective(m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane);
 	}
 	
-	Ref<Actor> getUserActor() const { return userActor; }
 	float getFOV() const { return m_fov; }
 	float getAspectRatio() const { return m_aspectRatio; }
 	float getNearClipPlane() const { return m_nearClipPlane; }

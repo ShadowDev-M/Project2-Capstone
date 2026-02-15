@@ -1,0 +1,10 @@
+<Actor>
+    <TransformComponent>
+        <position x="-19.136066" y="4.7006097" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </TransformComponent>
+    <MeshComponent name="SM_Plane"/>
+    <MaterialComponent name="M_ChessBoard"/>
+    <ShaderComponent name="S_Multi"/>
+</Actor>

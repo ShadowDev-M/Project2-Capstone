@@ -66,6 +66,7 @@ void PhysicsSystem::Update(float deltaTime)
 		// adding drag to net force
 		netForce += dragForce;
 		
+		//TODO
 		ApplyForce(actor, netForce);
 
 		UpdateVel(actor, deltaTime);
@@ -80,9 +81,7 @@ void PhysicsSystem::Update(float deltaTime)
 		// updating orientation/angular velocity
 		UpdateOrientation(actor, deltaTime);
 		
-
-		ApplyForce(actor, -netForce);
-
+		// TODO
 	}
 }
 
@@ -130,7 +129,9 @@ void PhysicsSystem::ApplyForce(Ref<Actor> actor_, const Vec3& force)
 	// if actor doesnt have a physics component or isnt dynamic then return
 	if (!PC || PC->getState() != PhysicsState::Dynamic) return;
 
-	PC->accel += (force / PC->mass);
+	//TODO
+	PC->accel = force / PC->mass;
+	// PC->accel += (force / PC->mass);
 }
 
 void PhysicsSystem::ApplyImpulse(Ref<Actor> actor_, const Vec3& impulse)

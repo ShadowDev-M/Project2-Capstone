@@ -14,6 +14,7 @@ enum class CollisionDetectionState {
 };
 
 // holds all the information about a given collision 
+// used in collision resolution system
 // Game Physics Engine Development Ian Millington 13.2.2
 struct CollisionData {
 	bool isColliding = false;
@@ -28,12 +29,12 @@ struct CollisionData {
 // mostly based off unity, (I stole the name from unity) and old physics raycast code
 // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RaycastHit.html
 struct RaycastHit {
-	bool didHit = false;
+	bool isIntersected = false;
 	Ref<CollisionComponent> hitCollider = nullptr; // return the hit collider, might as well 
 	Ref<Actor> hitActor = nullptr; // unity returns specific components of the hit collider, but why not just return the actor too
-	float distance = 0.0f; // The distance from the ray's origin to the impact point.
+	float t = 0.0f; // The distance from the ray's origin to the impact point.
 	Vec3 normal; // The normal of the surface the ray hit.
-	Vec3 point; // The impact point in world space where the ray hit the collider.
+	Vec3 intersectionPoint; // The impact point in world space where the ray hit the collider.
 };
 
 // this is mostly to help out with collision detection event functions,
@@ -97,7 +98,8 @@ public:
 	bool CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionData& data);
 
 	//TODO: add actor tags or some way of filtering out certain actors,
-	// I mean technically we can just get the name of the hit actor and use that as a filter
+	// I mean technically we can just get the name of the hit actor and use that as a filter,
+	// but tags would be better to determine portal placeable surfaces
 	
 	// main raycast function (using unity as reference https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Physics.Raycast.html)
 	// returns whatever was hit first
@@ -129,16 +131,16 @@ private:
 	bool AABBAABBDiscrete(Ref<Actor> aabb1, Ref<Actor> aabb2, CollisionData& data);
 	bool OBBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
 	
-	bool SphereCapsuleDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool SphereCapsuleContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool SphereCapsuleDiscrete(Ref<Actor> s, Ref<Actor> c, CollisionData& data);
+	bool SphereCapsuleContinuous(Ref<Actor> s, Ref<Actor> c, CollisionData& data);
 	bool SphereAABBDiscrete(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data);
 	bool SphereAABBContinuous(Ref<Actor> s, Ref<Actor> aabb, CollisionData& data);
 	bool SphereOBBDiscrete(Ref<Actor> s, Ref<Actor> obb, CollisionData& data);
 	bool SphereOBBContinuous(Ref<Actor> s, Ref<Actor> obb, CollisionData& data);
-	bool CapsuleAABBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool CapsuleAABBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool CapsuleOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
-	bool CapsuleOBBContinuous(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data);
+	bool CapsuleAABBDiscrete(Ref<Actor> c, Ref<Actor> ab, CollisionData& data);
+	bool CapsuleAABBContinuous(Ref<Actor> c, Ref<Actor> ab, CollisionData& data);
+	bool CapsuleOBBDiscrete(Ref<Actor> c, Ref<Actor> ob, CollisionData& data);
+	bool CapsuleOBBContinuous(Ref<Actor> c, Ref<Actor> ob, CollisionData& data);
 	bool AABBOBBDiscrete(Ref<Actor> ab, Ref<Actor> ob, CollisionData& data);
 
 	// TODO: continous functions for aabbaabb and obbobb
@@ -149,23 +151,24 @@ private:
 	void ResolveImpulse(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data);
 	void ApplyFriction(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data, float impulse_);
 
-
 	// shape raycast functions (reusing raycast code from last semester)
 	// this is not like unitys SphereCast function,
 	// that casts a sphere along a ray and checks for collisions
 	// these functions instead just cast a ray out, 
 	// and then determines what type of collider/shape they hit based on the function
-	Ref<Actor> RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	Ref<Actor> RaycastCapsule(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	Ref<Actor> RaycastAABB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	Ref<Actor> RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);	
+	bool RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool RaycastCapsule(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool RaycastAABB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);	
 	
+	// raycast helper functions
+	bool checkInfiniteCylinder(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool checkEndSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
 
 	// helper functions from Real-Time Collision Detetcion book
-	
-	float ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2, 
-								  float& s, float& t, Vec3& c1, Vec3& c2);
-
+	float ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2, float& s, float& t, Vec3& c1, Vec3& c2);
+	Vec3 ClosestPtPointSegment(Vec3 a, Vec3 b, Vec3 c);
+	float SqDistPointSegment(Vec3 a, Vec3 b, Vec3 c);
 	Vec3 ClosestPtPointAABB(const Vec3& p, const Vec3& aabbMin, const Vec3& aabbMax);
 	
 	// struct for raybox intersection

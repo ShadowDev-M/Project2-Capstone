@@ -27,7 +27,7 @@ void ColliderDebug::Render(Ref<CollisionComponent> collision_, Ref<TransformComp
         shape = GenerateSphere(collision_, transform_);
         break;
     case ColliderType::Capsule:
-        shape = GenerateSphere(collision_, transform_);
+        shape = GenerateCapsule(collision_, transform_);
         break;
     case ColliderType::AABB:
         shape = GenerateAABB(collision_, transform_);
