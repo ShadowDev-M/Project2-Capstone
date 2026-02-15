@@ -234,7 +234,7 @@ void SceneGraph::checkValidCamera()
 			//doesn't need to be added to the sceneGraph
 			//sceneGraph.AddActor(debugCamera);
 
-			debugCamera->AddComponent<CameraComponent>(debugCamera, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+			debugCamera->AddComponent<CameraComponent>(debugCamera, 45.0f, (16.0f / 9.0f), 0.5f, 300.0f);
 			debugCamera->GetComponent<CameraComponent>()->OnCreate();
 			debugCamera->GetComponent<CameraComponent>()->fixCameraToTransform();
 
@@ -274,7 +274,9 @@ std::vector<Vec3> SceneGraph::GetLightsPos() const
 	std::vector<Vec3> lightPositions;
 
 	for (auto& obj : lightActors) {
-		lightPositions.push_back(obj->GetComponent<TransformComponent>()->GetPosition());
+		//lightPositions.push_back(obj->GetComponent<TransformComponent>()->GetPosition());
+		lightPositions.push_back(obj->GetModelMatrix() * Vec4(Vec3(), 1));
+
 	}
 
 	return lightPositions;
@@ -955,7 +957,7 @@ void SceneGraph::Render() const
 			for (auto& light : lightActors) {
 				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
 					// you shouldn't have to pass a corrected light position into the shader, it should correct itself.
-					lightPos.push_back(light->GetComponent<TransformComponent>()->GetPosition());// - usedCamera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition());
+					lightPos.push_back(light->GetModelMatrix() * Vec4(Vec3(), 1));
 					lightTypes.push_back(1u);
 				}
 				else {

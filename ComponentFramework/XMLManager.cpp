@@ -96,7 +96,10 @@ void XMLObjectFile::runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XML
             else {
                 //Actor must therefore have parent of actorElement's name
                 sceneGraph->LoadActor(itNameCstr, sceneGraph->GetActor(actorName));
+                if (sceneGraph->GetActor(itNameCstr)->GetComponent<LightComponent>()) {
+                    sceneGraph->AddLight(sceneGraph->GetActor(itNameCstr));
 
+                }
             }
 
             createActorFromElement(sceneGraph, it);
