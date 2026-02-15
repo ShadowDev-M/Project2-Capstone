@@ -1,10 +1,10 @@
 <Actor>
     <TransformComponent>
-        <position x="180" y="8" z="-194"/>
+        <position x="-180" y="8.0862617" z="-194"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="36" y="36" z="36"/>
     </TransformComponent>
     <MeshComponent name="SM_Plane"/>
-    <MaterialComponent name="testtex2"/>
+    <MaterialComponent name="testtex"/>
     <ShaderComponent name="S_Multi"/>
 </Actor>

@@ -2,7 +2,7 @@
     <TransformComponent>
         <position x="6.5547581" y="-7.296279" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="20" y="1" z="20"/>
+        <scale x="68.835403" y="1" z="20"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>

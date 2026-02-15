@@ -47,10 +47,17 @@ function Update(deltaTime)
 	
 	if GameObject.Animator.Clip:GetAnimationName() == "jump" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
 		animclip:SetAnimation("falling")
+		animclip.SpeedMult = 0.2
 		GameObject.Animator.Clip = animclip
 		GameObject.Animator:Play()
 	end
 	
+	if GameObject.Animator.Clip:GetAnimationName() == "falling" then
+		if GameObject.Animator.SpeedMult > 0.2 then
+			GameObject.Animator.SpeedMult = 0.2
+		end
+	end
+
 	if GameObject.Animator.Clip:GetAnimationName() == "land" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
 		animclip:SetAnimation("idle2")
 		GameObject.Animator.Clip = animclip
@@ -58,7 +65,7 @@ function Update(deltaTime)
 	end
 
 
-	if math.abs(GameObject.Rigidbody.Vel.x) > 0.01 then 
+	if math.abs(GameObject.Rigidbody.Vel.x) > 0.01 and (GameObject.Animator.Clip:GetAnimationName() == "walking" or GameObject.Animator.Clip:GetAnimationName() == "idle2") then 
 		GameObject.Animator.SpeedMult = (math.abs(GameObject.Rigidbody.Vel.x) / 5) + 0.3
 		
 		if GameObject.Animator.Clip:GetAnimationName() == "idle2" then

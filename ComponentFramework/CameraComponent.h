@@ -21,7 +21,7 @@ private:
 	Vec3 position;
 
 public:
-	CameraComponent(Ref<Actor> userActor_, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f);
+	CameraComponent(Ref<Actor> userActor_, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 300.0f);
 	~CameraComponent();
 	bool OnCreate();
 

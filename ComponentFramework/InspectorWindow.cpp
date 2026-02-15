@@ -671,7 +671,7 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 
 		ImGui::Text("Far ");
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##FarDrag", &farClipPlane, 1.0f, 0.0f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+		if (ImGui::DragFloat("##FarDrag", &farClipPlane, 1.0f, 0.0f, 1000.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 			for (auto& component : cameraState.components) {
 				component->setFarClipPlane(farClipPlane);
 			}

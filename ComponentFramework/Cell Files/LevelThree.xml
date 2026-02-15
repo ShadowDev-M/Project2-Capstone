@@ -1,18 +1,21 @@
 <CellFile>
     <Actors>
+        <Mario>
+            <LightP/>
+        </Mario>
         <Board/>
-        <Mario/>
-        <Cube_1D/>
-        <Cube/>
         <CamTest/>
+        <Cube/>
+        <Cube_1D/>
         <SkyLight/>
+        <Board_1D/>
     </Actors>
     <Components>
         <Animation>
-            <svgvuijwerjtuiew/>
             <dancing/>
-            <falling/>
+            <svgvuijwerjtuiew/>
             <walking/>
+            <falling/>
             <idle/>
             <land/>
             <jump/>
@@ -23,12 +26,12 @@
             <M_Sphere>
                 <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
             </M_Sphere>
-            <M_Hammer>
-                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
-            </M_Hammer>
             <M_MarioFire>
                 <Texture diff="textures/mario_fire.png" spec=""/>
             </M_MarioFire>
+            <M_Hammer>
+                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
+            </M_Hammer>
             <M_MarioN>
                 <Texture diff="textures/mario_main.png" spec=""/>
             </M_MarioN>
@@ -41,41 +44,44 @@
             <M_Skull>
                 <Texture diff="textures/skull_texture.jpg" spec=""/>
             </M_Skull>
-            <M_TestSpec>
-                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
-            </M_TestSpec>
             <testtex>
                 <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
             </testtex>
+            <M_TestSpec>
+                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
+            </M_TestSpec>
             <skeletonTexture>
                 <Texture diff="textures/skeleton_d.png" spec=""/>
             </skeletonTexture>
             <gridtexture2>
                 <Texture diff="textures/gridimage.png" spec=""/>
             </gridtexture2>
+            <testtex2>
+                <Texture diff="textures/UnderwaterBox_Negx.png" spec=""/>
+            </testtex2>
         </MaterialComponent>
         <MeshComponent>
-            <SM_Sphere>
-                <Mesh path="meshes/Sphere.obj"/>
-            </SM_Sphere>
             <SM_Cube>
                 <Mesh path="meshes/Cube.obj"/>
             </SM_Cube>
+            <SM_Sphere>
+                <Mesh path="meshes/Sphere.obj"/>
+            </SM_Sphere>
             <SM_King>
                 <Mesh path="meshes/King.obj"/>
             </SM_King>
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
+            <SM_Pawn>
+                <Mesh path="meshes/Pawn.obj"/>
+            </SM_Pawn>
             <SM_Plane>
                 <Mesh path="meshes/Plane.obj"/>
             </SM_Plane>
             <SM_Mario>
                 <Mesh path="meshes/Mario.obj"/>
             </SM_Mario>
-            <SM_Pawn>
-                <Mesh path="meshes/Pawn.obj"/>
-            </SM_Pawn>
             <SM_Rook>
                 <Mesh path="meshes/Rook.obj"/>
             </SM_Rook>
@@ -85,12 +91,12 @@
             <SM_Skull>
                 <Mesh path="meshes/Skull.obj"/>
             </SM_Skull>
-            <testRuntimeMesh>
-                <Mesh path="meshes/Mario.obj"/>
-            </testRuntimeMesh>
             <manni>
                 <Mesh path="meshes/Ch36_nonPBR.fbx"/>
             </manni>
+            <testRuntimeMesh>
+                <Mesh path="meshes/Mario.obj"/>
+            </testRuntimeMesh>
             <testassetfbx>
                 <Mesh path="meshes/cliff_rock1.fbx"/>
             </testassetfbx>
@@ -100,8 +106,8 @@
         </MeshComponent>
         <ScriptAbstract>
             <script1/>
-            <testScriptTwo/>
             <PlayerController/>
+            <testScriptTwo/>
             <lerjgklktbl/>
             <animScript/>
             <testScript/>

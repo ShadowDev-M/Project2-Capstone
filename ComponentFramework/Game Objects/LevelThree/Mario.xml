@@ -1,6 +1,6 @@
 <Actor>
     <TransformComponent>
-        <position x="11.252" y="-2.4902625" z="0"/>
+        <position x="3.979526" y="-2.4902625" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="0.050000001" y="0.050000001" z="0.050000001"/>
     </TransformComponent>
@@ -15,13 +15,13 @@
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
-        <CollisionType type="0"/>
+        <CollisionType type="2"/>
         <isTrigger trigger="0"/>
         <radius value="5"/>
-        <centre x="0" y="2.5" z="0"/>
+        <centre x="0" y="40" z="0"/>
         <centrePosA x="0" y="1" z="0"/>
         <centrePosB x="0" y="-1" z="0"/>
-        <halfExtents x="1" y="1" z="1"/>
+        <halfExtents x="20" y="80" z="20"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
     <AnimatorComponent>

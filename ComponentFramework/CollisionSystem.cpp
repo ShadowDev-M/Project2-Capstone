@@ -342,7 +342,7 @@ void CollisionSystem::Update(float deltaTime) {
 
 					//std::cout << data.penetration << std::endl;
 					ResolveCollision(a1, a2, data);
-					std::cout << "COLLSION DETECTED!" << std::endl;
+				//	std::cout << "COLLSION DETECTED!" << std::endl;
 
 
 					ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::Enter);
