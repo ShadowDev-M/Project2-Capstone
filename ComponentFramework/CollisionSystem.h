@@ -29,12 +29,12 @@ struct CollisionData {
 // mostly based off unity, (I stole the name from unity) and old physics raycast code
 // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RaycastHit.html
 struct RaycastHit {
-	bool didHit = false;
+	bool isIntersected = false;
 	Ref<CollisionComponent> hitCollider = nullptr; // return the hit collider, might as well 
 	Ref<Actor> hitActor = nullptr; // unity returns specific components of the hit collider, but why not just return the actor too
-	float distance = 0.0f; // The distance from the ray's origin to the impact point.
+	float t = 0.0f; // The distance from the ray's origin to the impact point.
 	Vec3 normal; // The normal of the surface the ray hit.
-	Vec3 point; // The impact point in world space where the ray hit the collider.
+	Vec3 intersectionPoint; // The impact point in world space where the ray hit the collider.
 };
 
 // this is mostly to help out with collision detection event functions,
@@ -156,11 +156,15 @@ private:
 	// that casts a sphere along a ray and checks for collisions
 	// these functions instead just cast a ray out, 
 	// and then determines what type of collider/shape they hit based on the function
-	Ref<Actor> RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	Ref<Actor> RaycastCapsule(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	Ref<Actor> RaycastAABB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	Ref<Actor> RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);	
+	bool RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool RaycastCapsule(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool RaycastAABB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);	
 	
+	// raycast helper functions
+	bool checkInfiniteCylinder(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool checkEndSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+
 	// helper functions from Real-Time Collision Detetcion book
 	float ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2, float& s, float& t, Vec3& c1, Vec3& c2);
 	Vec3 ClosestPtPointSegment(Vec3 a, Vec3 b, Vec3 c);
