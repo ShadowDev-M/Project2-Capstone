@@ -1,21 +1,26 @@
 <CellFile>
     <Actors>
+        <Board/>
         <Mario>
             <LightP/>
         </Mario>
-        <Board/>
-        <CamTest/>
-        <Cube/>
         <Cube_1D/>
+        <Cube/>
+        <CamTest/>
         <SkyLight/>
         <Board_1D/>
+        <PressureSensor>
+            <Pressure_Pad/>
+        </PressureSensor>
+        <Gear/>
+        <Gear_1D/>
     </Actors>
     <Components>
         <Animation>
-            <dancing/>
             <svgvuijwerjtuiew/>
-            <walking/>
+            <dancing/>
             <falling/>
+            <walking/>
             <idle/>
             <land/>
             <jump/>
@@ -26,12 +31,12 @@
             <M_Sphere>
                 <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
             </M_Sphere>
-            <M_MarioFire>
-                <Texture diff="textures/mario_fire.png" spec=""/>
-            </M_MarioFire>
             <M_Hammer>
                 <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
             </M_Hammer>
+            <M_MarioFire>
+                <Texture diff="textures/mario_fire.png" spec=""/>
+            </M_MarioFire>
             <M_MarioN>
                 <Texture diff="textures/mario_main.png" spec=""/>
             </M_MarioN>
@@ -44,12 +49,12 @@
             <M_Skull>
                 <Texture diff="textures/skull_texture.jpg" spec=""/>
             </M_Skull>
-            <testtex>
-                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
-            </testtex>
             <M_TestSpec>
                 <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
             </M_TestSpec>
+            <testtex>
+                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
+            </testtex>
             <skeletonTexture>
                 <Texture diff="textures/skeleton_d.png" spec=""/>
             </skeletonTexture>
@@ -60,13 +65,44 @@
                 <Texture diff="textures/UnderwaterBox_Negx.png" spec=""/>
             </testtex2>
         </MaterialComponent>
+        <ScriptAbstract>
+            <script1/>
+            <testScriptTwo/>
+            <PlayerController/>
+            <lerjgklktbl/>
+            <animScript/>
+            <testScript/>
+            <FixCamera/>
+            <PressurePad/>
+            <GearTurn/>
+        </ScriptAbstract>
+        <ShaderComponent>
+            <S_Default>
+                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
+            </S_Default>
+            <S_Multi>
+                <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
+            </S_Multi>
+            <S_Outline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/MultiPhongVert.glsl"/>
+            </S_Outline>
+            <S_Phong>
+                <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
+            </S_Phong>
+            <S_Animated>
+                <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/animationVert.glsl"/>
+            </S_Animated>
+            <S_AnimOutline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
+            </S_AnimOutline>
+        </ShaderComponent>
         <MeshComponent>
-            <SM_Cube>
-                <Mesh path="meshes/Cube.obj"/>
-            </SM_Cube>
             <SM_Sphere>
                 <Mesh path="meshes/Sphere.obj"/>
             </SM_Sphere>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
             <SM_King>
                 <Mesh path="meshes/King.obj"/>
             </SM_King>
@@ -91,47 +127,30 @@
             <SM_Skull>
                 <Mesh path="meshes/Skull.obj"/>
             </SM_Skull>
-            <manni>
-                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
-            </manni>
             <testRuntimeMesh>
                 <Mesh path="meshes/Mario.obj"/>
             </testRuntimeMesh>
+            <manni>
+                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
+            </manni>
             <testassetfbx>
                 <Mesh path="meshes/cliff_rock1.fbx"/>
             </testassetfbx>
             <grid>
                 <Mesh path="meshes/grid.obj"/>
             </grid>
+            <Crate>
+                <Mesh path="meshes/3D_Models/SM_Crate_01.fbx"/>
+            </Crate>
+            <SM_Bridge>
+                <Mesh path="meshes/3D_Models/SM_BridgePlatform.fbx"/>
+            </SM_Bridge>
+            <SM_Gear1>
+                <Mesh path="meshes/3D_Models/SM_Gear_Large.fbx"/>
+            </SM_Gear1>
+            <PressurePlate>
+                <Mesh path="meshes/PressurePlate.fbx"/>
+            </PressurePlate>
         </MeshComponent>
-        <ScriptAbstract>
-            <script1/>
-            <PlayerController/>
-            <testScriptTwo/>
-            <lerjgklktbl/>
-            <animScript/>
-            <testScript/>
-            <FixCamera/>
-        </ScriptAbstract>
-        <ShaderComponent>
-            <S_Default>
-                <Shader frag="shaders/defaultFrag.glsl" vert="shaders/defaultVert.glsl"/>
-            </S_Default>
-            <S_Multi>
-                <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/MultiPhongVert.glsl"/>
-            </S_Multi>
-            <S_Outline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/MultiPhongVert.glsl"/>
-            </S_Outline>
-            <S_Phong>
-                <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
-            </S_Phong>
-            <S_Animated>
-                <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/animationVert.glsl"/>
-            </S_Animated>
-            <S_AnimOutline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
-            </S_AnimOutline>
-        </ShaderComponent>
     </Components>
 </CellFile>

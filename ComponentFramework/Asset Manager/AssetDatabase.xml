@@ -39,6 +39,10 @@
         <Asset name="manni" filepath="meshes/Ch36_nonPBR.fbx"/>
         <Asset name="testassetfbx" filepath="meshes/cliff_rock1.fbx"/>
         <Asset name="grid" filepath="meshes/grid.obj"/>
+        <Asset name="Crate" filepath="meshes/3D_Models/SM_Crate_01.fbx"/>
+        <Asset name="SM_Bridge" filepath="meshes/3D_Models/SM_BridgePlatform.fbx"/>
+        <Asset name="SM_Gear1" filepath="meshes/3D_Models/SM_Gear_Large.fbx"/>
+        <Asset name="PressurePlate" filepath="meshes/PressurePlate.fbx"/>
     </MeshComponent>
     <ScriptAbstract>
         <Asset name="script1" scriptName="testScript.lua"/>
@@ -48,6 +52,8 @@
         <Asset name="animScript" scriptName="animateTestScript.lua"/>
         <Asset name="testScript" scriptName="testScript.lua"/>
         <Asset name="FixCamera" scriptName="FixCamera.lua"/>
+        <Asset name="PressurePad" scriptName="PressurePad.lua"/>
+        <Asset name="GearTurn" scriptName="GearTurn.lua"/>
     </ScriptAbstract>
     <ShaderComponent>
         <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>

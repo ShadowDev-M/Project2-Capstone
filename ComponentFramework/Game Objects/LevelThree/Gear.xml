@@ -1,0 +1,13 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="15.676921" y="6.2951946" z="-15.699152"/>
+        <rotation w="0.9876889" x="2.5461887e-08" y="3.2185659e-07" z="0.15643083"/>
+        <scale x="0.99999934" y="0.99999934" z="1"/>
+    </TransformComponent>
+    <MeshComponent name="SM_Gear1"/>
+    <MaterialComponent name="M_Sphere"/>
+    <ShaderComponent name="S_Multi"/>
+    <ScriptComponent name="GearTurn"/>
+    <ScriptComponent name="GearTurn"/>
+</Actor>
