@@ -98,7 +98,7 @@ void PhysicsSystem::Update(float deltaTime)
 		// rest is for dynamic pcs now
 
 		Vec3 netForce;
-
+		
 		// applying gravity
 		if (PC->useGravity == true) {
 			Vec3 gravityForce(0.0f, gravity * PC->mass, 0.0f);
@@ -107,40 +107,61 @@ void PhysicsSystem::Update(float deltaTime)
 			netForce += gravityForce;
 		}
 
-
+		
 		// applying drag
 		Vec3 dragForce = PC->vel * (-PC->drag);
-
+		
 		// adding drag to net force
 		netForce += dragForce;
-
+		
 		//TODO
 		ApplyForce(actor, netForce);
+		
+
 
 		UpdateVel(actor, deltaTime);
-
+		
 
 		UpdatePos(actor, deltaTime);
-
+		
 		// TODO: check with umer to make sure angular calculations are correct
 		//Vec3 angularDragFroce = PC->angularVel * (-PC->angularDrag);
 		//ApplyTorque(actor, angularDragFroce);
 
 		// updating orientation/angular velocity
 		UpdateOrientation(actor, deltaTime);
-
+		
 		ApplyForce(actor, -netForce);
+		
 	}
+}
+
+Vec3 PhysicsSystem::ResolveConstraintsPos(Ref<PhysicsComponent> PC, Vec3 vector_) {
+	if (PC->constraints.freezePosX) {
+		vector_.x = 0;
+	}
+	if (PC->constraints.freezePosY) {
+		vector_.y = 0;
+	}
+	if (PC->constraints.freezePosZ) {
+		vector_.z = 0;
+	}
+
+	return vector_;
 }
 
 void PhysicsSystem::ApplyForce(Ref<Actor> actor_, const Vec3& force)
 {
 	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
 
+
+
 	// if actor doesnt have a physics component or isnt dynamic then return
 	if (!PC || PC->getState() != PhysicsState::Dynamic) return;
+	
+	Vec3 nForce = ResolveConstraintsPos(PC, force);
 
-	PC->accel += force / PC->mass;
+	PC->accel += nForce / PC->mass;
 }
 
 void PhysicsSystem::UpdateVel(Ref<Actor> actor_, float deltaTime)
@@ -148,6 +169,8 @@ void PhysicsSystem::UpdateVel(Ref<Actor> actor_, float deltaTime)
 	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
 
 	PC->vel += PC->accel * deltaTime;
+
+	
 }
 
 void PhysicsSystem::UpdatePos(Ref<Actor> actor_, float deltaTime)
@@ -155,8 +178,12 @@ void PhysicsSystem::UpdatePos(Ref<Actor> actor_, float deltaTime)
 	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
 	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
 
+	Vec3 nVel = PC->vel;
+
+	
+
 	Vec3 TCPos = TC->GetPosition();
-	TCPos += PC->vel * deltaTime;
+	TCPos += nVel * deltaTime;
 	TC->SetPos(TCPos.x, TCPos.y, TCPos.z);
 }
 

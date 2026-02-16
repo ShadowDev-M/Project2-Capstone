@@ -1,26 +1,28 @@
 <CellFile>
     <Actors>
-        <Board/>
         <Mario>
             <LightP/>
         </Mario>
-        <Cube_1D/>
-        <Cube/>
+        <Board/>
         <CamTest/>
+        <Cube/>
+        <Cube_1D/>
         <SkyLight/>
         <Board_1D/>
+        <Door/>
         <PressureSensor>
             <Pressure_Pad/>
         </PressureSensor>
         <Gear/>
         <Gear_1D/>
+        <DoorStop/>
     </Actors>
     <Components>
         <Animation>
-            <svgvuijwerjtuiew/>
             <dancing/>
-            <falling/>
+            <svgvuijwerjtuiew/>
             <walking/>
+            <falling/>
             <idle/>
             <land/>
             <jump/>
@@ -31,12 +33,12 @@
             <M_Sphere>
                 <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
             </M_Sphere>
-            <M_Hammer>
-                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
-            </M_Hammer>
             <M_MarioFire>
                 <Texture diff="textures/mario_fire.png" spec=""/>
             </M_MarioFire>
+            <M_Hammer>
+                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
+            </M_Hammer>
             <M_MarioN>
                 <Texture diff="textures/mario_main.png" spec=""/>
             </M_MarioN>
@@ -49,12 +51,12 @@
             <M_Skull>
                 <Texture diff="textures/skull_texture.jpg" spec=""/>
             </M_Skull>
-            <M_TestSpec>
-                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
-            </M_TestSpec>
             <testtex>
                 <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
             </testtex>
+            <M_TestSpec>
+                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
+            </M_TestSpec>
             <skeletonTexture>
                 <Texture diff="textures/skeleton_d.png" spec=""/>
             </skeletonTexture>
@@ -65,10 +67,66 @@
                 <Texture diff="textures/UnderwaterBox_Negx.png" spec=""/>
             </testtex2>
         </MaterialComponent>
+        <MeshComponent>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
+            <SM_Sphere>
+                <Mesh path="meshes/Sphere.obj"/>
+            </SM_Sphere>
+            <SM_King>
+                <Mesh path="meshes/King.obj"/>
+            </SM_King>
+            <dancingRobot>
+                <Mesh path="meshes/dancingRobot.fbx"/>
+            </dancingRobot>
+            <SM_Pawn>
+                <Mesh path="meshes/Pawn.obj"/>
+            </SM_Pawn>
+            <SM_Plane>
+                <Mesh path="meshes/Plane.obj"/>
+            </SM_Plane>
+            <SM_Mario>
+                <Mesh path="meshes/Mario.obj"/>
+            </SM_Mario>
+            <SM_Rook>
+                <Mesh path="meshes/Rook.obj"/>
+            </SM_Rook>
+            <SM_Hammer>
+                <Mesh path="meshes/Hammer.obj"/>
+            </SM_Hammer>
+            <SM_Skull>
+                <Mesh path="meshes/Skull.obj"/>
+            </SM_Skull>
+            <manni>
+                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
+            </manni>
+            <testRuntimeMesh>
+                <Mesh path="meshes/Mario.obj"/>
+            </testRuntimeMesh>
+            <testassetfbx>
+                <Mesh path="meshes/cliff_rock1.fbx"/>
+            </testassetfbx>
+            <grid>
+                <Mesh path="meshes/grid.obj"/>
+            </grid>
+            <Crate>
+                <Mesh path="meshes/3D_Models/SM_Crate_01.fbx"/>
+            </Crate>
+            <SM_Bridge>
+                <Mesh path="meshes/3D_Models/SM_BridgePlatform.fbx"/>
+            </SM_Bridge>
+            <SM_Gear1>
+                <Mesh path="meshes/3D_Models/SM_Gear_Large.fbx"/>
+            </SM_Gear1>
+            <PressurePlate>
+                <Mesh path="meshes/PressurePlate.fbx"/>
+            </PressurePlate>
+        </MeshComponent>
         <ScriptAbstract>
             <script1/>
-            <testScriptTwo/>
             <PlayerController/>
+            <testScriptTwo/>
             <lerjgklktbl/>
             <animScript/>
             <testScript/>
@@ -96,61 +154,5 @@
                 <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
             </S_AnimOutline>
         </ShaderComponent>
-        <MeshComponent>
-            <SM_Sphere>
-                <Mesh path="meshes/Sphere.obj"/>
-            </SM_Sphere>
-            <SM_Cube>
-                <Mesh path="meshes/Cube.obj"/>
-            </SM_Cube>
-            <SM_King>
-                <Mesh path="meshes/King.obj"/>
-            </SM_King>
-            <dancingRobot>
-                <Mesh path="meshes/dancingRobot.fbx"/>
-            </dancingRobot>
-            <SM_Pawn>
-                <Mesh path="meshes/Pawn.obj"/>
-            </SM_Pawn>
-            <SM_Plane>
-                <Mesh path="meshes/Plane.obj"/>
-            </SM_Plane>
-            <SM_Mario>
-                <Mesh path="meshes/Mario.obj"/>
-            </SM_Mario>
-            <SM_Rook>
-                <Mesh path="meshes/Rook.obj"/>
-            </SM_Rook>
-            <SM_Hammer>
-                <Mesh path="meshes/Hammer.obj"/>
-            </SM_Hammer>
-            <SM_Skull>
-                <Mesh path="meshes/Skull.obj"/>
-            </SM_Skull>
-            <testRuntimeMesh>
-                <Mesh path="meshes/Mario.obj"/>
-            </testRuntimeMesh>
-            <manni>
-                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
-            </manni>
-            <testassetfbx>
-                <Mesh path="meshes/cliff_rock1.fbx"/>
-            </testassetfbx>
-            <grid>
-                <Mesh path="meshes/grid.obj"/>
-            </grid>
-            <Crate>
-                <Mesh path="meshes/3D_Models/SM_Crate_01.fbx"/>
-            </Crate>
-            <SM_Bridge>
-                <Mesh path="meshes/3D_Models/SM_BridgePlatform.fbx"/>
-            </SM_Bridge>
-            <SM_Gear1>
-                <Mesh path="meshes/3D_Models/SM_Gear_Large.fbx"/>
-            </SM_Gear1>
-            <PressurePlate>
-                <Mesh path="meshes/PressurePlate.fbx"/>
-            </PressurePlate>
-        </MeshComponent>
     </Components>
 </CellFile>

@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0" y="6.2760239" z="0"/>
+        <position x="38.733002" y="33.418488" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="3.0999999" y="0.5" z="1"/>
+        <scale x="0.80000001" y="0.80000001" z="0.80000001"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -18,14 +18,15 @@
     <CollisionComponent>
         <CollisionState state="0"/>
         <CollisionType type="2"/>
-        <isTrigger trigger="1"/>
+        <isTrigger trigger="0"/>
         <radius value="1"/>
         <centre x="0" y="0" z="0"/>
         <centrePosA x="0" y="1" z="0"/>
         <centrePosB x="0" y="-1" z="0"/>
-        <halfExtents x="1" y="1" z="1"/>
+        <halfExtents x="2.5" y="2.5" z="2.5"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
+    <MeshComponent name="Crate"/>
+    <MaterialComponent name="M_Sphere"/>
     <ShaderComponent name="S_Multi"/>
-    <ScriptComponent name="PressurePad"/>
 </Actor>

@@ -3,7 +3,7 @@
     <TransformComponent>
         <position x="14.783678" y="3.8047848" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="1" y="1" z="1"/>
+        <scale x="0.80000001" y="0.80000001" z="0.80000001"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
@@ -12,7 +12,7 @@
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="0.5"/>
+        <friction value="1"/>
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>

@@ -4,7 +4,7 @@
 #include "QuadraticSolver.h"
 #include "SceneGraph.h"
 #include "InputManager.h"
-
+#include "PhysicsSystem.h"
 using namespace GEOMETRY;
 
 void CollisionSystem::AddActor(Ref<Actor> actor_) {
@@ -217,7 +217,7 @@ void CollisionSystem::ResolvePenetration(Ref<Actor> actor1_, Ref<Actor> actor2_,
 		float mass = inverseMass1 / totalInverseMass;
 		Vec3 seperationAmmount = seperationValue * mass;
 		
-		Vec3 newPos = TC1->GetPosition() + seperationAmmount;
+		Vec3 newPos = TC1->GetPosition() + PhysicsSystem::ResolveConstraintsPos(PC1, seperationAmmount);
 		TC1->SetPos(newPos.x, newPos.y, newPos.z);
 	}
 
@@ -225,7 +225,7 @@ void CollisionSystem::ResolvePenetration(Ref<Actor> actor1_, Ref<Actor> actor2_,
 		float mass = inverseMass2 / totalInverseMass;
 		Vec3 seperationAmmount = seperationValue * mass;
 
-		Vec3 newPos = TC2->GetPosition() - seperationAmmount;
+		Vec3 newPos = TC2->GetPosition() - PhysicsSystem::ResolveConstraintsPos(PC2, seperationAmmount);
 		TC2->SetPos(newPos.x, newPos.y, newPos.z);
 	}
 }
@@ -273,10 +273,13 @@ void CollisionSystem::ResolveImpulse(Ref<Actor> actor1_, Ref<Actor> actor2_, con
 	// applying the impulse
 	if (state1 == PhysicsState::Dynamic) {
 		Vec3 newVel = vel1 + impulse * inverseMass1;
+		newVel = PhysicsSystem::ResolveConstraintsPos(PC1, newVel);
 		PC1->setVel(newVel);
 	}
 	if (state2 == PhysicsState::Dynamic) {
 		Vec3 newVel = vel2 - impulse * inverseMass2;
+		newVel = PhysicsSystem::ResolveConstraintsPos(PC2, newVel);
+
 		PC2->setVel(newVel);
 	}
 
@@ -330,10 +333,10 @@ void CollisionSystem::ApplyFriction(Ref<Actor> actor1_, Ref<Actor> actor2_, cons
 	// applying friction
 	Vec3 frictionImpulse = tangentDir * frictionImpulseMag;
 	if (state1 == PhysicsState::Dynamic) {
-		PC1->setVel(PC1->getVel() + frictionImpulse * inverseMass1);
+		PC1->setVel(PhysicsSystem::ResolveConstraintsPos(PC1,PC1->getVel() + frictionImpulse * inverseMass1));
 	}
 	if (state2 == PhysicsState::Dynamic) {
-		PC2->setVel(PC2->getVel() - frictionImpulse * inverseMass2);
+		PC2->setVel(PhysicsSystem::ResolveConstraintsPos(PC2,PC2->getVel() - frictionImpulse * inverseMass2));
 	}
 }
 

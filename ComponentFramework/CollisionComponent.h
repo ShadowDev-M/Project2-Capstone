@@ -1,6 +1,7 @@
 #pragma once
 #include "TransformComponent.h"
 
+
 using namespace MATH;
 
 // There are two ways to set all this up, I'm going with option 2
@@ -52,7 +53,7 @@ public:
 	// this is similar to how unity does it where it has the exposed local variables,
 	// and in editor when you change the actors pos, scale, rotation etc, the collider follows suit, 
 	// but the local variables remain the same
-	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(2*centre, 1.0f)); }
+	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const;
 	float getWorldRadius(Ref<TransformComponent> transform_) const {
 		Vec3 scale = transform_->GetScale();
 		float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
@@ -63,8 +64,8 @@ public:
 		float maxScale = std::max(scale.x, scale.z);
 		return radius * maxScale;
 	} 
-	Vec3 getWorldCentrePosA(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centrePosA, 1.0f)); }
-	Vec3 getWorldCentrePosB(Ref<TransformComponent> transform_) const { return Vec3(transform_->GetTransformMatrix() * Vec4(centrePosB, 1.0f)); }
+	Vec3 getWorldCentrePosA(Ref<TransformComponent> transform_) const;
+	Vec3 getWorldCentrePosB(Ref<TransformComponent> transform_) const;
 	Vec3 getWorldHalfExtents(Ref<TransformComponent> transform_) const {
 		Vec3 scale = transform_->GetScale();
 		return Vec3(halfExtents.x * scale.x, halfExtents.y * scale.y, halfExtents.z * scale.z);

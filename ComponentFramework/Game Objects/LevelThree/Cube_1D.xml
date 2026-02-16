@@ -13,7 +13,7 @@
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
         <friction value="0.5"/>
-        <restitution value="0"/>
+        <restitution value="0.2"/>
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
