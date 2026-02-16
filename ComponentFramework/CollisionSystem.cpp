@@ -3,6 +3,7 @@
 #include "ScriptComponent.h"
 #include "QuadraticSolver.h"
 #include "SceneGraph.h"
+#include "InputManager.h"
 
 using namespace GEOMETRY;
 
@@ -382,11 +383,11 @@ void CollisionSystem::Update(float deltaTime) {
 				if (isTrigger) {
 					// actors just started to collide
 					if (previousCollidingActors.find(pair) == previousCollidingActors.end()) {
-						// Placeholder: trigger enter event goes here
+						ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::TriggerEnter);
 					}
 					// actors are still colliding
 					else {
-						// placeholder trigger stay event goes here
+						ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::TriggerStay);
 					}
 				}
 				else {
@@ -394,11 +395,11 @@ void CollisionSystem::Update(float deltaTime) {
 
 					// actors just started to collide
 					if (previousCollidingActors.find(pair) == previousCollidingActors.end()) {
-						// Placeholder: collision enter event goes here
+						ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::Enter);
 					}
 					// actors are still colliding
 					else {
-						// placeholder collision stay event goes here
+						ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::Stay);
 					}
 				}
 			}
@@ -424,19 +425,13 @@ void CollisionSystem::Update(float deltaTime) {
 			// if the collider is a trigger, then no response is applied,
 			// just call the events
 			if (isTrigger) {
-				// placeholder for fire trigger exit event
+				ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::TriggerExit);
 			}
 			else {
-				// placeholder for fire collision exit event
+				ScriptService::registerCollisionDetection(a1, a2, CollisionDetectionState::Exit);
 			}
 		}
 	}
-}
-
-// technically don't need this, could just call script function for all the on hit events
-void CollisionSystem::OnCollisionEnter(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_)
-{
-	ScriptService::registerCollisionDetection(actor1_, actor2_, CollisionDetectionState::Enter);
 }
 
 bool CollisionSystem::SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
@@ -1877,6 +1872,77 @@ std::vector<RaycastHit> CollisionSystem::RaycastAll(const Vec3& origin, const Ve
 	return allHits;
 }
 
+RaycastHit CollisionSystem::ScreenRaycast(int sdlMouseX, int sdlMouseY)
+{
+	// TODO: will change when create FBO builder and non hardcoded aspectratio/window size
+	auto* mouseMap = InputManager::getInstance().getMouseMap();
+	
+	if (!mouseMap->dockingHovered) {
+		return RaycastHit{};
+	}
+
+	float sceneW = static_cast<float>(SceneGraph::SCENEWIDTH);
+	float sceneH = static_cast<float>(SceneGraph::SCENEHEIGHT);
+	float aspect = sceneW / sceneH;
+
+	ImVec2 dockPos = mouseMap->dockingPos;
+	ImVec2 dockSize = mouseMap->dockingSize;
+
+	// Calculate scaled dimensions based on aspect ratio
+	float textureW, textureH;
+	if (dockSize.x / aspect <= dockSize.y)
+	{
+		textureW = dockSize.x;
+		textureH = dockSize.x / aspect;
+	}
+	else
+	{
+		textureH = dockSize.y;
+		textureW = dockSize.y * aspect;
+	}
+
+	// docking window size offset
+	float textureOffsetX = (dockSize.x - textureW) * 0.5f;
+	float textureOffsetY = (dockSize.y - textureH) * 0.5f;
+	float textureOriginX = dockPos.x + textureOffsetX;
+	float textureOriginY = dockPos.y + textureOffsetY;
+
+	// mouse offset
+	float relX = static_cast<float>(sdlMouseX) - textureOriginX;
+	float relY = static_cast<float>(sdlMouseY) - textureOriginY;
+
+	// if mouse is out of bounds
+	if (relX < 0 || relY < 0 || relX > textureW || relY > textureH) {
+		return RaycastHit{};
+	}
+
+	// converting mouse coords to scene size
+	float sceneMouseX = relX * (sceneW / textureW);
+	float sceneMouseY = relY * (sceneH / textureH);
+
+	// world space converisons
+	float ndcX = (2.0f * sceneMouseX / sceneW) - 1.0f;
+	float ndcY = 1.0f - (2.0f * sceneMouseY / sceneH);
+
+	auto camera = SceneGraph::getInstance().getUsedCamera();
+	Matrix4 proj = camera->GetProjectionMatrix();
+	Matrix4 view = camera->GetViewMatrix();
+	Matrix4 invProj = MMath::inverse(proj);
+	Matrix4 invView = MMath::inverse(view);
+
+	Vec4 clipPoint(ndcX, ndcY, -1.0f, 1.0f);
+	Vec4 viewPoint = invProj * clipPoint;
+	viewPoint.z = -1.0f;
+	viewPoint.w = 0.0f;
+
+	Vec4 worldDir4 = invView * viewPoint;
+	Vec3 worldDir = VMath::normalize(Vec3(worldDir4.x, worldDir4.y, worldDir4.z));
+
+	Vec3 cameraPos = camera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition();
+
+	return Raycast(cameraPos, worldDir);
+}
+
 bool CollisionSystem::RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
 {
 	// Reference: Real Time Collisions 5.3.2 Intersecting Ray or Segment Against Sphere
@@ -1950,15 +2016,6 @@ bool CollisionSystem::RaycastCapsule(const Vec3& origin, const Vec3& direction, 
 	Vec3 centrePosB = CC->getWorldCentrePosB(TC);
 	float radius = CC->getWorldCapsuleRadius(TC);
 
-	RaycastHit infiniteCylinder;
-
-	checkInfiniteCylinder(origin, direction, actor_, infiniteCylinder);
-
-	// check to see if ray intersected on the infinite cylinder
-	if (!infiniteCylinder.isIntersected) {
-		return false;
-	}
-
 	// get the axis
 	Vec3 axis = centrePosB - centrePosA;
 
@@ -1968,44 +2025,31 @@ bool CollisionSystem::RaycastCapsule(const Vec3& origin, const Vec3& direction, 
 	// normalize the axis to get the axisDirection
 	Vec3 axisDirection = VMath::normalize(axis);
 
-	// points from end cap a to the intersection point on the infinite cylinder
-	Vec3 AP = infiniteCylinder.intersectionPoint - centrePosA;
+	RaycastHit cylinderHit;
 
-	float rayLength = VMath::dot(AP, axisDirection);
+	if (checkInfiniteCylinder(origin, direction, actor_, cylinderHit)) {
+		Vec3 AP = cylinderHit.intersectionPoint - centrePosA;
+		float proj = VMath::dot(AP, axisDirection);
+		if (proj >= 0.0f && proj <= cylinderheight) {
+			hit = cylinderHit;
+			return true;
+		}
+	}
 
-	// check if the ray intersection is inside the 'real' cylinder
-	if (rayLength >= 0.0f && rayLength <= cylinderheight) {
-		hit = infiniteCylinder;
+	RaycastHit sphereHitA;
+	RaycastHit sphereHitB;
+	if (checkEndSphere(origin, direction, axisDirection, actor_, sphereHitA) && checkEndSphere(origin, direction, axisDirection, actor_, sphereHitB)) {
+		hit = (sphereHitA.t < sphereHitB.t) ? sphereHitA : sphereHitB;
 		return true;
 	}
 
-	RaycastHit sphereCapA;
-	RaycastHit sphereCapB;
-
-	checkEndSphere(origin, direction, actor_, sphereCapA);
-	checkEndSphere(origin, direction, actor_, sphereCapB);
-
-	// check if ray hit both sphere caps
-	if (sphereCapA.isIntersected && sphereCapB.isIntersected) {
-		// if endcap as hit is a closer/smaller hit on the capsule
-		if (sphereCapA.t < sphereCapB.t) {
-			hit = sphereCapA;
-		}
-		// endcapb is closer
-		else {
-			hit = sphereCapB;
-		}
-	}
-	// just sphereCapA is hit
-	else if (sphereCapA.isIntersected) {
-		hit = sphereCapA;
-	}
-	// just sphereCapB is hit
-	else if (sphereCapB.isIntersected) {
-		hit = sphereCapB;
+	if (checkEndSphere(origin, direction, axisDirection, actor_, sphereHitA)) {
+		hit = sphereHitA;
+		return true;
 	}
 
-	if (hit.isIntersected) {
+	if (checkEndSphere(origin, direction, axisDirection, actor_, sphereHitB)) {
+		hit = sphereHitB;
 		return true;
 	}
 
@@ -2077,7 +2121,7 @@ bool CollisionSystem::RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<
 		VMath::dot(direction, obblocalCoords[2])
 	);
 
-	RayAABBIntersection intersection = IntersectRayAABB(origin, direction, -obHalfExtents, obHalfExtents);
+	RayAABBIntersection intersection = IntersectRayAABB(originLocal, directionLocal, -obHalfExtents, obHalfExtents);
 
 	if (intersection.didIntersect) {
 		hit.isIntersected = true;
@@ -2159,7 +2203,11 @@ bool CollisionSystem::checkInfiniteCylinder(const Vec3& origin, const Vec3& dire
 	if (hit.isIntersected) {
 		//rayInfo.intersectionPoint = S + rayInfo.t * V;
 		hit.intersectionPoint = S + hit.t * V;
-		hit.normal = VMath::normalize(hit.intersectionPoint) - AB;
+
+		Vec3 AP = hit.intersectionPoint - centrePosA;
+		float proj = VMath::dot(AP, AB);
+		Vec3 cloesestAxis = centrePosA + AB * proj;
+		hit.normal = VMath::normalize(hit.intersectionPoint - cloesestAxis);
 		hit.hitActor = actor_;
 		hit.hitCollider = CC;
 		return true;
@@ -2168,14 +2216,14 @@ bool CollisionSystem::checkInfiniteCylinder(const Vec3& origin, const Vec3& dire
 	return false;
 }
 
-bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)
+bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, const Vec3& axisDirection, Ref<Actor> actor_, RaycastHit& hit)
 {
 	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
 	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
 
 	Vec3 centre = CC->getWorldCentre(TC);
 	float radius = CC->getWorldCapsuleRadius(TC);
-	
+
 	// Reference: Real Time Collisions 5.3.2 Intersecting Ray or Segment Against Sphere
 	Vec3 p = origin;
 	Vec3 d = direction;
@@ -2193,7 +2241,6 @@ bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, 
 	if (solver.numSolutions == NumSolutions::one) {
 		if (solver.firstSolution > 0.0f) { //
 			hit.t = solver.firstSolution;
-			hit.isIntersected = true;
 		}
 	}
 	// if there are two intersection points, get the smallest positive ray
@@ -2205,27 +2252,29 @@ bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, 
 
 		if (t1 > 0.0f && t2 > 0.0f) {
 			hit.t = std::min(t1, t2);
-			hit.isIntersected = true;
 		}
 		else if (t1 > 0.0f) {
 			hit.t = t1;
-			hit.isIntersected = true;
 		}
 		else if (t2 > 0.0f) {
 			hit.t = t2;
-			hit.isIntersected = true;
 		}
 	}
 
-	if (hit.isIntersected) {
+	if (hit.t < FLT_MAX) {
 		//rayInfo.intersectionPoint = p + rayInfo.t * d;
 		hit.intersectionPoint = p + hit.t * d;
-		hit.normal = VMath::normalize(hit.intersectionPoint - centre);
-		hit.hitActor = actor_;
-		hit.hitCollider = CC;
-		return true;
+
+		Vec3 hitTo = hit.intersectionPoint - centre;
+		if (VMath::dot(hitTo, axisDirection)) {
+			hit.normal = VMath::normalize(hitTo);
+			hit.isIntersected = true;
+			hit.hitActor = actor_;
+			hit.hitCollider = CC;
+			return true;
+		}
 	}
-	
+
 	return false;
 }
 

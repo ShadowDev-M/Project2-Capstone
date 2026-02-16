@@ -1,4 +1,5 @@
 <Actor>
+    <Tag value="Untagged"/>
     <TransformComponent>
         <position x="-0.56348622" y="1.2845924" z="22.113001"/>
         <rotation w="0.54889745" x="0.057611044" y="-0.82934034" z="0.087104067"/>

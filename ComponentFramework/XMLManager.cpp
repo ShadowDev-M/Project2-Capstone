@@ -275,6 +275,8 @@ void SceneGraph::SaveFile(std::string name) const {
 
         XMLObjectFile::writeActor(obj.first);
 
+        XMLObjectFile::writeActorTag(obj.first, GetActor(obj.first)->getTag());
+
         XMLObjectFile::writeUniqueComponent<TransformComponent>(obj.first, GetActor(obj.first)->GetComponent<TransformComponent>().get());
 
         if (GetActor(obj.first)->GetComponent<PhysicsComponent>())

@@ -1,20 +1,22 @@
 <Actor>
+    <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="-1.4118961" y="3.4247704" z="0"/>
+        <position x="14.783678" y="3.8047848" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="3" y="3" z="3"/>
+        <scale x="2" y="2" z="2"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
+        <Constraints freezePosX="0" freezePosY="0" freezePosZ="0" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
         <mass value="1"/>
         <UsingGravity isUsing="1"/>
-        <drag value="0.2"/>
+        <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="1"/>
+        <friction value="0.5"/>
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>
-        <CollisionState state="0"/>
+        <CollisionState state="1"/>
         <CollisionType type="3"/>
         <isTrigger trigger="0"/>
         <radius value="1"/>

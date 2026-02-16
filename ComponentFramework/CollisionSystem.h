@@ -10,7 +10,10 @@ using namespace MATH;
 enum class CollisionDetectionState {
 	Enter,
 	Stay,
-	Exit 
+	Exit,
+	TriggerEnter,
+	TriggerStay,
+	TriggerExit
 };
 
 // holds all the information about a given collision 
@@ -96,10 +99,6 @@ public:
 	// will delegate which collisiond are detected by checking collider type and state
 	// and will call response/resolution functions as needed
 	bool CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionData& data);
-
-	//TODO: add actor tags or some way of filtering out certain actors,
-	// I mean technically we can just get the name of the hit actor and use that as a filter,
-	// but tags would be better to determine portal placeable surfaces
 	
 	// main raycast function (using unity as reference https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Physics.Raycast.html)
 	// returns whatever was hit first
@@ -107,20 +106,8 @@ public:
 	// returns all hits
 	std::vector<RaycastHit> RaycastAll(const Vec3& origin, const Vec3& direction, float maxDistance = FLT_MAX);
 
-	// collision and trigger on enter/stay/exit functions (scripting)
-	// not sure if these should be public or private, just change it to whatever is needed for scripting
-	// these functions will be called in collision systems update
-	// the actual functions themselves won't have much actual code, 
-	// they will just be callbacks for the scripts, then collsiion systems Update calls them
-	// can rename if needed
-	// void OnCollisionEnter(Collision collision) / void OnCollisionExit(Collision collisionInfo)
-	// Update will give the functions the actors and data associtated with the collision 
-	void OnCollisionEnter(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
-	void OnCollisionStay(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
-	void OnCollisionExit(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
-	void OnTriggerEnter(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
-	void OnTriggerStay(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
-	void OnTriggerExit(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data_);
+	// will raycast with screen coords and return hit data
+	RaycastHit ScreenRaycast(int sdlMouseX, int sdlMouseY);
 	
 private:
 	// rest of the collision detection functions
@@ -163,7 +150,7 @@ private:
 	
 	// raycast helper functions
 	bool checkInfiniteCylinder(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	bool checkEndSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
+	bool checkEndSphere(const Vec3& origin, const Vec3& direction, const Vec3& axisDirection, Ref<Actor> actor_, RaycastHit& hit);
 
 	// helper functions from Real-Time Collision Detetcion book
 	float ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2, float& s, float& t, Vec3& c1, Vec3& c2);

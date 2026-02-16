@@ -25,31 +25,23 @@ public:
 
 	void AddActor(Ref<Actor> actor_);
 	void RemoveActor(Ref<Actor> actor_);
-
 	void ClearActors() { physicsActors.clear(); }
 
 	// Physics Functions
 	void Update(float deltaTime);
-
-	void UpdatePos(Ref<Actor> actor_, float deltaTime);
-	void UpdateVel(Ref<Actor> actor_, float deltaTime);
-	void UpdateOrientation(Ref<Actor> actor_, float deltaTime);
-
-	// since physics system is a singleton, these function could be called outside of the physics system itself,
-	// so additional checks are needed for these functions just incase 
 	void ApplyForce(Ref<Actor> actor_, const Vec3& force);
-	// similar to apply force but instead of it affecting the acceleration to affects the velocity
-	void ApplyImpulse(Ref<Actor> actor_, const Vec3& impulse); 
+	void UpdateVel(Ref<Actor> actor_, float deltaTime);
+	void UpdatePos(Ref<Actor> actor_, float deltaTime);
+	void UpdateOrientation(Ref<Actor> actor_, float deltaTime);
 	
 	// resets physics system, sets all velocitys and accelerations to 0
 	void ResetPhysics();
 
-	// TODO: things to add in future if needed
-	// void ApplyTorque(Ref<Actor> actor_, const Vec3& torque); need rotational inertia
-	// creating constraints (mostly likely will be their own components)
-
 	// getters and setters
 	float getGravity() const { return gravity; }
 	void setGravity(float gravity_) { gravity = gravity_; }
+
+private:
+	void ApplyConstraints(Ref<PhysicsComponent> PC);
 };
 

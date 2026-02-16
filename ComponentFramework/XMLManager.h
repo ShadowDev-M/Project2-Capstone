@@ -54,6 +54,43 @@ public:
         return 0;
     }
 
+    static int writeActorTag(const std::string& actorName, const std::string& tag)
+    {
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + actorName + ".xml";
+        XMLDocument doc;
+
+        XMLError eResult = doc.LoadFile(path.c_str());
+        if (eResult != XML_SUCCESS) return eResult;
+
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* existing = cRoot->FirstChildElement("Tag");
+        if (existing) cRoot->DeleteChild(existing);
+
+        XMLElement* tagElement = doc.NewElement("Tag");
+        tagElement->SetAttribute("value", tag.c_str());
+        cRoot->InsertEndChild(tagElement);
+
+        return doc.SaveFile(path.c_str());
+    }
+
+    static std::string readActorTag(const std::string& actorName)
+    {
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + actorName + ".xml";
+        XMLDocument doc;
+
+        if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return "Untagged";
+
+        XMLNode* cRoot = doc.RootElement();
+        if (!cRoot) return "Untagged";
+
+        XMLElement* tagElement = cRoot->FirstChildElement("Tag");
+        if (!tagElement) return "Untagged";
+
+        const char* val = tagElement->Attribute("value");
+        return val ? std::string(val) : "Untagged";
+    }
+
     ///Adds actors from requested cell filename into sceneGraph
     static int addActorsFromFile(SceneGraph* sceneGraph, std::string filename) {
         std::string path = "Cell Files/" + filename + ".xml";
@@ -457,6 +494,7 @@ public:
             // physics
 
             XMLElement* stateElement = component->FirstChildElement("PhysicsState");
+            XMLElement* constraintsElement = component->FirstChildElement("Constraints");
             XMLElement* massElement = component->FirstChildElement("mass");
             XMLElement* useGravityElement = component->FirstChildElement("UsingGravity");
             XMLElement* dragElement = component->FirstChildElement("drag");
@@ -466,6 +504,15 @@ public:
 
             // physics state
             PhysicsState physicsStateArg = static_cast<PhysicsState>(GetAttrF(stateElement, "state"));
+
+            // constraints
+            PhysicsConstraints constraintsArg;
+            constraintsArg.freezePosX = static_cast<bool>(GetAttrF(constraintsElement, "freezePosX"));
+            constraintsArg.freezePosY = static_cast<bool>(GetAttrF(constraintsElement, "freezePosY"));
+            constraintsArg.freezePosZ = static_cast<bool>(GetAttrF(constraintsElement, "freezePosZ"));
+            constraintsArg.freezeRotX = static_cast<bool>(GetAttrF(constraintsElement, "freezeRotX"));
+            constraintsArg.freezeRotY = static_cast<bool>(GetAttrF(constraintsElement, "freezeRotY"));
+            constraintsArg.freezeRotZ = static_cast<bool>(GetAttrF(constraintsElement, "freezeRotZ"));
 
             // mass
             float massArg = GetAttrF(massElement, "value");
@@ -478,16 +525,17 @@ public:
 
             // angular drag
             float angularDragArg = GetAttrF(angularDragElement, "value");
-            
+
             // friciton
             float frictionArg = GetAttrF(frictionElement, "value");
-            
+
             // restitution
             float restitutionArg = GetAttrF(restitutionElement, "value");
 
             //return the tuple to act as arguments
             auto args = std::make_tuple(nullptr,
                 physicsStateArg,
+                constraintsArg,
                 massArg,
                 useGravityArg,
                 dragArg,
@@ -512,7 +560,7 @@ public:
 
             // collision state
             ColliderState collisionStateArg = static_cast<ColliderState>(GetAttrF(stateElement, "state"));
-            
+
             // collision state
             ColliderType typeArg = static_cast<ColliderType>(GetAttrF(typeElement, "type"));
 
@@ -535,7 +583,7 @@ public:
                 GetAttrF(centrePosAElement, "y"),
                 GetAttrF(centrePosAElement, "z")
             );
-            
+
             // centrePosB
             Vec3 centrePosBArg = Vec3(
                 GetAttrF(centrePosBElement, "x"),
@@ -792,6 +840,18 @@ public:
             stateElement->SetAttribute("state", static_cast<int>(componentToWrite->getState()));
             componentElement->InsertEndChild(stateElement);
 
+            // constraints
+            XMLElement* constraintsElement;
+            constraintsElement = doc.NewElement("Constraints");
+            const PhysicsConstraints& constraints = componentToWrite->getConstraints();
+            constraintsElement->SetAttribute("freezePosX", static_cast<int>(constraints.freezePosX));
+            constraintsElement->SetAttribute("freezePosY", static_cast<int>(constraints.freezePosY));
+            constraintsElement->SetAttribute("freezePosZ", static_cast<int>(constraints.freezePosZ));
+            constraintsElement->SetAttribute("freezeRotX", static_cast<int>(constraints.freezeRotX));
+            constraintsElement->SetAttribute("freezeRotY", static_cast<int>(constraints.freezeRotY));
+            constraintsElement->SetAttribute("freezeRotZ", static_cast<int>(constraints.freezeRotZ));
+            componentElement->InsertEndChild(constraintsElement);
+
             // mass
             XMLElement* massElement;
             massElement = doc.NewElement("mass");
@@ -809,19 +869,19 @@ public:
             dragElement = doc.NewElement("drag");
             dragElement->SetAttribute("value", componentToWrite->getDrag());
             componentElement->InsertEndChild(dragElement);
-            
+
             // angular drag
             XMLElement* angularDragElement;
             angularDragElement = doc.NewElement("angularDrag");
             angularDragElement->SetAttribute("value", componentToWrite->getAngularDrag());
             componentElement->InsertEndChild(angularDragElement);
-            
+
             // friction
             XMLElement* frictionElement;
             frictionElement = doc.NewElement("friction");
             frictionElement->SetAttribute("value", componentToWrite->getFriction());
             componentElement->InsertEndChild(frictionElement);
-            
+
             // restitution
             XMLElement* restitutionElement;
             restitutionElement = doc.NewElement("restitution");

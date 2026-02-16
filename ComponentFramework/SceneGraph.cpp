@@ -503,6 +503,9 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}
 	}
 
+	std::string savedTag = XMLObjectFile::readActorTag(name_);
+	actor_->setTag(savedTag);
+
 	actor_->OnCreate();
 	AddActor(actor_);
 
@@ -664,7 +667,6 @@ void SceneGraph::RemoveAllActors()
 	std::cout << "Deleting All Actors In The Scene" << std::endl;
 
 	PhysicsSystem::getInstance().ClearActors();
-	// TODO: fix clear actors
 	CollisionSystem::getInstance().ClearActors();
 
 	// call the OnDestroy for each actor 

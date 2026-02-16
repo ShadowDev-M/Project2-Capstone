@@ -31,6 +31,10 @@ private:
 	// this way we can still look up actors by name but it'll still be optimized with the actor ids
 	std::unordered_map<std::string, uint32_t> ActorNameToId;
 	
+	// vector that holds all tags (giving some default ones here)
+	// TODO: save tags throughout engine lifetime (closing/opening)
+	std::vector<std::string> allTags = { "Untagged", "Player", "Ground", "PortalSurface" };
+
 	GLenum drawMode = GL_FILL;
 
 	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
@@ -174,6 +178,13 @@ public:
 	/// </summary>
 	void LoadActor(const char* name_, Ref<Actor> parent = Ref<Actor>());
 
+	std::vector<std::string>& getAllTags() { return allTags; }
+
+	void addTag(const std::string& tag) {
+		if (std::find(allTags.begin(), allTags.end(), tag) == allTags.end()) {
+			allTags.push_back(tag);
+		}
+	}
 
 	Ref<Actor> MeshRaycast(Vec3 start, Vec3 end);
 

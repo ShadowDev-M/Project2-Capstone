@@ -15,6 +15,12 @@ enum class PhysicsState {
 	Static
 };
 
+// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RigidbodyConstraints.html
+struct PhysicsConstraints {
+	bool freezePosX = false, freezePosY = false, freezePosZ = false;
+	bool freezeRotX = false, freezeRotY = false, freezeRotZ = false;
+};
+
 class PhysicsComponent : public Component
 {
 	friend class PhysicsSystem;
@@ -41,12 +47,17 @@ private:
 	Vec3 angularVel;
 	Vec3 angularAcc;
 	
+	// fixing the acceleration applying, instead of manually setting it (which casued only the last force to applied)
+	// basically accumulate all the forces, then apply them at the end
+	Vec3 forceAccumulator;
+	Vec3 torqueAccumulator;
+
 	//Matrix3 rotationalInertia;
 	
-	// constraints (more so for freezing position and rotation, will implement actual constraints later if we want them)
+	PhysicsConstraints constraints;
 
 public:
-	PhysicsComponent(Component* parent_ = nullptr, PhysicsState state_ = PhysicsState::Dynamic, float mass_ = 1.0f, 
+	PhysicsComponent(Component* parent_ = nullptr, PhysicsState state_ = PhysicsState::Dynamic, PhysicsConstraints constraints_ = PhysicsConstraints(), float mass_ = 1.0f,
 		bool useGrav_ = true, float drag_ = 0.0f, float angularDrag_ = 0.05f, float friction_ = 0.5f, float restitution_ = 0.0f);
 	~PhysicsComponent() {};
 
@@ -54,6 +65,15 @@ public:
 	void OnDestroy() {};
 	void Update(const float deltaTime) {};
 	void Render() const {};
+
+	void ClearAccumulators() {
+		forceAccumulator = Vec3(0.0f, 0.0f, 0.0f);
+		torqueAccumulator = Vec3(0.0f, 0.0f, 0.0f);
+	}
+
+	// no longer doing apply force, instead add force to the accumalator
+	void AddForce(const Vec3& force) { forceAccumulator += force; }
+	void AddTorque(const Vec3& torque) { torqueAccumulator += torque; }
 
 	// setters
 	void setState(PhysicsState state_) { state = state_; }
@@ -71,9 +91,13 @@ public:
 	void setAngularVel(const Vec3& angularVel_) { angularVel = angularVel_; }
 	void setAngularAccel(const Vec3& angularAccel_) { angularAcc = angularAccel_; }
 
+	void setConstraints(const PhysicsConstraints& constraints_) { constraints = constraints_; }
+
+
 	// getters
 	PhysicsState getState() const { return state; }
 	float getMass() const { return (state == PhysicsState::Static) ? FLT_MAX : mass; } // if static, return infinite mass
+	float getInverseMass() const { return (state == PhysicsState::Dynamic && mass > VERY_SMALL) ? 1.0f / mass : 0.0f; } // getter for inverse mass
 	bool getUseGravity() const { return useGravity; }
 
 	float getDrag() const { return drag; }
@@ -86,5 +110,7 @@ public:
 	Vec3 getAccel() { return accel; }
 	Vec3 getAngularVel() { return angularVel; }
 	Vec3 getAngularAccel() { return angularAcc; }
+
+	const PhysicsConstraints& getConstraints() const { return constraints; }
 };
 

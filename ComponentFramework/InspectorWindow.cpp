@@ -331,6 +331,39 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 		}
 	}
 
+	// actor tag system, similar to unity
+	// gets all tag list from scenegraph, then can select current actors tag
+	// can also add tags too
+	ImGui::Text("Tag");
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(labelWidth);
+
+	std::vector<std::string>& allTags = sceneGraph->getAllTags();
+	const std::string& currentTag = actor_->getTag();
+
+	// going through each tag in the vector
+	int currentTagIndex = 0;
+	for (int i = 0; i < (int)allTags.size(); i++) {
+		if (allTags[i] == currentTag) {
+			currentTagIndex = i; 
+			break;
+		}
+	}
+
+	// building the dropdown menu for the tags
+	
+	// converting strings to cstrings (imgui dropdown expect cstrings)
+	std::vector<const char*> tagCStr;
+	tagCStr.reserve(allTags.size());
+	for (auto& tag : allTags) {
+		tagCStr.push_back(tag.c_str());
+	}
+
+	if (ImGui::Combo("##TagDropdown", &currentTagIndex, tagCStr.data(), (int)tagCStr.size())) {
+		actor_->setTag(allTags[currentTagIndex]);
+	}
+
+	// TODO: add tag
 }
 
 void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
@@ -1255,6 +1288,56 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 
 		isEditingFriction = ImGui::IsItemActive();
 		ImGui::ActiveItemLockMousePos();
+
+		// constraints dropdown
+		if (ImGui::TreeNode("Constraints")) {
+			PhysicsConstraints constraints = physicsState.GetFirst()->getConstraints();
+			bool changed = false;
+
+			ImGui::Text("Freeze Positions");
+			ImGui::SameLine();
+			bool freezePosX = constraints.freezePosX, freezePosY = constraints.freezePosY, freezePosZ = constraints.freezePosZ;
+			if (ImGui::Checkbox("X##Pos", &freezePosX)) {
+				constraints.freezePosX = freezePosX;
+				changed = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Y##Pos", &freezePosY)) {
+				constraints.freezePosY = freezePosY;
+				changed = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Z##Pos", &freezePosZ)) {
+				constraints.freezePosZ = freezePosZ;
+				changed = true;
+			}
+
+			ImGui::Text("Freeze Rotation");
+			ImGui::SameLine();
+			bool freezeRotX = constraints.freezeRotX, freezeRotY = constraints.freezeRotY, freezeRotZ = constraints.freezeRotZ;
+			if (ImGui::Checkbox("X##Rot", &freezeRotX)) {
+				constraints.freezeRotX = freezeRotX;
+				changed = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Y##Rot", &freezeRotY)) {
+				constraints.freezeRotY = freezeRotY;
+				changed = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Z##Rot", &freezeRotZ)) {
+				constraints.freezeRotZ = freezeRotZ;
+				changed = true;
+			}
+
+			if (changed) {
+				for (auto& component : physicsState.components) {
+					component->setConstraints(constraints);
+				}
+			}
+
+			ImGui::TreePop();
+		}
 
 		// additional info, check things like velocity and acceleration (not editable)		
 		if (ImGui::TreeNode("Info")) {			

@@ -4,13 +4,6 @@
         <rotation w="0.94832492" x="0.31730086" y="0" z="0"/>
         <scale x="1" y="0.99999982" z="0.99999982"/>
     </TransformComponent>
-    <PhysicsComponent>
-        <PhysicsState state="0"/>
-        <mass value="1"/>
-        <UsingGravity isUsing="1"/>
-        <drag value="0"/>
-        <angularDrag value="0.050000001"/>
-    </PhysicsComponent>
     <MeshComponent name="SM_Sphere"/>
     <MaterialComponent name="M_Sphere"/>
     <ShaderComponent name="S_Multi"/>

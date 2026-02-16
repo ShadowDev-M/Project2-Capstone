@@ -547,6 +547,13 @@ void ScriptService::loadLibraries()
 		"State", sol::property(&PhysicsComponent::getState, &PhysicsComponent::setState)
 	);
 
+	lua.new_usertype<RaycastHit>("RaycastHit", 
+		"IsHit", sol::property([](const RaycastHit& h) {return h.isIntersected; }),
+		"GameObject", sol::property([](const RaycastHit& h) {return h.hitActor; }),
+		"Distance", sol::property([](const RaycastHit& h) {return h.t; }),
+		"Normal", sol::property([](const RaycastHit& h) {return h.normal; }),
+		"Point", sol::property([](const RaycastHit& h) {return h.intersectionPoint; })
+		);
 
 	lua.new_usertype<CameraComponent>("Camera",
 		"FOV", sol::property(&CameraComponent::getFOV, &CameraComponent::setFOV),
@@ -594,13 +601,66 @@ void ScriptService::loadLibraries()
 		"Camera", sol::property(&Actor::GetComponent<CameraComponent>),
 		"Animator", sol::property(&Actor::GetComponent<AnimatorComponent>),
 		"Rigidbody", sol::property(& Actor::GetComponent<PhysicsComponent>),
-		"Name", sol::property(&Actor::getActorName)
+		"Name", sol::property(&Actor::getActorName),
+		"Tag", sol::property(&Actor::getTag, &Actor::setTag),
+		"CompareTag", &Actor::compareTag
 	);
 
+	// Input Manager Lua
 	
+	// table with input states
+	lua["InputState"] = lua.create_table_with(
+		"Released", static_cast<int>(InputState::Released),
+		"Pressed", static_cast<int>(InputState::Pressed),
+		"Held", static_cast<int>(InputState::Held)
+	);
+
+	// for getting the key
 	sol::table tab = lua.create_table();
 	tab.set_function("GetInputState", &InputCreatorManager::getInputState);
 
+	// helper functions for getting if key down, pressed, released
+	tab.set_function("IsKeyDown", [](const std::string& key) -> bool {
+		int state = InputCreatorManager::getInputState(key);
+		return state == static_cast<int>(InputState::Pressed) || state == static_cast<int>(InputState::Held);
+		});
+
+	tab.set_function("IsKeyPressed", [](const std::string& key) -> bool {
+		int state = InputCreatorManager::getInputState(key);
+		return state == static_cast<int>(InputState::Pressed); 
+		});
+	
+	tab.set_function("IsKeyReleased", [](const std::string& key) -> bool {
+		int state = InputCreatorManager::getInputState(key);
+		return state == static_cast<int>(InputState::Released); 
+		});
+
+	// Mouse functions
+	// getting the inputmanager mouse map directly instead of creating something for the inputcreatormanager,
+	// there is only like 3 mouse states we need to get anyways instead of the like 100s on a keyboard
+	tab.set_function("GetMouseButton", [](int button) -> int {
+		InputManager& im = InputManager::getInstance();
+		return static_cast<int>(im.getMouseMap()->getInputState(button));
+		});
+
+	// helper functions for getting if key down, pressed, released
+	tab.set_function("IsMouseButtonDown", [](int button) -> bool {
+		InputManager& im = InputManager::getInstance();
+		InputState s = im.getMouseMap()->getInputState(button);
+		return s == InputState::Pressed || s == InputState::Held;
+		});
+
+	tab.set_function("IsMouseButtonPressed", [](int button) -> bool {
+		InputManager& im = InputManager::getInstance();
+		InputState s = im.getMouseMap()->getInputState(button);
+		return s == InputState::Pressed;
+		});
+
+	tab.set_function("IsMouseButtonReleased", [](int button) -> bool {
+		InputManager& im = InputManager::getInstance();
+		InputState s = im.getMouseMap()->getInputState(button);
+		return s == InputState::Released;
+		});
 
 	lua.new_usertype<SceneGraph>("Game",
 		"Find", &SceneGraph::GetActorCStr, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
@@ -739,6 +799,36 @@ void ScriptService::loadLibraries()
 
 	}
 
+	// new physics table, for now just putting raycast functions in here
+	lua["Physics"] = sol::new_table();
+	{
+		// similar to unity https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RaycastHit.html
+
+		// manually setting this function so that distance can have an optional default for distance
+		lua["Physics"]["Raycast"].set_function([](const Vec3& origin, const Vec3& direction, sol::optional<float> maxDistance) {
+			return CollisionSystem::getInstance().Raycast(origin, direction, maxDistance.value_or(FLT_MAX));
+			});
+
+		lua["Physics"]["RaycastAll"].set_function([](const Vec3& origin, const Vec3& direction, sol::optional<float> maxDistance) {
+			std::vector<RaycastHit> hits = CollisionSystem::getInstance().RaycastAll(origin, direction, maxDistance.value_or(FLT_MAX));
+			
+			// returning a table of all hits
+			sol::table result = lua.create_table();
+			for (size_t i = 0; i < hits.size(); i++) {
+				result[static_cast<int>(i) + 1] = hits[i];
+			}
+			return result;
+			});
+
+		// screenraycast function, gets sdl mouse coords 
+		lua["Physics"]["ScreenRaycast"].set_function([]() {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			return CollisionSystem::getInstance().ScreenRaycast(x, y);
+			});
+	}
+
+	
 
 }
 
@@ -787,6 +877,18 @@ void ScriptService::callScriptCollision(Ref<ScriptComponent> script, Ref<Actor> 
 					break;
 				case CollisionDetectionState::Exit:
 					lua["OnCollisionExit"](other);
+
+					break;
+				case CollisionDetectionState::TriggerEnter:
+					lua["OnTriggerEnter"](other);
+
+					break;
+				case CollisionDetectionState::TriggerStay:
+					lua["OnTriggerStay"](other);
+
+					break;
+				case CollisionDetectionState::TriggerExit:
+					lua["OnTriggerExit"](other);
 
 					break;
 				default:

@@ -27,6 +27,7 @@ protected:
 	Matrix4 modelMatrix;
 	// string will be used as a key for the unordered map in the scene
 	std::string actorName;
+	std::string actorTag = "Untagged";
 	Vec3 selectionColour = Vec3(0.5f,0.5f,0.5f);
 public:
 
@@ -55,6 +56,11 @@ public:
 	// getter for the actor name
 	const std::string& getActorName() { return actorName; }
 	void setActorName(const std::string& actorName_) { actorName = actorName_; }
+
+	// for actor tag
+	const std::string& getTag() const { return actorTag; }
+	void setTag(const std::string& tag) { actorTag = tag; }
+	bool compareTag(const std::string& tag) const { return actorTag == tag; }
 
 
 	~Actor();

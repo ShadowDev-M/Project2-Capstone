@@ -33,13 +33,61 @@ void PhysicsSystem::RemoveActor(Ref<Actor> actor_)
 
 void PhysicsSystem::Update(float deltaTime) 
 {
+	//for (const Ref<Actor>& actor : physicsActors) {
+	//	// getting transform and physics components
+	//	Ref<TransformComponent> TC = actor->GetComponent<TransformComponent>();
+	//	Ref<PhysicsComponent> PC = actor->GetComponent<PhysicsComponent>();
+
+	//	// if the pc is static then it doesn't get affected by physics
+	//	if (PC->getState() == PhysicsState::Static) continue; 
+
+	//	// if its kinematic, then it only gets affected by velocity, for basic motion but not other forces like gravity, drag, etc
+	//	if (PC->getState() == PhysicsState::Kinematic) {
+	//		ApplyConstraints(PC);
+	//		UpdatePos(actor, deltaTime);
+	//		UpdateOrientation(actor, deltaTime);
+	//		continue;
+	//	}
+
+	//	// rest is for dynamic pcs now
+
+	//	// applying gravity
+	//	if (PC->useGravity == true) {
+	//		PC->AddForce(Vec3(0.0f, gravity * PC->mass, 0.0f));
+	//	}
+
+	//	// applying drag
+	//	Vec3 dragForce = PC->vel * (-PC->drag);
+	//	
+	//	// adding drag to net force
+	//	PC->AddForce(PC->vel * (-PC->drag));
+
+	//	// linear motion
+	//	Vec3 linearAccel = PC->forceAccumulator * PC->getInverseMass();
+
+	//	// TODO: angular motion
+	//	
+	//	PC->vel += linearAccel * deltaTime;
+
+	//	// for the inspector
+	//	PC->accel = linearAccel;
+
+	//	ApplyConstraints(PC);
+
+	//	UpdatePos(actor, deltaTime);
+	//	UpdateOrientation(actor, deltaTime);
+
+	//	// clearing any accumulated forces from previous frame
+	//	PC->ClearAccumulators();
+	//}
+
 	for (const Ref<Actor>& actor : physicsActors) {
 		// getting transform and physics components
 		Ref<TransformComponent> TC = actor->GetComponent<TransformComponent>();
 		Ref<PhysicsComponent> PC = actor->GetComponent<PhysicsComponent>();
 
 		// if the pc is static then it doesn't get affected by physics
-		if (PC->getState() == PhysicsState::Static) continue; 
+		if (PC->getState() == PhysicsState::Static) continue;
 
 		// if its kinematic, then it only gets affected by velocity, for basic motion but not other forces like gravity, drag, etc
 		if (PC->getState() == PhysicsState::Kinematic) {
@@ -48,13 +96,13 @@ void PhysicsSystem::Update(float deltaTime)
 		}
 
 		// rest is for dynamic pcs now
-		
+
 		Vec3 netForce;
 
 		// applying gravity
 		if (PC->useGravity == true) {
 			Vec3 gravityForce(0.0f, gravity * PC->mass, 0.0f);
-			
+
 			// adding gravity to net force
 			netForce += gravityForce;
 		}
@@ -62,10 +110,10 @@ void PhysicsSystem::Update(float deltaTime)
 
 		// applying drag
 		Vec3 dragForce = PC->vel * (-PC->drag);
-		
+
 		// adding drag to net force
 		netForce += dragForce;
-		
+
 		//TODO
 		ApplyForce(actor, netForce);
 
@@ -80,9 +128,26 @@ void PhysicsSystem::Update(float deltaTime)
 
 		// updating orientation/angular velocity
 		UpdateOrientation(actor, deltaTime);
-		
-		// TODO
+
+		ApplyForce(actor, -netForce);
 	}
+}
+
+void PhysicsSystem::ApplyForce(Ref<Actor> actor_, const Vec3& force)
+{
+	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
+
+	// if actor doesnt have a physics component or isnt dynamic then return
+	if (!PC || PC->getState() != PhysicsState::Dynamic) return;
+
+	PC->accel += force / PC->mass;
+}
+
+void PhysicsSystem::UpdateVel(Ref<Actor> actor_, float deltaTime)
+{
+	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
+
+	PC->vel += PC->accel * deltaTime;
 }
 
 void PhysicsSystem::UpdatePos(Ref<Actor> actor_, float deltaTime)
@@ -93,13 +158,6 @@ void PhysicsSystem::UpdatePos(Ref<Actor> actor_, float deltaTime)
 	Vec3 TCPos = TC->GetPosition();
 	TCPos += PC->vel * deltaTime;
 	TC->SetPos(TCPos.x, TCPos.y, TCPos.z);
-}
-
-void PhysicsSystem::UpdateVel(Ref<Actor> actor_, float deltaTime)
-{
-	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
-
-	PC->vel += PC->accel * deltaTime;
 }
 
 void PhysicsSystem::UpdateOrientation(Ref<Actor> actor_, float deltaTime)
@@ -122,28 +180,6 @@ void PhysicsSystem::UpdateOrientation(Ref<Actor> actor_, float deltaTime)
 	TC->SetOrientation(newOri);
 }
 
-void PhysicsSystem::ApplyForce(Ref<Actor> actor_, const Vec3& force)
-{
-	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
-
-	// if actor doesnt have a physics component or isnt dynamic then return
-	if (!PC || PC->getState() != PhysicsState::Dynamic) return;
-
-	//TODO
-	PC->accel = force / PC->mass;
-	// PC->accel += (force / PC->mass);
-}
-
-void PhysicsSystem::ApplyImpulse(Ref<Actor> actor_, const Vec3& impulse)
-{
-	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
-
-	// if actor doesnt have a physics component or isnt dynamic then return
-	if (!PC || PC->getState() != PhysicsState::Dynamic) return;
-
-	PC->vel = impulse / PC->mass;
-}
-
 void PhysicsSystem::ResetPhysics()
 {
 	for (Ref<Actor> actor : physicsActors) {
@@ -153,5 +189,25 @@ void PhysicsSystem::ResetPhysics()
 		PC->setAccel(Vec3(0.0f, 0.0f, 0.0f));
 		PC->setAngularVel(Vec3(0.0f, 0.0f, 0.0f));
 		PC->setAngularAccel(Vec3(0.0f, 0.0f, 0.0f));
+		//PC->ClearAccumulators();
 	}
+}
+
+void PhysicsSystem::ApplyConstraints(Ref<PhysicsComponent> PC)
+{
+	if (!PC) return;
+
+	const PhysicsConstraints& constraints = PC->constraints;
+
+	Vec3 vel = PC->vel;
+	if (constraints.freezePosX) vel.x = 0.0f;
+	if (constraints.freezePosY) vel.y = 0.0f;
+	if (constraints.freezePosZ) vel.z = 0.0f;
+	PC->vel = vel;
+
+	Vec3 angularVel = PC->angularVel;
+	if (constraints.freezeRotX) angularVel.x = 0.0f;
+	if (constraints.freezeRotY) angularVel.y = 0.0f;
+	if (constraints.freezeRotZ) angularVel.z = 0.0f;
+	PC->angularVel = angularVel;
 }
