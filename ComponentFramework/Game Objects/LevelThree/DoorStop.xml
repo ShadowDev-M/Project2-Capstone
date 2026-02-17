@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="38.733002" y="33.418488" z="0"/>
+        <position x="-8.967" y="33.418488" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="0.80000001" y="0.80000001" z="0.80000001"/>
+        <scale x="20" y="0.80000001" z="0.80000001"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>

@@ -140,6 +140,7 @@ void EditorManager::RenderEditorUI() {
 			//sceneGraph->SaveFile(tempSaveFile);
 
 					sceneGraph->Start();
+					pendingFocusScene = true;
 					Ref<Actor> camera = sceneGraph->GetActor("CamTest");
 					sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
 			}
@@ -221,6 +222,11 @@ void EditorManager::RenderEditorUI() {
 
 	ShowSaveDialog();
 	ShowLoadDialog();
+
+	if (pendingFocusScene) {
+		ImGui::SetWindowFocus("Scene");
+		pendingFocusScene = false;
+	}
 
 	// Render
 	ImGui::Render();

@@ -16,6 +16,7 @@
         <Gear/>
         <Gear_1D/>
         <DoorStop/>
+        <Wall/>
     </Actors>
     <Components>
         <Animation>
