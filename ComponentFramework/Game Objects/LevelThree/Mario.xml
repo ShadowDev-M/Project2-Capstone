@@ -1,7 +1,7 @@
 <Actor>
     <Tag value="Player"/>
     <TransformComponent>
-        <position x="22.552872" y="-2.4902625" z="0"/>
+        <position x="0.64393336" y="-6.046" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="0.050000001" y="0.050000001" z="0.050000001"/>
     </TransformComponent>
@@ -28,9 +28,9 @@
     </CollisionComponent>
     <AnimatorComponent>
         <startTime time="0"/>
-        <speedMult mult="0"/>
+        <speedMult mult="0.2"/>
         <looping state="false"/>
-        <animName name=""/>
+        <animName name="idle2"/>
     </AnimatorComponent>
     <MeshComponent name="manni"/>
     <MaterialComponent name="skeletonTexture"/>

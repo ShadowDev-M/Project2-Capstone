@@ -19,7 +19,7 @@ function Update(deltaTime)
 	
 	if #(pressedUsers) > 0 then
 		--print("open")
-		Game:Find("Door").Rigidbody.Vel = Vec3.new(0,3,0)
+		Game:Find("Door1").Rigidbody.Vel = Vec3.new(0,3,0)
 	end
 
 	for i = 1, # (pressedUsers) do 

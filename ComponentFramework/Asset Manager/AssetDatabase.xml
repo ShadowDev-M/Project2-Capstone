@@ -22,13 +22,17 @@
         <Asset name="M_TestSpec" diffuseMap="textures\8x8_checkered_board.png" specularMap="textures\TestSpecMap.png"/>
         <Asset name="skeletonTexture" diffuseMap="textures/skeleton_d.png" specularMap=""/>
         <Asset name="gridtexture2" diffuseMap="textures/gridimage.png" specularMap=""/>
+        <Asset name="M_Sky" diffuseMap="textures/seamsky.jpg" specularMap=""/>
         <Asset name="testtex2" diffuseMap="textures/UnderwaterBox_Negx.png" specularMap=""/>
+        <Asset name="M_Floor" diffuseMap="textures/terrainDiffuse.png" specularMap=""/>
     </MaterialComponent>
     <MeshComponent>
         <Asset name="SM_Cube" filepath="meshes/Cube.obj"/>
         <Asset name="SM_Sphere" filepath="meshes/Sphere.obj"/>
         <Asset name="SM_King" filepath="meshes/King.obj"/>
         <Asset name="dancingRobot" filepath="meshes/dancingRobot.fbx"/>
+        <Asset name="SM_Pipe" filepath="meshes/3D_Models/SM_Pipe_Straight.fbx"/>
+        <Asset name="SM_Gear2" filepath="meshes/3D_Models/SM_Gear_Medium.fbx"/>
         <Asset name="SM_Pawn" filepath="meshes/Pawn.obj"/>
         <Asset name="SM_Plane" filepath="meshes/Plane.obj"/>
         <Asset name="SM_Mario" filepath="meshes/Mario.obj"/>
@@ -43,8 +47,12 @@
         <Asset name="SM_Bridge" filepath="meshes/3D_Models/SM_BridgePlatform.fbx"/>
         <Asset name="SM_Gear1" filepath="meshes/3D_Models/SM_Gear_Large.fbx"/>
         <Asset name="PressurePlate" filepath="meshes/PressurePlate.fbx"/>
+        <Asset name="SM_Pipe_Curved" filepath="meshes/3D_Models/SM_Pipe_Curved.fbx"/>
+        <Asset name="SM_Gear3" filepath="meshes/3D_Models/SM_Gear_Small.fbx"/>
     </MeshComponent>
     <ScriptAbstract>
+        <Asset name="S_Lever" scriptName="Lever.lua"/>
+        <Asset name="S_Lever2" scriptName="Lever2.lua"/>
         <Asset name="script1" scriptName="testScript.lua"/>
         <Asset name="PlayerController" scriptName="PlayerController.lua"/>
         <Asset name="testScriptTwo" scriptName="testScriptTwo.lua"/>
@@ -54,13 +62,15 @@
         <Asset name="FixCamera" scriptName="FixCamera.lua"/>
         <Asset name="PressurePad" scriptName="PressurePad.lua"/>
         <Asset name="GearTurn" scriptName="GearTurn.lua"/>
+        <Asset name="S_PressurePad2" scriptName="PressurePad2.lua"/>
+        <Asset name="S_PressurePad3" scriptName="PressurePad3.lua"/>
     </ScriptAbstract>
     <ShaderComponent>
         <Asset name="S_Default" vertShader="shaders/defaultVert.glsl" fragShader="shaders/defaultFrag.glsl"/>
         <Asset name="S_Multi" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>
         <Asset name="S_Outline" vertShader="shaders/MultiPhongVert.glsl" fragShader="shaders/outline.glsl"/>
+        <Asset name="S_AnimOutline" vertShader="shaders/animationVert.glsl" fragShader="shaders/outline.glsl"/>
         <Asset name="S_Phong" vertShader="shaders/texturePhongVert.glsl" fragShader="shaders/texturePhongFrag.glsl"/>
         <Asset name="S_Animated" vertShader="shaders/animationVert.glsl" fragShader="shaders/MultiPhongFrag.glsl"/>
-        <Asset name="S_AnimOutline" vertShader="shaders/animationVert.glsl" fragShader="shaders/outline.glsl"/>
     </ShaderComponent>
 </AssetDatabase>
