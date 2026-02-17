@@ -35,9 +35,6 @@ function Update(deltaTime)
 		end
 	end
 
-
-	local newAccel = GameObject.Rigidbody.Accel
-
 	-- added sprint key
 	if Game.Input.GetInputState("Left Shift") == 2 then
 		accelSpeed = 35
@@ -48,27 +45,17 @@ function Update(deltaTime)
 	end
 
 	if Game.Input.GetInputState("D") == 2 then
-		
-		newAccel.x = accelSpeed / GameObject.Rigidbody.Mass
+		if math.abs(GameObject.Rigidbody.Vel.x) < speed then	
+			GameObject.Rigidbody:AddAccel(Vec3.new(accelSpeed, 0, 0))
+		end
 	end
 
 	if Game.Input.GetInputState("A") == 2 then
-		
-		
-		newAccel.x = -accelSpeed / GameObject.Rigidbody.Mass
+		if math.abs(GameObject.Rigidbody.Vel.x) < speed then	
+		GameObject.Rigidbody:AddAccel(Vec3.new(-accelSpeed, 0, 0))
+		end
 	end
 	
-
-	if math.abs(GameObject.Rigidbody.Vel.x) > speed then
-		newAccel.x = 0
-	end
-
-	if Game.Input.GetInputState("A") == 0 and Game.Input.GetInputState("D") == 0 then
-		newAccel.x = 0
-	end
-
-	GameObject.Rigidbody.Accel = newAccel
-
 	if math.abs(GameObject.Rigidbody.Vel.x) > 0.1 then
 		local uniDirection = Vec3.new(GameObject.Rigidbody.Vel.x,0.0,0.0)
 		Transform.Rotation = QMath.LookAt(-VMath.Normalize(uniDirection), Vec3.new(0,1,0))
