@@ -1,0 +1,14 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="72.12941" y="-91.167419" z="33.799999"/>
+        <rotation w="0" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </TransformComponent>
+    <CameraComponent>
+        <fov value="40"/>
+        <near value="0.5"/>
+        <far value="300"/>
+    </CameraComponent>
+    <ShaderComponent name="S_Multi"/>
+</Actor>

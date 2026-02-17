@@ -1,0 +1,14 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="0" y="234.60521" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </TransformComponent>
+    <LightComponent>
+        <diffuse x="0.5" y="0.5" z="1" w="1"/>
+        <specular x="1" y="1" z="1" w="1"/>
+        <intensity magnitude="9.3999996"/>
+        <LightType type="1"/>
+    </LightComponent>
+</Actor>
