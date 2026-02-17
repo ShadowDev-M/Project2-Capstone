@@ -1,11 +1,11 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="1444" y="8" z="-194"/>
+        <position x="97.557182" y="7.6971788" z="-129.2"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="36" y="36" z="36"/>
+        <scale x="51.099998" y="51.099998" z="51.099998"/>
     </TransformComponent>
     <MeshComponent name="SM_Plane"/>
-    <MaterialComponent name="testtex2"/>
+    <MaterialComponent name="M_Sky"/>
     <ShaderComponent name="S_Multi"/>
 </Actor>

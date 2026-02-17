@@ -1,0 +1,11 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="-6.7339811" y="-2.5145688" z="0"/>
+        <rotation w="0.70711911" x="0" y="-0" z="-0.70709443"/>
+        <scale x="3.9999845" y="0.099999517" z="4"/>
+    </TransformComponent>
+    <MeshComponent name="SM_Cube"/>
+    <MaterialComponent name="M_TestSpec"/>
+    <ShaderComponent name="S_Multi"/>
+</Actor>

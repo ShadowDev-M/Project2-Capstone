@@ -1,3 +1,134 @@
-﻿  ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
-  C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
+﻿  Actor.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/Actor.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/Actor.cpp')
+  
+  AssetManagerWindow.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/AssetManagerWindow.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/AssetManagerWindow.cpp')
+  
+  ColliderDebug.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\ColliderDebug.cpp(90,43): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/ColliderDebug.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\ColliderDebug.cpp(90,27): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+  (compiling source file '/ColliderDebug.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\ColliderDebug.cpp(169,19): warning C4018: '<': signed/unsigned mismatch
+  (compiling source file '/ColliderDebug.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\ColliderDebug.cpp(185,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/ColliderDebug.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\ColliderDebug.cpp(186,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/ColliderDebug.cpp')
+  
+  CollisionComponent.cpp
+  CollisionSystem.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\CollisionSystem.cpp(2172,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\CollisionSystem.cpp(2174,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
+  
+  EditorManager.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/EditorManager.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/EditorManager.cpp')
+  
+  HierarchyWindow.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/HierarchyWindow.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/HierarchyWindow.cpp')
+  
+  InputCreatorManager.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/InputCreatorManager.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/InputCreatorManager.cpp')
+  
+  InputManager.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/InputManager.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/InputManager.cpp')
+  
+  InspectorWindow.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/InspectorWindow.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/InspectorWindow.cpp')
+  
+  MemoryWindow.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/MemoryWindow.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/MemoryWindow.cpp')
+  
+  PhysicsComponent.cpp
+  PhysicsSystem.cpp
+  Scene3GUI.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/Scene3GUI.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/Scene3GUI.cpp')
+  
+  SceneGraph.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/SceneGraph.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/SceneGraph.cpp')
+  
+  SceneManager.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/SceneManager.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/SceneManager.cpp')
+  
+  SceneWindow.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/SceneWindow.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/SceneWindow.cpp')
+  
+  ScriptComponent.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/ScriptComponent.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/ScriptComponent.cpp')
+  
+  XMLManager.cpp
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/XMLManager.cpp')
+  
+C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/XMLManager.cpp')
+  
+  Generating Code...
+  ComponentFramework.vcxproj -> C:\Users\cjhou\Documents\Project2-Capstone\Debug\ComponentFramework.exe
+  C:\Users\cjhou\Documents\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied

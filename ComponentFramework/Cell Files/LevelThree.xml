@@ -1,28 +1,55 @@
 <CellFile>
     <Actors>
-        <Mario>
+        <Player>
             <LightP/>
-        </Mario>
-        <Board/>
+        </Player>
+        <Gear_7D/>
         <CamTest/>
-        <Cube/>
-        <Cube_1D/>
         <SkyLight/>
-        <Board_1D/>
-        <Door/>
-        <PressureSensor>
-            <Pressure_Pad/>
-        </PressureSensor>
+        <Crate2/>
+        <PressurePad1>
+            <Pressure_Pad1/>
+        </PressurePad1>
+        <Door1/>
+        <Door3/>
         <Gear/>
+        <PipeBlock/>
         <Gear_1D/>
-        <DoorStop/>
+        <DoorStop1/>
+        <Lever2/>
+        <Gear_4D/>
+        <PressurePad2>
+            <Pressure_Pad2/>
+        </PressurePad2>
+        <Crate1/>
+        <BACKGROUND/>
+        <FLOOR2/>
+        <FLOOR1/>
+        <Door2/>
+        <Gear_6D/>
+        <DoorStop2/>
+        <Gear_2D/>
+        <RIGHT_WALL1/>
+        <LEFT_WALL1/>
+        <LEFT_WALL2/>
+        <FLOOR3/>
+        <RIGHT_WALL2/>
+        <RIGHT_WALL3/>
+        <FLOOR4/>
+        <Lever/>
+        <Gear_3D/>
+        <Gear_5D/>
+        <Gear_8D/>
+        <Pipe/>
+        <Crate3/>
+        <Gear_9D/>
     </Actors>
     <Components>
         <Animation>
-            <dancing/>
             <svgvuijwerjtuiew/>
-            <walking/>
+            <dancing/>
             <falling/>
+            <walking/>
             <idle/>
             <land/>
             <jump/>
@@ -33,12 +60,12 @@
             <M_Sphere>
                 <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
             </M_Sphere>
-            <M_MarioFire>
-                <Texture diff="textures/mario_fire.png" spec=""/>
-            </M_MarioFire>
             <M_Hammer>
                 <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
             </M_Hammer>
+            <M_MarioFire>
+                <Texture diff="textures/mario_fire.png" spec=""/>
+            </M_MarioFire>
             <M_MarioN>
                 <Texture diff="textures/mario_main.png" spec=""/>
             </M_MarioN>
@@ -51,35 +78,47 @@
             <M_Skull>
                 <Texture diff="textures/skull_texture.jpg" spec=""/>
             </M_Skull>
-            <testtex>
-                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
-            </testtex>
             <M_TestSpec>
                 <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
             </M_TestSpec>
+            <testtex>
+                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
+            </testtex>
             <skeletonTexture>
                 <Texture diff="textures/skeleton_d.png" spec=""/>
             </skeletonTexture>
+            <M_Sky>
+                <Texture diff="textures/seamsky.jpg" spec=""/>
+            </M_Sky>
             <gridtexture2>
                 <Texture diff="textures/gridimage.png" spec=""/>
             </gridtexture2>
             <testtex2>
                 <Texture diff="textures/UnderwaterBox_Negx.png" spec=""/>
             </testtex2>
+            <M_Floor>
+                <Texture diff="textures/terrainDiffuse.png" spec=""/>
+            </M_Floor>
         </MaterialComponent>
         <MeshComponent>
-            <SM_Cube>
-                <Mesh path="meshes/Cube.obj"/>
-            </SM_Cube>
             <SM_Sphere>
                 <Mesh path="meshes/Sphere.obj"/>
             </SM_Sphere>
+            <SM_Cube>
+                <Mesh path="meshes/Cube.obj"/>
+            </SM_Cube>
             <SM_King>
                 <Mesh path="meshes/King.obj"/>
             </SM_King>
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
+            <SM_Pipe>
+                <Mesh path="meshes/3D_Models/SM_Pipe_Straight.fbx"/>
+            </SM_Pipe>
+            <SM_Gear2>
+                <Mesh path="meshes/3D_Models/SM_Gear_Medium.fbx"/>
+            </SM_Gear2>
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
@@ -98,12 +137,12 @@
             <SM_Skull>
                 <Mesh path="meshes/Skull.obj"/>
             </SM_Skull>
-            <manni>
-                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
-            </manni>
             <testRuntimeMesh>
                 <Mesh path="meshes/Mario.obj"/>
             </testRuntimeMesh>
+            <manni>
+                <Mesh path="meshes/Ch36_nonPBR.fbx"/>
+            </manni>
             <testassetfbx>
                 <Mesh path="meshes/cliff_rock1.fbx"/>
             </testassetfbx>
@@ -122,17 +161,27 @@
             <PressurePlate>
                 <Mesh path="meshes/PressurePlate.fbx"/>
             </PressurePlate>
+            <SM_Gear3>
+                <Mesh path="meshes/3D_Models/SM_Gear_Small.fbx"/>
+            </SM_Gear3>
+            <SM_Pipe_Curved>
+                <Mesh path="meshes/3D_Models/SM_Pipe_Curved.fbx"/>
+            </SM_Pipe_Curved>
         </MeshComponent>
         <ScriptAbstract>
+            <S_Lever/>
             <script1/>
-            <PlayerController/>
+            <S_Lever2/>
             <testScriptTwo/>
+            <PlayerController/>
             <lerjgklktbl/>
             <animScript/>
             <testScript/>
             <FixCamera/>
             <PressurePad/>
             <GearTurn/>
+            <S_PressurePad2/>
+            <S_PressurePad3/>
         </ScriptAbstract>
         <ShaderComponent>
             <S_Default>
@@ -144,15 +193,15 @@
             <S_Outline>
                 <Shader frag="shaders/outline.glsl" vert="shaders/MultiPhongVert.glsl"/>
             </S_Outline>
+            <S_AnimOutline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
+            </S_AnimOutline>
             <S_Phong>
                 <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Phong>
             <S_Animated>
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/animationVert.glsl"/>
             </S_Animated>
-            <S_AnimOutline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
-            </S_AnimOutline>
         </ShaderComponent>
     </Components>
 </CellFile>

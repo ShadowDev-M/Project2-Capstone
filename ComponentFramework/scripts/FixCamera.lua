@@ -1,6 +1,4 @@
 
-
-
 function Preload()
 
 end	
@@ -17,12 +15,11 @@ end
 --Game Handler Script 
 
 function Update(deltaTime) 
-
 	local tPos = Transform.Position
 
 	tPos.z = Game.UsedCamera.Transform.Position.z
-	tPos.y = Game.UsedCamera.Transform.Position.y
-
+	
+	tPos.y = tPos.y + 5
 
 	Game.UsedCamera.Transform.Position = tPos
 

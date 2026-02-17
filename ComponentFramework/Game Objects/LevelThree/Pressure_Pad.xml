@@ -3,7 +3,7 @@
     <TransformComponent>
         <position x="0" y="6.2760239" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="3.0999999" y="0.5" z="1"/>
+        <scale x="3.0999999" y="0.5" z="3.0999999"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -17,14 +17,14 @@
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
-        <CollisionType type="2"/>
+        <CollisionType type="3"/>
         <isTrigger trigger="1"/>
         <radius value="1"/>
         <centre x="0" y="0" z="0"/>
         <centrePosA x="0" y="1" z="0"/>
         <centrePosB x="0" y="-1" z="0"/>
         <halfExtents x="1" y="1" z="1"/>
-        <orientation w="1" x="0" y="0" z="0"/>
+        <orientation w="0.70710689" x="0" y="-0" z="-0.70710665"/>
     </CollisionComponent>
     <ShaderComponent name="S_Multi"/>
     <ScriptComponent name="PressurePad"/>
