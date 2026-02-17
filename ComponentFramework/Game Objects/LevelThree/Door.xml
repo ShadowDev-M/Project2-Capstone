@@ -6,9 +6,9 @@
         <scale x="0.89999998" y="4.8000002" z="0.89999998"/>
     </TransformComponent>
     <PhysicsComponent>
-        <PhysicsState state="2"/>
+        <PhysicsState state="0"/>
         <Constraints freezePosX="1" freezePosY="0" freezePosZ="1" freezeRotX="1" freezeRotY="1" freezeRotZ="1"/>
-        <mass value="3.4028235e+38"/>
+        <mass value="1"/>
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
         <angularDrag value="0.050000001"/>

@@ -1,6 +1,6 @@
 
 
-degrees = 0
+public degrees = 0
 
 
 function Start()

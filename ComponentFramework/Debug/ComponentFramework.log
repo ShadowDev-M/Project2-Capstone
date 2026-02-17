@@ -1,10 +1,16 @@
-﻿  ScriptComponent.cpp
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-  (compiling source file '/ScriptComponent.cpp')
+﻿  CollisionSystem.cpp
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(70,31): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
   
-C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-  (compiling source file '/ScriptComponent.cpp')
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\AnimatorComponent.h(71,37): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
   
-  ComponentFramework.vcxproj -> C:\Users\joshu\Documents\Project2-Capstone\Debug\ComponentFramework.exe
-  C:\Users\joshu\Documents\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\CollisionSystem.cpp(2172,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
+  
+C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\CollisionSystem.cpp(2174,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file '/CollisionSystem.cpp')
+  
+  ComponentFramework.vcxproj -> C:\Users\joel\Documents\GitHub\Project2-Capstone\Debug\ComponentFramework.exe
+  C:\Users\joel\Documents\GitHub\Project2-Capstone\ComponentFramework\\External\luajit\src\lua51.dll
   1 File(s) copied
