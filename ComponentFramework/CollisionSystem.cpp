@@ -216,16 +216,16 @@ void CollisionSystem::ResolvePenetration(Ref<Actor> actor1_, Ref<Actor> actor2_,
 	if (state1 == PhysicsState::Dynamic) {
 		float mass = inverseMass1 / totalInverseMass;
 		Vec3 seperationAmmount = seperationValue * mass;
-		
-		Vec3 newPos = TC1->GetPosition() + PhysicsSystem::ResolveConstraintsPos(PC1, seperationAmmount);
+		PC1->ApplyPositionConstraints(seperationAmmount);
+		Vec3 newPos = TC1->GetPosition() + seperationAmmount;
 		TC1->SetPos(newPos.x, newPos.y, newPos.z);
 	}
 
 	if (state2 == PhysicsState::Dynamic) {
 		float mass = inverseMass2 / totalInverseMass;
 		Vec3 seperationAmmount = seperationValue * mass;
-
-		Vec3 newPos = TC2->GetPosition() - PhysicsSystem::ResolveConstraintsPos(PC2, seperationAmmount);
+		PC2->ApplyPositionConstraints(seperationAmmount);
+		Vec3 newPos = TC2->GetPosition() - seperationAmmount;
 		TC2->SetPos(newPos.x, newPos.y, newPos.z);
 	}
 }
@@ -273,13 +273,10 @@ void CollisionSystem::ResolveImpulse(Ref<Actor> actor1_, Ref<Actor> actor2_, con
 	// applying the impulse
 	if (state1 == PhysicsState::Dynamic) {
 		Vec3 newVel = vel1 + impulse * inverseMass1;
-		newVel = PhysicsSystem::ResolveConstraintsPos(PC1, newVel);
 		PC1->setVel(newVel);
 	}
 	if (state2 == PhysicsState::Dynamic) {
 		Vec3 newVel = vel2 - impulse * inverseMass2;
-		newVel = PhysicsSystem::ResolveConstraintsPos(PC2, newVel);
-
 		PC2->setVel(newVel);
 	}
 
@@ -333,10 +330,10 @@ void CollisionSystem::ApplyFriction(Ref<Actor> actor1_, Ref<Actor> actor2_, cons
 	// applying friction
 	Vec3 frictionImpulse = tangentDir * frictionImpulseMag;
 	if (state1 == PhysicsState::Dynamic) {
-		PC1->setVel(PhysicsSystem::ResolveConstraintsPos(PC1,PC1->getVel() + frictionImpulse * inverseMass1));
+		PC1->setVel(PC1->getVel() + frictionImpulse * inverseMass1);
 	}
 	if (state2 == PhysicsState::Dynamic) {
-		PC2->setVel(PhysicsSystem::ResolveConstraintsPos(PC2,PC2->getVel() - frictionImpulse * inverseMass2));
+		PC2->setVel(PC2->getVel() - frictionImpulse * inverseMass2);
 	}
 }
 
@@ -698,8 +695,8 @@ bool CollisionSystem::AABBAABBDiscrete(Ref<Actor> aabb1, Ref<Actor> aabb2, Colli
 
 	Vec3 minA = CC1->getWorldCentre(TC1) - CC1->getWorldHalfExtents(TC1);
 	Vec3 maxA = CC1->getWorldCentre(TC1) + CC1->getWorldHalfExtents(TC1);
-	Vec3 minB = CC2->getWorldCentre(TC2) - CC1->getWorldHalfExtents(TC2);
-	Vec3 maxB = CC2->getWorldCentre(TC2) + CC1->getWorldHalfExtents(TC2);
+	Vec3 minB = CC2->getWorldCentre(TC2) - CC2->getWorldHalfExtents(TC2);
+	Vec3 maxB = CC2->getWorldCentre(TC2) + CC2->getWorldHalfExtents(TC2);
 
 	// Exit with no intersection if separated along an axis
 	if (maxA.x < minB.x || minA.x > maxB.x) return false;

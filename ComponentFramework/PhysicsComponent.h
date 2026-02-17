@@ -75,6 +75,22 @@ public:
 	void AddForce(const Vec3& force) { forceAccumulator += force; }
 	void AddTorque(const Vec3& torque) { torqueAccumulator += torque; }
 
+	// for constraints
+	Vec3 ApplyPositionConstraints(const Vec3& vector_) {
+		Vec3 result = vector_;
+		if (constraints.freezePosX) result.x = 0.0f;
+		if (constraints.freezePosY) result.y = 0.0f;
+		if (constraints.freezePosZ) result.z = 0.0f;
+		return result;
+	}
+	Vec3 ApplyRotationConstraints(const Vec3& vector_) {
+		Vec3 result = vector_;
+		if (constraints.freezeRotX) result.x = 0.0f;
+		if (constraints.freezeRotY) result.y = 0.0f;
+		if (constraints.freezeRotZ) result.z = 0.0f;
+		return result;
+	}
+
 	// setters
 	void setState(PhysicsState state_) { state = state_; }
 	void setMass(const float& mass_) { mass = mass_; } 
@@ -86,10 +102,10 @@ public:
 	void setFriction(float friction_) { friction = friction_; }
 	void setRestitution(float restitution_) { restitution = restitution_; }
 
-	void setVel(const Vec3& vel_) { vel = vel_; }
-	void setAccel(const Vec3& accel_) { accel = accel_; }
-	void setAngularVel(const Vec3& angularVel_) { angularVel = angularVel_; }
-	void setAngularAccel(const Vec3& angularAccel_) { angularAcc = angularAccel_; }
+	void setVel(const Vec3& vel_) { vel = ApplyPositionConstraints(vel_); }
+	void setAccel(const Vec3& accel_) { accel = ApplyPositionConstraints(accel_); }
+	void setAngularVel(const Vec3& angularVel_) { angularVel = ApplyRotationConstraints(angularVel_); }
+	void setAngularAccel(const Vec3& angularAccel_) { angularAcc = ApplyRotationConstraints(angularAccel_); }
 
 	void setConstraints(const PhysicsConstraints& constraints_) { constraints = constraints_; }
 

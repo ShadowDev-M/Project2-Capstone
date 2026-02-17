@@ -3,7 +3,7 @@
 #include "Actor.h"
 Vec3 CollisionComponent::getWorldCentre(Ref<TransformComponent> transform_) const
 {
-	return Vec3(transform_->getParent()->GetModelMatrix() * Vec4(2 * centre, 1.0f));
+	return Vec3(transform_->getParent()->GetModelMatrix() * Vec4(centre, 1.0f));
 }
 Vec3 CollisionComponent::getWorldCentrePosA(Ref<TransformComponent> transform_) const
 {

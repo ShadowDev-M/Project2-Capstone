@@ -29,8 +29,6 @@ public:
 
 	// Physics Functions
 	void Update(float deltaTime);
-	static Vec3 ResolveConstraintsPos(Ref<PhysicsComponent> PC, Vec3 vector_);
-	void ApplyForce(Ref<Actor> actor_, const Vec3& force);
 	void UpdateVel(Ref<Actor> actor_, float deltaTime);
 	void UpdatePos(Ref<Actor> actor_, float deltaTime);
 	void UpdateOrientation(Ref<Actor> actor_, float deltaTime);
@@ -41,8 +39,5 @@ public:
 	// getters and setters
 	float getGravity() const { return gravity; }
 	void setGravity(float gravity_) { gravity = gravity_; }
-
-private:
-	void ApplyConstraints(Ref<PhysicsComponent> PC);
 };
 
