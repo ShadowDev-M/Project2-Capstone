@@ -1,6 +1,14 @@
 #pragma once
 #include "SceneGraph.h"
 
+struct HierarchyNode {
+
+
+	Ref<Actor> nodeActor;
+
+	std::unordered_map<std::string, HierarchyNode> children;
+};
+
 class HierarchyWindow
 {
 	// delete the move and copy constructers
@@ -15,18 +23,24 @@ private:
 	// text filter for the hierarchy window
 	ImGuiTextFilter filter;
 
+	bool changeMade = false;
 	// pointer to scenegraph
 	SceneGraph* sceneGraph;
 
+	std::unordered_map<std::string, HierarchyNode> hierarchyGraph;
+
 	// recursive function for actually rendering/drawing the nodes
-	void DrawActorNode(const std::string& actorName_, Ref<Actor> actor_);
+	void DrawActorNode(const std::string& actorName_, HierarchyNode& node);
 	
+	void UpdateHierarchyNode(const std::string& actorName_);
+
+
 	// recursive functions that help with selecting and searching for a child node
 	bool HasFilteredChild(Component* parent);
 	bool HasSelectedChild(Component* parent);
 
 	// refactored function to get a map of all child actors
-	std::unordered_map<std::string, Ref<Actor>> GetChildActors(Component* parent);
+	std::unordered_map<std::string, HierarchyNode> SetChildNodesRecurse(HierarchyNode& node);
 
 	// rename, duplicate, and re-parenting functions
 	void DuplicateActor(Ref<Actor> original_);
@@ -35,6 +49,9 @@ private:
 	void HandleDragDrop(const std::string& actorName_, Ref<Actor> actor_);
 
 public:
+
+	void UpdateHierarchyGraph();
+
 	explicit HierarchyWindow(SceneGraph* sceneGraph_);
 	~HierarchyWindow() {}
 

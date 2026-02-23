@@ -393,7 +393,7 @@ void keyboardInputMap::update(const float deltaTime)
 		//If pressed, do behavior and then promote it to being held
 		if (keyCode.second == InputState::Pressed) {
 			//TODO: Pressed behavior
-			std::cout << keyCode.first << " Promoted to HELD" << std::endl;
+			//std::cout << keyCode.first << " Promoted to HELD" << std::endl;
 			toggleKeyHeld(keyCode.first);
 		}
 
@@ -413,14 +413,14 @@ void keyboardInputMap::update(const float deltaTime)
 		if (keys[i] && isReleased(i)) {
 			SDL_Scancode sc = static_cast<SDL_Scancode>(i);
 
-			std::cout << "Key pressed: " << SDL_GetScancodeName(sc) << std::endl;
+			//std::cout << "Key pressed: " << SDL_GetScancodeName(sc) << std::endl;
 			toggleKeyPress(i);
 
 		}
 		else if (!keys[i] && !isReleased(i)) {
 			SDL_Scancode sc = static_cast<SDL_Scancode>(i);
 
-			std::cout << "Key released: " << SDL_GetScancodeName(sc) << std::endl;
+			//std::cout << "Key released: " << SDL_GetScancodeName(sc) << std::endl;
 
 			toggleKeyRelease(i);
 
@@ -455,7 +455,7 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 		}
 
 		toggleKeyPress(sdlEvent.button.button);
-		std::cout << static_cast<int>(sdlEvent.button.button) << " is Pressed!" << std::endl;
+		//std::cout << static_cast<int>(sdlEvent.button.button) << " is Pressed!" << std::endl;
 
 		lastX = sdlEvent.button.x;
 		lastY = sdlEvent.button.y;
@@ -468,7 +468,7 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 
 
 		toggleKeyRelease(sdlEvent.button.button);
-		std::cout << static_cast<int>(sdlEvent.button.button) << " is Released!" << std::endl;
+		//std::cout << static_cast<int>(sdlEvent.button.button) << " is Released!" << std::endl;
 
 		// allows imguizmo to handle mouse movement when editing gizmos
 		if (ImGuizmo::IsOver() && ImGuizmo::IsUsing()) {

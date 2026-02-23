@@ -81,7 +81,6 @@ public:
 	~Animation();
 
 
-	std::vector<Bone> getBonesAtTime(double time, MeshComponent* mesh);
 
 	const char* getName() const { return assetname.c_str(); }
 

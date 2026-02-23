@@ -83,7 +83,7 @@ void SceneManager::Run() {
 		editor.RenderEditorUI();
 
 		SDL_GL_SwapWindow(window->getWindow());
-		SDL_Delay(timer->GetSleepTime(fps));
+		//SDL_Delay(timer->GetSleepTime(fps));
 	}
 }
 

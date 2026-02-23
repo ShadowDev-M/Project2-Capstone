@@ -54,6 +54,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 					Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 				newActor->OnCreate();
 				sceneGraph->AddActor(newActor);
+				//UpdateHierarchyGraph();
 			}
 			
 			ImGui::EndPopup();
@@ -77,9 +78,15 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 			}
 		}
 
+		if (changeMade) { 
+			UpdateHierarchyGraph(); 
+			changeMade = false;
+		}
+		
+
 		// draw the actual hierarchy tree
-		for (const auto& pair : rootActors) {
-			DrawActorNode(pair.first, pair.second);
+		for (const auto& pair : hierarchyGraph) {
+			DrawActorNode(pair.first, hierarchyGraph[pair.first]);
 		}
 
 		// prepare the actor drag and drop
@@ -112,12 +119,12 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 										for (auto& obj : sceneGraph->debugSelectedAssets) {
 											obj.second->unparent();
 										}
-									}
-									
+									}	
 								}
 
-
 							}
+							changeMade = true;
+
 
 							ImGui::EndDragDropTarget();
 						}
@@ -138,9 +145,10 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 	ImGui::End();
 }
 
-void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> actor_)
+void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode& node)
 {
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(actor_.get());
+
+	Ref<Actor> actor_ = node.nodeActor;
 
 	// imgui_demo.cpp Widgets/Tree Nodes/Advanced, with Selectable nodes
 	const bool isSelected = sceneGraph->debugSelectedAssets.find(actor_->getId()) != sceneGraph->debugSelectedAssets.end();
@@ -170,7 +178,8 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> ac
 		baseFlags |= ImGuiTreeNodeFlags_Selected;
 	}
 
-	if (childActors.empty()) {
+
+	if (node.children.empty()) {
 		baseFlags |= ImGuiTreeNodeFlags_Leaf;
 	}
 
@@ -193,11 +202,13 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> ac
 		}
 	}
 
+
 	HandleDragDrop(actorName_, actor_);
 
 	if (ImGui::BeginPopupContextItem("##ActorContext")) {
 		if (ImGui::MenuItem("Duplicate")) {
 			DuplicateActor(actor_);
+			UpdateHierarchyGraph();
 		}
 		ImGui::Separator();
 		if (ImGui::MenuItem("Delete")) {
@@ -207,13 +218,14 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> ac
 
 			sceneGraph->RemoveActor(actorName_);
 			sceneGraph->checkValidCamera();
+			//UpdateHierarchyGraph();
 		}
 		ImGui::EndPopup();
 	}
 
 	if (nodeOpen) {
-		for (const auto& child : childActors) {
-			DrawActorNode(child.first, child.second);
+		for (const auto& child : node.children) {
+			DrawActorNode(child.first, node.children[child.first]);
 		}
 		ImGui::TreePop();
 	}
@@ -221,10 +233,42 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, Ref<Actor> ac
 	ImGui::PopID();
 }
 
+void HierarchyWindow::UpdateHierarchyGraph()
+{
+
+	//std::unordered_map<std::string, Ref<Actor>> rootActors;
+
+	
+
+	// store all actors names in the scene 
+	std::vector<std::string> allActorNames = sceneGraph->GetAllActorNames();
+
+	// sort the names
+	std::sort(allActorNames.begin(), allActorNames.end());
+
+	hierarchyGraph.clear();
+
+	for (const std::string& actorName : allActorNames) {
+		Ref<Actor> actor = sceneGraph->GetActor(actorName);
+
+		// if actor is a root actor, add it to the map
+		if (actor && actor->isRootActor()) {
+
+			hierarchyGraph.emplace(actorName, HierarchyNode{ actor });
+
+			//set the children
+			hierarchyGraph[actorName].children = SetChildNodesRecurse(hierarchyGraph[actorName]);
+
+		}
+	}
+
+}
+
+
+
 void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 	if (!original_) return;
 
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(original_.get());
 	if (original_->getParentActor() == nullptr) {
 		std::string newName = GenerateDuplicateName(original_->getActorName());
 
@@ -232,11 +276,13 @@ void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 		parentActor->OnCreate();
 		sceneGraph->AddActor(parentActor);
 
-		if (childActors.size() != 0) {
-			for (const auto& child : childActors) {
+
+
+		if (hierarchyGraph[original_->getActorName()].children.size() != 0) {
+			for (const auto& child : hierarchyGraph[original_->getActorName()].children) {
 				newName = GenerateDuplicateName(child.first);
 				
-				Ref<Actor> childActor = DeepCopyActor(newName, child.second);
+				Ref<Actor> childActor = DeepCopyActor(newName, hierarchyGraph[original_->getActorName()].nodeActor);
 				childActor->setParentActor(parentActor.get());
 				childActor->OnCreate();
 				sceneGraph->AddActor(childActor);
@@ -250,6 +296,8 @@ void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 		parentActor->OnCreate();
 		sceneGraph->AddActor(parentActor);
 	}
+
+	UpdateHierarchyGraph();
 }
 
 Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor> original_) {
@@ -283,6 +331,8 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	if (auto light = original_->GetComponent<LightComponent>()) {
 		copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
 	}
+
+
 
 	return copy;
 }
@@ -379,21 +429,23 @@ void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> a
 					Debug::Warning("Cannot parent actor to its own child", __FILE__, __LINE__);
 				}
 			}
+	
+			changeMade = true;
 		}
 
 		ImGui::EndDragDropTarget();
+
 	}
 }
 
 bool HierarchyWindow::HasFilteredChild(Component* parent)
 {
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
 
-	for (const auto& child : childActors) {
+	for (const auto& child : hierarchyGraph) {
 		if (filter.PassFilter(child.first.c_str())) { return true; } 
 
 		// recursive check to see if the child has children
-		if (HasFilteredChild(child.second.get())) { return true; }
+		if (HasFilteredChild(child.second.nodeActor.get())) { return true; }
 	}
 
 	return false;
@@ -401,21 +453,20 @@ bool HierarchyWindow::HasFilteredChild(Component* parent)
 
 bool HierarchyWindow::HasSelectedChild(Component* parent)
 {
-	std::unordered_map<std::string, Ref<Actor>> childActors = GetChildActors(parent);
 
-	for (const auto& child : childActors) {
-		if (sceneGraph->debugSelectedAssets.find(child.second->getId()) != sceneGraph->debugSelectedAssets.end()) { return true; }
+	for (const auto& child : hierarchyGraph) {
+		if (sceneGraph->debugSelectedAssets.find(child.second.nodeActor->getId()) != sceneGraph->debugSelectedAssets.end()) { return true; }
 
 		// recursive check to see if the child has children
-		if (HasSelectedChild(child.second.get())) { return true; }
+		if (HasSelectedChild(child.second.nodeActor.get())) { return true; }
 	}
 
 	return false;
 }
 
-std::unordered_map<std::string, Ref<Actor>> HierarchyWindow::GetChildActors(Component* parent)
+std::unordered_map<std::string, HierarchyNode> HierarchyWindow::SetChildNodesRecurse(HierarchyNode& node)
 {
-	std::unordered_map<std::string, Ref<Actor>> childActors;
+	std::unordered_map<std::string, HierarchyNode> childActors;
 
 	// store all actors names in the scene 
 	std::vector<std::string> allActorNames = sceneGraph->GetAllActorNames();
@@ -423,12 +474,22 @@ std::unordered_map<std::string, Ref<Actor>> HierarchyWindow::GetChildActors(Comp
 	// sort the names
 	std::sort(allActorNames.begin(), allActorNames.end());
 
+
 	for (const std::string& actorName : allActorNames) {
 		Ref<Actor> actor = sceneGraph->GetActor(actorName);
 
+
+
 		// actor is a child actor
-		if (actor && actor->getParentActor() == parent) {
-			childActors.emplace(actorName, actor);
+		if (actor && actor->getParentActor() == node.nodeActor.get()) {
+
+			//set up a node for the child
+			HierarchyNode childNode = { actor };
+
+			//recurse and find the child's children
+			childNode.children = SetChildNodesRecurse(childNode);
+
+			childActors.emplace(actorName, childNode);
 		}
 	}
 	

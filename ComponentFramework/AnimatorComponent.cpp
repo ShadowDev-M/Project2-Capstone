@@ -37,9 +37,12 @@ AnimatorComponent::AnimatorComponent(Component* parent_, float startTime_, float
 			std::cout << mesh->getMeshName() << std::endl;
 		}
 		copySkeletalData();
+
 		Ref<Animation> animationClip = std::dynamic_pointer_cast<Animation>(AssetManager::getInstance().GetAsset<Animation>(assetname_));
+
 		if (animationClip)
 			activeClip.setAnimation(animationClip);
+
 		activeClip.setStartTimeRaw(startTime_);
 		activeClip.setSpeedMult(speedMult_);
 		activeClip.setLooping(loop_);
@@ -69,17 +72,11 @@ void AnimatorComponent::copySkeletalData()
 
 
 		if (mesh && mesh->skeleton) {
-			// Reference the shared skeleton (not copy)
 			skeleton = mesh->skeleton.get();
 			boneIds = mesh->boneIds;
 			boneWeights = mesh->boneWeights;
 
-			// Pre-allocate bone matrices for this animator
 			finalBoneMatrices.resize(skeleton->bones.size());
-
-			std::cout << "SUCCESSFUL COPY INTO ANIMATOR" << std::endl;
-
-
 		}
 	
 	
@@ -295,11 +292,10 @@ void Animation::LoadAnimation(const char* filename) {
 	);
 
 	if (!scene || !scene->HasAnimations()) {
-		printf("No animations found!\n");
+	//	printf("No animations found!\n");
 		return;
 	}
 
-	// Load animation channels (your existing code)
 	aiAnimation* anim = scene->mAnimations[0];
 	name = anim->mName.C_Str();
 	duration = anim->mDuration;
@@ -313,7 +309,7 @@ void Animation::LoadAnimation(const char* filename) {
 		NodeAnim chan;
 		chan.nodeName = aiChan->mNodeName.C_Str();
 
-		// Positions (your existing code - unchanged)
+		// position
 		chan.posKeys.reserve(aiChan->mNumPositionKeys);
 		for (unsigned int k = 0; k < aiChan->mNumPositionKeys; ++k) {
 			VectorKey key;
@@ -322,7 +318,7 @@ void Animation::LoadAnimation(const char* filename) {
 			chan.posKeys.push_back(key);
 		}
 
-		// Rotations (your existing code - unchanged)
+		// rotation
 		chan.rotKeys.reserve(aiChan->mNumRotationKeys);
 		for (unsigned int k = 0; k < aiChan->mNumRotationKeys; ++k) {
 			QuatKey key;
@@ -336,7 +332,7 @@ void Animation::LoadAnimation(const char* filename) {
 			
 		}
 
-		// Scales (your existing code - unchanged)
+		// scale
 		chan.scaleKeys.reserve(aiChan->mNumScalingKeys);
 		for (unsigned int k = 0; k < aiChan->mNumScalingKeys; ++k) {
 			VectorKey key;
@@ -351,7 +347,6 @@ void Animation::LoadAnimation(const char* filename) {
 	
 
 	fullyLoaded = true;
-	printf("Animation loaded with %zu channels\n", channels.size());
 }
 Animation::Animation(Component* parent, const char* filename_) : Component(nullptr)/*shouldn't really have a parent*/, filename(filename_)
 {
@@ -361,8 +356,8 @@ Animation::~Animation()
 {
 }
 struct KeyframeIndex {
-	int index;  // Start index for interpolation (what find*KeyIndex returned)
-	float frac; // Interpolation factor [0,1]
+	int index;  
+	float frac; 
 };
 
 KeyframeIndex findKeyframe(const std::vector<VectorKey>& keys, double time) {
@@ -376,7 +371,7 @@ KeyframeIndex findKeyframe(const std::vector<VectorKey>& keys, double time) {
 
 	for (size_t i = 0; i < keys.size() - 1; ++i) {
 		if (time < keys[i + 1].time) {
-			result.index = i;  // Use i (not i+1 like your old find*KeyIndex)
+			result.index = i;  
 			double t0 = keys[i].time;
 			double t1 = keys[i + 1].time;
 			result.frac = (time - t0) / (t1 - t0);
@@ -412,146 +407,13 @@ KeyframeIndex findKeyframe(const std::vector<QuatKey>& keys, double time) {
 
 
 
-
-
-
-///deprecated 
-std::vector<Bone> Animation::getBonesAtTime(double time, MeshComponent* mesh) {
-	std::vector<Bone> bonesAtFrame(mesh->skeleton->bones.size());
-
-	// Recursive function matching your reference exactly
-	std::function<void(Bone*, const Matrix4&, std::unordered_map<std::string, Matrix4>&)> computeGlobalPose =
-		[&](Bone* meshBone, const Matrix4& parentGlobal, std::unordered_map<std::string, Matrix4>& globalTransforms) {
-
-		// Find animation channel
-		NodeAnim* channel = nullptr;
-		for (auto& chan : channels) {
-			if (chan.nodeName == meshBone->name) {
-				channel = &chan;
-				break;
-			}
-		}
-
-		// Sample LOCAL transform (exactly like your reference)
-		Vec3 pos(0, 0, 0);
-		Quaternion rot(1, Vec3(0, 0, 0));
-		Vec3 scale(1, 1, 1);
-
-		if (channel) {
-			// POSITION
-			if (!channel->posKeys.empty()) {
-				KeyframeIndex fp = findKeyframe(channel->posKeys, time);
-				if (fp.index >= 0) {
-					if (fp.index < channel->posKeys.size() - 1) {
-						pos = VMath::lerp(channel->posKeys[fp.index].value,
-							channel->posKeys[fp.index + 1].value, fp.frac);
-					}
-					else {
-						pos = channel->posKeys[fp.index].value;
-					}
-				}
-			}
-
-			// ROTATION - ARM TEST OVERRIDE
-			if (!channel->rotKeys.empty()) {
-				KeyframeIndex fp = findKeyframe(channel->rotKeys, time);
-				if (fp.index >= 0) {
-					if (fp.index < channel->rotKeys.size() - 1) {
-						rot = QMath::normalize(QMath::slerp(channel->rotKeys[fp.index].value,
-							channel->rotKeys[fp.index + 1].value, fp.frac));
-					}
-					else {
-						rot = QMath::normalize(channel->rotKeys[fp.index].value);
-					}
-				}
-			}
-
-			// SCALE
-			if (!channel->scaleKeys.empty()) {
-				KeyframeIndex fp = findKeyframe(channel->scaleKeys, time);
-				if (fp.index >= 0) {
-					if (fp.index < channel->scaleKeys.size() - 1) {
-						scale = VMath::lerp(channel->scaleKeys[fp.index].value,
-							channel->scaleKeys[fp.index + 1].value, fp.frac);
-					}
-					else {
-						scale = channel->scaleKeys[fp.index].value;
-					}
-				}
-			}
-		}
-
-		// Build LOCAL transform (EXACTLY like your reference)
-		Matrix4 positionMat = MMath::translate(pos);
-		Matrix4 rotationMat = MMath::toMatrix4(rot);
-		Matrix4 scaleMat = MMath::scale(scale);
-		Matrix4 localTransform = positionMat * rotationMat * scaleMat;
-
-		// Compute GLOBAL transform
-		Matrix4 globalTransform = parentGlobal * localTransform;
-
-		// Store final skinning matrix (NEED meshBone->offset here - assuming it's available)
-		globalTransforms[meshBone->name] = globalTransform;
-
-		// Recurse children (exactly like your reference)
-		for (Bone* child : meshBone->children) {
-			computeGlobalPose(child, globalTransform, globalTransforms);
-		}
-		};
-
-	// Start from root bones
-	std::unordered_map<std::string, Matrix4> globalTransforms;
-	for (auto& bonePtr : mesh->skeleton->bones) {
-		if (!bonePtr->parent) {
-			computeGlobalPose(bonePtr.get(), Matrix4(), globalTransforms);
-		}
-	}
-
-	// Build output bones
-	for (size_t i = 0; i < mesh->skeleton->bones.size(); ++i) {
-		auto& meshBonePtr = mesh->skeleton->bones[i];
-		Bone& bone = bonesAtFrame[i];
-
-		bone.name = meshBonePtr->name;
-		bone.id = static_cast<int>(i);
-
-		auto it = globalTransforms.find(meshBonePtr->name);
-		bone.offsetMatrix = it != globalTransforms.end() ? it->second : Matrix4();
-
-		// Hierarchy references
-		if (meshBonePtr->parent) {
-			for (size_t j = 0; j < mesh->skeleton->bones.size(); ++j) {
-				if (mesh->skeleton->bones[j].get() == meshBonePtr->parent) {
-					bone.parent = &bonesAtFrame[j];
-					break;
-				}
-			}
-		}
-
-		bone.children.clear();
-		for (Bone* child : meshBonePtr->children) {
-			for (size_t j = 0; j < mesh->skeleton->bones.size(); ++j) {
-				if (mesh->skeleton->bones[j].get() == child) {
-					bone.children.push_back(&bonesAtFrame[j]);
-					break;
-				}
-			}
-		}
-	}
-
-	return bonesAtFrame;
-}
-
-
-
 void Animation::calculatePose(double time, Skeleton* skeleton, std::vector<Matrix4>& output) {
 	Matrix4 identity;
 	Matrix4 globalInverseTransform = skeleton->globalInverseTransform;
 
 	std::function<void(Bone*, const Matrix4&)> computePose =
-		[&](Bone* bone, const Matrix4& parentTransform) {
+	[&](Bone* bone, const Matrix4& parentTransform) {
 
-		// Find NodeAnim channel
 		NodeAnim* channel = nullptr;
 		for (auto& chan : channels) {
 			if (chan.nodeName == bone->name) {
@@ -606,35 +468,24 @@ void Animation::calculatePose(double time, Skeleton* skeleton, std::vector<Matri
 			}
 		}
 
-		// EXACT reference: localTransform = position * rotation * scale
 		Matrix4 positionMat = MMath::translate(position);
 		Matrix4 rotationMat = MMath::toMatrix4(rotation);
 		Matrix4 scaleMat = MMath::scale(scaleVec);
 		Matrix4 localTransform = positionMat * rotationMat * scaleMat;
 		Matrix4 globalTransform = parentTransform * localTransform;
 		
-		// EXACT reference final skinning matrix
 		if (!bone->name.empty() && bone->id >= 0 && bone->id < output.size()) {
 			output[bone->id] = globalTransform * bone->offsetMatrix;
 
-			// DEBUG - PRINT FIRST 10 BONES ONLY
-			/*std::cout << "globalTransform\n";
-			globalTransform.print();
-			std::cout << "offset\n";
-			bone->offsetMatrix.print();
-			std::cout << "output\n";
-			output[bone->id].print();*/
 		}
-		else {
-			printf("SKIPPED bone '%s' id=%d (size=%zu)\n", bone->name.c_str(), bone->id, output.size());
-		}
+		
 
 
 		// Recurse children
 		for (Bone* child : bone->children) {
 			computePose(child, globalTransform);
 		}
-		};
+	};
 
 	// Start from root bones
 	for (auto& bonePtr : skeleton->bones) {

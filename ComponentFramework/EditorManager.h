@@ -114,6 +114,11 @@ private:
 	bool pendingFocusScene = false;
 
 public:
+
+	void UpdateActorHierarchy() {
+		if (hierarchyWindow) hierarchyWindow->UpdateHierarchyGraph();
+	}
+
 	// Meyers Singleton (from JPs class)
 	static EditorManager& getInstance() {
 		static EditorManager instance;
