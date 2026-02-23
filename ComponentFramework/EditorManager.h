@@ -115,8 +115,10 @@ private:
 
 public:
 
+	
+
 	void UpdateActorHierarchy() {
-		if (hierarchyWindow) hierarchyWindow->UpdateHierarchyGraph();
+		if (hierarchyWindow) hierarchyWindow->UpdateHierarchyNextFrame();
 	}
 
 	// Meyers Singleton (from JPs class)

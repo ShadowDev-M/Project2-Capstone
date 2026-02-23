@@ -47,10 +47,12 @@ private:
 	Ref<Actor> DeepCopyActor(const std::string& newName_, Ref<Actor> original_);
 	std::string GenerateDuplicateName(const std::string& originalName_);
 	void HandleDragDrop(const std::string& actorName_, Ref<Actor> actor_);
+	void UpdateHierarchyGraph();
 
 public:
-
-	void UpdateHierarchyGraph();
+	void UpdateHierarchyNextFrame() {
+		changeMade = true;
+	}
 
 	explicit HierarchyWindow(SceneGraph* sceneGraph_);
 	~HierarchyWindow() {}

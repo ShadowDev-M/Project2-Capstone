@@ -208,7 +208,9 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 	if (ImGui::BeginPopupContextItem("##ActorContext")) {
 		if (ImGui::MenuItem("Duplicate")) {
 			DuplicateActor(actor_);
-			UpdateHierarchyGraph();
+			//UpdateHierarchyGraph();
+			changeMade = true;
+
 		}
 		ImGui::Separator();
 		if (ImGui::MenuItem("Delete")) {
@@ -219,6 +221,8 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 			sceneGraph->RemoveActor(actorName_);
 			sceneGraph->checkValidCamera();
 			//UpdateHierarchyGraph();
+			changeMade = true;
+
 		}
 		ImGui::EndPopup();
 	}
@@ -232,6 +236,8 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 
 	ImGui::PopID();
 }
+
+
 
 void HierarchyWindow::UpdateHierarchyGraph()
 {
@@ -297,7 +303,7 @@ void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 		sceneGraph->AddActor(parentActor);
 	}
 
-	UpdateHierarchyGraph();
+	changeMade = true;
 }
 
 Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor> original_) {

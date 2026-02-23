@@ -37,7 +37,7 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 	// if scenegraph exists, initalize all the windows
 	if (sceneGraph) {
 		hierarchyWindow = std::make_unique<HierarchyWindow>(sceneGraph);
-		hierarchyWindow->UpdateHierarchyGraph();
+		UpdateActorHierarchy();
 		inspectorWindow = std::make_unique<InspectorWindow>(sceneGraph);
 		assetManagerWindow = std::make_unique<AssetManagerWindow>(sceneGraph);
 		sceneWindow = std::make_unique<SceneWindow>(sceneGraph);
