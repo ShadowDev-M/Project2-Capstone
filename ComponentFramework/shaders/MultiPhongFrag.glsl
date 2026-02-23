@@ -3,11 +3,13 @@
 #define MAX_LIGHTS 4
 
 layout (location = 0) in vec3 vertNormal;
-layout (location = 1) in vec3 eyeDir;
+layout (location = 1) in vec3 viewDir2;
 layout (location = 2) in vec2 textureCoords;
 layout (location = 3) in vec3 worldPos;
 layout (location = 4) in vec3 localPos;
 layout (location = 5) in vec3 localNormal;
+
+uniform vec3 cameraPos;
 
 uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec4 diffuse[MAX_LIGHTS];
@@ -32,7 +34,7 @@ layout (location = 0) out vec4 fragColor;
 
 void main() {
     vec3 normal = normalize(vertNormal);
-    vec3 viewDir = normalize(eyeDir);
+    vec3 viewDir = normalize(cameraPos - worldPos);
     vec4 kt;
 
     if (isTiled == true){
@@ -63,12 +65,12 @@ void main() {
             vec4 ks = (hasSpec == 1) ? texture(specularTexture, textureCoords) * specular[i] : specular[i];
             vec4 kd = diffuse[i];
             
-            vec3 lightWorldPos = lightPos[i];
+            vec3 lightWorldPos = lightPos[i]; 
             vec3 lightDir;
             
             if (lightType[i] == 0u) {  
                 // this is directional
-                lightDir = normalize(-lightWorldPos);
+                lightDir = -lightWorldPos; // when a sky light is passed lightPos[i] becomes lightDir
             } else {  
                 // point light
                 lightDir = normalize(lightWorldPos - worldPos);
@@ -79,6 +81,7 @@ void main() {
             
             // Specular
             vec3 reflection = reflect(-lightDir, normal);
+            
             float spec = 0.0f;
             if (diff > 0.0f) {
                 spec = pow(max(dot(viewDir, reflection), 0.0f), 16.0f);
@@ -94,8 +97,8 @@ void main() {
             }
             
             phongResult += lightContrib;
+            //phongResult += vec4(lightDir * 0.5 + 0.5, 1.0);;
         }
     }
-    
     fragColor = phongResult;
 }

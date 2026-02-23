@@ -958,8 +958,7 @@ void SceneGraph::Render() const
 		if (!lightActors.empty()) {
 			for (auto& light : lightActors) {
 				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
-					// you shouldn't have to pass a corrected light position into the shader, it should correct itself.
-					lightPos.push_back(light->GetModelMatrix() * Vec4(Vec3(), 1));
+					lightPos.push_back(Vec3(light->GetModelMatrix().getColumn(Matrix4::Colunm::three))); // "Colunm" scott-typo lol
 					lightTypes.push_back(1u);
 				}
 				else {

@@ -97,25 +97,28 @@ void Scene3GUI::Render() const {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
+	Ref<CameraComponent> usedCamera = SceneGraph::getInstance().getUsedCamera();
+
 	// Rendering	
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, usedCamera->GetViewMatrix());
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("viewMatrix"), 1, GL_FALSE, usedCamera->GetViewMatrix());
 
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
-
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("viewMatrix"), 1, GL_FALSE, usedCamera->GetViewMatrix());
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("cameraPos"), 1, usedCamera->GetUserActorTransform()->GetPosition());
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, SceneGraph::getInstance().getUsedCamera()->GetViewMatrix());
-	
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
+	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, usedCamera->GetViewMatrix());
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("cameraPos"), 1, usedCamera->GetUserActorTransform()->GetPosition());
+
 	SceneGraph::getInstance().Render();
 
 	glUseProgram(0);

@@ -18,13 +18,13 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 // Your lights (UNCHANGED)
-uniform vec3 lightPos[MAX_LIGHTS];
-uniform vec4 diffuse[MAX_LIGHTS];
-uniform vec4 specular[MAX_LIGHTS];
-uniform float intensity[MAX_LIGHTS];
-uniform uint lightType[MAX_LIGHTS];
-uniform vec4 ambient;
-uniform uint numLights;
+//uniform vec3 lightPos[MAX_LIGHTS];
+//uniform vec4 diffuse[MAX_LIGHTS];
+//uniform vec4 specular[MAX_LIGHTS];
+//uniform float intensity[MAX_LIGHTS];
+//uniform uint lightType[MAX_LIGHTS];
+//uniform vec4 ambient;
+//uniform uint numLights;
 
 layout (location = 0) out vec3 vertNormal;
 layout (location = 1) out vec3 eyeDir;
