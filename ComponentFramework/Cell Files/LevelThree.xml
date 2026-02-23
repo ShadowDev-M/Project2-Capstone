@@ -1,48 +1,22 @@
 <CellFile>
     <Actors>
-        <Player>
+        <Mario>
             <LightP/>
-        </Player>
-        <Gear_7D/>
+        </Mario>
+        <Board/>
         <CamTest/>
+        <Cube/>
+        <Cube_1D/>
         <SkyLight/>
-        <Crate2/>
-        <PressurePad1>
-            <Pressure_Pad1/>
-        </PressurePad1>
-        <Door1/>
-        <Door3/>
+        <Door/>
+        <Board_1D/>
+        <PressureSensor>
+            <Pressure_Pad/>
+        </PressureSensor>
         <Gear/>
-        <PipeBlock/>
         <Gear_1D/>
-        <DoorStop1/>
-        <Lever2/>
-        <Gear_4D/>
-        <PressurePad2>
-            <Pressure_Pad2/>
-        </PressurePad2>
-        <Crate1/>
-        <BACKGROUND/>
-        <FLOOR2/>
-        <FLOOR1/>
-        <Door2/>
-        <Gear_6D/>
-        <DoorStop2/>
-        <Gear_2D/>
-        <RIGHT_WALL1/>
-        <LEFT_WALL1/>
-        <LEFT_WALL2/>
-        <FLOOR3/>
-        <RIGHT_WALL2/>
-        <RIGHT_WALL3/>
-        <FLOOR4/>
-        <Lever/>
-        <Gear_3D/>
-        <Gear_5D/>
-        <Gear_8D/>
-        <Pipe/>
-        <Crate3/>
-        <Gear_9D/>
+        <DoorStop/>
+        <Wall/>
     </Actors>
     <Components>
         <Animation>
@@ -87,18 +61,12 @@
             <skeletonTexture>
                 <Texture diff="textures/skeleton_d.png" spec=""/>
             </skeletonTexture>
-            <M_Sky>
-                <Texture diff="textures/seamsky.jpg" spec=""/>
-            </M_Sky>
             <gridtexture2>
                 <Texture diff="textures/gridimage.png" spec=""/>
             </gridtexture2>
             <testtex2>
                 <Texture diff="textures/UnderwaterBox_Negx.png" spec=""/>
             </testtex2>
-            <M_Floor>
-                <Texture diff="textures/terrainDiffuse.png" spec=""/>
-            </M_Floor>
         </MaterialComponent>
         <MeshComponent>
             <SM_Sphere>
@@ -113,12 +81,6 @@
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
-            <SM_Pipe>
-                <Mesh path="meshes/3D_Models/SM_Pipe_Straight.fbx"/>
-            </SM_Pipe>
-            <SM_Gear2>
-                <Mesh path="meshes/3D_Models/SM_Gear_Medium.fbx"/>
-            </SM_Gear2>
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
@@ -161,17 +123,9 @@
             <PressurePlate>
                 <Mesh path="meshes/PressurePlate.fbx"/>
             </PressurePlate>
-            <SM_Gear3>
-                <Mesh path="meshes/3D_Models/SM_Gear_Small.fbx"/>
-            </SM_Gear3>
-            <SM_Pipe_Curved>
-                <Mesh path="meshes/3D_Models/SM_Pipe_Curved.fbx"/>
-            </SM_Pipe_Curved>
         </MeshComponent>
         <ScriptAbstract>
-            <S_Lever/>
             <script1/>
-            <S_Lever2/>
             <testScriptTwo/>
             <PlayerController/>
             <lerjgklktbl/>
@@ -180,8 +134,6 @@
             <FixCamera/>
             <PressurePad/>
             <GearTurn/>
-            <S_PressurePad2/>
-            <S_PressurePad3/>
         </ScriptAbstract>
         <ShaderComponent>
             <S_Default>
@@ -193,15 +145,15 @@
             <S_Outline>
                 <Shader frag="shaders/outline.glsl" vert="shaders/MultiPhongVert.glsl"/>
             </S_Outline>
-            <S_AnimOutline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
-            </S_AnimOutline>
             <S_Phong>
                 <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Phong>
             <S_Animated>
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/animationVert.glsl"/>
             </S_Animated>
+            <S_AnimOutline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
+            </S_AnimOutline>
         </ShaderComponent>
     </Components>
 </CellFile>

@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="-8.967" y="33.418488" z="0"/>
-        <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="20" y="0.80000001" z="0.80000001"/>
+        <position x="-59.654949" y="14.142163" z="0"/>
+        <rotation w="1" x="-4.2692906e-07" y="-0" z="0"/>
+        <scale x="1" y="8.5" z="1"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -17,7 +17,7 @@
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
-        <CollisionType type="2"/>
+        <CollisionType type="3"/>
         <isTrigger trigger="0"/>
         <radius value="1"/>
         <centre x="0" y="0" z="0"/>

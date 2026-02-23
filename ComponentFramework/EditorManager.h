@@ -110,6 +110,9 @@ private:
 	// temporary save file location
 	std::string tempSaveFile = "tempsave";
 
+	// focus playmode flag
+	bool pendingFocusScene = false;
+
 public:
 	// Meyers Singleton (from JPs class)
 	static EditorManager& getInstance() {

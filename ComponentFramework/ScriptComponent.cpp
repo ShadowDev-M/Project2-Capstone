@@ -537,10 +537,10 @@ void ScriptService::loadLibraries()
 
 	lua.new_usertype<PhysicsComponent>("Rigidbody",
 		"Vel", sol::property(&PhysicsComponent::getVel, &PhysicsComponent::setVel),
-		"Accel", sol::property(&PhysicsComponent::getAccel, &PhysicsComponent::setAccel),
+		"AddAccel", &PhysicsComponent::AddForce,
 		"Drag", sol::property(&PhysicsComponent::getDrag, &PhysicsComponent::setDrag),
 		"AngVel", sol::property(&PhysicsComponent::getAngularVel, &PhysicsComponent::setAngularVel),
-		"AngAccel", sol::property(&PhysicsComponent::getAngularAccel, &PhysicsComponent::setAngularAccel),
+		"AddAngAccel", &PhysicsComponent::AddTorque,
 		"AngDrag", sol::property(&PhysicsComponent::getAngularDrag, &PhysicsComponent::setAngularDrag),
 		"UseGravity", sol::property(&PhysicsComponent::getUseGravity, &PhysicsComponent::setUseGravity),
 		"Mass", sol::property(&PhysicsComponent::getMass, &PhysicsComponent::setMass),
