@@ -3,9 +3,9 @@
     <TransformComponent>
         <position x="97.557182" y="7.6971788" z="-129.2"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="51.099998" y="51.099998" z="51.099998"/>
+        <scale x="60.299999" y="42.799999" z="42.799999"/>
     </TransformComponent>
     <MeshComponent name="SM_Plane"/>
-    <MaterialComponent name="M_Sky"/>
+    <MaterialComponent name="steampunkbackgr"/>
     <ShaderComponent name="S_Multi"/>
 </Actor>

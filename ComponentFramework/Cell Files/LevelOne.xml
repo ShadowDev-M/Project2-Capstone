@@ -99,6 +99,9 @@
             <M_Floor>
                 <Texture diff="textures/terrainDiffuse.png" spec=""/>
             </M_Floor>
+            <steampunkbackgr>
+                <Texture diff="textures/steampunk.png" spec=""/>
+            </steampunkbackgr>
         </MaterialComponent>
         <MeshComponent>
             <SM_Cube>
@@ -174,11 +177,11 @@
             <script1/>
             <PlayerController/>
             <testScriptTwo/>
+            <PressurePad/>
             <lerjgklktbl/>
             <animScript/>
             <testScript/>
             <FixCamera/>
-            <PressurePad/>
             <GearTurn/>
             <S_PressurePad2/>
             <S_PressurePad3/>

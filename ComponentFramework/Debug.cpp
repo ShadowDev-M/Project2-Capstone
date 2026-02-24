@@ -6,7 +6,7 @@ std::string Debug::logFileName = "";
 
 void Debug::DebugInit(const std::string& logFileName_) {
 	logFileName = logFileName_;
-	std::ofstream out;
+	/*std::ofstream out;
 	out.open(logFileName, std::ios::out);
 
 	char str[26]; /// get the time and date
@@ -15,13 +15,13 @@ void Debug::DebugInit(const std::string& logFileName_) {
     ctime_s(str,sizeof str,&result); /// Since C11
 	out << str;
 
-	out.close();
+	out.close();*/
 }
 
 void Debug::Log(const MessageType type_, const std::string& message_, const std::string& fileName_, const int line_) {
-	std::ofstream out;
+	//std::ofstream out;
 	std::string msg;
-	out.open(logFileName, std::ios::out | std::ios::app);
+	//out.open(logFileName, std::ios::out | std::ios::app);
 	if (type_ == MessageType::TYPE_INFO) {
 		msg = message_;
 	} else {
@@ -30,9 +30,9 @@ void Debug::Log(const MessageType type_, const std::string& message_, const std:
 #ifdef _DEBUG
 	std::cout << msg << std::endl;
 #endif
-	out << msg << std::endl;
-	out.flush();
-	out.close();
+	//out << msg << std::endl;
+	//out.flush();
+	//out.close();
 }
 
 void Debug::Info(const std::string& message_, const std::string& fileName_, const int line_) {

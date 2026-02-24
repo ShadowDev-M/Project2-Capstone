@@ -18,30 +18,6 @@ using namespace MATH;
 
 void MeshComponent::storeLoadedModel()
 {
-    //printf("\n=== RAW BONE IDS FROM MESH LOADER ===\n");
-    //printf("BONE_WEIGHTS_SIZE = %d\n", BONE_WEIGHTS_SIZE);
-    //printf("boneIds.size() = %zu, vertices.size() = %zu\n", boneIds.size(), vertices.size());
-    //printf("Expected boneIds: %zu\n", vertices.size() * BONE_WEIGHTS_SIZE);
-
-    //// **FIXED INDEXING** - Verify bounds first
-    //size_t expectedSize = vertices.size() * BONE_WEIGHTS_SIZE;
-    //if (boneIds.size() != expectedSize) {
-    //    printf("*** FATAL ERROR ***: boneIds.size()=%zu != %zu*4=%zu\n",
-    //        boneIds.size(), vertices.size(), expectedSize);
-    //    return;
-    //}
-
-    //for (size_t v = 0; v < std::min<size_t>(10, vertices.size()); v++) {
-    //    size_t base = v * BONE_WEIGHTS_SIZE;  // Use constant!
-    //    if (base + BONE_WEIGHTS_SIZE <= boneIds.size()) {
-    //        printf("V[%3zu] RAW boneIds=[%3d,%3d,%3d,%3d]\n", v,
-    //            boneIds[base + 0], boneIds[base + 1], boneIds[base + 2], boneIds[base + 3]);
-    //    }
-    //}
-    //printf("Vertices: %zu, Expected bones: %zu, Got boneIds: %zu\n",
-    //    vertices.size(), expectedSize, boneIds.size());
-
-
     StoreMeshData(GL_TRIANGLES);
 }
 
@@ -79,9 +55,7 @@ void ReadNodeHierarchy(Skeleton* skeleton, aiNode* node, Bone* parentBone) {
             parentBone->children.push_back(bone);
         }
 
-        // Debug print
-        std::cout << "Linked " << nodeName
-            << " parent: " << (parentBone ? parentBone->name : "ROOT") << std::endl;
+      
     }
 
     // Recurse children
@@ -102,7 +76,7 @@ void MeshComponent::LoadModel(const char* filename) {
     aiMesh* mesh = scene->mMeshes[0];
     vertices.clear(); normals.clear(); uvCoords.clear();
 
-    printf("Mesh vertices: %u, faces: %u\n", mesh->mNumVertices, mesh->mNumFaces);
+  //  printf("Mesh vertices: %u, faces: %u\n", mesh->mNumVertices, mesh->mNumFaces);
 
     std::vector<unsigned int> renderToUnique;
     for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
@@ -124,11 +98,11 @@ void MeshComponent::LoadModel(const char* filename) {
     if (mesh->HasBones()) {
         skeleton = std::make_unique<Skeleton>();
 
-        printf("Creating %u bones...\n", mesh->mNumBones);
+      //  printf("Creating %u bones...\n", mesh->mNumBones);
         int boneId = 0;
         for (unsigned int i = 0; i < mesh->mNumBones; i++) {
             aiBone* aiBone = mesh->mBones[i];
-            printf("Bone %2d: %s\n", boneId, aiBone->mName.C_Str());
+           // printf("Bone %2d: %s\n", boneId, aiBone->mName.C_Str());
 
             auto bone = std::make_unique<Bone>(aiBone, boneId);
             skeleton->boneMap[aiBone->mName.C_Str()] = bone.get();
@@ -159,7 +133,7 @@ void MeshComponent::LoadModel(const char* filename) {
             }
 
             unsigned int boneIndex = bone->id;
-            printf("Processing bone %d (%s): %u weights\n", boneIndex, aiBone->mName.C_Str(), aiBone->mNumWeights);
+       //     printf("Processing bone %d (%s): %u weights\n", boneIndex, aiBone->mName.C_Str(), aiBone->mNumWeights);
 
             for (unsigned int w = 0; w < aiBone->mNumWeights; w++) {
                 aiVertexWeight& weight = aiBone->mWeights[w];
@@ -179,9 +153,9 @@ void MeshComponent::LoadModel(const char* filename) {
             }
         }
 
-        printf("Total bone weights assigned: %d\n", assignedWeights);
+     //   printf("Total bone weights assigned: %d\n", assignedWeights);
 
-        // Normalize
+        // normalize
         for (size_t renderIdx = 0; renderIdx < vertices.size(); renderIdx++) {
             float sum = 0.0f;
             size_t start = renderIdx * BONE_WEIGHTS_SIZE;
@@ -195,23 +169,21 @@ void MeshComponent::LoadModel(const char* filename) {
             }
         }
 
-        // REPLACE the FINAL DEBUG section in LoadModel:
-        printf("=== FINAL BONE IDS ===\n");
-        printf("boneIds.size() = %zu, vertices.size() = %zu\n", boneIds.size(), vertices.size());
+        //printf("=== FINAL BONE IDS ===\n");
+        //printf("boneIds.size() = %zu, vertices.size() = %zu\n", boneIds.size(), vertices.size());
 
-        // **FIND vertices with Hips (bone 0) weights**
         int hipsFound = 0;
         for (size_t i = 0; i < vertices.size() && hipsFound < 10; i++) {
             size_t base = i * BONE_WEIGHTS_SIZE;
             if (boneIds[base + 0] == 0 || boneIds[base + 1] == 0 ||
                 boneIds[base + 2] == 0 || boneIds[base + 3] == 0) {
-                printf("V[%6zu] boneIds=[%2d,%2d,%2d,%2d]\n", i,
-                    boneIds[base + 0], boneIds[base + 1], boneIds[base + 2], boneIds[base + 3]);
+              //  printf("V[%6zu] boneIds=[%2d,%2d,%2d,%2d]\n", i,
+                //    boneIds[base + 0], boneIds[base + 1], boneIds[base + 2], boneIds[base + 3]);
                 hipsFound++;
             }
         }
         AnimatorComponent::queryAllAnimators(this);
-        printSkeleton(skeleton.get(), this);
+       // printSkeleton(skeleton.get(), this);
     }
 
     fullyLoaded = true;

@@ -7,7 +7,8 @@
 #include <iostream>
 #include <tuple>
 #include <string>
-
+#include "HierarchyWindow.h"
+#include "EditorManager.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "ColliderDebug.h"
@@ -63,7 +64,7 @@ void SceneGraph::meshLoadingWorker()
 
 		if (model) {
 
-			std::cout << "Loading Model: " << model->getMeshName() << std::endl;
+			//std::cout << "Loading Model: " << model->getMeshName() << std::endl;
 
 			model->InitializeMesh();
 
@@ -73,7 +74,7 @@ void SceneGraph::meshLoadingWorker()
 				});
 		}
 		else if (animation) {
-			std::cout << "Loading Animation: " << animation << std::endl;
+			//std::cout << "Loading Animation: " << animation << std::endl;
 
 			animation->InitializeAnimation();
 
@@ -324,6 +325,8 @@ bool SceneGraph::AddActor(Ref<Actor> actor)
 	// add the actor using ID as key
 	Actors[id] = actor;
 	ActorNameToId[name] = id;
+	
+	EditorManager::getInstance().UpdateActorHierarchy();
 
 	return true;
 }
@@ -651,6 +654,8 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 	Actors.erase(actorId);
 	ActorNameToId.erase(actorName);
 
+	EditorManager::getInstance().UpdateActorHierarchy();
+
 	return true;
 }
 
@@ -678,6 +683,8 @@ void SceneGraph::RemoveAllActors()
 
 	// clear the maps
 	Actors.clear();
+	EditorManager::getInstance().UpdateActorHierarchy();
+
 	ActorNameToId.clear();
 	debugSelectedAssets.clear();
 }
