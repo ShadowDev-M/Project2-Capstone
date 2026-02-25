@@ -3,11 +3,10 @@
 #define MAX_LIGHTS 4
 
 layout (location = 0) in vec3 vertNormal;
-layout (location = 1) in vec3 viewDir2;
-layout (location = 2) in vec2 textureCoords;
-layout (location = 3) in vec3 worldPos;
-layout (location = 4) in vec3 localPos;
-layout (location = 5) in vec3 localNormal;
+layout (location = 1) in vec2 textureCoords;
+layout (location = 2) in vec3 worldPos;
+layout (location = 3) in vec3 localPos;
+layout (location = 4) in vec3 localNormal;
 
 uniform vec3 cameraPos;
 

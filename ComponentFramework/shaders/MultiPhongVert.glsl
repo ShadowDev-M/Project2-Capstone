@@ -10,11 +10,10 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 layout (location = 0) out vec3 vertNormal;
-layout (location = 1) out vec3 eyeDir;
-layout (location = 2) out vec2 textureCoords;
-layout (location = 3) out vec3 worldPos;
-layout (location = 4) out vec3 localPos;
-layout (location = 5) out vec3 localNormal;
+layout (location = 1) out vec2 textureCoords;
+layout (location = 2) out vec3 worldPos;
+layout (location = 3) out vec3 localPos;
+layout (location = 4) out vec3 localNormal;
 
 void main() {
     localPos = vVertex.xyz;
@@ -27,7 +26,6 @@ void main() {
     vertNormal = normalize(normalMatrix * vNormal.xyz);
     
     vec3 eyePos = (viewMatrix * modelMatrix * vVertex).xyz;
-    eyeDir = normalize(-eyePos);
     
     worldPos = (modelMatrix * vVertex).xyz;  // Pass world pos to fragment
     
