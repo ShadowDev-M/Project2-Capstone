@@ -410,8 +410,11 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		std::string scriptName = XMLObjectFile::getComponent<ScriptComponent>(name_);
 		for (int i = 1; !scriptName.empty(); i++) {
 
-			actor_->AddComponent<ScriptComponent>(actor_.get(), AssetManager::getInstance().GetAsset<ScriptAbstract>(scriptName));
+			actor_->AddComponent<ScriptComponent>(actor_.get(), AssetManager::getInstance().GetAsset<ScriptAbstract>(scriptName), XMLObjectFile::getPublicVars(name_, i-1));
 			scriptName = XMLObjectFile::getComponent<ScriptComponent>(name_, i);
+
+
+
 
 			//in case of infinite error
 			if (i == 40) break;

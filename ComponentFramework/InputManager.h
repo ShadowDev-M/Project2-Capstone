@@ -253,6 +253,9 @@ public:
 
 	void debugInputCamSwap(std::vector<std::pair<SDL_Scancode, Ref<CameraComponent>>> inputMap, SceneGraph* sceneGraph);
 
+	bool debugClearDebugSelected(std::pair<KeyBinding, std::tuple<bool>> input, SceneGraph* sceneGraph);
+
+
 	/// Allows for a KeyInput to be associated to a translation of a sceneGraph's debug selections
 	bool debugTapInputTranslation(std::pair<KeyBinding, std::tuple<Vec3>> inputMap, SceneGraph* sceneGraph);
 

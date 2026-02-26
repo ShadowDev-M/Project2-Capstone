@@ -7,11 +7,25 @@
 #include "CollisionSystem.h"
 static std::vector<ScriptComponent*> scriptsInUse;
 
-ScriptComponent::ScriptComponent(Component* parent_, Ref<ScriptAbstract> baseScriptAsset) :
+ScriptComponent::ScriptComponent(Component* parent_, Ref<ScriptAbstract> baseScriptAsset, std::vector<float> pubVars_) :
 	Component(parent_), baseAsset(baseScriptAsset) {
 
 	if (baseScriptAsset) {
 		setFilenameFromAbstract(baseScriptAsset);
+	}
+
+
+	if (!pubVars_.empty()) {
+		
+		int i = 0;
+		for (auto& pair : publicVariables) {
+
+			if (i < pubVars_.size())
+				setPublicReference(pair.first, pubVars_[i]);
+
+
+			i++;
+		}
 	}
 }
 
@@ -486,7 +500,21 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 			}
 		}
 		
-		
+		if (!script->pubVars.empty()) {
+			int i = 0;
+			for (auto& pair : script->publicVariables) {
+
+				auto& obj = pair.second;
+
+				script->setPublicReference(pair.first, script->pubVars[i]);
+
+
+
+
+				i++;
+			}
+		}
+
 		script->restorePublicVars();
 
 	

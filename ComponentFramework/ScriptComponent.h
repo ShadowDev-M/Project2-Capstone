@@ -43,6 +43,7 @@ class ScriptComponent : public Component {
 
 	std::unordered_map<std::string, sol::object> publicVariables;
 
+	std::vector<float> pubVars;
 
 public:
 	void setLocal(const std::string& name, sol::object value);
@@ -71,7 +72,7 @@ public:
 
 
 	Ref<ScriptAbstract> getBaseAsset() { return baseAsset; }
-	ScriptComponent(Component* parent, Ref<ScriptAbstract> baseScriptAsset = 0);
+	ScriptComponent(Component* parent, Ref<ScriptAbstract> baseScriptAsset = 0, std::vector<float> pubVars_ = {});
 	virtual ~ScriptComponent();
 	
 	const std::string getPath() { return SCRIPTSPATH + filename; }

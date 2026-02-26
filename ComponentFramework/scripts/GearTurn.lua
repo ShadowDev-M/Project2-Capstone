@@ -1,5 +1,6 @@
 degrees = 0
 public speed = 10
+public test = 9
 
 function Start()
 
