@@ -3,6 +3,10 @@
 #include "ScriptAbstract.h"
 
 bool AssetManager::OnCreate() {
+
+    int* p = new int[3];
+
+    delete[] p;
 	std::cout << "Initialzing all assets: " << std::endl;
 
     /*if*/ (std::filesystem::create_directory("Asset Manager")) ;

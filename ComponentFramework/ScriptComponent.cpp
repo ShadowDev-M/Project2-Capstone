@@ -5,6 +5,9 @@
 #include "InputCreatorManager.h"
 #include "InputManager.h"
 #include "CollisionSystem.h"
+
+
+
 static std::vector<ScriptComponent*> scriptsInUse;
 
 ScriptComponent::ScriptComponent(Component* parent_, Ref<ScriptAbstract> baseScriptAsset, std::vector<float> pubVars_) :
@@ -104,7 +107,7 @@ void ScriptComponent::setPublicReference(const std::string refName, float ref)
 
 		publicVariables[refName] = lua.registry()[refName];
 		
-		std::cout << publicVariables[refName].as<float>() << std::endl;
+	//	std::cout << publicVariables[refName].as<float>() << std::endl;
 	}
 }
 
@@ -896,27 +899,33 @@ void ScriptService::callScriptCollision(Ref<ScriptComponent> script, Ref<Actor> 
 				switch (type) {
 
 				case CollisionDetectionState::Enter:
-					lua["OnCollisionEnter"](other);
+					if (lua["OnCollisionEnter"].valid())
+						lua["OnCollisionEnter"](other);
 
 					break;
 				case CollisionDetectionState::Stay:
-					lua["OnCollisionStay"](other);
+					if (lua["OnCollisionStay"].valid())
+						lua["OnCollisionStay"](other);
 
 					break;
 				case CollisionDetectionState::Exit:
-					lua["OnCollisionExit"](other);
+					if (lua["OnCollisionExit"].valid())
+						lua["OnCollisionExit"](other);
 
 					break;
 				case CollisionDetectionState::TriggerEnter:
-					lua["OnTriggerEnter"](other);
+					if (lua["OnTriggerEnter"].valid())
+						lua["OnTriggerEnter"](other);
 
 					break;
 				case CollisionDetectionState::TriggerStay:
-					lua["OnTriggerStay"](other);
+					if (lua["OnTriggerStay"].valid())
+						lua["OnTriggerStay"](other);
 
 					break;
 				case CollisionDetectionState::TriggerExit:
-					lua["OnTriggerExit"](other);
+					if (lua["OnTriggerExit"].valid())
+						lua["OnTriggerExit"](other);
 
 					break;
 				default:

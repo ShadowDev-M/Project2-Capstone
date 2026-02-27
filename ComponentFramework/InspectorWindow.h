@@ -2,6 +2,7 @@
 #include "SceneGraph.h"
 #include "ScriptComponent.h"
 #include "AnimatorComponent.h"
+#include "CollisionComponent.h"
 class InspectorWindow
 {
 	// delete the move and copy constructers
@@ -264,7 +265,8 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, PhysicsComponent>) {
 					if (pair.second->GetComponent<PhysicsComponent>()) {
-						pair.second->RemoveComponent<PhysicsComponent>();
+						PhysicsSystem::getInstance().RemoveActor(pair.second);
+						pair.second->DeleteComponent<PhysicsComponent>();
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
@@ -287,6 +289,12 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 				if constexpr (std::is_same_v<ComponentTemplate, AnimatorComponent>) {
 					if (pair.second->GetComponent<AnimatorComponent>()) {
 						pair.second->DeleteComponent<AnimatorComponent>();
+					}
+				}
+				if constexpr (std::is_same_v<ComponentTemplate, CollisionComponent>) {
+					if (pair.second->GetComponent<CollisionComponent>()) {
+						CollisionSystem::getInstance().RemoveActor(pair.second);
+						pair.second->DeleteComponent<CollisionComponent>();
 					}
 				}
 			}

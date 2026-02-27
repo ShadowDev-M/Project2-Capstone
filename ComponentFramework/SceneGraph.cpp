@@ -12,7 +12,6 @@
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "ColliderDebug.h"
-
 void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
 
 	if (!mesh->queryLoadStatus()) {
@@ -1157,6 +1156,7 @@ void SceneGraph::Preload(ScriptComponent* script){
 
 bool SceneGraph::OnCreate()
 {
+	float* test = new float(0);
 	// if an actor was setup wrong throw an error
 	for (auto& actor : Actors) {
 		if (!actor.second->OnCreate()) {
@@ -1170,3 +1170,4 @@ bool SceneGraph::OnCreate()
 
 	return true;
 }
+

@@ -776,7 +776,7 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 							ImGui::Text("%s:", pair.first.c_str());
 							ImGui::SameLine();
 							valChanged = ImGui::DragFloat("##FloatVar", &objVar,
-								0.1f, -10, 10);
+								0.1f, -1000, 1000);
 							if (valChanged) {
 								script->setPublicReference(pair.first, objVar);
 							}

@@ -6,6 +6,8 @@
 #include "ShaderComponent.h"
 #include "TransformComponent.h"
 #include "AnimatorComponent.h"
+#include "MemoryRecorder.h"
+
 using namespace tinyxml2;
 
 struct AssetKey
