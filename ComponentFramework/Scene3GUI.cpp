@@ -103,11 +103,12 @@ void Scene3GUI::Render() const {
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, usedCamera->GetViewMatrix());
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("cameraPos"), 1, usedCamera->GetUserActorTransform()->GetPosition());
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("viewMatrix"), 1, GL_FALSE, usedCamera->GetViewMatrix());
-
+	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("cameraPos"), 1, usedCamera->GetUserActorTransform()->GetPosition());
 
 	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
