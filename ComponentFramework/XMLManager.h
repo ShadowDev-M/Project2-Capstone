@@ -748,6 +748,67 @@ public:
 
 
 
+    static inline std::vector<float> getPublicVars(std::string name, int copy = 0) {
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+
+        const char* id = path.c_str();
+
+        XMLDocument doc;
+
+        std::string componentType = static_cast<std::string>(typeid(ScriptComponent).name()).substr(6);
+
+
+        XMLError eResult = doc.LoadFile(id);
+        if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
+            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
+        }
+
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* component = cRoot->FirstChildElement(componentType.c_str());
+
+
+        if (copy > 0) {
+            //when you want a different copy, find that
+            if (cRoot->ChildElementCount(componentType.c_str()) > copy) {
+
+                for (int i = 0; i < copy && component != nullptr; i++) {
+                    component = component->NextSiblingElement(componentType.c_str());
+                }
+            }
+            else {
+
+                return std::vector<float>{};
+            }
+        }
+
+
+
+        std::vector<float> pubVars;
+
+        int index = 0;
+        while (true) {
+            std::string strIndexName = "e" + std::to_string(index);
+            const char* cStrIndex = strIndexName.c_str();
+
+            if (component->FindAttribute(cStrIndex) != nullptr) {
+                float var = component->FindAttribute(cStrIndex)->FloatValue();
+                pubVars.push_back(var);
+            }
+            else { break; }
+            
+            index++;
+        }
+
+        //return the asset reference in AssetManager named in element
+        return pubVars;
+    }
+
+
+
+
     ///Simplify FindAttribute() implimentation for coding convenience
     static inline float GetAttrF(XMLElement* element, const char* name) {
         return element->FindAttribute(name)->FloatValue();
@@ -1126,6 +1187,7 @@ public:
 
 
 
+
     /// <summary>
     /// Used to write the specific asset's name/key as an actor's used component in XML file. 
     /// NOT USED FOR TRANSFORM COMPONENT OR PHYSICS COMPONENT, YOU ARE LOOKING FOR writeUniqueComponent()
@@ -1135,72 +1197,7 @@ public:
     /// <param name="toWrite">component to be written</param>
     /// <returns></returns>
     template<typename ComponentTemplate>
-    static int writeReferenceComponent(std::string name, Ref<Component> toWrite) {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
-        const char* id = path.c_str();
-
-
-
-        XMLDocument doc;
-
-        //try loading the file into doc
-        XMLError eResult = doc.LoadFile(id);
-        if (eResult != XML_SUCCESS) {
-#ifdef _DEBUG
-            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
-#endif
-            return eResult;
-        }
-
-
-
-        std::cout << "Found file to write: " << name << std::endl;
-
-        XMLNode* cRoot = doc.RootElement();
-
-        std::string componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
-
-
-        XMLElement* componentElement = cRoot->FirstChildElement(componentType.c_str());
-        if (componentElement) {
-            std::cout << "Found component (Deleting): " << name << std::endl;
-
-            componentElement->DeleteChildren();
-        }
-        std::cout << "Creating Element: " << componentType << std::endl;
-
-        componentElement = doc.NewElement(componentType.c_str());
-
-
-        AssetManager& assetMgr = AssetManager::getInstance();
-
-
-        std::string assetStringName = assetMgr.getAssetName(toWrite);
-
-        const char* assetName = assetStringName.c_str();
-
-        //Add the cstr name as attribute
-        componentElement->SetAttribute("name", assetName);
-
-
-
-
-        cRoot->InsertEndChild(componentElement);
-        doc.Print();
-
-        XMLError eResultSave = doc.SaveFile(id);
-
-        if (eResultSave != XML_SUCCESS) {
-#ifdef _DEBUG
-            std::cerr << "Error saving file: " << eResultSave << std::endl;
-#endif
-            return -1;
-        }
-
-        std::cout << "Save game written to '" << name << ".xml'\n";
-
-        return 0;
-    }
+    static int writeReferenceComponent(std::string name, Ref<Component> toWrite); 
 
     /// <summary>
     /// Used to check if an actor has a specific type of component in their XML file

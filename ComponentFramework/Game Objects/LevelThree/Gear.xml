@@ -8,6 +8,5 @@
     <MeshComponent name="SM_Gear1"/>
     <MaterialComponent name="M_Moon"/>
     <ShaderComponent name="S_Multi"/>
-    <ScriptComponent name="GearTurn"/>
-    <ScriptComponent name="GearTurn"/>
+    <ScriptComponent name="GearTurn" e0="5.0999999" e1="4.5999999"/>
 </Actor>

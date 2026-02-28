@@ -757,11 +757,13 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 				}
 
 				std::unordered_map<std::string, sol::object> pubRefMap = script->getPublicReferences();
+				int id = 0;
 
 				for (auto& pair : pubRefMap) {
 
 					auto& obj = pair.second;
-						
+					ImGui::PushID(id);
+
 					if (pair.second.is<float>()) {
 
 						float objVar = pair.second.as<float>();
@@ -774,7 +776,7 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 							ImGui::Text("%s:", pair.first.c_str());
 							ImGui::SameLine();
 							valChanged = ImGui::DragFloat("##FloatVar", &objVar,
-								0.1f, -10, 10);
+								0.1f, -1000, 1000);
 							if (valChanged) {
 								script->setPublicReference(pair.first, objVar);
 							}
@@ -785,9 +787,10 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 						
 
 					}
+					id++;
 					
-					
-					
+					ImGui::PopID(); 
+
 					
 				}
 

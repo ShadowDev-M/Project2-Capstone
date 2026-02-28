@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "XMLManager.h"
 #include "ScriptComponent.h"
+#include <memory>
+
 void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute) {
        
 
@@ -342,3 +344,102 @@ void SceneGraph::SaveFile(std::string name) const {
 
 
 }
+
+
+
+template<typename ComponentTemplate>
+inline int XMLObjectFile::writeReferenceComponent(std::string name, Ref<Component> toWrite)
+{
+    std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+    const char* id = path.c_str();
+
+
+
+    XMLDocument doc;
+
+    //try loading the file into doc
+    XMLError eResult = doc.LoadFile(id);
+    if (eResult != XML_SUCCESS) {
+#ifdef _DEBUG
+        std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
+#endif
+        return eResult;
+    }
+
+
+
+    std::cout << "Found file to write: " << name << std::endl;
+
+    XMLNode* cRoot = doc.RootElement();
+
+    std::string componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
+
+
+    XMLElement* componentElement = cRoot->FirstChildElement(componentType.c_str());
+    if (componentElement) {
+        std::cout << "Found component (Deleting): " << name << std::endl;
+
+        componentElement->DeleteChildren();
+    }
+    std::cout << "Creating Element: " << componentType << std::endl;
+
+    componentElement = doc.NewElement(componentType.c_str());
+
+
+    AssetManager& assetMgr = AssetManager::getInstance();
+
+
+    std::string assetStringName = assetMgr.getAssetName(toWrite);
+
+    const char* assetName = assetStringName.c_str();
+
+    //Add the cstr name as attribute
+    componentElement->SetAttribute("name", assetName);
+    const char* cStrIndex = "0";
+
+    if (componentType == "ScriptComponent") {
+
+        Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(SceneGraph::getInstance().GetActor(name)->GetComponent<ScriptComponent>());
+
+        std::unordered_map<std::string, sol::object> pubRefMap = script->getPublicReferences();
+        
+
+
+
+        int index = 0;
+
+        
+
+        for (auto& pair : pubRefMap) {
+
+            std::string strIndexName = "e" + std::to_string(index);
+            const char* cStrIndex = strIndexName.c_str();
+            float var = pair.second.as<float>();
+
+            componentElement->SetAttribute(cStrIndex, var);
+            index++;
+        }
+
+
+
+    }
+
+
+    cRoot->InsertEndChild(componentElement);
+    doc.Print();
+
+    XMLError eResultSave = doc.SaveFile(id);
+
+    if (eResultSave != XML_SUCCESS) {
+#ifdef _DEBUG
+        std::cerr << "Error saving file: " << eResultSave << std::endl;
+#endif
+        return -1;
+    }
+
+    std::cout << "Save game written to '" << name << ".xml'\n";
+
+    return 0;
+}
+
+    

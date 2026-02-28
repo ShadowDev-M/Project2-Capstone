@@ -10,6 +10,7 @@
 #include "LightComponent.h"
 #include "ScriptComponent.h"
 #include "AnimatorComponent.h"
+#include "MemoryRecorder.h"
 
 #include "ScriptAbstract.h"
 #include <mutex>

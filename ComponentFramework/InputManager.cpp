@@ -24,6 +24,8 @@ InputManager::InputManager()
 	pool.bindingPool.push_back(PoolBindObject());
 	pool.bindingPool.push_back(PoolBindObject());
 	pool.bindingPool.push_back(PoolBindObject());
+	pool.bindingPool.push_back(PoolBindObject());
+
 	/*pool.bindingPool.push_back(PoolBindObject());
 	pool.bindingPool.push_back(PoolBindObject());
 	pool.bindingPool.push_back(PoolBindObject());
@@ -36,6 +38,7 @@ InputManager::InputManager()
 	pool.bindingPool[1].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_S, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(0,-1,0) };
 	pool.bindingPool[2].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_A, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(-1,0,0) };
 	pool.bindingPool[3].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_D, SDL_SCANCODE_LCTRL }, BINDFUNCTION<&InputManager::debugTapInputTranslation>(this), Vec3(1,0,0) };
+	pool.bindingPool[4].bindingPtr = new FunctionKeyBinding<bool>{ { SDL_SCANCODE_ESCAPE }, BINDFUNCTION<&InputManager::debugClearDebugSelected>(this), true };
 
 	/*pool.bindingPool[4].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_W }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(0,1,0) };
 	pool.bindingPool[5].bindingPtr = new FunctionKeyBinding<Vec3>{ { SDL_SCANCODE_S }, BINDFUNCTION<&InputManager::debugCamInputTranslation>(this), Vec3(0,-1,0) };
@@ -155,6 +158,17 @@ void InputManager::debugInputCamSwap(std::vector<std::pair<SDL_Scancode, Ref<Cam
 			}
 		}
 	}
+}
+
+bool InputManager::debugClearDebugSelected(std::pair<KeyBinding, std::tuple<bool>> input, SceneGraph* sceneGraph)
+{
+	bool condition = std::get<0>(input.second);
+
+	if (keyboard.isPressed(input.first[0])) {
+		SceneGraph::getInstance().debugSelectedAssets.clear();
+		return true;
+	}
+	return false;
 }
 
 bool InputManager::debugTapInputTranslation(std::pair<KeyBinding, std::tuple<Vec3>> inputMap, SceneGraph* sceneGraph)

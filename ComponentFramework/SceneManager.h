@@ -1,6 +1,8 @@
 #ifndef SCENEMANAGER_H
 #define SCENEMANAGER_H
 
+
+
 class SceneManager {
 public:
 
@@ -35,3 +37,5 @@ private:
 
 
 #endif // SCENEMANAGER_H
+
+

@@ -230,6 +230,9 @@
     <ClInclude Include="QuadraticSolver.h">
       <Filter>Header Files\Tools</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryRecorder.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -372,6 +375,9 @@
     </ClCompile>
     <ClCompile Include="QuadraticSolver.cpp">
       <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryRecorder.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

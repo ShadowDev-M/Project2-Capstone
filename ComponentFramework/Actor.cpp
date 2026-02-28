@@ -218,3 +218,7 @@ bool Actor::GetIntersectTriangles(Vec3 start, Vec3 dir, Vec3* intersectSpot) {
 
 
 	
+#ifdef _DEBUG
+#define DEBUG_NEW new(__FILE__, __LINE__)
+#define new DEBUG_NEW
+#endif
