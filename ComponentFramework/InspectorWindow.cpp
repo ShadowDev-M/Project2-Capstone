@@ -528,7 +528,7 @@ void InspectorWindow::DrawMeshComponent(const std::unordered_map<uint32_t, Ref<A
 
 	if (meshState.noneHaveComponent) return;
 
-	if (ImGui::CollapsingHeader("Mesh"), ImGuiTreeNodeFlags_DefaultOpen) {
+	if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
 		RightClickContext<MeshComponent>("##MeshPopup", sceneGraph->debugSelectedAssets);
 
 
@@ -590,7 +590,7 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 
 	if (materialState.noneHaveComponent) return;
 
-	if (ImGui::CollapsingHeader("Material"), ImGuiTreeNodeFlags_DefaultOpen) {
+	if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
 		RightClickContext<MaterialComponent>("##MaterialPopup", sceneGraph->debugSelectedAssets);
 
 		if (materialState.allHaveComponent && materialState.Count() == 1) {
@@ -665,7 +665,7 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 
 	if (cameraState.noneHaveComponent) return;
 
-	if (ImGui::CollapsingHeader("Camera")) {
+	if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
 		RightClickContext<CameraComponent>("##CameraPopup", selectedActors_);
 		
 		Ref<CameraComponent> camera = cameraState.GetFirst();
@@ -731,7 +731,7 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 			ImGui::PushID(id);
 			id++;
 
-			if (ImGui::CollapsingHeader("Script"), ImGuiTreeNodeFlags_DefaultOpen) {
+			if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen)) {
 				RightClickContext<ScriptComponent>("##ScriptPopup", sceneGraph->debugSelectedAssets);
 
 				ImGui::TextWrapped("Script Name: %s", script->getName().c_str());
@@ -809,7 +809,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 	if (animatorState.noneHaveComponent) return;
 
 	for (auto& animator : selectedActors_.begin()->second->GetAllComponent<AnimatorComponent>()) {
-		if (ImGui::CollapsingHeader("AnimatorComponent")) {
+		if (ImGui::CollapsingHeader("AnimatorComponent", ImGuiTreeNodeFlags_DefaultOpen)) {
 			RightClickContext<AnimatorComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
 
 			ImGuiChildFlags detailsFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY;
@@ -946,7 +946,7 @@ void InspectorWindow::DrawLightComponent(const std::unordered_map<uint32_t, Ref<
 
 	if (lightState.noneHaveComponent) return;
 
-	if (ImGui::CollapsingHeader("Light")) {
+	if (ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen)) {
 		RightClickContext<LightComponent>("##LightPopup", selectedActors_);
 
 		Ref<LightComponent> light = lightState.GetFirst();
@@ -1084,7 +1084,7 @@ void InspectorWindow::DrawShaderComponent(const std::unordered_map<uint32_t, Ref
 
 	if (shaderState.noneHaveComponent) return;
 
-	if (ImGui::CollapsingHeader("Shader"), ImGuiTreeNodeFlags_DefaultOpen) {
+	if (ImGui::CollapsingHeader("Shader", ImGuiTreeNodeFlags_DefaultOpen)) {
 		RightClickContext<ShaderComponent>("##ShaderPopup", selectedActors_);
 
 		// one actor selected

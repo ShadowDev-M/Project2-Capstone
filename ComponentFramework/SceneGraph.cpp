@@ -690,7 +690,6 @@ void SceneGraph::RemoveAllActors()
 	ActorNameToId.clear();
 	debugSelectedAssets.clear();
 }
-static double testval = 0.0;
 
 void SceneGraph::Update(const float deltaTime)
 {
@@ -1156,7 +1155,6 @@ void SceneGraph::Preload(ScriptComponent* script){
 
 bool SceneGraph::OnCreate()
 {
-	float* test = new float(0);
 	// if an actor was setup wrong throw an error
 	for (auto& actor : Actors) {
 		if (!actor.second->OnCreate()) {

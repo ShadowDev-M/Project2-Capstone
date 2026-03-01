@@ -21,7 +21,7 @@ float Timer::GetDeltaTime() const {
 }
 
 unsigned int Timer::GetSleepTime(const unsigned int fps_) const {
-	unsigned int milliSecsPerFrame = 10 / fps_;
+	unsigned int milliSecsPerFrame = 1000 / fps_;
 	if (milliSecsPerFrame == 0) {
 		return 0;
 	}
