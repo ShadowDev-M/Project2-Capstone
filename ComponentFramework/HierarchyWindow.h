@@ -31,13 +31,10 @@ private:
 
 	// recursive function for actually rendering/drawing the nodes
 	void DrawActorNode(const std::string& actorName_, HierarchyNode& node);
-	
-	void UpdateHierarchyNode(const std::string& actorName_);
-
 
 	// recursive functions that help with selecting and searching for a child node
-	bool HasFilteredChild(Component* parent);
-	bool HasSelectedChild(Component* parent);
+	bool HasFilteredChild(const HierarchyNode& node);
+	bool HasSelectedChild(const HierarchyNode& node);
 
 	// refactored function to get a map of all child actors
 	std::unordered_map<std::string, HierarchyNode> SetChildNodesRecurse(HierarchyNode& node);

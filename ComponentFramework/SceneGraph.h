@@ -232,6 +232,7 @@ public:
 
 
 	bool OnCreate();
+	void OnDestroy();
 
 	void SetDrawMode(GLenum drawMode_) { drawMode = drawMode_; }
 

@@ -64,9 +64,6 @@ private:
 
 	RenameOperation pendingRename;
 
-	bool refreshHierarchy = false;
-	bool refreshInspector = false;
-
 	// save and load dialogs
 	struct SaveLoadDialog {
 		bool showSaveDialog = false;
@@ -80,9 +77,8 @@ private:
 	void ShowLoadDialog();
 
 	void RenderMainMenuBar();
-
-	// ImVec4 clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
+	void RenderEditorToolbar();
+	void EditorStyleColors();
 
 	// helper functions dealing with window management
 	bool IsWindowOpen(const std::string& windowName_) const {

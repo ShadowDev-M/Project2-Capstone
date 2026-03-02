@@ -162,7 +162,7 @@ private:
 	const float thumbnailSize = 64;
 
 	// line width for allignment
-	const float labelWidth = 130.0f;
+	const float labelWidth = 80.0f;
 
 	bool scaleLock = false;
 

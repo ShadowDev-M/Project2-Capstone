@@ -158,18 +158,7 @@ SceneGraph::SceneGraph()
 
 SceneGraph::~SceneGraph()
 {
-	//end the mesh loading thread
-	
-
-	RemoveAllActors();
-	pickerShader->OnDestroy();
-	glDeleteFramebuffers(1, &pickingFBO);
-	glDeleteRenderbuffers(1, &pickingDepth);
-	glDeleteTextures(1, &pickingTexture);
-
-	glDeleteFramebuffers(1, &dockingFBO);
-	glDeleteRenderbuffers(1, &dockingDepth);
-	glDeleteTextures(1, &dockingTexture);
+	OnDestroy();
 }
 
 void SceneGraph::useDebugCamera()
@@ -251,9 +240,7 @@ void SceneGraph::ValidateAllLights()
 	if (lightActors.size() != 0) {
 		for (std::vector<Ref<Actor>>::iterator it = lightActors.begin(); it != lightActors.end(); ++it) {
 			if (!(*it)->ValidateLight()) {
-
-				lightActors.erase(it);
-
+				lightActors.erase(std::remove_if(lightActors.begin(), lightActors.end(), [](const Ref<Actor>& actor) { return !actor->ValidateLight(); }), lightActors.end());
 			}
 		}
 	}
@@ -1167,5 +1154,20 @@ bool SceneGraph::OnCreate()
 
 
 	return true;
+}
+
+void SceneGraph::OnDestroy() {
+	//end the mesh loading thread
+	stopMeshLoadingWorker();
+
+	RemoveAllActors();
+	pickerShader->OnDestroy();
+	glDeleteFramebuffers(1, &pickingFBO);
+	glDeleteRenderbuffers(1, &pickingDepth);
+	glDeleteTextures(1, &pickingTexture);
+
+	glDeleteFramebuffers(1, &dockingFBO);
+	glDeleteRenderbuffers(1, &dockingDepth);
+	glDeleteTextures(1, &dockingTexture);
 }
 

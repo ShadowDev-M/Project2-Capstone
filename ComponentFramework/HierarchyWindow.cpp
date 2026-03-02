@@ -12,6 +12,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 	if (EditorManager::getInstance().HasPendingRename()) {
 		auto [oldName, newName] = EditorManager::getInstance().ConsumePendingRename();
 		sceneGraph->RenameActor(oldName, newName);
+		UpdateHierarchyNextFrame();
 	}
 
 	if (ImGui::Begin("Hierarchy", pOpen, ImGuiWindowFlags_MenuBar)) {
@@ -53,8 +54,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 				newActor->AddComponent<TransformComponent>(newActor.get(), Vec3(0.0f, 0.0f, 0.0f),
 					Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 				newActor->OnCreate();
-				sceneGraph->AddActor(newActor);
-				//UpdateHierarchyGraph();
+				sceneGraph->AddActor(newActor);	
 			}
 			
 			ImGui::EndPopup();
@@ -94,44 +94,34 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 			
 			if (payload->IsDataType("ACTOR_NODE") && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
 
-				// check for empty window space
 				if (!ImGui::IsAnyItemHovered()) {
-					
-					// so two options here: 
-					// first, I have a button that appears when an actor is being dragging and use that to unparent, not fun but "shouldnt" break ImGui::Button("Unparent", ImVec2(-1, 0))
-					// OR the fun approach, make it so the empty space below all the actors unparents (only issue with this is that if there are too many actors there won't be any empty space... but that wont happen surely)
-					
-					ImVec2 availSpace = ImGui::GetContentRegionAvail();
-					if (availSpace.y > 0) {
-						ImGui::Dummy(availSpace);
+					// creating padding for invis button
+					ImGui::Dummy(ImVec2(0.0f, 5.0f));
+					ImGui::InvisibleButton("##Unparent", ImVec2(ImGui::GetContentRegionAvail().x, 50.0f));
 
-						if (ImGui::BeginDragDropTarget()) {
-							const ImGuiPayload* acceptedPayload = ImGui::AcceptDragDropPayload("ACTOR_NODE");
+					if (ImGui::BeginDragDropTarget()) {
+						const ImGuiPayload* acceptedPayload = ImGui::AcceptDragDropPayload("ACTOR_NODE");
 
-							if (acceptedPayload) {
-								const char* draggedActorName = static_cast<const char*>(acceptedPayload->Data);
+						if (acceptedPayload) {
+							const char* draggedActorName = static_cast<const char*>(acceptedPayload->Data);
 
-								Ref<Actor> draggedActor = sceneGraph->GetActor(draggedActorName);
+							Ref<Actor> draggedActor = sceneGraph->GetActor(draggedActorName);
 
-								if (draggedActor && !draggedActor->isRootActor()) {
+							if (draggedActor && !draggedActor->isRootActor()) {
 
-									if (sceneGraph->debugSelectedAssets.size() != 0) {
-										for (auto& obj : sceneGraph->debugSelectedAssets) {
-											obj.second->unparent();
-										}
-									}	
+								if (sceneGraph->debugSelectedAssets.size() != 0) {
+									for (auto& obj : sceneGraph->debugSelectedAssets) {
+										obj.second->unparent();
+									}
 								}
-
 							}
-							changeMade = true;
-
-
-							ImGui::EndDragDropTarget();
+							UpdateHierarchyNextFrame();
 						}
+
+						ImGui::EndDragDropTarget();
 					}
-
-
 				}
+
 			}
 		}
 
@@ -147,6 +137,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 
 void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode& node)
 {
+	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.26f, 0.59f, 0.98f, 0.31f));
 
 	Ref<Actor> actor_ = node.nodeActor;
 
@@ -158,11 +149,11 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 	// show selection if node is selected
 	bool showSelection = true;
 	if (showOnlySelected) {
-		showSelection = isSelected || HasSelectedChild(actor_.get());
+		showSelection = isSelected || HasSelectedChild(node);
 	}
 
 	// show if node appears in filter
-	bool showFilter = nodeFilter || HasFilteredChild(actor_.get());
+	bool showFilter = nodeFilter || HasFilteredChild(node);
 
 	// draw node if it is selected and/or in filter
 	if (!showSelection || !showFilter) {
@@ -208,9 +199,6 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 	if (ImGui::BeginPopupContextItem("##ActorContext")) {
 		if (ImGui::MenuItem("Duplicate")) {
 			DuplicateActor(actor_);
-			//UpdateHierarchyGraph();
-			changeMade = true;
-
 		}
 		ImGui::Separator();
 		if (ImGui::MenuItem("Delete")) {
@@ -220,8 +208,6 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 
 			sceneGraph->RemoveActor(actorName_);
 			sceneGraph->checkValidCamera();
-			//UpdateHierarchyGraph();
-			changeMade = true;
 
 		}
 		ImGui::EndPopup();
@@ -235,6 +221,7 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 	}
 
 	ImGui::PopID();
+	ImGui::PopStyleColor();
 }
 
 
@@ -303,7 +290,7 @@ void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 		sceneGraph->AddActor(parentActor);
 	}
 
-	changeMade = true;
+	UpdateHierarchyNextFrame();
 }
 
 Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor> original_) {
@@ -436,7 +423,7 @@ void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> a
 				}
 			}
 	
-			changeMade = true;
+			UpdateHierarchyNextFrame();
 		}
 
 		ImGui::EndDragDropTarget();
@@ -444,27 +431,27 @@ void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> a
 	}
 }
 
-bool HierarchyWindow::HasFilteredChild(Component* parent)
+bool HierarchyWindow::HasFilteredChild(const HierarchyNode& node)
 {
 
-	for (const auto& child : hierarchyGraph) {
+	for (const auto& child : node.children) {
 		if (filter.PassFilter(child.first.c_str())) { return true; } 
 
 		// recursive check to see if the child has children
-		if (HasFilteredChild(child.second.nodeActor.get())) { return true; }
+		if (HasFilteredChild(child.second)) { return true; }
 	}
 
 	return false;
 }
 
-bool HierarchyWindow::HasSelectedChild(Component* parent)
+bool HierarchyWindow::HasSelectedChild(const HierarchyNode& node)
 {
 
-	for (const auto& child : hierarchyGraph) {
+	for (const auto& child : node.children) {
 		if (sceneGraph->debugSelectedAssets.find(child.second.nodeActor->getId()) != sceneGraph->debugSelectedAssets.end()) { return true; }
 
 		// recursive check to see if the child has children
-		if (HasSelectedChild(child.second.nodeActor.get())) { return true; }
+		if (HasSelectedChild(child.second)) { return true; }
 	}
 
 	return false;

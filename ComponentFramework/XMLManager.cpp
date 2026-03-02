@@ -273,6 +273,8 @@ bool SceneGraph::RenameActor(const std::string& oldName_, const std::string& new
 void SceneGraph::SaveFile(std::string name) const {
     XMLObjectFile::writeCellFile(name);
 
+    XMLObjectFile::writeSceneTags(name, allTags);
+
     for (auto& obj : ActorNameToId) {
 
         XMLObjectFile::writeActor(obj.first);

@@ -54,6 +54,52 @@ public:
         return 0;
     }
 
+    static int writeSceneTags(const std::string& sceneName, const std::vector<std::string>& tags)
+    {
+        std::string path = "Cell Files/" + sceneName + ".xml";
+        XMLDocument doc;
+
+        XMLError eResult = doc.LoadFile(path.c_str());
+        if (eResult != XML_SUCCESS) return eResult;
+
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* existing = cRoot->FirstChildElement("Tags");
+        if (existing) cRoot->DeleteChild(existing);
+
+        XMLElement* tagsElement = doc.NewElement("Tags");
+        for (const std::string& tag : tags) {
+            XMLElement* tagElement = doc.NewElement("Tag");
+            tagElement->SetAttribute("value", tag.c_str());
+            tagsElement->InsertEndChild(tagElement);
+        }
+        cRoot->InsertFirstChild(tagsElement);
+
+        return doc.SaveFile(path.c_str());
+    }
+
+    static std::vector<std::string> readSceneTags(const std::string& sceneName)
+    {
+        std::string path = "Cell Files/" + sceneName + ".xml";
+        std::vector<std::string> tags;
+        
+        XMLDocument doc;
+        if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return tags;
+
+        XMLNode* cRoot = doc.RootElement();
+        if (!cRoot) return tags;
+
+        XMLElement* tagsElement = cRoot->FirstChildElement("Tags");
+        if (!tagsElement) return tags;
+
+        for (XMLElement* tag = tagsElement->FirstChildElement("Tag"); tag != nullptr; tag = tag->NextSiblingElement("Tag")) {
+            const char* val = tag->Attribute("value");
+            if (val) tags.push_back(val);
+        }
+
+        return tags;
+    }
+
     static int writeActorTag(const std::string& actorName, const std::string& tag)
     {
         std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + actorName + ".xml";

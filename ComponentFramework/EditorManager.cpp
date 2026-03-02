@@ -27,12 +27,15 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 	//io.IniFilename = nullptr; // if this error (Assertion failed: DockContextFindNodeByID(ctx, id) == 0) ever shows up again uncoment this line 
 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplSDL2_InitForOpenGL(window_, context_);
 	ImGui_ImplOpenGL3_Init();
+
+	// Apply custum editor style
+	//EditorStyleColors();
 
 	// if scenegraph exists, initalize all the windows
 	if (sceneGraph) {
@@ -114,99 +117,19 @@ void EditorManager::RenderEditorUI() {
 	ImGui::Begin("DockSpace", nullptr, window_flags);
 	ImGui::PopStyleVar();
 
+	// TODO: fix so it doesn't have to be stuck inbetween the dockspace
+	RenderEditorToolbar();
+
 	// Create the dockspace
 	ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
-
-	ImVec2 buttonSize = ImVec2(32, 32);
-	float width = ImGui::GetWindowSize().x;
-	float centreButtonPos = (width - buttonSize.x) / 2;
-
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 0.0f });
-
-	ImGui::SetCursorPosX(centreButtonPos);
-
-	// background color 0.102f
-
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.314f, 0.314f, 0.314f, 1.0f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.467f, 0.467f, 0.467f, 1.0f));
-
-	if (isEditMode()) {
-		if (ImGui::ImageButton("##PlayButton", ImTextureID(editorIcons.playIcon->getDiffuseID()), buttonSize)) {
-			if (SceneGraph::getInstance().isAllComponentsLoaded()) {
-				SetEditorMode(EditorMode::Play);
-
-			// on play, save data to a temporary save file
-			//std::filesystem::create_directory("Game Objects/" + tempSaveFile);
-			//sceneGraph->SaveFile(tempSaveFile);
-
-					sceneGraph->Start();
-					pendingFocusScene = true;
-					Ref<Actor> camera = sceneGraph->GetActor("CamTest");
-					sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
-			}
-		}
-	}
-	else if (isPlayMode() || isPaused()) {
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.298f, 0.373f, 0.471f, 1.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
-		if (ImGui::ImageButton("##StopButton", ImTextureID(editorIcons.stopIcon->getDiffuseID()), buttonSize)) {
-			SetEditorMode(EditorMode::Edit);
-			sceneGraph->Stop();
-
-			sceneGraph->RemoveAllActors();
-			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
-			//XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
-			
-			sceneGraph->setUsedCamera(nullptr);
-			sceneGraph->checkValidCamera();
-			sceneGraph->OnCreate();
-			sceneGraph->useDebugCamera();
-
-			// removing temporary save file data
-			//std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
-			//std::filesystem::remove_all("Game Objects/" + tempSaveFile);
-		}
-
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-	}
-	
-	ImGui::SameLine();
-	
-	ImGui::ImageButton("##PauseButton", ImTextureID(editorIcons.pauseIcon->getDiffuseID()), buttonSize);
-	
-	ImGui::SameLine();
-
-	if (isEditMode() || isPlayMode()) {
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
-
-		ImGui::ImageButton("##StepButton", ImTextureID(editorIcons.stepIcon->getDiffuseID()), buttonSize);
-
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-	}
-
-	ImGui::PopStyleVar();
-
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
 
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 	ImGui::End();
 
 	// render all the windows and dialogs
 	RenderMainMenuBar();
-
-	/*if (showDemoWindow) {
-		ImGui::ShowDemoWindow(&showDemoWindow);
-	}*/
+	ShowSaveDialog();
+	ShowLoadDialog();
 
 	if (IsWindowOpen("Hierarchy") && hierarchyWindow) {
 		hierarchyWindow->ShowHierarchyWindow(GetWindowStatePtr("Hierarchy"));
@@ -221,9 +144,6 @@ void EditorManager::RenderEditorUI() {
 		sceneWindow->ShowSceneWindow(GetWindowStatePtr("Scene"));
 	}
 
-	ShowSaveDialog();
-	ShowLoadDialog();
-
 	if (pendingFocusScene) {
 		ImGui::SetWindowFocus("Scene");
 		pendingFocusScene = false;
@@ -233,6 +153,173 @@ void EditorManager::RenderEditorUI() {
 	ImGui::Render();
 	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void EditorManager::RenderEditorToolbar()
+{
+	ImVec2 buttonSize = ImVec2(32, 32);
+	float width = ImGui::GetWindowSize().x;
+	float centreButtonPos = (width - buttonSize.x) / 2;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 1.0f, 0.0f });
+
+	ImGui::SetCursorPosX(centreButtonPos);
+
+	if (isEditMode()) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.314f, 0.314f, 0.314f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.467f, 0.467f, 0.467f, 1.0f));
+		
+		if (ImGui::ImageButton("##PlayButton", ImTextureID(editorIcons.playIcon->getDiffuseID()), buttonSize)) {
+			if (SceneGraph::getInstance().isAllComponentsLoaded()) {
+				SetEditorMode(EditorMode::Play);
+
+				// on play, save data to a temporary save file
+				//std::filesystem::create_directory("Game Objects/" + tempSaveFile);
+				//sceneGraph->SaveFile(tempSaveFile);
+
+				sceneGraph->Start();
+				pendingFocusScene = true;
+				Ref<Actor> camera = sceneGraph->GetActor("CamTest");
+				sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
+			}
+		}
+
+		ImGui::PopStyleColor(3);
+	}
+	else if (isPlayMode() || isPaused()) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.298f, 0.373f, 0.471f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
+		if (ImGui::ImageButton("##StopButton", ImTextureID(editorIcons.stopIcon->getDiffuseID()), buttonSize)) {
+			SetEditorMode(EditorMode::Edit);
+			sceneGraph->Stop();
+
+			sceneGraph->RemoveAllActors();
+			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
+			//XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
+
+			sceneGraph->setUsedCamera(nullptr);
+			sceneGraph->checkValidCamera();
+			sceneGraph->OnCreate();
+			sceneGraph->useDebugCamera();
+
+			// removing temporary save file data
+			//std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
+			//std::filesystem::remove_all("Game Objects/" + tempSaveFile);
+		}
+
+		ImGui::PopStyleColor(3);
+	}
+
+	ImGui::SameLine();
+
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.314f, 0.314f, 0.314f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.467f, 0.467f, 0.467f, 1.0f));
+	ImGui::ImageButton("##PauseButton", ImTextureID(editorIcons.pauseIcon->getDiffuseID()), buttonSize);
+	ImGui::PopStyleColor(3);
+
+	ImGui::SameLine();
+
+	if (isEditMode() || isPlayMode()) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.208f, 0.208f, 0.208f, 1.0f));
+
+		ImGui::ImageButton("##StepButton", ImTextureID(editorIcons.stepIcon->getDiffuseID()), buttonSize);
+
+		ImGui::PopStyleColor(3);
+	}
+
+	ImGui::PopStyleVar();
+}
+
+void EditorManager::EditorStyleColors()
+{
+	// using imgui style colors dark as baseline
+	//ImGui::StyleColorsDark();
+	
+	ImGuiStyle* style = &ImGui::GetStyle();
+	ImVec4* colors = style->Colors;
+		
+	// making everything a bit rounded so its not as rigid
+	//style->WindowRounding
+	
+	
+	// going for a more unity/greyish color scheme
+
+	//colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	//colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+	//colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.2f, 0.22f, 1.0f);
+	//colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	//colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+	//colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+	//colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_FrameBg] = ImVec4(0.165f, 0.165f, 0.165f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.467f, 0.467f, 0.467f, 1.0f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.357f, 0.447f, 0.569f, 1.0f);
+	
+	colors[ImGuiCol_TitleBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+
+	//colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+	//colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+	
+	//colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+	//colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+	//colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+	//colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+	colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 1.0f, 1.0f, 1.00f);
+	//colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+	//colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	
+	colors[ImGuiCol_Button] = ImVec4(0.165f, 0.165f, 0.165f, 1.00f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.467f, 0.467f, 0.467f, 1.0f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.357f, 0.447f, 0.569f, 1.0f);
+	
+	colors[ImGuiCol_Header] = ImVec4(0.32f, 0.32f, 0.32f, 0.5f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(0.467f, 0.467f, 0.467f, 1.0f);
+	colors[ImGuiCol_HeaderActive] = ImVec4(0.357f, 0.447f, 0.569f, 1.0f);
+	
+	colors[ImGuiCol_Separator] = colors[ImGuiCol_Border];
+	colors[ImGuiCol_SeparatorHovered] = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
+	colors[ImGuiCol_SeparatorActive] = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
+	colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.59f, 0.98f, 0.20f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+	colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+	//colors[ImGuiCol_InputTextCursor] = colors[ImGuiCol_Text];
+	
+	//colors[ImGuiCol_TabHovered] = colors[ImGuiCol_HeaderHovered];
+	//colors[ImGuiCol_Tab] = ImLerp(colors[ImGuiCol_Header], colors[ImGuiCol_TitleBgActive], 0.80f);
+	//colors[ImGuiCol_TabSelected] = ImLerp(colors[ImGuiCol_HeaderActive], colors[ImGuiCol_TitleBgActive], 0.60f);
+	//colors[ImGuiCol_TabSelectedOverline] = colors[ImGuiCol_HeaderActive];
+	//colors[ImGuiCol_TabDimmed] = ImLerp(colors[ImGuiCol_Tab], colors[ImGuiCol_TitleBg], 0.80f);
+	//colors[ImGuiCol_TabDimmedSelected] = ImLerp(colors[ImGuiCol_TabSelected], colors[ImGuiCol_TitleBg], 0.40f);
+	//colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.50f, 0.50f, 0.50f, 0.00f);
+	//colors[ImGuiCol_DockingPreview] = colors[ImGuiCol_HeaderActive] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
+	
+	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+	colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+	colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+	colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+	colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+	colors[ImGuiCol_TableBorderStrong] = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);   // Prefer using Alpha=1.0 here
+	colors[ImGuiCol_TableBorderLight] = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);   // Prefer using Alpha=1.0 here
+	colors[ImGuiCol_TableRowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+	colors[ImGuiCol_TextLink] = colors[ImGuiCol_HeaderActive];
+	colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+	colors[ImGuiCol_TreeLines] = colors[ImGuiCol_Border];
+	colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+	colors[ImGuiCol_DragDropTargetBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_UnsavedMarker] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	colors[ImGuiCol_NavCursor] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+	
 }
 
 // mostly the same from the original but I updated the some visuals so it looks nicer
@@ -314,6 +401,12 @@ void EditorManager::ShowLoadDialog() {
 		if (ImGui::Button("Load File") && canLoad) {
 			if (sceneGraph) {
 				sceneGraph->RemoveAllActors();
+				
+				std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(sceneGraph->cellFileName);
+				for (const auto& tag : sceneTags) {
+					sceneGraph->addTag(tag);
+				}
+
 				XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
 				sceneGraph->setUsedCamera(nullptr);
 				sceneGraph->checkValidCamera();

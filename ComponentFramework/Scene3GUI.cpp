@@ -32,6 +32,11 @@ bool Scene3GUI::OnCreate() {
 	//AssetManager::getInstance().ListAllAssets();
 	//SceneGraph::getInstance().ListAllActors();
 
+	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(SceneGraph::getInstance().cellFileName);
+	for (const auto& tag : sceneTags) {
+		SceneGraph::getInstance().addTag(tag);
+	}
+
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
 
 	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Mario"));
