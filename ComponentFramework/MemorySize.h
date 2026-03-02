@@ -5,12 +5,11 @@
 
 extern size_t MEMORY_NUMUSEDBYTES;
 
-
-
 struct AllocationInfo {
     std::size_t size;
     const char* file;
     int line;
+    bool stale;
 };
 
 inline std::unordered_map<void*, AllocationInfo>& GetAllocMap() {
@@ -18,6 +17,11 @@ inline std::unordered_map<void*, AllocationInfo>& GetAllocMap() {
     return allocMap;
 }
 
+inline void MemoryStale() {
+    for (auto& pair : GetAllocMap()) {
+        pair.second.stale = true;
+    }
+}
 
 inline void ReportLeaks() {
     auto& map = GetAllocMap();

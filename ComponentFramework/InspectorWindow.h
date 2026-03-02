@@ -222,7 +222,7 @@ private:
 
 	// right click popup menu
 	template <typename ComponentTemplate>
-	void RightClickContext(const char* popupName_, const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
+	void RightClickContext(const char* popupName_, const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_, int copy = 0);
 
 public:
 	explicit InspectorWindow(SceneGraph* sceneGraph_);
@@ -232,7 +232,7 @@ public:
 };
 
 template<typename ComponentTemplate>
-inline void InspectorWindow::RightClickContext(const char* popupName_, const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
+inline void InspectorWindow::RightClickContext(const char* popupName_, const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_, int copy)
 {
 	if (ImGui::BeginPopupContextItem(popupName_)) {
 		ComponentState<ComponentTemplate> componentState(selectedActors_);
@@ -275,8 +275,9 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, ScriptComponent>) {
-					if (pair.second->GetComponent<ScriptComponent>()) {
-						pair.second->DeleteComponent<ScriptComponent>();
+					auto scripts = pair.second->GetAllComponent<ScriptComponent>();
+					if (!scripts.empty()) {
+						pair.second->DeleteComponent<ScriptComponent>(copy);
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {

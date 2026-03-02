@@ -41,7 +41,9 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 		inspectorWindow = std::make_unique<InspectorWindow>(sceneGraph);
 		assetManagerWindow = std::make_unique<AssetManagerWindow>(sceneGraph);
 		sceneWindow = std::make_unique<SceneWindow>(sceneGraph);
-	
+		memoryWindow = std::make_unique<MemoryManagerWindow>(sceneGraph);
+
+
 		CreateEditorIcons();
 	}
 
@@ -63,7 +65,7 @@ void EditorManager::Shutdown() {
 	inspectorWindow.reset();
 	assetManagerWindow.reset();
 	sceneWindow.reset();
-
+	memoryWindow.reset();
 	windowStates.clear();
 
 	// Cleanup ImGui
@@ -156,6 +158,10 @@ void EditorManager::RenderEditorUI() {
 			sceneGraph->Stop();
 
 			sceneGraph->RemoveAllActors();
+
+			//Make the memory stale so we can see if its potentially a leak
+			MemoryStale();
+
 			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
 			//XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
 			
@@ -220,6 +226,10 @@ void EditorManager::RenderEditorUI() {
 	if (IsWindowOpen("Scene") && sceneWindow) {
 		sceneWindow->ShowSceneWindow(GetWindowStatePtr("Scene"));
 	}
+	if (IsWindowOpen("Memory") && memoryWindow) {
+		memoryWindow->ShowMemoryManagerWindow(GetWindowStatePtr("Memory"));
+	}
+
 
 	ShowSaveDialog();
 	ShowLoadDialog();
@@ -314,6 +324,10 @@ void EditorManager::ShowLoadDialog() {
 		if (ImGui::Button("Load File") && canLoad) {
 			if (sceneGraph) {
 				sceneGraph->RemoveAllActors();
+
+				//set active memory to stale for later comparison
+				MemoryStale();
+
 				XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
 				sceneGraph->setUsedCamera(nullptr);
 				sceneGraph->checkValidCamera();
@@ -369,6 +383,8 @@ void EditorManager::RenderMainMenuBar() {
 			ImGui::MenuItem("Inspector", nullptr, GetWindowStatePtr("Inspector"));
 			ImGui::MenuItem("Asset Manager", nullptr, GetWindowStatePtr("AssetManager"));
 			ImGui::MenuItem("Scene", nullptr, GetWindowStatePtr("Scene"));
+			ImGui::MenuItem("Memory Manager", nullptr, GetWindowStatePtr("Memory"));
+
 			ImGui::EndMenu();
 		}
 

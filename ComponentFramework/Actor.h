@@ -167,34 +167,12 @@ public:
 
 	bool DeinitalizeLight();
 
-	// Added this function previously but realized since the components are shared if I remove a component and several actors share that component it just deletes the component, 
-	// However this function can still be used later on when components are created in the scene and need to be deleted
+
 	template<typename ComponentTemplate>
-	void DeleteComponent() {
-		if (typeid(ComponentTemplate).name() == "LightComponent") {
-			DeinitalizeLight();
-		}
-		/// check if the component exists
-		if (GetComponent<ComponentTemplate>().get() == nullptr) {
-#ifdef _DEBUG
-			std::cerr << "WARNING: Trying to remove a component type that does not exist - ignored\n";
-#endif
-			return;
-		}
-		/// Finish building the component and add the component to the list 
+	void DeleteComponent(int copy = 0);
 
-		GetComponent<ComponentTemplate>()->OnDestroy();
 
-		if (GetComponent<ComponentTemplate>()) {
-
-			auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
-			if (it != components.end()) {
-				components.erase(it);
-			}
-
-		}
-		
-	}
+	
 	// Removes the component from the actor
 	// DOES NOT CALL OnDestroy, USE THIS FUNCTION FOR SHARED COMPONENTS, USE DeleteComponent FOR EVERYTHING ELSE
 	template<typename ComponentTemplate>
@@ -284,3 +262,50 @@ public:
 	}
 };
 
+// Added this function previously but realized since the components are shared if I remove a component and several actors share that component it just deletes the component, 
+	// However this function can still be used later on when components are created in the scene and need to be deleted
+template<typename ComponentTemplate>
+void Actor::DeleteComponent( int copy) {
+	if (typeid(ComponentTemplate).name() == "LightComponent") {
+		DeinitalizeLight();
+	}
+	/// check if the component exists
+	if (GetComponent<ComponentTemplate>().get() == nullptr) {
+#ifdef _DEBUG
+		std::cerr << "WARNING: Trying to remove a component type that does not exist - ignored\n";
+#endif
+		return;
+	}
+	/// Finish building the component and add the component to the list 
+
+
+	if (GetComponent<ComponentTemplate>()) {
+		std::vector<Ref<Component>>::iterator it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
+
+		if (copy != 0) {
+			std::vector<Ref<ComponentTemplate>> componentsCopy = GetAllComponent<ComponentTemplate>();
+
+			if (copy >= componentsCopy.size()) {
+#ifdef _DEBUG
+				std::cerr << "WARNING: Trying to remove a component type copy that does not exist - ignored\n";
+#endif
+				return;
+			}
+
+			it = std::find(components.begin(), components.end(), componentsCopy.at(copy));
+
+		}
+		
+		
+		
+
+		if (it != components.end()) {
+			it.operator*()->OnDestroy();
+
+			components.erase(it);
+		}
+	}
+
+	
+
+}

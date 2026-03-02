@@ -731,8 +731,8 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 			ImGui::PushID(id);
 			id++;
 
-			if (ImGui::CollapsingHeader("Script"), ImGuiTreeNodeFlags_DefaultOpen) {
-				RightClickContext<ScriptComponent>("##ScriptPopup", sceneGraph->debugSelectedAssets);
+			if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen)) {
+				RightClickContext<ScriptComponent>("##ScriptPopup", sceneGraph->debugSelectedAssets, id-1);
 
 				ImGui::TextWrapped("Script Name: %s", script->getName().c_str());
 

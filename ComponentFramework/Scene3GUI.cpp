@@ -61,6 +61,7 @@ void Scene3GUI::OnDestroy() {
 	SceneGraph::getInstance().RemoveAllActors();
 
 	AudioManager::getInstance().Shutdown();
+	MemoryStale();
 }
 
 void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
