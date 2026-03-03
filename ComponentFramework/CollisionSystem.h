@@ -150,7 +150,7 @@ private:
 	
 	// raycast helper functions
 	bool checkInfiniteCylinder(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit);
-	bool checkEndSphere(const Vec3& origin, const Vec3& direction, const Vec3& axisDirection, Ref<Actor> actor_, RaycastHit& hit);
+	bool checkEndSphere(const Vec3& origin, const Vec3& direction, const Vec3& capCentre, const Vec3& axisDirection, Ref<Actor> actor_, RaycastHit& hit);
 
 	// helper functions from Real-Time Collision Detetcion book
 	float ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q2, float& s, float& t, Vec3& c1, Vec3& c2);

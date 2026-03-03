@@ -13,11 +13,6 @@ void CollisionSystem::AddActor(Ref<Actor> actor_) {
 		return;
 	}
 
-	if (actor_->GetComponent<PhysicsComponent>().get() == nullptr) {
-		Debug::Error("The Actor must have a PhysicsComponent - ignored ", __FILE__, __LINE__);
-		return;
-	}
-
 	// additional check to make sure not adding duplicate actors
 	if (std::find(collidingActors.begin(), collidingActors.end(), actor_) != collidingActors.end()) {
 		Debug::Warning("Actor already added to CollisionSystem", __FILE__, __LINE__);
@@ -35,21 +30,29 @@ void CollisionSystem::RemoveActor(Ref<Actor> actor_) {
 	}
 
 	// removing collison pairs
-	auto pairIt = currentCollidingActors.begin();
-	while (pairIt != currentCollidingActors.end()) {
-		if (pairIt->idA == actor_->getId() || pairIt->idB == actor_->getId()) {
-			pairIt = currentCollidingActors.erase(pairIt);
+	uint32_t id = actor_->getId();
+
+	// lambda to clear pair sets
+	auto clearPairSet = [&](std::set<CollidedPair>& pairSet) {
+		auto pairIt = pairSet.begin();
+		while (pairIt != pairSet.end()) {
+			if (pairIt->idA == id || pairIt->idB == id) {
+				pairIt = pairSet.erase(pairIt);
+			}
+			else {
+				pairIt++;
+			}
 		}
-		else {
-			pairIt++;
-		}
-	}
+	};
+
+	clearPairSet(currentCollidingActors);
+	clearPairSet(previousCollidingActors);
 }
 
 void CollisionSystem::ClearActors() {
 	collidingActors.clear();
-	//currentCollidingActors.clear();
-	//previousCollidingActors.clear();
+	currentCollidingActors.clear();
+	previousCollidingActors.clear();
 }
 
 bool CollisionSystem::CollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionData& data)
@@ -458,7 +461,7 @@ bool CollisionSystem::SphereSphereDiscrete(Ref<Actor> s1, Ref<Actor> s2, Collisi
 		// 13.3.1 Colliding Two Spheres Ian Millington
 		data.isColliding = true;
 		data.contactNormal = VMath::normalize(d);
-		data.contactPoint = CC1->getWorldCentre(TC1) + d * VMath::mag(d) * 0.5f;
+		data.contactPoint = CC2->getWorldCentre(TC2) + data.contactNormal * CC2->getWorldRadius(TC2);
 		data.penetration = radiusSum - VMath::mag(d);
 
 		return true;
@@ -506,7 +509,7 @@ bool CollisionSystem::SphereSphereContinuous(Ref<Actor> s1, Ref<Actor> s2, Colli
 	float b = 2.0f * VMath::dot(m, v / vlen);
 	float c = VMath::dot(m, m) - (r * r);
 	// Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
-	if (c > 0.0f && b > 0.0f) return 0;
+	if (c > 0.0f && b > 0.0f) return false;
 	float discr = b * b - 4.0f * a * c;
 	// A negative discriminant corresponds to ray missing sphere
 	if (discr < 0.0f) return false;
@@ -730,7 +733,7 @@ bool CollisionSystem::AABBAABBDiscrete(Ref<Actor> aabb1, Ref<Actor> aabb2, Colli
 
 	// which vertex would lie closest to the first box. This is the vertex it uses to generate the contact point
 	Vec3 overlapMin(std::max(minA.x, minB.x), std::max(minA.y, minB.y), std::max(minA.z, minB.z));
-	Vec3 overlapMax(std::min(minA.x, minB.x), std::min(minA.y, minB.y), std::min(minA.z, minB.z));
+	Vec3 overlapMax(std::min(maxA.x, maxB.x), std::min(maxA.y, maxB.y), std::min(maxA.z, maxB.z));
 	data.contactPoint = (overlapMin + overlapMax) * 0.5f;
 
 	return true;
@@ -919,7 +922,7 @@ bool CollisionSystem::SphereCapsuleContinuous(Ref<Actor> s, Ref<Actor> c, Collis
 
 	// trying to find the earlist moment of collision
 	float tmin = 0.0f;
-	float tmax = prevS * deltaTime;
+	float tmax = deltaTime;
 
 	for (int i = 0; i < 10; i++) {
 		float T = (tmin + tmax) * 0.5f;
@@ -1336,7 +1339,7 @@ bool CollisionSystem::CapsuleAABBDiscrete(Ref<Actor> c, Ref<Actor> ab, Collision
 		bestDist2 = dist2B;
 	}
 	
-	if (dist2 <= (cRadius * cRadius)) {
+	if (bestDist2 <= (cRadius * cRadius)) {
 		float dist = sqrt(bestDist2);
 		data.isColliding = true;
 
@@ -2029,30 +2032,42 @@ bool CollisionSystem::RaycastCapsule(const Vec3& origin, const Vec3& direction, 
 	Vec3 axisDirection = VMath::normalize(axis);
 
 	RaycastHit cylinderHit;
-
+	bool isCylinderHit = false;
 	if (checkInfiniteCylinder(origin, direction, actor_, cylinderHit)) {
 		Vec3 AP = cylinderHit.intersectionPoint - centrePosA;
 		float proj = VMath::dot(AP, axisDirection);
 		if (proj >= 0.0f && proj <= cylinderheight) {
-			hit = cylinderHit;
-			return true;
+			isCylinderHit = true;
 		}
 	}
 
 	RaycastHit sphereHitA;
 	RaycastHit sphereHitB;
-	if (checkEndSphere(origin, direction, axisDirection, actor_, sphereHitA) && checkEndSphere(origin, direction, axisDirection, actor_, sphereHitB)) {
-		hit = (sphereHitA.t < sphereHitB.t) ? sphereHitA : sphereHitB;
-		return true;
+	bool isCapAHit = checkEndSphere(origin, direction, centrePosA, -axisDirection, actor_, sphereHitA);
+	bool isCapBHit = checkEndSphere(origin, direction, centrePosB, axisDirection, actor_, sphereHitB);
+
+	float bestT = FLT_MAX;
+	RaycastHit bestHit;
+	bool anyHit = false;
+
+	if (isCylinderHit && cylinderHit.t < bestT) {
+		bestT = cylinderHit.t;
+		bestHit = cylinderHit;
+		anyHit = true;
+	}
+	if (isCapAHit && sphereHitA.t < bestT) {
+		bestT = sphereHitA.t;
+		bestHit = sphereHitA;
+		anyHit = true;
+	}
+	if (isCapBHit && sphereHitB.t < bestT) {
+		bestT = sphereHitB.t;
+		bestHit = sphereHitB;
+		anyHit = true;
 	}
 
-	if (checkEndSphere(origin, direction, axisDirection, actor_, sphereHitA)) {
-		hit = sphereHitA;
-		return true;
-	}
-
-	if (checkEndSphere(origin, direction, axisDirection, actor_, sphereHitB)) {
-		hit = sphereHitB;
+	if (anyHit) {
+		hit = bestHit;
 		return true;
 	}
 
@@ -2219,19 +2234,18 @@ bool CollisionSystem::checkInfiniteCylinder(const Vec3& origin, const Vec3& dire
 	return false;
 }
 
-bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, const Vec3& axisDirection, Ref<Actor> actor_, RaycastHit& hit)
+bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, const Vec3& capCentre, const Vec3& axisDirection, Ref<Actor> actor_, RaycastHit& hit)
 {
 	Ref<TransformComponent> TC = actor_->GetComponent<TransformComponent>();
 	Ref<CollisionComponent> CC = actor_->GetComponent<CollisionComponent>();
 
-	Vec3 centre = CC->getWorldCentre(TC);
 	float radius = CC->getWorldCapsuleRadius(TC);
 
 	// Reference: Real Time Collisions 5.3.2 Intersecting Ray or Segment Against Sphere
 	Vec3 p = origin;
 	Vec3 d = direction;
 
-	Vec3 m = p - centre;
+	Vec3 m = p - capCentre;
 
 	float a = VMath::dot(d, d);
 	float b = 2.0f * VMath::dot(m, d);
@@ -2240,10 +2254,14 @@ bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, 
 	QuadraticSolution solver;
 	solver.solveQuadratic(a, b, c);
 
+	bool hitFound = false;
+	float bestT = FLT_MAX;
+
 	// checks to make sure the ray is positive
 	if (solver.numSolutions == NumSolutions::one) {
 		if (solver.firstSolution > 0.0f) { //
-			hit.t = solver.firstSolution;
+			bestT = solver.firstSolution;
+			hitFound = true;
 		}
 	}
 	// if there are two intersection points, get the smallest positive ray
@@ -2254,22 +2272,27 @@ bool CollisionSystem::checkEndSphere(const Vec3& origin, const Vec3& direction, 
 		float t2 = solver.secondSolution;
 
 		if (t1 > 0.0f && t2 > 0.0f) {
-			hit.t = std::min(t1, t2);
+			bestT = std::min(t1, t2);
+			hitFound = true;
 		}
 		else if (t1 > 0.0f) {
-			hit.t = t1;
+			bestT = t1;
+			hitFound = true;
 		}
 		else if (t2 > 0.0f) {
-			hit.t = t2;
+			bestT = t2;
+			hitFound = true;
 		}
 	}
 
-	if (hit.t < FLT_MAX) {
+	if (hitFound) {
 		//rayInfo.intersectionPoint = p + rayInfo.t * d;
-		hit.intersectionPoint = p + hit.t * d;
-
-		Vec3 hitTo = hit.intersectionPoint - centre;
-		if (VMath::dot(hitTo, axisDirection)) {
+		Vec3 point = p + bestT * d;
+		Vec3 hitTo = point - capCentre;
+		
+		if (VMath::dot(hitTo, axisDirection) >= 0.0f) {
+			hit.t = bestT;
+			hit.intersectionPoint = point;
 			hit.normal = VMath::normalize(hitTo);
 			hit.isIntersected = true;
 			hit.hitActor = actor_;
@@ -2320,7 +2343,7 @@ float CollisionSystem::ClosestPtSegmentSegment(Vec3 p1, Vec3 q1, Vec3 p2, Vec3 q
 			float denom = a * e - b * b; // Always nonnegative
 			// If segments not parallel, compute closest point on L1 to L2 and
 			// clamp to segment S1. Else pick arbitrary s (here 0)
-			if (denom != 0.0f) {
+			if (fabs(denom) > VERY_SMALL) {
 				s = std::max(0.0f, std::min(1.0f, (b * f - c * e) / denom));
 			}
 			else s = 0.0f;

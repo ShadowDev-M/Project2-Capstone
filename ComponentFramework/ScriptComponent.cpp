@@ -329,8 +329,7 @@ void ScriptService::updateAllScripts(float deltaTime) {
 		if (script->filename.empty()) continue;
 
 
-		// TODO: remove line if not needed to load scripts every frame (this only gets called when in play mode)
-		sol::load_result loaded_script = lua.load(script->code);
+
 
 
 		

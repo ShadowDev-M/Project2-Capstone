@@ -149,7 +149,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				}
 				if (ImGui::Selectable("Light Component")) {
 					if (!selectedActor->second->GetComponent<LightComponent>()) {
-						selectedActor->second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f);
+						selectedActor->second->AddComponent<LightComponent>();
 						sceneGraph->AddLight(selectedActor->second);
 						
 					}
@@ -314,7 +314,9 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 		newActorName = oldActorName;
 	}
 
+	ImGui::AlignTextToFramePadding();
 	ImGui::InputText("##ActorHeader", &newActorName);
+	ImGui::SetNextItemWidth(-1);
 
 	// passes the rename inforamtion over to the editor manager (editor manager then passes it to the hierarchy window) 
 	if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -332,8 +334,7 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 	// can also add tags too
 	ImGui::AlignTextToFramePadding();
 	ImGui::Text("Tag");
-	ImGui::SameLine(labelWidth);
-	ImGui::SetNextItemWidth(-1);
+	ImGui::SameLine(labelWidth - 20);
 
 	std::vector<std::string>& allTags = sceneGraph->getAllTags();
 	const std::string& currentTag = actor_->getTag();
@@ -347,21 +348,79 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 		}
 	}
 
-	// building the dropdown menu for the tags
-	
 	// converting strings to cstrings (imgui dropdown expect cstrings)
 	std::vector<const char*> tagCStr;
 	tagCStr.reserve(allTags.size());
 	for (auto& tag : allTags) {
 		tagCStr.push_back(tag.c_str());
 	}
-
+	
+	ImGui::SetNextItemWidth(117);
+	// building the dropdown menu for the tags
 	if (ImGui::Combo("##TagDropdown", &currentTagIndex, tagCStr.data(), (int)tagCStr.size())) {
 		actor_->setTag(allTags[currentTagIndex]);
 	}
 
+	ImGui::SameLine();
+	// add tag popup button
+	if (ImGui::Button("+##AddTag", ImVec2(30.0f, 0.0f))) {
+		ImGui::OpenPopup("##TagManager");
+		tagBuffer.clear();
+	}
+
 	// add or remove tag 
-	
+	if (ImGui::BeginPopup("##TagManager")) {
+		ImGui::Text("Scene Tags");
+		ImGui::Separator();
+
+		int removeTagIndex = -1;
+		for (int i = 0; i < (int)allTags.size(); i++) {
+			ImGui::PushID(i);
+
+			// untagged is the default tag, so can't remove that
+			bool isDefault = (allTags[i] == "Untagged");
+			if (isDefault) ImGui::BeginDisabled();
+
+			if (ImGui::SmallButton("X")) {
+				removeTagIndex = i;
+			}
+
+			if (isDefault) ImGui::EndDisabled();
+
+			ImGui::SameLine();
+			ImGui::Text("%s", allTags[i].c_str());
+			ImGui::PopID();
+		}
+
+		if (removeTagIndex >= 0) {
+			// check to remove tag from actor using removed tag
+			for (const auto& pair : sceneGraph->getAllActors()) {
+				if (pair.second->getTag() == allTags[removeTagIndex]) {
+					pair.second->setTag("Untagged");
+				}
+			}
+			sceneGraph->removeTag(allTags[removeTagIndex]);
+		}
+
+		ImGui::Separator();
+
+		ImGui::SetNextItemWidth(labelWidth);
+		ImGui::InputText("##NewTag", &tagBuffer);
+
+		ImGui::SameLine();
+
+		bool canAdd = !tagBuffer.empty();
+		if (!canAdd) ImGui::BeginDisabled();
+
+		if (ImGui::Button("Add")) {
+			sceneGraph->addTag(tagBuffer);
+			tagBuffer.clear();
+		}
+		
+		if (!canAdd) ImGui::EndDisabled();
+
+		ImGui::EndPopup();
+	}
 }
 
 void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_)
@@ -818,7 +877,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 		if (ImGui::CollapsingHeader("AnimatorComponent", ImGuiTreeNodeFlags_DefaultOpen)) {
 			RightClickContext<AnimatorComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
 
-			ImGuiChildFlags detailsFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY;
+			ImGuiChildFlags detailsFlags = ImGuiChildFlags_Borders;
 			if (ImGui::BeginChild("details_panel", ImVec2(0, 150), detailsFlags)) {
 				if (ImGui::CollapsingHeader("Animation Clip")) {
 
@@ -836,7 +895,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 					{
 						ImGui::AlignTextToFramePadding();
 						ImGui::Text("Current Time");
-						ImGui::SameLine(labelWidth + 40);
+						ImGui::SameLine(labelWidth + 30);
 						ImGui::SetNextItemWidth(-1);
 						bool currentTimeChanged = false;
 
@@ -866,7 +925,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 					{
 						ImGui::AlignTextToFramePadding();
 						ImGui::Text("Start Time");
-						ImGui::SameLine(labelWidth + 40);
+						ImGui::SameLine(labelWidth + 30);
 						ImGui::SetNextItemWidth(-1);
 						bool startTimeChanged = false;
 
@@ -897,7 +956,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 						ImGui::AlignTextToFramePadding();
 						ImGui::Text("Speed Multi");
-						ImGui::SameLine(labelWidth + 40);
+						ImGui::SameLine(labelWidth + 30);
 						ImGui::SetNextItemWidth(-1);
 						speedMultChanged = ImGui::DragFloat("##SpeedMult", &speedMult,
 							0.1f, -10, 10);
@@ -914,7 +973,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 					{
 						ImGui::AlignTextToFramePadding();
 						ImGui::Text("Loop");
-						ImGui::SameLine(labelWidth + 40);
+						ImGui::SameLine(labelWidth + 30);
 						ImGui::SetNextItemWidth(-1);
 
 						bool isLooping = animator->getLoopingState();
@@ -928,7 +987,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 					ImGui::AlignTextToFramePadding();
 					ImGui::Text("Name");
-					ImGui::SameLine(labelWidth + 40);
+					ImGui::SameLine(labelWidth + 30);
 					ImGui::SetNextItemWidth(-1);
 					if (animator->hasAnim()) 
 						ImGui::Text(animator->getAnimName().c_str());
@@ -1067,37 +1126,25 @@ void InspectorWindow::DrawLightComponent(const std::unordered_map<uint32_t, Ref<
 		isEditingIntensity = ImGui::IsItemActive();
 		ImGui::ActiveItemLockMousePos();
 
-		if (ImGui::Button("Light Type##Button", ImVec2(-1, 0))) {
-			ImGui::OpenPopup("Light Type");
-		}
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Type");
+		ImGui::SameLine(labelWidth);
+		ImGui::SetNextItemWidth(-1);
 
-		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 800, mainViewport->WorkPos.y - 600), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
+		// Light Type 
+		LightType currentType = lightState.GetFirst()->getType();
 
-		if (ImGui::BeginPopupModal("Light Type", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::Text("Select a Light Type");
-			// TODO search bar
-			ImGui::Separator();
+		// creating a dropdown, tracking current type name
+		const char* typeModes[] = { "Sky", "Point" };
+		int typeIndex = static_cast<int>(currentType);
 
-			if (ImGui::Selectable("Sky Light")) {
-				for (auto& component : lightState.components) {
-					component->setType(LightType::Sky);
-				}
+		// dropdown for types
+		if (ImGui::Combo("##LightTypes", &typeIndex, typeModes, 2)) {
+			LightType newType = static_cast<LightType>(typeIndex);
+
+			for (auto& component : lightState.components) {
+				component->setType(newType);
 			}
-			if (ImGui::Selectable("Point Light")) {
-				for (auto& component : lightState.components) {
-					component->setType(LightType::Point);
-				}
-			}
-
-			ImGui::Separator();
-
-			if (ImGui::Button("Cancel")) {
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
 		}
 	}
 	ImGui::Separator();
@@ -1169,7 +1216,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("State");
-		ImGui::SameLine(labelWidth + 40);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 
 		// Physics State
@@ -1194,7 +1241,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			// Mass
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Mass");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			bool hasMixedMass = physicsState.HasMixedFloat(&PhysicsComponent::getMass);
@@ -1218,7 +1265,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			// Drag
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Drag");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			bool hasMixedDrag = physicsState.HasMixedFloat(&PhysicsComponent::getDrag);
@@ -1265,7 +1312,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			// Apply gravity
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Use Gravity");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			bool useGravity = physicsState.GetFirst()->getUseGravity();
@@ -1280,7 +1327,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		// Friction
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Friction");
-		ImGui::SameLine(labelWidth + 40);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 
 		bool hasMixedFriction = physicsState.HasMixedFloat(&PhysicsComponent::getFriction);
@@ -1304,7 +1351,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		// Restitution 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Restitution");
-		ImGui::SameLine(labelWidth + 40);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 
 		bool hasMixedRestitution = physicsState.HasMixedFloat(&PhysicsComponent::getRestitution);
@@ -1331,8 +1378,8 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			bool changed = false;
 
 			ImGui::AlignTextToFramePadding();
-			ImGui::Text("Freeze Position");
-			ImGui::SameLine(labelWidth + 60);
+			ImGui::Text("Position");
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			bool freezePosX = constraints.freezePosX, freezePosY = constraints.freezePosY, freezePosZ = constraints.freezePosZ;
@@ -1340,20 +1387,24 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 				constraints.freezePosX = freezePosX;
 				changed = true;
 			}
+			ImGui::AlignTextToFramePadding();
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(-1);
 			if (ImGui::Checkbox("Y##Pos", &freezePosY)) {
 				constraints.freezePosY = freezePosY;
 				changed = true;
 			}
+			ImGui::AlignTextToFramePadding();
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(-1);
 			if (ImGui::Checkbox("Z##Pos", &freezePosZ)) {
 				constraints.freezePosZ = freezePosZ;
 				changed = true;
 			}
 
 			ImGui::AlignTextToFramePadding();
-			ImGui::Text("Freeze Rotation");
-			ImGui::SameLine(labelWidth + 60);
+			ImGui::Text("Rotation");
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			bool freezeRotX = constraints.freezeRotX, freezeRotY = constraints.freezeRotY, freezeRotZ = constraints.freezeRotZ;
@@ -1361,12 +1412,16 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 				constraints.freezeRotX = freezeRotX;
 				changed = true;
 			}
+			ImGui::AlignTextToFramePadding();
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(-1);
 			if (ImGui::Checkbox("Y##Rot", &freezeRotY)) {
 				constraints.freezeRotY = freezeRotY;
 				changed = true;
 			}
+			ImGui::AlignTextToFramePadding();
 			ImGui::SameLine();
+			ImGui::SetNextItemWidth(-1);
 			if (ImGui::Checkbox("Z##Rot", &freezeRotZ)) {
 				constraints.freezeRotZ = freezeRotZ;
 				changed = true;
@@ -1406,7 +1461,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Shape");
-		ImGui::SameLine(labelWidth + 40);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 
 		// Collision Type 
@@ -1427,7 +1482,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Detection");
-		ImGui::SameLine(labelWidth + 40);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 
 		// Collision State
@@ -1449,7 +1504,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 		// is trigger
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Is Trigger");
-		ImGui::SameLine(labelWidth + 40);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 
 		bool isTrigger = collisionState.GetFirst()->getIsTrigger();
@@ -1464,7 +1519,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 			// Radius
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Radius");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			bool hasMixedRadius = collisionState.HasMixedFloat(&CollisionComponent::getRadius);
@@ -1497,7 +1552,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Centre");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			if (hasMixedCentre && !isEditingCentre) {
@@ -1533,7 +1588,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("CentrePosA");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			if (hasMixedCentrePosA && !isEditingCentrePosA) {
@@ -1567,7 +1622,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("CentrePosB");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			if (hasMixedCentrePosB && !isEditingCentrePosB) {
@@ -1603,7 +1658,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("HalfExtents");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			if (hasMixedHalfExtents && !isEditingHalfExtents) {
@@ -1645,7 +1700,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Orientation");
-			ImGui::SameLine(labelWidth + 40);
+			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
 			bool rotationChanged = false;

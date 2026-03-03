@@ -17,7 +17,7 @@
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="1"/>
-        <CollisionType type="2"/>
+        <CollisionType type="1"/>
         <isTrigger trigger="0"/>
         <radius value="20"/>
         <centre x="0" y="80.900002" z="0"/>

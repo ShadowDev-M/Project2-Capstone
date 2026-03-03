@@ -34,7 +34,7 @@ private:
 	
 	// vector that holds all tags (giving some default ones here)
 	// TODO: save tags throughout engine lifetime (closing/opening)
-	std::vector<std::string> allTags = { "Untagged", "Player", "Ground", "PortalSurface" };
+	std::vector<std::string> allTags = { "Untagged", "Player", "Ground" };
 
 	GLenum drawMode = GL_FILL;
 
@@ -186,6 +186,12 @@ public:
 			allTags.push_back(tag);
 		}
 	}
+
+	void removeTag(const std::string& tag) {
+		allTags.erase(std::remove(allTags.begin(), allTags.end(), tag), allTags.end());
+	}
+
+	std::unordered_map<uint32_t, Ref<Actor>> getAllActors() { return Actors; }
 
 	Ref<Actor> MeshRaycast(Vec3 start, Vec3 end);
 

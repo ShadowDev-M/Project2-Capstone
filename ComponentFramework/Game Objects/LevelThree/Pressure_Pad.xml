@@ -24,7 +24,7 @@
         <centrePosA x="0" y="1" z="0"/>
         <centrePosB x="0" y="-1" z="0"/>
         <halfExtents x="1" y="1" z="1"/>
-        <orientation w="0.70710689" x="0" y="-0" z="-0.70710665"/>
+        <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
     <ShaderComponent name="S_Multi"/>
     <ScriptComponent name="PressurePad"/>

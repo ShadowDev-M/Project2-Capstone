@@ -1,12 +1,18 @@
 <CellFile>
+    <Tags>
+        <Tag value="Untagged"/>
+        <Tag value="Player"/>
+        <Tag value="Ground"/>
+        <Tag value="PortalSurface"/>
+    </Tags>
     <Actors>
+        <Board/>
         <Mario>
             <LightP/>
         </Mario>
-        <Board/>
-        <CamTest/>
-        <Cube/>
         <Cube_1D/>
+        <Cube/>
+        <CamTest/>
         <SkyLight/>
         <Board_1D/>
         <PressureSensor>

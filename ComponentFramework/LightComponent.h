@@ -22,7 +22,7 @@ private:
 public:
 	LightComponent(Component* parent_);
 
-	LightComponent(Component* parent_, LightType type_, Vec4 spec_, Vec4 diff_, float intensity_ = 1.0f);
+	LightComponent(Component* parent_ = nullptr, LightType type_ = LightType::Point, Vec4 spec_ = Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4 diff_ = Vec4(0.5f, 0.5f, 0.5f, 1.0f), float intensity_ = 1.0f);
 
 	~LightComponent() {}
 

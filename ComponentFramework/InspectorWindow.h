@@ -170,6 +170,9 @@ private:
 	std::string oldActorName = "";
 	std::string newActorName = "";
 
+	// buffer for adding tags
+	std::string tagBuffer = "";
+
 	// draw transform component variables
 	bool isEditingPosition = false;
 	Vec3 lastPos;
