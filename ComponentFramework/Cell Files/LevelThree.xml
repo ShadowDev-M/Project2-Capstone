@@ -6,13 +6,13 @@
         <Tag value="PortalSurface"/>
     </Tags>
     <Actors>
-        <Board/>
         <Mario>
             <LightP/>
         </Mario>
-        <Cube_1D/>
-        <Cube/>
+        <Board/>
         <CamTest/>
+        <Cube/>
+        <Cube_1D/>
         <SkyLight/>
         <Board_1D/>
         <PressureSensor>

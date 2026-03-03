@@ -269,14 +269,12 @@ ColliderDebug::ColliderShape ColliderDebug::GenerateOBB(const Ref<CollisionCompo
 
     Vec3 centre = collision_->getWorldCentre(transform_);
     Vec3 halfExtents = collision_->getWorldHalfExtents(transform_);
-    Quaternion orientation = collision_->getWorldOrientation(transform_);
 
     // basically the extact same as the AABB, but this time with local axes... wow!
 
     // rotating the orienation around x,y,z axis in order to get local coords
-    Vec3 localCoords[3] = { QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), orientation),
-    QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), orientation),
-    QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), orientation) };
+    Vec3 localCoords[3];
+    collision_->getWorldAxes(transform_, localCoords);
 
     // calculating the 8 corner positions of the box	
     // to get the location of a specific point on the cube, I need to subtract or add the halfextents from the center (halfExtents represent the distance from the centre)

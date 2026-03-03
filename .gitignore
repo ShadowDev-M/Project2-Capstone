@@ -42,3 +42,5 @@ ComponentFramework/Debug/ComponentFramework.log
 ComponentFramework/Debug/ComponentFramework.Build.CppClean.log
 .vs/ComponentFramework/v17/ipch/72aa0ad3c26a5148.ipch
 .vs/ComponentFramework/v17/ipch/1ef6d25c0d0440cc.ipch
+/Debug/ComponentFramework.pdb
+/ComponentFramework/Debug/ComponentFramework.log

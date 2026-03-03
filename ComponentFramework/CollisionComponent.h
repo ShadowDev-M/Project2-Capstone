@@ -46,6 +46,10 @@ protected:
 	Vec3 halfExtents = Vec3(1.0f, 1.0f, 1.0f); /// AABB, OBB
 	Quaternion orientation = Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)); // OBB 
 
+private: 
+	// helper to get scale based on parented actors
+	Vec3 getWorldScale(Ref<TransformComponent> transform_) const;
+
 public:
 	// Local vs World Coords
 	// all the variables can be exposed locally in the inspector or in scripts
@@ -54,24 +58,16 @@ public:
 	// and in editor when you change the actors pos, scale, rotation etc, the collider follows suit, 
 	// but the local variables remain the same
 	Vec3 getWorldCentre(Ref<TransformComponent> transform_) const;
-	float getWorldRadius(Ref<TransformComponent> transform_) const {
-		Vec3 scale = transform_->GetScale();
-		float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
-		return radius * maxScale;
-	} 
-	float getWorldCapsuleRadius(Ref<TransformComponent> transform_) const {
-		Vec3 scale = transform_->GetScale();
-		float maxScale = std::max(scale.x, scale.z);
-		return radius * maxScale;
-	} 
+	float getWorldRadius(Ref<TransformComponent> transform_) const;
+	float getWorldCapsuleRadius(Ref<TransformComponent> transform_) const;
 	Vec3 getWorldCentrePosA(Ref<TransformComponent> transform_) const;
 	Vec3 getWorldCentrePosB(Ref<TransformComponent> transform_) const;
-	Vec3 getWorldHalfExtents(Ref<TransformComponent> transform_) const {
-		Vec3 scale = transform_->GetScale();
-		return Vec3(halfExtents.x * scale.x, halfExtents.y * scale.y, halfExtents.z * scale.z);
-	}
-	Quaternion getWorldOrientation(Ref<TransformComponent> transform_) const { return transform_->GetOrientation() * orientation; }
+	Vec3 getWorldHalfExtents(Ref<TransformComponent> transform_) const;
+	// Quaternion getWorldOrientation(Ref<TransformComponent> transform_) const { return transform_->GetOrientation() * orientation; }
 
+	// helper function, basically every time getWorldOrientation was called it was purely to then transform it to get the local axes
+	// now just call this function and it'll do everything + made it so it takes into account parenting
+	void getWorldAxes(Ref<TransformComponent> transform_, Vec3 axes[3]) const;
 
 public:
 	CollisionComponent(Component* parent_ = nullptr, ColliderState state_ = ColliderState::Discrete, ColliderType type_ = ColliderType::Sphere, bool isTrigger_ = false, float radius_ = 1.0f, Vec3 centre_ = Vec3(0.0f, 0.0f, 0.0f),

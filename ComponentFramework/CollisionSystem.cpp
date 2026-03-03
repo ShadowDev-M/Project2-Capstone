@@ -752,23 +752,15 @@ bool CollisionSystem::OBBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData
 	// setting up variables
 	Vec3 centre1 = CC1->getWorldCentre(TC1);
 	Vec3 halfExtents1 = CC1->getWorldHalfExtents(TC1);
-	Quaternion ori1 = CC1->getWorldOrientation(TC1);
 	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 axes1[3] = { 
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), ori1),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), ori1),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), ori1) 
-	};
+	Vec3 axes1[3]; 
+	CC1->getWorldAxes(TC1, axes1);
 
 	Vec3 centre2 = CC2->getWorldCentre(TC2);
 	Vec3 halfExtents2 = CC2->getWorldHalfExtents(TC2);
-	Quaternion ori2 = CC2->getWorldOrientation(TC2);
 	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 axes2[3] = {
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), ori2),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), ori2),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), ori2)
-	};
+	Vec3 axes2[3];
+	CC2->getWorldAxes(TC2, axes2);
 
 	// Compute translation vector t
 	Vec3 t = centre2 - centre1;
@@ -1114,17 +1106,13 @@ bool CollisionSystem::SphereOBBDiscrete(Ref<Actor> s, Ref<Actor> obb, CollisionD
 
 	Vec3 obbCentre = obbCC->getWorldCentre(obbTC);
 	Vec3 obbHalfExtents = obbCC->getWorldHalfExtents(obbTC);
-	Quaternion obbOri = obbCC->getWorldOrientation(obbTC);
 	
 	// setting up variables
 	Vec3 v = sCentre - obbCentre;
 	
 	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 obblocalCoords[3] = {
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
-	};
+	Vec3 obblocalCoords[3];
+	obbCC->getWorldAxes(obbTC, obblocalCoords);
 
 	Vec3 sLocal(VMath::dot(v, obblocalCoords[0]),
 		VMath::dot(v, obblocalCoords[1]),
@@ -1194,7 +1182,6 @@ bool CollisionSystem::SphereOBBContinuous(Ref<Actor> s, Ref<Actor> obb, Collisio
 
 	Vec3 obCentre = CC2->getWorldCentre(TC2);
 	Vec3 obHalfExtents = CC2->getWorldHalfExtents(TC2);
-	Quaternion obbOri = CC2->getWorldOrientation(TC2);
 
 	// getting previous position 
 	Vec3 previousPosA = sCentre - (PC1->getVel() * deltaTime); // (displacement) d=vt
@@ -1208,11 +1195,8 @@ bool CollisionSystem::SphereOBBContinuous(Ref<Actor> s, Ref<Actor> obb, Collisio
 	}
 
 	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 obblocalCoords[3] = {
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
-	};
+	Vec3 obblocalCoords[3];
+	CC2->getWorldAxes(TC2, obblocalCoords);
 
 	// previous pos local coords
 	Vec3 v = previousPosA - obCentre;
@@ -1478,15 +1462,10 @@ bool CollisionSystem::CapsuleOBBDiscrete(Ref<Actor> c, Ref<Actor> ob, CollisionD
 
 	Vec3 obCentre = obCC->getWorldCentre(obTC);
 	Vec3 obHalfExtents = obCC->getWorldHalfExtents(obTC);
-	Quaternion obbOri = obCC->getWorldOrientation(obTC);
-
 
 	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 obblocalCoords[3] = {
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
-	};
+	Vec3 obblocalCoords[3];
+	obCC->getWorldAxes(obTC, obblocalCoords);
 	
 	Vec3 posARel = cCentreA - obCentre;
 	Vec3 posBRel = cCentreB - obCentre;
@@ -1603,14 +1582,10 @@ bool CollisionSystem::CapsuleOBBContinuous(Ref<Actor> c, Ref<Actor> ob, Collisio
 
 	Vec3 obCentre = obCC->getWorldCentre(obTC);
 	Vec3 obHalfExtents = obCC->getWorldHalfExtents(obTC);
-	Quaternion obbOri = obCC->getWorldOrientation(obTC);
 
 	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 obblocalCoords[3] = {
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
-	};
+	Vec3 obblocalCoords[3];
+	obCC->getWorldAxes(obTC, obblocalCoords);
 
 	Vec3 localRelVel(
 		VMath::dot(relVel, obblocalCoords[0]),
@@ -1718,13 +1693,9 @@ bool CollisionSystem::AABBOBBDiscrete(Ref<Actor> ab, Ref<Actor> ob, CollisionDat
 
 	Vec3 centre2 = CC2->getWorldCentre(TC2);
 	Vec3 halfExtents2 = CC2->getWorldHalfExtents(TC2);
-	Quaternion ori2 = CC2->getWorldOrientation(TC2);
 	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 axes2[3] = {
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), ori2),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), ori2),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), ori2)
-	};
+	Vec3 axes2[3];
+	CC2->getWorldAxes(TC2, axes2);
 
 	// Compute translation vector t
 	Vec3 t = centre2 - centre1;
@@ -2118,13 +2089,9 @@ bool CollisionSystem::RaycastOBB(const Vec3& origin, const Vec3& direction, Ref<
 	
 	Vec3 obCentre = CC->getWorldCentre(TC);
 	Vec3 obHalfExtents = CC->getWorldHalfExtents(TC);
-	Quaternion obbOri = CC->getWorldOrientation(TC);
 
-	Vec3 obblocalCoords[3] = {
-		QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 1.0f, 0.0f), obbOri),
-		QMath::rotate(Vec3(0.0f, 0.0f, 1.0f), obbOri)
-	};
+	Vec3 obblocalCoords[3]; 
+	CC->getWorldAxes(TC, obblocalCoords);
 
 	Vec3 originRel = origin - obCentre;
 	Vec3 originLocal(
@@ -2459,7 +2426,7 @@ CollisionSystem::RayAABBIntersection CollisionSystem::IntersectRayAABB(const Vec
 				hitAxis = i;
 				hitMaxFace = swapped;
 			}
-			if (t2 > tmax) tmax = t2;
+			if (t2 < tmax) tmax = t2;
 			// Exit with no collision as soon as slab intersection becomes empty
 			if (tmin > tmax) {
 				result.didIntersect = false;
