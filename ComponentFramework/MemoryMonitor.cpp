@@ -1,10 +1,9 @@
 #include "MemorySize.h"
 #include "MemoryMonitor.h"
 
-std::size_t MEMORY_NUMUSEDBYTES = 0; // Defines and initializes the single instance
+std::size_t MEMORY_NUMUSEDBYTES = 0; 
 
 void* operator new(std::size_t numBytes) {
-    //   std::cout << "allocating " << numBytes << " bytes of memory\n";
     MEMORY_NUMUSEDBYTES += numBytes;
     return std::malloc(numBytes);
 }
