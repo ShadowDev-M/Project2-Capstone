@@ -13,13 +13,26 @@ void MemoryManagerWindow::ShowMemoryManagerWindow(bool* pOpen)
 {
     if (ImGui::Begin("Memory", pOpen)) {
 
+        static std::string filterMemory;
+
+        ImGui::InputText("##MemoryFilter", &filterMemory);
+
+
         ImGui::TextWrapped( ("Memory Used: " + std::to_string(MEMORY_NUMUSEDBYTES)).c_str());
 
         int staleMemory = 0;
 
         if (ImGui::CollapsingHeader("Blocks", ImGuiTreeNodeFlags_DefaultOpen)) {
 
+            
+
             for (auto& pair : GetAllocMap()) {
+
+                if (!filterMemory.empty()) {
+                    if (std::string(pair.second.file).find(filterMemory, 0) == std::string::npos) {
+                        continue;
+                    }
+                }
 
                 if (pair.second.stale) {
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));

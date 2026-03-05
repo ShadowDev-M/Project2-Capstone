@@ -32,6 +32,11 @@ SceneManager::~SceneManager() {
 		timer = nullptr;
 	}
 
+	AssetManager::getInstance().RemoveAllAssets();
+	
+	SceneGraph::getInstance().OnDestroy();
+
+
 	if (window) {
 		delete window;
 		window = nullptr;
