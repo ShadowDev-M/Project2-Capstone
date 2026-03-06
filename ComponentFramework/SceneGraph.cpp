@@ -96,6 +96,15 @@ void SceneGraph::processMainThreadTasks() {
 		lock.lock();
 	}
 }
+void SceneGraph::moveUsedCameraTo(Ref<Actor> actor_)
+{
+	if (EditorManager::getInstance().GetEditorMode() == EditorMode::Play) return;
+	//ModelMatrix is in world space, so instead of getting transform local space get the world space and extract the position 
+	Vec3 worldPos = actor_->GetModelMatrix() * Vec4(Vec3(), 1);
+
+	Ref<TransformComponent> transfCam = usedCamera->GetUserActor()->GetComponent<TransformComponent>();
+	transfCam->SetPos(worldPos.x, worldPos.y, transfCam->GetPosition().z);
+}
 void SceneGraph::scheduleOnMain(std::function<void()> task)
 {
 	{

@@ -8,6 +8,7 @@ class CameraComponent : public Component {
 private:
 	
 
+
 	Ref<Actor> userActor;
 
 	Matrix4 projectionMatrix;
@@ -15,11 +16,20 @@ private:
 
 	// camera member variables to be accesed by imgui
 	float m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane;
+	bool isOrthographic;
+
 
 public:
-	CameraComponent(Ref<Actor> userActor_ = nullptr, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f);
+	CameraComponent(Ref<Actor> userActor_ = nullptr, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f, bool orthographicState = false);
 	~CameraComponent();
 	bool OnCreate();
+
+	bool getIsOrthographic() { return isOrthographic; }
+
+	void toggleOrthographic(bool state) { 
+		isOrthographic = state;
+		UpdateProjectionMatrix();
+	}
 
 	Ref<Actor> GetUserActor() { return userActor; }
 
@@ -42,9 +52,7 @@ public:
 
 	// setters and getters for the cameras member variables
 	
-	void UpdateProjectionMatrix() {
-		projectionMatrix = MMath::perspective(m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane);
-	}
+	void UpdateProjectionMatrix();
 	
 	float getFOV() const { return m_fov; }
 	float getAspectRatio() const { return m_aspectRatio; }

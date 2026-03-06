@@ -735,6 +735,8 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 		float fov = camera->getFOV(), aspectRatio = camera->getAspectRatio(), 
 			nearClipPlane = camera->getNearClipPlane(), farClipPlane = camera->getFarClipPlane();
 
+		bool isOrtho = camera->getIsOrthographic();
+
 		int fovInt = static_cast<int>(fov);
 
 		bool hasMixedFOV = cameraState.HasMixedFloat(&CameraComponent::getFOV);
@@ -742,9 +744,24 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 		bool hasMixedFar = cameraState.HasMixedFloat(&CameraComponent::getFarClipPlane);
 
 		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Ortho");
+		ImGui::SameLine(labelWidth);
+		ImGui::SetNextItemWidth(-1);
+
+
+		if (ImGui::Checkbox("##orthocheckbox", &isOrtho)) {
+			for (auto& component : cameraState.components) {
+				component->toggleOrthographic(isOrtho);
+			}
+
+		}
+
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text("FOV");
 		ImGui::SameLine(labelWidth);
 		ImGui::SetNextItemWidth(-1);
+
+		
 
 		if (ImGui::SliderInt("##fovslider", &fovInt, 0, 120, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 			for (auto& component : cameraState.components) {

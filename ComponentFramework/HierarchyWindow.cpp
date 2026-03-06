@@ -201,6 +201,10 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 			DuplicateActor(actor_);
 		}
 		ImGui::Separator();
+		if (ImGui::MenuItem("Move Camera To")) {
+			sceneGraph->moveUsedCameraTo(actor_);
+		}
+		ImGui::Separator();
 		if (ImGui::MenuItem("Delete")) {
 			sceneGraph->RemoveLight(sceneGraph->GetActor(actorName_));
 			sceneGraph->GetActor(actorName_)->DeleteComponent<LightComponent>();

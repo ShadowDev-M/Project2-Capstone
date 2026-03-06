@@ -97,6 +97,9 @@ private:
 
 public:
 
+
+	void moveUsedCameraTo(Ref<Actor> transf);
+
 	void scheduleOnMain(std::function<void()> task);
 
 	void storeInitializedMeshData();

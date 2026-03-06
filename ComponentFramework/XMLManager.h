@@ -672,6 +672,7 @@ public:
             XMLElement* fovElement = component->FirstChildElement("fov");
             XMLElement* nearElement = component->FirstChildElement("near");
             XMLElement* farElement = component->FirstChildElement("far");
+            XMLElement* orthographicElement = component->FirstChildElement("orthographic");
 
             // fov
             float fovArg = GetAttrF(fovElement, "value");
@@ -682,12 +683,15 @@ public:
             // far
             float farArg = GetAttrF(farElement, "value");
 
+            bool orthographicArg = orthographicElement->FindAttribute("value")->BoolValue();
+
             //return the tuple to act as arguments
             auto args = std::make_tuple(nullptr,
                 fovArg,
                 (16.0f / 9.0f),
                 nearArg,
-                farArg
+                farArg,
+                orthographicArg
             );
             return args;
 
@@ -1101,6 +1105,12 @@ public:
             farElement = doc.NewElement("far");
             farElement->SetAttribute("value", componentToWrite->getFarClipPlane());
             componentElement->InsertEndChild(farElement);
+
+            // orthographic
+            XMLElement* orthoElement;
+            orthoElement = doc.NewElement("orthographic");
+            orthoElement->SetAttribute("value", componentToWrite->getIsOrthographic());
+            componentElement->InsertEndChild(orthoElement);
         }
         else if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
             LightComponent* componentToWrite = dynamic_cast<LightComponent*>(toWrite);

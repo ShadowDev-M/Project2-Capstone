@@ -60,7 +60,11 @@ function Update(deltaTime)
 		local uniDirection = Vec3.new(GameObject.Rigidbody.Vel.x,0.0,0.0)
 		Transform.Rotation = QMath.LookAt(-VMath.Normalize(uniDirection), Vec3.new(0,1,0))
 	end
-
+	
+	
+	if (GameObject.Rigidbody.Vel.y) < 5 and canJump == 0 then
+		GameObject.Rigidbody:AddAccel( Vec3.new(0, -accelSpeed, 0))
+	end
 	
 
 end
