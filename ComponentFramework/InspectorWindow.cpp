@@ -355,7 +355,7 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 		tagCStr.push_back(tag.c_str());
 	}
 	
-	ImGui::SetNextItemWidth(117);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 60);
 	// building the dropdown menu for the tags
 	if (ImGui::Combo("##TagDropdown", &currentTagIndex, tagCStr.data(), (int)tagCStr.size())) {
 		actor_->setTag(allTags[currentTagIndex]);
