@@ -9,6 +9,7 @@
         <fov value="40"/>
         <near value="0.5"/>
         <far value="300"/>
+        <orthographic value="true"/>
     </CameraComponent>
     <ShaderComponent name="S_Multi"/>
 </Actor>
