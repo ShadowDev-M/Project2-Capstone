@@ -7,6 +7,9 @@
 #include <iostream>
 #include <memory>
 #include "MemorySize.h"
+#include <iostream>
+
+void RecordNextUndefinedNew(const char* file = __FILE__, int line = __LINE__);
 
 void* operator new(std::size_t numBytes);
 

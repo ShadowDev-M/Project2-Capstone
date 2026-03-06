@@ -70,8 +70,7 @@ public:
 		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
 		AssetKey key = { name_, componentType };
 
-
-		Ref<AssetTemplate> asset = std::make_shared<AssetTemplate>(std::forward<Args>(args_)...);
+		RECORD Ref<AssetTemplate> asset = std::make_shared<AssetTemplate>(std::forward<Args>(args_)...);
 
 	
 

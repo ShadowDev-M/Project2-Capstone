@@ -12,8 +12,11 @@ struct AllocationInfo {
     bool stale;
 };
 
+
+
 inline std::unordered_map<void*, AllocationInfo>& GetAllocMap() {
     static std::unordered_map<void*, AllocationInfo> allocMap;
+
     return allocMap;
 }
 
@@ -32,13 +35,21 @@ inline void ReportLeaks() {
         return;
     }
 
+    int tally = 0;
+
     std::cout << "Memory leaks detected:\n";
     for (const auto& [ptr, info] : map) {
+       
         std::cout << " Leaked block at " << ptr
             << " size " << info.size
             << " bytes, allocated at " << info.file
             << ":" << info.line << "\n";
+        tally += info.size;
+
     }
     std::cout << "Total bytes still in use: " << MEMORY_NUMUSEDBYTES << "\n";
+    std::cout << tally << std::endl;
+
+
 }
 
