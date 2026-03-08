@@ -1,9 +1,9 @@
 <AssetDatabase>
     <Animation>
-        <Asset name="svgvuijwerjtuiew" animationName=""/>
         <Asset name="dancing" animationName="meshes/dancing.gltf"/>
-        <Asset name="falling" animationName="meshes/falling.gltf"/>
+        <Asset name="svgvuijwerjtuiew" animationName=""/>
         <Asset name="walking" animationName="meshes/walking.gltf"/>
+        <Asset name="falling" animationName="meshes/falling.gltf"/>
         <Asset name="idle" animationName="meshes/idle.gltf"/>
         <Asset name="land" animationName="meshes/land.gltf"/>
         <Asset name="jump" animationName="meshes/jump.gltf"/>
@@ -12,24 +12,24 @@
     </Animation>
     <MaterialComponent>
         <Asset name="M_Sphere" diffuseMap="textures/Black Chess Base Colour.png" specularMap=""/>
-        <Asset name="M_Hammer" diffuseMap="textures\hammer_BaseColor.png" specularMap="textures\hammer_specular.png"/>
         <Asset name="M_MarioFire" diffuseMap="textures/mario_fire.png" specularMap=""/>
+        <Asset name="M_Hammer" diffuseMap="textures\hammer_BaseColor.png" specularMap="textures\hammer_specular.png"/>
         <Asset name="M_MarioN" diffuseMap="textures/mario_main.png" specularMap=""/>
         <Asset name="M_Moon" diffuseMap="textures/moon.jpg" specularMap=""/>
         <Asset name="M_ChessBoard" diffuseMap="textures/8x8_checkered_board.png" specularMap=""/>
         <Asset name="M_Skull" diffuseMap="textures/skull_texture.jpg" specularMap=""/>
-        <Asset name="M_TestSpec" diffuseMap="textures\8x8_checkered_board.png" specularMap="textures\TestSpecMap.png"/>
         <Asset name="testtex" diffuseMap="textures/Underwater Box_Negz.png" specularMap=""/>
+        <Asset name="M_TestSpec" diffuseMap="textures\8x8_checkered_board.png" specularMap="textures\TestSpecMap.png"/>
         <Asset name="skeletonTexture" diffuseMap="textures/skeleton_d.png" specularMap=""/>
-        <Asset name="M_Sky" diffuseMap="textures/seamsky.jpg" specularMap=""/>
         <Asset name="gridtexture2" diffuseMap="textures/gridimage.png" specularMap=""/>
+        <Asset name="M_Sky" diffuseMap="textures/seamsky.jpg" specularMap=""/>
         <Asset name="testtex2" diffuseMap="textures/UnderwaterBox_Negx.png" specularMap=""/>
         <Asset name="M_Floor" diffuseMap="textures/terrainDiffuse.png" specularMap=""/>
         <Asset name="steampunkbackgr" diffuseMap="textures/steampunk.png" specularMap=""/>
     </MaterialComponent>
     <MeshComponent>
-        <Asset name="SM_Sphere" filepath="meshes/Sphere.obj"/>
         <Asset name="SM_Cube" filepath="meshes/Cube.obj"/>
+        <Asset name="SM_Sphere" filepath="meshes/Sphere.obj"/>
         <Asset name="SM_King" filepath="meshes/King.obj"/>
         <Asset name="dancingRobot" filepath="meshes/dancingRobot.fbx"/>
         <Asset name="SM_Pipe" filepath="meshes/3D_Models/SM_Pipe_Straight.fbx"/>
@@ -40,23 +40,23 @@
         <Asset name="SM_Rook" filepath="meshes/Rook.obj"/>
         <Asset name="SM_Hammer" filepath="meshes/Hammer.obj"/>
         <Asset name="SM_Skull" filepath="meshes/Skull.obj"/>
-        <Asset name="testRuntimeMesh" filepath="meshes/Mario.obj"/>
         <Asset name="manni" filepath="meshes/Ch36_nonPBR.fbx"/>
+        <Asset name="testRuntimeMesh" filepath="meshes/Mario.obj"/>
         <Asset name="testassetfbx" filepath="meshes/cliff_rock1.fbx"/>
         <Asset name="grid" filepath="meshes/grid.obj"/>
         <Asset name="Crate" filepath="meshes/3D_Models/SM_Crate_01.fbx"/>
         <Asset name="SM_Bridge" filepath="meshes/3D_Models/SM_BridgePlatform.fbx"/>
         <Asset name="SM_Gear1" filepath="meshes/3D_Models/SM_Gear_Large.fbx"/>
         <Asset name="PressurePlate" filepath="meshes/PressurePlate.fbx"/>
-        <Asset name="SM_Gear3" filepath="meshes/3D_Models/SM_Gear_Small.fbx"/>
         <Asset name="SM_Pipe_Curved" filepath="meshes/3D_Models/SM_Pipe_Curved.fbx"/>
+        <Asset name="SM_Gear3" filepath="meshes/3D_Models/SM_Gear_Small.fbx"/>
     </MeshComponent>
     <ScriptAbstract>
         <Asset name="S_Lever" scriptName="Lever.lua"/>
-        <Asset name="script1" scriptName="testScript.lua"/>
         <Asset name="S_Lever2" scriptName="Lever2.lua"/>
-        <Asset name="testScriptTwo" scriptName="testScriptTwo.lua"/>
+        <Asset name="script1" scriptName="testScript.lua"/>
         <Asset name="PlayerController" scriptName="PlayerController.lua"/>
+        <Asset name="testScriptTwo" scriptName="testScriptTwo.lua"/>
         <Asset name="PressurePad" scriptName="PressurePad.lua"/>
         <Asset name="lerjgklktbl" scriptName="testScript.lua"/>
         <Asset name="animScript" scriptName="animateTestScript.lua"/>

@@ -6,6 +6,7 @@
 #include <string>
 #include "SceneManager.h"
 #include "Debug.h"
+#include "SettingsConfig.h"
 
   
 int main(int argc, char* args[]) {
@@ -13,8 +14,18 @@ int main(int argc, char* args[]) {
 
 	Debug::DebugInit("GameEngineLog.txt");
 	
+	// TODO: When cfg/ini saving and loading is setup replace this with that
+	SettingsConfig cfg;
+	cfg.windowTitle = "Game Engine";
+	cfg.renderWidth = 1280;
+	cfg.renderHeight = 720;
+	cfg.displayWidth = 1280;
+	cfg.displayHeight = 720;
+	cfg.targetFPS = 60;
+	cfg.vsync = false;
+
 	SceneManager* gsm = new SceneManager();
-	if (gsm->Initialize("Game Engine", 1280, 720) ==  true) {
+	if (gsm->Initialize(cfg.windowTitle, cfg.displayWidth, cfg.displayHeight) ==  true) {
 		gsm->Run();
 	} 
 	delete gsm;

@@ -96,18 +96,19 @@ void SceneManager::Run() {
 	isRunning = true;
 
 	EditorManager& editor = EditorManager::getInstance();
+	const SettingsConfig& cfg = ScreenManager::getInstance().getConfig();
 
 	while (isRunning) {
-		SceneGraph::getInstance().storeInitializedMeshData();
-		HandleEvents();
 		timer->UpdateFrameTicks();
+
+		SceneGraph::getInstance().processMainThreadTasks();
+		HandleEvents();
 		currentScene->Update(timer->GetDeltaTime());
 		currentScene->Render();
-
 		editor.RenderEditorUI();
-
 		SDL_GL_SwapWindow(window->getWindow());
-		//SDL_Delay(timer->GetSleepTime(fps));
+		
+		timer->LimitFrameRate(cfg.targetFPS, cfg.vsync);
 	}
 }
 

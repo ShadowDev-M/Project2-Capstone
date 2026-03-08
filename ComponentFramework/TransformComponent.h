@@ -48,15 +48,6 @@ public:
 		pos = pos_;
 	}
 
-	void SetX(float x_) {
-		pos.x = x_;
-	}
-	void SetY(float x_) {
-		pos.x = x_;
-	}
-	void SetZ(float x_) {
-		pos.x = x_;
-	}
 	void SetOrientation(Quaternion orientation_) {
 		orientation = orientation_;
 	}

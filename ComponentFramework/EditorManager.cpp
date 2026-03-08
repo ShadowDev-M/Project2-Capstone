@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EditorManager.h"
+#include "ScreenManager.h"
 
 void EditorManager::CreateEditorIcons()
 {
@@ -428,6 +429,7 @@ void EditorManager::ShowLoadDialog() {
 				MemoryStale();
 
 				XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
+				ScreenManager::getInstance().setWindowTitle(SceneGraph::getInstance().cellFileName);
 				sceneGraph->setUsedCamera(nullptr);
 				sceneGraph->checkValidCamera();
 				sceneGraph->OnCreate();

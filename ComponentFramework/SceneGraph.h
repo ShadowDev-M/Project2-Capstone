@@ -79,18 +79,16 @@ private:
 
 	void meshLoadingWorker();
 
-	void processMainThreadTasks();
 
 	
 
 public:
+	void processMainThreadTasks();
 
 
 	void moveUsedCameraTo(Ref<Actor> transf);
 
 	void scheduleOnMain(std::function<void()> task);
-
-	void storeInitializedMeshData();
 
 	bool queryMeshLoadStatus(std::string name);
 
@@ -153,10 +151,6 @@ public:
 	bool RenameActor(const std::string& oldName_, const std::string& newName_);
 
 	void SaveFile(std::string name) const;
-
-	void LoadAllActorsFromFile(std::string name) {
-
-	}
 
 	/// <summary>
 	/// Loads actor from file into scenegraph

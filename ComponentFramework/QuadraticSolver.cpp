@@ -60,5 +60,5 @@ QuadraticSolution QuadraticSolution::solveQuadratic(float a, float b, float c)
 
 	//print();
 
-	return QuadraticSolution();
+	return *this;
 }

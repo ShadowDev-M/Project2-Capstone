@@ -11,6 +11,7 @@
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "ColliderDebug.h"
+#include "ScreenManager.h"
 
 Scene3GUI::Scene3GUI() {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -38,6 +39,7 @@ bool Scene3GUI::OnCreate() {
 	}
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
+	ScreenManager::getInstance().setWindowTitle(SceneGraph::getInstance().cellFileName);
 
 	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Mario"));
 	//CollisionSystem::getInstance().AddActor(SceneGraph::getInstance().GetActor("Cube"));

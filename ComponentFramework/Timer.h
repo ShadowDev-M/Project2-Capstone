@@ -16,13 +16,13 @@ public:
 	void Start();
 	void UpdateFrameTicks();
 	float GetDeltaTime() const;
-	unsigned int GetSleepTime(const unsigned int fps_) const;
-	float GetCurrentTicks() const;
+	void LimitFrameRate(int targetFPS_, bool vsync_);
 	static void SetSingleEvent(Uint32 interval,void* param);
 private:	
-	unsigned int prevTicks;
-	unsigned int currentTicks;
-	static unsigned int singleEventID;
+	Uint64 frameStart;
+	Uint64 frequency;
+	float deltaTime = 0.0f;
+	static Uint32 singleEventID;
 	static Uint32 callBackFuncion(Uint32 interval, void* singleEventParam);
 };
 

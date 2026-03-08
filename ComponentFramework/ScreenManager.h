@@ -80,7 +80,7 @@ private:
 	ScreenManager& operator=(ScreenManager&&) = delete;
 
 	void renderResolutionNotifier(int w, int h) { for (auto& [id, dispatch] : renderResizeCallbacks) dispatch(w, h); }
-	void displayResolutionNotifier(int w, int h) { for (auto& [id, dispatch] : renderResizeCallbacks) dispatch(w, h); }
+	void displayResolutionNotifier(int w, int h) { for (auto& [id, dispatch] : displayResizeCallbacks) dispatch(w, h); }
 
 	void SetRenderResolution(int w, int h);
 	void SetDisplayResolution(int w, int h);

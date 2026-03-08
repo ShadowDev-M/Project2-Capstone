@@ -67,22 +67,12 @@ void PhysicsSystem::Update(float deltaTime)
 		Vec3 newVel = PC->vel + linearAccel * deltaTime;
 		PC->setVel(newVel);
 
-		// for the inspector
-		PC->accel = linearAccel;
-
 		UpdatePos(actor, deltaTime);
 		UpdateOrientation(actor, deltaTime);
 
 		// clearing any accumulated forces from previous frame
 		PC->ClearAccumulators();
 	}
-}
-
-void PhysicsSystem::UpdateVel(Ref<Actor> actor_, float deltaTime)
-{
-	Ref<PhysicsComponent> PC = actor_->GetComponent<PhysicsComponent>();
-
-	PC->vel += PC->accel * deltaTime;
 }
 
 void PhysicsSystem::UpdatePos(Ref<Actor> actor_, float deltaTime)

@@ -88,6 +88,7 @@ void SceneGraph::meshLoadingWorker()
 	
 	}
 }
+
 void SceneGraph::processMainThreadTasks() {
 	std::unique_lock<std::mutex> lock(taskMutex);
 	while (!mainThreadTasks.empty()) {
@@ -98,6 +99,7 @@ void SceneGraph::processMainThreadTasks() {
 		lock.lock();
 	}
 }
+
 void SceneGraph::moveUsedCameraTo(Ref<Actor> actor_)
 {
 	if (EditorManager::getInstance().GetEditorMode() == EditorMode::Play) return;
@@ -114,18 +116,6 @@ void SceneGraph::scheduleOnMain(std::function<void()> task)
 		mainThreadTasks.push(std::move(task));
 	}
 	taskCV.notify_one();
-}
-
-void SceneGraph::storeInitializedMeshData() {
-
-	/*while (!finishedQueue.empty()) {
-
-		if (std::dynamic_pointer_cast<MeshComponent>(finishedQueue.back())) {
-			std::dynamic_pointer_cast<MeshComponent>(finishedQueue.back())->storeLoadedModel();
-		}
-
-	}*/
-
 }
 
 bool SceneGraph::queryMeshLoadStatus(std::string name)
@@ -185,14 +175,8 @@ void SceneGraph::startMeshLoadingWorkerThread()
 Ref<CameraComponent> SceneGraph::getUsedCamera() const
 {
 	if (!usedCamera || !usedCamera->GetUserActor()) {
-
-
 		return debugCamera->GetComponent<CameraComponent>();
-
-
-		std::cout << "ERROR: NO CAMERA EXISTS IN SCENEGRAPH" << std::endl;
 	}
-
 
 	return usedCamera;
 }
@@ -625,9 +609,6 @@ void SceneGraph::RemoveAllActors()
 
 void SceneGraph::Update(const float deltaTime)
 {
-	processMainThreadTasks();
-
-
 	AnimationClip::updateClipTimes(deltaTime);
 	//Load any models that the worker thread finishes loading through assimp
 	//storeInitializedMeshData();
@@ -893,7 +874,7 @@ void SceneGraph::Render() const
 
 		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
-		bool isAnimating = (actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+		bool isAnimating = (mesh && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
 			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
 
 		//replace shader if it should be using another shader for whatever purpose- such as outline.

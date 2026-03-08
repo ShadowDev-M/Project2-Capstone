@@ -29,7 +29,6 @@ public:
 
 	// Physics Functions
 	void Update(float deltaTime);
-	void UpdateVel(Ref<Actor> actor_, float deltaTime);
 	void UpdatePos(Ref<Actor> actor_, float deltaTime);
 	void UpdateOrientation(Ref<Actor> actor_, float deltaTime);
 	
