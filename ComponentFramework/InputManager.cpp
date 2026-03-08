@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "InputManager.h"
 #include "EditorManager.h"
+#include "ScreenManager.h"
 
 bool PoolBindObject::call() {
 	//Normally i'd place this code within the internal structure, however, due to compiling stuff, InputManager can't be accessed if the struct has <typename> above it and i don't want to overcomplicate
@@ -580,10 +581,8 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 
 				auto& debugGraph = sceneGraph->debugSelectedAssets;
 
-				float w, h;
-
-				w = (float) SceneGraph::SCENEWIDTH;
-				h = (float) SceneGraph::SCENEHEIGHT;
+				int w = ScreenManager::getInstance().getRenderWidth();
+				int h = ScreenManager::getInstance().getRenderHeight();
 
 				//SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
 

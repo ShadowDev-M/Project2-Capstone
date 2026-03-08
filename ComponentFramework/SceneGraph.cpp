@@ -12,6 +12,8 @@
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "ColliderDebug.h"
+#include "ScreenManager.h"
+#include "FBOManager.h"
 void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
 
 	if (!mesh->queryLoadStatus()) {
@@ -144,25 +146,10 @@ bool SceneGraph::queryMeshLoadStatus(std::string name)
 
 SceneGraph::SceneGraph()
 {
-
-
-	int w, h;
-
-	w = SCENEWIDTH;
-	h = SCENEHEIGHT;
-
-
-	//		SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
-	createFBOPicking(w, h);
-
-	//fbo for the imgui docking
-	createDockingFBO(w, h);
-
 	pickerShader->OnCreate();
 
 	ScriptService::loadLibraries();
 	startMeshLoadingWorkerThread();
-
 }
 
 SceneGraph::~SceneGraph()
@@ -331,15 +318,6 @@ void SceneGraph::Start()
 	for (auto& actor : Actors) {
 		ScriptService::startActorScripts(actor.second);
 	}
-
-	//if (!GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation || !GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.animation->queryLoadStatus())
-	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "meshes/dancing.gltf"));
-
-
-	//GetActor("Mario")->GetComponent<AnimatorComponent>()->activeClip.Play();
-
-	// TODO: disabled this line for now, it was crashing the engine on playmode
-	//GetActor("Mario")->GetComponent<AnimatorComponent>()->setAnimation(std::make_shared<Animation>(nullptr, "greg"));
 }
 
 
@@ -513,51 +491,9 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 }
 
-Ref<Actor> SceneGraph::MeshRaycast(Vec3 start, Vec3 end)
-{
-	/*float minDistance = 0;
-	Ref<Actor> closestSelected = nullptr;
-
-	for (auto& actor : Actors) {
-		Ref<Actor> targetActor = actor.second;
-
-		Ref<TransformComponent> actorTransform = targetActor->GetComponent<TransformComponent>();
-
-		Vec3 dir = VMath::normalize(end - start);
-
-		//skip to next if no transform
-		if (actorTransform == nullptr) { continue; }
-
-		//if actor's origin isn't within a 30 degrees cone to the camera we can skip to make less expensive by assuming it's probably not intersecting (May have to be increased)
-		//if (!Raycast::isInRayCone(actorTransform->GetPosition(), start, dir, 0.8660254f)) { continue; }
-
-		//	std::cout << targetActor->getActorName() << std::endl;
-
-		Vec3 intersectSpot;
-		if (targetActor->GetIntersectTriangles(start, dir, &intersectSpot)) {
-
-			float actorDistance = VMath::distance(start, intersectSpot);
-			std::cout << targetActor->getActorName() << " : " << actorDistance << std::endl;
-			if (actorDistance < minDistance || minDistance == 0) {
-				minDistance = actorDistance;
-				closestSelected = targetActor;
-			}
-		}
-	}
-
-	if (closestSelected) {
-		return closestSelected;
-	}
-
-
-	*/
-	return nullptr;
-}
-
 Ref<Actor> SceneGraph::GetActorCStr(const char* actorName) const {
 	return GetActor(actorName);
 }
-
 
 Ref<Actor> SceneGraph::GetActor(const std::string& actorName) const
 {
@@ -722,87 +658,12 @@ void SceneGraph::Update(const float deltaTime)
 	}*/
 }
 
-void SceneGraph::createFBOPicking(int w, int h)
-{
-	//create depth buffer
-	glGenRenderbuffers(1, &pickingDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, pickingDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	//create picking buffer
-	glGenFramebuffers(1, &pickingFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
-
-	//create texture buffer
-	glGenTextures(1, &pickingTexture);
-	glBindTexture(GL_TEXTURE_2D, pickingTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pickingTexture, 0);
-
-	// magic sauce :>
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,      // 1. fbo target: GL_FRAMEBUFFER
-		GL_DEPTH_ATTACHMENT, // 2. attachment point
-		GL_RENDERBUFFER,     // 3. rbo target: GL_RENDERBUFFER
-		pickingDepth);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-#ifdef _DEBUG
-		std::cerr << "Framebuffer is not complete!" << std::endl;
-#endif
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void SceneGraph::createDockingFBO(int w, int h)
-{
-	//create depth buffer
-	glGenRenderbuffers(1, &dockingDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, dockingDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	//create picking buffer
-	glGenFramebuffers(1, &dockingFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
-
-	//create texture buffer
-	glGenTextures(1, &dockingTexture);
-	glBindTexture(GL_TEXTURE_2D, dockingTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dockingTexture, 0);
-
-	// magic sauce :>
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,      // 1. fbo target: GL_FRAMEBUFFER
-		GL_DEPTH_ATTACHMENT, // 2. attachment point
-		GL_RENDERBUFFER,     // 3. rbo target: GL_RENDERBUFFER
-		dockingDepth);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-#ifdef _DEBUG
-		std::cerr << "Framebuffer is not complete!" << std::endl;
-#endif
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
 Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
-
-
 	//Width of SDL Window
-	int w, h;
-	w = SCENEWIDTH;
-	h = SCENEHEIGHT;
+	int w = ScreenManager::getInstance().getRenderWidth();
+	int h = ScreenManager::getInstance().getRenderHeight();
+
+	FBOData& pickingFBO = FBOManager::getInstance().getFBO(FBO::ColorPicker);
 
 	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
 
@@ -843,7 +704,7 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 
 	//use the picking buffer so it is seperated
-	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO.fbo);
 	glViewport(xPos, glY, xSize, ySize);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -903,10 +764,11 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 void SceneGraph::Render() const
 {
 
-	int w, h;
-	//SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
-	w = SCENEWIDTH;
-	h = SCENEHEIGHT;
+	int w = ScreenManager::getInstance().getRenderWidth();
+	int h = ScreenManager::getInstance().getRenderHeight();
+
+	FBOData& sceneFBO = FBOManager::getInstance().getFBO(FBO::Scene);
+	FBOData& pickingFBO = FBOManager::getInstance().getFBO(FBO::ColorPicker);
 
 	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
 
@@ -947,7 +809,7 @@ void SceneGraph::Render() const
 
 
 	//use the picking buffer so it is seperated
-	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO.fbo);
 	glViewport(xPos, glY, xSize, ySize);
 
 	if (!RENDERMAINSCREEN) {
@@ -1005,8 +867,8 @@ void SceneGraph::Render() const
 		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("ambient"), 1, clearColour);
 
 		//use the picking buffer so it is seperated
-		glBindFramebuffer(GL_FRAMEBUFFER, dockingFBO);
-		glViewport(0, 0, SCENEWIDTH, SCENEHEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO.fbo);
+		glViewport(0, 0, w, h);
 		glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
@@ -1171,12 +1033,5 @@ void SceneGraph::OnDestroy() {
 
 	RemoveAllActors();
 	pickerShader->OnDestroy();
-	glDeleteFramebuffers(1, &pickingFBO);
-	glDeleteRenderbuffers(1, &pickingDepth);
-	glDeleteTextures(1, &pickingTexture);
-
-	glDeleteFramebuffers(1, &dockingFBO);
-	glDeleteRenderbuffers(1, &dockingDepth);
-	glDeleteTextures(1, &dockingTexture);
 }
 

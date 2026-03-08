@@ -143,6 +143,7 @@
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="FBOManager.h" />
     <ClInclude Include="InputCreatorManager.h" />
     <ClInclude Include="MemoryMonitor.h" />
     <ClInclude Include="MemoryRecorder.h" />
@@ -153,8 +154,9 @@
     <ClInclude Include="QuadraticSolver.h" />
     <ClInclude Include="SceneWindow.h" />
     <ClInclude Include="EditorManager.h" />
+    <ClInclude Include="ScreenManager.h" />
     <ClInclude Include="ScriptAbstract.h" />
-    <ClInclude Include="SkeletalAnimation.h" />
+    <ClInclude Include="SettingsConfig.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="XMLManager.h" />
     <ClInclude Include="HierarchyWindow.h" />
@@ -204,6 +206,7 @@
     <ClCompile Include="Debug.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="FBOManager.cpp" />
     <ClCompile Include="InputCreatorManager.cpp" />
     <ClCompile Include="MemoryMonitor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -218,6 +221,7 @@
     <ClCompile Include="QuadraticSolver.cpp" />
     <ClCompile Include="SceneWindow.cpp" />
     <ClCompile Include="EditorManager.cpp" />
+    <ClCompile Include="ScreenManager.cpp" />
     <ClCompile Include="ScriptAbstract.cpp" />
     <ClCompile Include="XMLManager.cpp" />
     <ClCompile Include="HierarchyWindow.cpp" />

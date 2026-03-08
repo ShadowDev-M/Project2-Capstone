@@ -84,14 +84,10 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				ImGui::OpenPopup("Add Component");
 			}
 
-			// sets the placement and size of the dialog box
-			const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 800, mainViewport->WorkPos.y - 600), ImGuiCond_Appearing);
-			ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
-
-			if (ImGui::BeginPopupModal("Add Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-				ImGui::Text("Select A Component");
+			if (ImGui::BeginPopup("Add Component", ImGuiWindowFlags_AlwaysAutoResize)) {
 				// TODO search bar
+				
+				ImGui::Text("Component");
 				ImGui::Separator();
 
 				if (ImGui::Selectable("Mesh Component")) {
@@ -153,12 +149,6 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 						sceneGraph->AddLight(selectedActor->second);
 						
 					}
-				}
-
-				ImGui::Separator();
-
-				if (ImGui::Button("Cancel")) {
-					ImGui::CloseCurrentPopup();
 				}
 
 				ImGui::EndPopup();
@@ -363,7 +353,7 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 
 	ImGui::SameLine();
 	// add tag popup button
-	if (ImGui::Button("+##AddTag", ImVec2(30.0f, 0.0f))) {
+	if (ImGui::Button("+##AddTag", ImVec2(20.0f, 0.0f))) {
 		ImGui::OpenPopup("##TagManager");
 		tagBuffer.clear();
 	}

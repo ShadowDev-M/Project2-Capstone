@@ -476,7 +476,7 @@ void EditorManager::RenderMainMenuBar() {
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Windows")) {
+		if (ImGui::BeginMenu("Window")) {
 			//ImGui::MenuItem("Demo", nullptr, GetWindowStatePtr("Demo"));
 			ImGui::MenuItem("Hierarchy", nullptr, GetWindowStatePtr("Hierarchy"));
 			ImGui::MenuItem("Inspector", nullptr, GetWindowStatePtr("Inspector"));

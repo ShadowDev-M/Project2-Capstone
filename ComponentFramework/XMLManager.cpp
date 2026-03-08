@@ -3,62 +3,6 @@
 #include "ScriptComponent.h"
 #include <memory>
 
-void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute) {
-       
-
-        Ref<Actor> actorToAdd = sceneGraph->GetActor(attribute->Value());
-        if (actorToAdd == nullptr) {
-            actorToAdd = std::make_shared<Actor>(nullptr, attribute->Value());
-        }
-
-
-        std::string nameStr = (attribute->Value());       
-
-       
-        std::tuple tupleArgs = std::tuple_cat(std::make_tuple(actorToAdd.get()), XMLObjectFile::getComponent<TransformComponent>(nameStr));
-            
-
-        //If the transform exists, the transform should be overwritten vs created
-        if (actorToAdd->GetComponent<TransformComponent>()) {
-
-            Ref<TransformComponent> oldTransform = actorToAdd->GetComponent<TransformComponent>();
-
-            //restore pos 
-            Vec3 rePos = std::get<1>(tupleArgs);
-
-            oldTransform->SetPos(rePos.x, rePos.y, rePos.z);
-
-            //restore quat 
-            Quaternion reQuat = std::get<2>(tupleArgs);
-
-            oldTransform->SetOrientation(reQuat);
-            
-            //restore scale 
-            Vec3 reScale = std::get<3>(tupleArgs);
-
-            oldTransform->SetScale(reScale);
-        }
-        else {
-            //create new transform
-            actorToAdd->AddComponent<TransformComponent>(
-
-                std::apply([](auto&&... args) {
-                    return new TransformComponent(args...);
-                    }, tupleArgs)
-
-            );
-        }
-
-
-
-        sceneGraph->AddActor(std::make_shared<Actor>(nullptr, attribute->Value()));
-
-        if (attribute->Next()) addAttributeRecursive(sceneGraph, attribute->Next());   
-    }
-
-
-
-
 void XMLObjectFile::runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XMLElement* actorElement, XMLElement* rootElement) {
 
     //During the first run of the function, (if rootElement is empty) the root would be set to the first actorElement which should be the root.

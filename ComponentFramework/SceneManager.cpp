@@ -7,6 +7,8 @@
 #include "Scene3GUI.h"
 #include "EditorManager.h"
 #include "SceneGraph.h"
+#include "ScreenManager.h"
+#include "FBOManager.h"
 
 SceneManager::SceneManager() :
 	currentScene{ nullptr }, window{ nullptr }, timer{ nullptr },
@@ -20,6 +22,8 @@ SceneManager::~SceneManager() {
 	if (EditorManager::getInstance().IsInitialized()) {
 		EditorManager::getInstance().Shutdown();
 	}
+
+	FBOManager::getInstance().OnDestroy();
 
 	if (currentScene) {
 		currentScene->OnDestroy();
@@ -52,6 +56,19 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 		return false;
 	}
 
+	// filling out config file & initializing screenmanager
+	SettingsConfig cfg;
+	cfg.windowTitle = name_;
+	cfg.renderWidth = width_;
+	cfg.renderHeight = height_;
+	cfg.displayWidth = width_;
+	cfg.displayHeight = height_;
+	ScreenManager::getInstance().Initialize(window->getWindow(), cfg);
+
+	// creating FBOs
+	FBOManager::getInstance().CreateFBO(FBO::Scene, width_, height_);
+	FBOManager::getInstance().CreateFBO(FBO::ColorPicker, width_, height_);
+
 	timer = new Timer();
 	if (timer == nullptr) {
 		Debug::FatalError("Failed to initialize Timer object", __FILE__, __LINE__);
@@ -62,11 +79,13 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 	/********************************************************************************/
 	
+#ifdef ENGINE_EDITOR
 	EditorManager& editor = EditorManager::getInstance();
 	if (!editor.Initialize(window->getWindow(), window->getContext(), &SceneGraph::getInstance())) {
 		Debug::FatalError("Failed to initialize EditorManager", __FILE__, __LINE__);
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -99,6 +118,10 @@ void SceneManager::HandleEvents() {
 	while (SDL_PollEvent(&sdlEvent)) { /// Loop over all events in the SDL queue
 
 		editor.HandleEvents(sdlEvent);
+
+		if (sdlEvent.type == SDL_WINDOWEVENT && sdlEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
+			ScreenManager::getInstance().HandleResize(sdlEvent.window.data1, sdlEvent.window.data2, Source::WindowDrag);
+		}
 
 		if (sdlEvent.type == SDL_EventType::SDL_QUIT) {
 			isRunning = false;

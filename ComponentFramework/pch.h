@@ -4,6 +4,10 @@
 // only store headers here which will not get edited often, i.e core engine/library headers
 // those shouldn't get edited as often so this is a good place to shove them
 
+// TODO: CMake setup with custom executables for the editor and the game with targeted compiling https://cmake.org/cmake/help/latest/command/target_compile_definitions.html
+// these will be preprocessor macros/defines using CMake, I am just setting them up for now so that we can start blocking out code, and then later when we setup CMake, remove the define here
+#define ENGINE_EDITOR
+
 // Standard Library (STD::)
 #include <string>
 #include <unordered_map>
