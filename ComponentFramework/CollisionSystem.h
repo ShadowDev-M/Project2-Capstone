@@ -38,6 +38,9 @@ struct RaycastHit {
 	float t = 0.0f; // The distance from the ray's origin to the impact point.
 	Vec3 normal; // The normal of the surface the ray hit.
 	Vec3 intersectionPoint; // The impact point in world space where the ray hit the collider.
+
+	RaycastHit(bool isHit = false, Ref<CollisionComponent> hitC = nullptr, Ref<Actor> hitA = nullptr, float t_ = 0.0f, Vec3 norm = Vec3(), Vec3 interP = Vec3()) :
+		isIntersected(isHit), hitCollider(hitC), hitActor(hitA), t(t_), normal(norm), intersectionPoint(interP) {}
 };
 
 // this is mostly to help out with collision detection event functions,
@@ -107,7 +110,7 @@ public:
 	std::vector<RaycastHit> RaycastAll(const Vec3& origin, const Vec3& direction, float maxDistance = FLT_MAX);
 
 	// will raycast with screen coords and return hit data
-	RaycastHit ScreenRaycast(int sdlMouseX, int sdlMouseY);
+	RaycastHit ScreenRaycast(int mouseX, int mouseY);
 	
 private:
 	// rest of the collision detection functions
