@@ -40,6 +40,15 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 			ImGui::EndMenuBar();
 		}
 
+		// TODO: actual functionaility for the add button, use for creating empty and premade actors, like preset camera, shapes, etc (would be the same extact options as empty right click)
+		ImGui::AlignTextToFramePadding();
+		if (ImGui::Button("+##AddActors", ImVec2(20.0f, 0.0f))) {
+			//ImGui::OpenPopup("##TagManager");
+			//tagBuffer.clear();
+		}
+		ImGui::SameLine();
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		filter.Draw("##HierarchyFilter", -1.0f);
 		ImGui::Separator();
 

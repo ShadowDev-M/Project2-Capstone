@@ -2,6 +2,8 @@
 #include "SceneWindow.h"
 #include "InputManager.h"
 #include "EditorManager.h"
+#include "ScreenManager.h"
+#include "FBOManager.h"
 
 SceneWindow::SceneWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
     EditorManager::getInstance().RegisterWindow("Scene", true);
@@ -88,10 +90,10 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
 		ImGui::Image((ImTextureID)(intptr_t)SceneGraph::getInstance().dockingFBO, size, ImVec2(0, 1), ImVec2(1, 0));
        */
         
-        int w, h;
+        int w = ScreenManager::getInstance().getRenderWidth();
+        int h = ScreenManager::getInstance().getRenderHeight();
 
-        w = SceneGraph::SCENEWIDTH;
-        h = SceneGraph::SCENEHEIGHT;
+        FBOData& sceneFBO = FBOManager::getInstance().getFBO(FBO::Scene);
 
         //SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
 
@@ -116,7 +118,7 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
 
         // Display the image with calculated dimensions
         ImGui::SetCursorPos(imagePos);
-        ImGui::Image((void*)(intptr_t)SceneGraph::getInstance().dockingTexture, scaledTexture, ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image((void*)(intptr_t)sceneFBO.texture, scaledTexture, ImVec2(0, 1), ImVec2(1, 0));
         
         if (ImGui::BeginDragDropTarget()) {
 

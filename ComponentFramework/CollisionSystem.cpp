@@ -1851,73 +1851,74 @@ std::vector<RaycastHit> CollisionSystem::RaycastAll(const Vec3& origin, const Ve
 
 RaycastHit CollisionSystem::ScreenRaycast(int sdlMouseX, int sdlMouseY)
 {
-	// TODO: will change when create FBO builder and non hardcoded aspectratio/window size
-	auto* mouseMap = InputManager::getInstance().getMouseMap();
-	
-	if (!mouseMap->dockingHovered) {
-		return RaycastHit{};
-	}
+	//// TODO: will change when create FBO builder and non hardcoded aspectratio/window size
+	//auto* mouseMap = InputManager::getInstance().getMouseMap();
+	//
+	//if (!mouseMap->dockingHovered) {
+	//	return RaycastHit{};
+	//}
 
-	float sceneW = static_cast<float>(SceneGraph::SCENEWIDTH);
-	float sceneH = static_cast<float>(SceneGraph::SCENEHEIGHT);
-	float aspect = sceneW / sceneH;
+	//float sceneW = static_cast<float>(SceneGraph::SCENEWIDTH);
+	//float sceneH = static_cast<float>(SceneGraph::SCENEHEIGHT);
+	//float aspect = sceneW / sceneH;
 
-	ImVec2 dockPos = mouseMap->dockingPos;
-	ImVec2 dockSize = mouseMap->dockingSize;
+	//ImVec2 dockPos = mouseMap->dockingPos;
+	//ImVec2 dockSize = mouseMap->dockingSize;
 
-	// Calculate scaled dimensions based on aspect ratio
-	float textureW, textureH;
-	if (dockSize.x / aspect <= dockSize.y)
-	{
-		textureW = dockSize.x;
-		textureH = dockSize.x / aspect;
-	}
-	else
-	{
-		textureH = dockSize.y;
-		textureW = dockSize.y * aspect;
-	}
+	//// Calculate scaled dimensions based on aspect ratio
+	//float textureW, textureH;
+	//if (dockSize.x / aspect <= dockSize.y)
+	//{
+	//	textureW = dockSize.x;
+	//	textureH = dockSize.x / aspect;
+	//}
+	//else
+	//{
+	//	textureH = dockSize.y;
+	//	textureW = dockSize.y * aspect;
+	//}
 
-	// docking window size offset
-	float textureOffsetX = (dockSize.x - textureW) * 0.5f;
-	float textureOffsetY = (dockSize.y - textureH) * 0.5f;
-	float textureOriginX = dockPos.x + textureOffsetX;
-	float textureOriginY = dockPos.y + textureOffsetY;
+	//// docking window size offset
+	//float textureOffsetX = (dockSize.x - textureW) * 0.5f;
+	//float textureOffsetY = (dockSize.y - textureH) * 0.5f;
+	//float textureOriginX = dockPos.x + textureOffsetX;
+	//float textureOriginY = dockPos.y + textureOffsetY;
 
-	// mouse offset
-	float relX = static_cast<float>(sdlMouseX) - textureOriginX;
-	float relY = static_cast<float>(sdlMouseY) - textureOriginY;
+	//// mouse offset
+	//float relX = static_cast<float>(sdlMouseX) - textureOriginX;
+	//float relY = static_cast<float>(sdlMouseY) - textureOriginY;
 
-	// if mouse is out of bounds
-	if (relX < 0 || relY < 0 || relX > textureW || relY > textureH) {
-		return RaycastHit{};
-	}
+	//// if mouse is out of bounds
+	//if (relX < 0 || relY < 0 || relX > textureW || relY > textureH) {
+	//	return RaycastHit{};
+	//}
 
-	// converting mouse coords to scene size
-	float sceneMouseX = relX * (sceneW / textureW);
-	float sceneMouseY = relY * (sceneH / textureH);
+	//// converting mouse coords to scene size
+	//float sceneMouseX = relX * (sceneW / textureW);
+	//float sceneMouseY = relY * (sceneH / textureH);
 
-	// world space converisons
-	float ndcX = (2.0f * sceneMouseX / sceneW) - 1.0f;
-	float ndcY = 1.0f - (2.0f * sceneMouseY / sceneH);
+	//// world space converisons
+	//float ndcX = (2.0f * sceneMouseX / sceneW) - 1.0f;
+	//float ndcY = 1.0f - (2.0f * sceneMouseY / sceneH);
 
-	auto camera = SceneGraph::getInstance().getUsedCamera();
-	Matrix4 proj = camera->GetProjectionMatrix();
-	Matrix4 view = camera->GetViewMatrix();
-	Matrix4 invProj = MMath::inverse(proj);
-	Matrix4 invView = MMath::inverse(view);
+	//auto camera = SceneGraph::getInstance().getUsedCamera();
+	//Matrix4 proj = camera->GetProjectionMatrix();
+	//Matrix4 view = camera->GetViewMatrix();
+	//Matrix4 invProj = MMath::inverse(proj);
+	//Matrix4 invView = MMath::inverse(view);
 
-	Vec4 clipPoint(ndcX, ndcY, -1.0f, 1.0f);
-	Vec4 viewPoint = invProj * clipPoint;
-	viewPoint.z = -1.0f;
-	viewPoint.w = 0.0f;
+	//Vec4 clipPoint(ndcX, ndcY, -1.0f, 1.0f);
+	//Vec4 viewPoint = invProj * clipPoint;
+	//viewPoint.z = -1.0f;
+	//viewPoint.w = 0.0f;
 
-	Vec4 worldDir4 = invView * viewPoint;
-	Vec3 worldDir = VMath::normalize(Vec3(worldDir4.x, worldDir4.y, worldDir4.z));
+	//Vec4 worldDir4 = invView * viewPoint;
+	//Vec3 worldDir = VMath::normalize(Vec3(worldDir4.x, worldDir4.y, worldDir4.z));
 
-	Vec3 cameraPos = camera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition();
+	//Vec3 cameraPos = camera->GetUserActor()->GetComponent<TransformComponent>()->GetPosition();
 
-	return Raycast(cameraPos, worldDir);
+	//return Raycast(cameraPos, worldDir);
+	return RaycastHit();
 }
 
 bool CollisionSystem::RaycastSphere(const Vec3& origin, const Vec3& direction, Ref<Actor> actor_, RaycastHit& hit)

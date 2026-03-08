@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CameraComponent.h"
+#include "ScreenManager.h"
 
 CameraComponent::CameraComponent(Ref<Actor> userActor_, float fovy, float aspectRatio, float nearClipPlane, float farClipPlane) : 
 	Component(nullptr), m_fov(fovy), m_aspectRatio(aspectRatio), m_nearClipPlane(nearClipPlane), m_farClipPlane(farClipPlane)
@@ -7,27 +8,32 @@ CameraComponent::CameraComponent(Ref<Actor> userActor_, float fovy, float aspect
 
 	userActor = userActor_;
 	projectionMatrix = MMath::perspective(m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane);
-
 	viewMatrix.loadIdentity();
-	//viewMatrix = MMath::lookAt(Vec3(0.0f, 0.0f, 5.0f), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
-
+	
+	// register the camera to the resize dispatcher
+	resizeCallbackID = ScreenManager::getInstance().OnRenderResize(
+		[this](int w, int h) {
+			m_aspectRatio = static_cast<float>(w) / static_cast<float>(h);
+			UpdateProjectionMatrix();
+		}
+	);
 }
 
-CameraComponent::~CameraComponent()
-{
-
+CameraComponent::~CameraComponent() {
+	OnDestroy();
 }
-
-
 
 void CameraComponent::OnDestroy() {
-	std::cout << "deleting cam's actor pointer" << std::endl;
+	// unregister the camera from the resize dispatcher
+	if (resizeCallbackID != -1) {
+		ScreenManager::getInstance().RemoveRenderResizeCallback(resizeCallbackID);
+		resizeCallbackID = -1;
+	}
+
 	userActor = nullptr;
 }
 
-void CameraComponent::Update(const float deltaTime) {
-	std::cout << "Hello from Update " << deltaTime << '\n';
-}
+void CameraComponent::Update(const float deltaTime) {}
 
 void CameraComponent::Render()const {}
 

@@ -46,18 +46,6 @@ private:
 
 	bool RENDERMAINSCREEN = 0;
  
-	GLuint pickingFBO = 0;
-	GLuint pickingTexture = 0;
-	GLuint pickingDepth = 0;
-
-	int pickingFBOWidth, pickingFBOHeight;
-
-	GLuint dockingFBO = 0;
-	GLuint dockingTexture = 0;
-	GLuint dockingDepth = 0;
-
-	int dockingFBOWidth, dockingFBOHeight; // Or match your window size
-
 	Ref<Actor> debugCamera;
 
 	Ref<CameraComponent> usedCamera;
@@ -107,12 +95,7 @@ public:
 
 	void pushAnimationToWorker(Ref<Animation> animation);
 
-	//Hardcode the screen height and width rather than using SDL_GetWindowSize, as at lot of the code is designed for 1280 x 720
-	static const int SCENEWIDTH = 1280;
-	static const int SCENEHEIGHT = 720;
-
 	void stopMeshLoadingWorker();
-
 
 	// Meyers Singleton (from JPs class)
 	static SceneGraph& getInstance() {
@@ -121,8 +104,6 @@ public:
 	}
 
 	bool isAllComponentsLoaded() { return (workerQueue.empty()); }
-
-	bool queryMeshLoadStatus();
 
 	SceneGraph();
 
@@ -193,8 +174,6 @@ public:
 
 	std::unordered_map<uint32_t, Ref<Actor>> getAllActors() { return Actors; }
 
-	Ref<Actor> MeshRaycast(Vec3 start, Vec3 end);
-
 	Ref<Actor>GetActorCStr(const char* actorName) const;
 
 	Ref<Actor> GetActor(const std::string& actorName) const;
@@ -218,16 +197,6 @@ public:
 	/// </summary>
 	/// <param name="deltaTime"></param>
 	void Update(const float deltaTime);
-
-
-	//values for picking framebuffer
-
-	//create colour picker fbo
-	void createFBOPicking(int w, int h);
-
-	
-
-	void createDockingFBO(int w, int h);
 
 	//Colour picking for object selection
 	Ref<Actor> pickColour(int mouseX, int mouseY);

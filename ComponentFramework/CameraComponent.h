@@ -6,9 +6,9 @@ using namespace MATH;
 
 class CameraComponent : public Component {
 private:
-	
-
 	Ref<Actor> userActor;
+
+	int resizeCallbackID = -1;
 
 	Matrix4 projectionMatrix;
 	Matrix4 viewMatrix;

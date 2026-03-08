@@ -162,42 +162,11 @@ public:
         
         runCreateActorsOfElementChildren(sceneGraph, actorList);
 
-
-        //deprecated 
-        //if (actorList->FirstAttribute()) addAttributeRecursive(sceneGraph, actorList->FirstAttribute());;
         return 1;
 
 
 
 
-
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="sceneGraph"></param>
-    /// <param name="filename"></param>
-    /// <returns></returns>
-    static int addComponentsFromFile(SceneGraph* sceneGraph, std::string filename) {
-        std::string path = "Cell Files/" + filename + ".xml";
-        const char* id = path.c_str();
-        XMLDocument doc;
-
-        //try loading the file into doc
-        XMLError eResult = doc.LoadFile(id);
-        if (eResult != XML_SUCCESS) {
-#ifdef _DEBUG
-            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
-#endif
-            return eResult;
-        }
-        XMLNode* cRoot = doc.RootElement();
-
-        XMLElement* actorList = cRoot->FirstChildElement("Actors");
-
-
-        if (actorList->FirstAttribute()) addAttributeRecursive(sceneGraph, actorList->FirstAttribute());;
 
     }
 
