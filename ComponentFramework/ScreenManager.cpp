@@ -76,6 +76,8 @@ void ScreenManager::SetDisplayResolution(int w, int h)
     cfg.displayHeight = h;
 
     SDL_SetWindowSize(window, w, h);
+
+    displayResolutionNotifier(w, h);
 }
 
 void ScreenManager::setTargetFPS(int fps_)
