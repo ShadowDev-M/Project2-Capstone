@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "ColliderDebug.h"
+#include "MemoryRecorder.h"
 
 bool ColliderDebug::OnCreate() {
-	debugShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colliderDebugVert.glsl", "shaders/colliderDebugFrag.glsl");
+    RECORD debugShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colliderDebugVert.glsl", "shaders/colliderDebugFrag.glsl");
 
 	if (!debugShader->OnCreate()) return false;
 

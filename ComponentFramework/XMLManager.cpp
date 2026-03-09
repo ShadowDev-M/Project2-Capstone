@@ -43,7 +43,7 @@ void XMLObjectFile::addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttri
             actorToAdd->AddComponent<TransformComponent>(
 
                 std::apply([](auto&&... args) {
-                    return new TransformComponent(args...);
+                    RECORD return std::make_shared<TransformComponent>(args...);
                     }, tupleArgs)
 
             );
@@ -158,7 +158,7 @@ void XMLObjectFile::createActorFromElement(SceneGraph* sceneGraph, XMLElement* a
         actorToAdd->AddComponent<TransformComponent>(
 
             std::apply([](auto&&... args) {
-                return new TransformComponent(args...);
+                RECORD return std::make_shared<TransformComponent>(args...);
                 }, tupleArgs)
 
         );

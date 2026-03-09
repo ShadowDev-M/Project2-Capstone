@@ -225,14 +225,14 @@ void SceneGraph::checkValidCamera()
 		else {
 
 			std::cout << "DebugCam is invalid" << std::endl;
-			debugCamera = std::make_shared<Actor>(nullptr, "cameraDebugOne");
-			debugCamera->AddComponent<TransformComponent>(debugCamera.get(), Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
+			RECORD debugCamera = std::make_shared<Actor>(nullptr, "cameraDebugOne");
+			RECORD debugCamera->AddComponent<TransformComponent>(debugCamera.get(), Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
 			debugCamera->OnCreate();
 
 			//doesn't need to be added to the sceneGraph
 			//sceneGraph.AddActor(debugCamera);
 
-			debugCamera->AddComponent<CameraComponent>(debugCamera, 45.0f, (16.0f / 9.0f), 0.5f, 300.0f);
+			RECORD debugCamera->AddComponent<CameraComponent>(debugCamera, 45.0f, (16.0f / 9.0f), 0.5f, 300.0f);
 			debugCamera->GetComponent<CameraComponent>()->OnCreate();
 			debugCamera->GetComponent<CameraComponent>()->fixCameraToTransform();
 
@@ -347,6 +347,11 @@ void SceneGraph::Stop()
 {
 	for (auto& actor : Actors) {
 		ScriptService::stopActorScripts(actor.second);
+//		lua.script("for k,v in pairs(_G) do if type(v)=='userdata' then _G[k]=nil end end");
+		//lua = std::make_unique<sol::state>();
+		
+		//ScriptService::loadLibraries();
+
 
 
 		Ref<AnimatorComponent> actorAnimator =  actor.second->GetComponent<AnimatorComponent>();
@@ -355,6 +360,11 @@ void SceneGraph::Stop()
 			actorAnimator->activeClip.currentTime = 0.0f;
 		}
 	}
+
+	
+
+	ScriptService::ClearLuaState();
+
 	// Stop physics engine 
 	PhysicsSystem::getInstance().ResetPhysics();
 
@@ -405,7 +415,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		std::string scriptName = XMLObjectFile::getComponent<ScriptComponent>(name_);
 		for (int i = 1; !scriptName.empty(); i++) {
 
-			actor_->AddComponent<ScriptComponent>(actor_.get(), AssetManager::getInstance().GetAsset<ScriptAbstract>(scriptName), XMLObjectFile::getPublicVars(name_, i-1));
+			RECORD actor_->AddComponent<ScriptComponent>(actor_.get(), AssetManager::getInstance().GetAsset<ScriptAbstract>(scriptName), XMLObjectFile::getPublicVars(name_, i-1));
 			scriptName = XMLObjectFile::getComponent<ScriptComponent>(name_, i);
 
 
@@ -426,14 +436,14 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 
 	actor_->AddComponent<TransformComponent>(Ref<TransformComponent>(std::apply([](auto&&... args) {
-		return new TransformComponent(args...);
+		RECORD return std::make_shared<TransformComponent>(args...);
 		}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TransformComponent>(name_)))));
 	
 
 
 	if (XMLObjectFile::hasComponent<CameraComponent>(name_)) {
 		Ref<CameraComponent> CamC = Ref<CameraComponent>(std::apply([](auto&&... args) {
-			return new CameraComponent(args...);
+			RECORD return std::make_shared<CameraComponent>(args...);
 			}, XMLObjectFile::getComponent<CameraComponent>(name_)));
 
 		if (!actor_->GetComponent<CameraComponent>()) {
@@ -450,7 +460,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
 		Ref<LightComponent> lightG = Ref<LightComponent>(std::apply([](auto&&... args) {
-			return new LightComponent(args...);
+			RECORD return std::make_shared<LightComponent>(args...);
 			}, XMLObjectFile::getComponent<LightComponent>(name_)));
 
 		if (!actor_->GetComponent<LightComponent>()) {
@@ -470,7 +480,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		auto test = std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<AnimatorComponent>(name_));
 
 		Ref<AnimatorComponent> animC = Ref<AnimatorComponent>(std::apply([](auto&&... args) {
-			return new AnimatorComponent(args...);
+			RECORD return std::make_shared<AnimatorComponent>(args...);
 			}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<AnimatorComponent>(name_))));
 
 		if (!actor_->GetComponent<AnimatorComponent>()) {
@@ -484,7 +494,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 	if (XMLObjectFile::hasComponent<PhysicsComponent>(name_)) {		
 		Ref<PhysicsComponent> PC = Ref<PhysicsComponent>(std::apply([](auto&&... args) {
-			return new PhysicsComponent(args...);
+			RECORD return std::make_shared<PhysicsComponent>(args...);
 			}, XMLObjectFile::getComponent<PhysicsComponent>(name_)));
 
 		if (!actor_->GetComponent<PhysicsComponent>()) {
@@ -495,7 +505,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 	if (XMLObjectFile::hasComponent<CollisionComponent>(name_)) {		
 		Ref<CollisionComponent> CC = Ref<CollisionComponent>(std::apply([](auto&&... args) {
-			return new CollisionComponent(args...);
+			RECORD return std::make_shared<CollisionComponent>(args...);
 			}, XMLObjectFile::getComponent<CollisionComponent>(name_)));
 
 		if (!actor_->GetComponent<CollisionComponent>()) {
