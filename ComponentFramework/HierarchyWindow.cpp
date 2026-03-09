@@ -62,7 +62,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 				std::string newActorName = GenerateDuplicateName(actorName);
 
 				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
-				newActor->AddComponent<TransformComponent>(newActor.get(), Vec3(0.0f, 0.0f, 0.0f),
+				RECORD newActor->AddComponent<TransformComponent>(newActor.get(), Vec3(0.0f, 0.0f, 0.0f),
 					Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
 				newActor->OnCreate();
 				sceneGraph->AddActor(newActor);	
@@ -308,10 +308,10 @@ void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor> original_) {
 	if (!original_) return nullptr;
 
-	Ref<Actor> copy = std::make_shared<Actor>(original_->getParentActor(), newName_);
+	RECORD Ref<Actor> copy = std::make_shared<Actor>(original_->getParentActor(), newName_);
 
 	if (auto transform = original_->GetComponent<TransformComponent>()) {
-		copy->AddComponent<TransformComponent>(copy.get(),
+		RECORD copy->AddComponent<TransformComponent>(copy.get(),
 			transform->GetPosition(),
 			transform->GetOrientation(),
 			transform->GetScale());
@@ -330,11 +330,11 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	if (auto camera = original_->GetComponent<CameraComponent>()) {
-		copy->AddComponent<CameraComponent>(copy, camera->getFOV(), camera->getAspectRatio(), camera->getNearClipPlane(), camera->getFarClipPlane());
+		RECORD copy->AddComponent<CameraComponent>(copy, camera->getFOV(), camera->getAspectRatio(), camera->getNearClipPlane(), camera->getFarClipPlane());
 	}
 
 	if (auto light = original_->GetComponent<LightComponent>()) {
-		copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
+		RECORD copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
 		sceneGraph->AddLight(copy);
 	}
 

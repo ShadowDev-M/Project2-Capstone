@@ -1,7 +1,7 @@
 #pragma once
 #include "Actor.h"
 //lua handler
-static sol::state lua;
+static std::unique_ptr<sol::state> lua;
 
 //should be called before any lua scripts are added
 class ScriptAbstract;
@@ -59,7 +59,7 @@ public:
 	void restoreAll() {
 		
 		for (auto& item : persistentLocals) {
-			lua.registry().set(item.first, item.second);
+			(*lua).registry().set(item.first, item.second);
 		}
 		
 	}
@@ -96,6 +96,7 @@ class ScriptService {
 	friend class SceneGraph;
 private:
 	static void preloadScript(ScriptComponent* script_);
+	static void ClearLuaState();
 	static void startActorScripts(Ref<Actor> target);
 	static void stopActorScripts(Ref<Actor> target);
 

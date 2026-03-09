@@ -102,7 +102,7 @@ void XMLObjectFile::createActorFromElement(SceneGraph* sceneGraph, XMLElement* a
         actorToAdd->AddComponent<TransformComponent>(
 
             std::apply([](auto&&... args) {
-                return new TransformComponent(args...);
+                RECORD return std::make_shared<TransformComponent>(args...);
                 }, tupleArgs)
 
         );

@@ -103,9 +103,9 @@ void ScriptComponent::setLocal(const std::string& name, sol::object value) {
 void ScriptComponent::setPublicReference(const std::string refName, float ref)
 {
 	if (publicVariables[refName].valid()) {		
-		lua.registry().set(refName, ref);                         
+		(*lua).registry().set(refName, ref);                         
 
-		publicVariables[refName] = lua.registry()[refName];
+		publicVariables[refName] = (*lua).registry()[refName];
 		
 	//	std::cout << publicVariables[refName].as<float>() << std::endl;
 	}
@@ -218,7 +218,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 		
 		
 
-		sol::load_result loaded_script = lua.load(script->code);
+		sol::load_result loaded_script = (*lua).load(script->code);
 
 		//Check runtime vs compiler errors, (Not writing anything just a check)
 		if (!loaded_script.valid()) {
@@ -239,14 +239,14 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 		else {
 			try {
 
-				lua["Script"] = script;
+				(*lua)["Script"] = script;
 
 				//restore the variables previously set
 
 				//define AFTER so that we don't accidentally give an unusable reference
 				defineUsertypes(user);
 
-				lua.script(R"(
+				(*lua).script(R"(
     setmetatable(_G, {
     __index = function(t, k) 
         return Script:GetLocal(k) or rawget(t, k)
@@ -264,7 +264,7 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 				script->restoreAll();
 
 
-				lua["Start"]();
+				(*lua)["Start"]();
 				script->isCreated = true;
 
 
@@ -285,12 +285,16 @@ void ScriptService::startActorScripts(Ref<Actor> target) {
 
 void ScriptService::stopActorScripts(Ref<Actor> target)
 {
+
 	for (auto& comp : target->components) {
 
 		//filter out non scripts, but don't break as we want to check for multiple scripts on an actor
 		if (!std::dynamic_pointer_cast<ScriptComponent>(comp)) continue;
 
 		Ref<ScriptComponent> script = std::dynamic_pointer_cast<ScriptComponent>(comp);
+		script->pubVars.clear();
+		script->publicVariables.clear();    // destroys table + all its contents
+		script->persistentLocals.clear();
 
 		//No point in continuing if its already started
 		script->isCreated = false;
@@ -304,6 +308,8 @@ void ScriptService::stopActorScripts(Ref<Actor> target)
 		}
 		
 	}
+
+	
 }
 
 void ScriptService::preloadActorScripts(Ref<Actor> target) {
@@ -335,14 +341,14 @@ void ScriptService::updateAllScripts(float deltaTime) {
 		
 			//Script should be good to run
 			try {
-				lua["Script"] = script;
+				(*lua)["Script"] = script;
 
 				//restore the variables previously set
 
 				//define AFTER so that we don't accidentally give an unusable reference
 				defineUsertypes(user);
 
-				lua.script(R"(
+				(*lua).script(R"(
     setmetatable(_G, {
     __index = function(t, k) 
         return Script:GetLocal(k) or rawget(t, k)
@@ -359,7 +365,7 @@ void ScriptService::updateAllScripts(float deltaTime) {
 				script->restoreAll();
 
 
-				sol::protected_function update = lua["Update"];
+				sol::protected_function update = (*lua)["Update"];
 				if (update.valid()) {
 					auto result = update(deltaTime);
 					if (!result.valid()) {
@@ -407,15 +413,15 @@ void ScriptService::defineUsertypes(Actor* user) {
 })
 )");*/
 
-	lua["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
-	lua["Transform"] = user->GetComponent<TransformComponent>();
+	(*lua)["Transform"] = sol::lua_nil;  // Reset first or it'll not be consistent 
+	(*lua)["Transform"] = user->GetComponent<TransformComponent>();
 
 
-	lua["GameObject"] = sol::lua_nil;  // Reset first or it'll not be consistent 
-	lua["GameObject"] = user;
+	(*lua)["GameObject"] = sol::lua_nil;  // Reset first or it'll not be consistent 
+	(*lua)["GameObject"] = user;
 
-	lua["Game"] = sol::lua_nil;
-	lua["Game"] = &SceneGraph::getInstance();
+	(*lua)["Game"] = sol::lua_nil;
+	(*lua)["Game"] = &SceneGraph::getInstance();
 	
 }
 
@@ -432,7 +438,7 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 
 		
 
-		sol::load_result loaded_script = lua.load(script->code);
+		sol::load_result loaded_script = (*lua).load(script->code);
 
 
 		if (!loaded_script.valid()) {
@@ -449,11 +455,11 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 
 			//Script should be good to run
 			try {
-				lua["Script"] = script;
+				(*lua)["Script"] = script;
 				
 				defineUsertypes(user);
 
-				lua.script(R"(
+				(*lua).script(R"(
     setmetatable(_G, {
     __index = function(t, k) 
         return Script:GetLocal(k) or rawget(t, k)
@@ -471,7 +477,7 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 
 
 
-				sol::protected_function preload = lua["Preload"];
+				sol::protected_function preload = (*lua)["Preload"];
 				if (preload.valid()) {
 					auto result = preload();
 					if (!result.valid()) {
@@ -523,7 +529,21 @@ void ScriptService::preloadScript(ScriptComponent* script) {
 	
 }
 
+void ScriptService::ClearLuaState() {
 
+	scriptsInUse.clear();
+
+	// destroy _G and all the tables/refs
+	lua->globals() = sol::lua_nil;         
+	lua->collect_garbage();              
+	lua->stack_clear();                    
+
+	//no need to registry wipe as reset does that
+	lua.reset();
+
+	loadLibraries();
+	
+}
 
 bool ScriptService::libLoaded = false;
 
@@ -531,7 +551,11 @@ void ScriptService::loadLibraries()
 {
 	if (libLoaded) return;
 
-	lua.open_libraries(
+	if (lua) { 
+		lua.reset(); }
+	lua = std::make_unique<sol::state>();
+
+	lua->open_libraries(
 		sol::lib::base,    // print, assert, etc.
 		sol::lib::math,    // math functions
 		sol::lib::table,   // table manipulation
@@ -551,7 +575,7 @@ void ScriptService::loadLibraries()
 	void(TransformComponent::*TRANSFORM_SETPOSFLOAT)(float,float,float) = &TransformComponent::SetPos;
 
 
-	lua.new_usertype<TransformComponent>("Transform",
+	(*lua).new_usertype<TransformComponent>("Transform",
 		//Write new functions to include parent's transform and get global transforms
 		"Position", sol::property(&TransformComponent::GetPosition, TRANSFORM_SETPOSVEC3),
 		"Rotation", sol::property(&TransformComponent::GetOrientation, &TransformComponent::SetOrientation),
@@ -560,13 +584,13 @@ void ScriptService::loadLibraries()
 
 	);
 
-	lua.new_usertype<ScriptComponent>("ScriptComponent",
+	(*lua).new_usertype<ScriptComponent>("ScriptComponent",
 		"SetLocal", &ScriptComponent::setLocal,
 		"GetLocal", &ScriptComponent::getLocal,
 		"HasLocal", &ScriptComponent::hasLocal
 	);
 
-	lua.new_usertype<PhysicsComponent>("Rigidbody",
+	(*lua).new_usertype<PhysicsComponent>("Rigidbody",
 		"Vel", sol::property(&PhysicsComponent::getVel, &PhysicsComponent::setVel),
 		"AddAccel", &PhysicsComponent::AddForce,
 		"Drag", sol::property(&PhysicsComponent::getDrag, &PhysicsComponent::setDrag),
@@ -578,7 +602,7 @@ void ScriptService::loadLibraries()
 		"State", sol::property(&PhysicsComponent::getState, &PhysicsComponent::setState)
 	);
 
-	lua.new_usertype<RaycastHit>("RaycastHit", 
+	(*lua).new_usertype<RaycastHit>("RaycastHit",
 		"IsHit", sol::property([](const RaycastHit& h) {return h.isIntersected; }),
 		"GameObject", sol::property([](const RaycastHit& h) {return h.hitActor; }),
 		"Distance", sol::property([](const RaycastHit& h) {return h.t; }),
@@ -586,7 +610,7 @@ void ScriptService::loadLibraries()
 		"Point", sol::property([](const RaycastHit& h) {return h.intersectionPoint; })
 		);
 
-	lua.new_usertype<CameraComponent>("Camera",
+	(*lua).new_usertype<CameraComponent>("Camera",
 		"FOV", sol::property(&CameraComponent::getFOV, &CameraComponent::setFOV),
 		"NearClipPlane", sol::property(&CameraComponent::getNearClipPlane, &CameraComponent::setNearClipPlane),
 		"FarClipPlane", sol::property(&CameraComponent::getFarClipPlane, &CameraComponent::setFarClipPlane),
@@ -594,7 +618,7 @@ void ScriptService::loadLibraries()
 		"Transform", sol::property(&CameraComponent::GetUserActorTransform)
 	);
 
-	lua.new_usertype<AnimationClip>("AnimationClip",
+	(*lua).new_usertype<AnimationClip>("AnimationClip",
 		sol::constructors<AnimationClip()>(),
 
 
@@ -612,7 +636,7 @@ void ScriptService::loadLibraries()
 		"PreloadAnimation", &AnimationClip::preloadAnimation
 	);
 
-	lua.new_usertype<AnimatorComponent>("Animator",
+	(*lua).new_usertype<AnimatorComponent>("Animator",
 		"Play", &AnimatorComponent::PlayClip,
 		"Stop", &AnimatorComponent::StopClip,
 		"GetPlayState", &AnimatorComponent::isPlaying,
@@ -627,7 +651,7 @@ void ScriptService::loadLibraries()
 
 
 
-	lua.new_usertype<Actor>("GameObject",
+	(*lua).new_usertype<Actor>("GameObject",
 		"Transform", sol::property(&Actor::GetComponent<TransformComponent>),
 		"Camera", sol::property(&Actor::GetComponent<CameraComponent>),
 		"Animator", sol::property(&Actor::GetComponent<AnimatorComponent>),
@@ -640,14 +664,14 @@ void ScriptService::loadLibraries()
 	// Input Manager Lua
 	
 	// table with input states
-	lua["InputState"] = lua.create_table_with(
+	(*lua)["InputState"] = lua->create_table_with(
 		"Released", static_cast<int>(InputState::Released),
 		"Pressed", static_cast<int>(InputState::Pressed),
 		"Held", static_cast<int>(InputState::Held)
 	);
 
 	// for getting the key
-	sol::table tab = lua.create_table();
+	sol::table tab = lua->create_table();
 	tab.set_function("GetInputState", &InputCreatorManager::getInputState);
 
 	// helper functions for getting if key down, pressed, released
@@ -693,7 +717,7 @@ void ScriptService::loadLibraries()
 		return s == InputState::Released;
 		});
 
-	lua.new_usertype<SceneGraph>("Game",
+	lua->new_usertype<SceneGraph>("Game",
 		"Find", &SceneGraph::GetActorCStr, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
 		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera(); }),
 		"Input", tab
@@ -737,7 +761,7 @@ void ScriptService::loadLibraries()
 
 
 
-	lua.new_usertype<Vec3>("Vec3",
+	lua->new_usertype<Vec3>("Vec3",
 		sol::constructors<Vec3(), Vec3(float, float, float)>(),
 
 		//values
@@ -762,7 +786,7 @@ void ScriptService::loadLibraries()
 
 	
 	//Quaternion Def
-	lua.new_usertype<Quaternion>("Quaternion",
+	lua->new_usertype<Quaternion>("Quaternion",
 		sol::constructors<Quaternion(), Quaternion(float, Vec3)>(),
 
 		//values
@@ -791,60 +815,60 @@ void ScriptService::loadLibraries()
 	
 
 
-	lua["QMath"] = sol::new_table();
+	(*lua)["QMath"] = sol::new_table();
 	{
-		lua["QMath"]["Conjugate"].set_function(&QMath::conjugate);
-		lua["QMath"]["AngleAxisRotation"].set_function(&QMath::angleAxisRotation);
-		lua["QMath"]["Dot"].set_function(&QMath::dot);
-		lua["QMath"]["Inverse"].set_function(&QMath::inverse);
-		lua["QMath"]["LookAt"].set_function(&QMath::lookAt);
-		lua["QMath"]["Magnitude"].set_function(&QMath::magnitude);
-		lua["QMath"]["Normalize"].set_function(&QMath::normalize);
-		lua["QMath"]["Pow"].set_function(&QMath::pow);
-		lua["QMath"]["Rotate"].set_function(&QMath::rotate);
-		lua["QMath"]["Slerp"].set_function(&QMath::slerp);
+		(*lua)["QMath"]["Conjugate"].set_function(&QMath::conjugate);
+		(*lua)["QMath"]["AngleAxisRotation"].set_function(&QMath::angleAxisRotation);
+		(*lua)["QMath"]["Dot"].set_function(&QMath::dot);
+		(*lua)["QMath"]["Inverse"].set_function(&QMath::inverse);
+		(*lua)["QMath"]["LookAt"].set_function(&QMath::lookAt);
+		(*lua)["QMath"]["Magnitude"].set_function(&QMath::magnitude);
+		(*lua)["QMath"]["Normalize"].set_function(&QMath::normalize);
+		(*lua)["QMath"]["Pow"].set_function(&QMath::pow);
+		(*lua)["QMath"]["Rotate"].set_function(&QMath::rotate);
+		(*lua)["QMath"]["Slerp"].set_function(&QMath::slerp);
 	}
 
 	//I didn't add implimentation for Vec2 or Vec4, I only did Vec3
-	lua["VMath"] = sol::new_table();
+	(*lua)["VMath"] = sol::new_table();
 	{
 
-		lua["VMath"]["Lerp"].set_function(&VMath::lerp);
-		lua["VMath"]["Distance"].set_function(&VMath::distance);
-		lua["VMath"]["Reflect"].set_function(&VMath::reflect);
-		lua["VMath"]["Rotate"].set_function(&VMath::rotate);
+		(*lua)["VMath"]["Lerp"].set_function(&VMath::lerp);
+		(*lua)["VMath"]["Distance"].set_function(&VMath::distance);
+		(*lua)["VMath"]["Reflect"].set_function(&VMath::reflect);
+		(*lua)["VMath"]["Rotate"].set_function(&VMath::rotate);
 
 
 		//same as quat and vec3, except that because its static, remove the namespace in (Vec3::*VEC3_Cross)
 		const Vec3(*VEC3_CROSS)(const Vec3&, const Vec3&) = &VMath::cross;
-		lua["VMath"]["Cross"].set_function(VEC3_CROSS);
+		(*lua)["VMath"]["Cross"].set_function(VEC3_CROSS);
 
 		float(*VEC3_DOT)(const Vec3&, const Vec3&) = &VMath::dot;
-		lua["VMath"]["Dot"].set_function(VEC3_DOT);
+		(*lua)["VMath"]["Dot"].set_function(VEC3_DOT);
 
 		float(*VEC3_MAG)(const Vec3&) = &VMath::mag;
-		lua["VMath"]["Magnitude"].set_function(VEC3_MAG);
+		(*lua)["VMath"]["Magnitude"].set_function(VEC3_MAG);
 
 		Vec3(*VEC3_NORMALIZE)(const Vec3&) = &VMath::normalize;
-		lua["VMath"]["Normalize"].set_function(VEC3_NORMALIZE);
+		(*lua)["VMath"]["Normalize"].set_function(VEC3_NORMALIZE);
 
 	}
 
 	// new physics table, for now just putting raycast functions in here
-	lua["Physics"] = sol::new_table();
+	(*lua)["Physics"] = sol::new_table();
 	{
 		// similar to unity https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RaycastHit.html
 
 		// manually setting this function so that distance can have an optional default for distance
-		lua["Physics"]["Raycast"].set_function([](const Vec3& origin, const Vec3& direction, sol::optional<float> maxDistance) {
+		(*lua)["Physics"]["Raycast"].set_function([](const Vec3& origin, const Vec3& direction, sol::optional<float> maxDistance) {
 			return CollisionSystem::getInstance().Raycast(origin, direction, maxDistance.value_or(FLT_MAX));
 			});
 
-		lua["Physics"]["RaycastAll"].set_function([](const Vec3& origin, const Vec3& direction, sol::optional<float> maxDistance) {
+		(*lua)["Physics"]["RaycastAll"].set_function([](const Vec3& origin, const Vec3& direction, sol::optional<float> maxDistance) {
 			std::vector<RaycastHit> hits = CollisionSystem::getInstance().RaycastAll(origin, direction, maxDistance.value_or(FLT_MAX));
 			
 			// returning a table of all hits
-			sol::table result = lua.create_table();
+			sol::table result = (*lua).create_table();
 			for (size_t i = 0; i < hits.size(); i++) {
 				result[static_cast<int>(i) + 1] = hits[i];
 			}
@@ -852,7 +876,7 @@ void ScriptService::loadLibraries()
 			});
 
 		// screenraycast function, gets sdl mouse coords 
-		lua["Physics"]["ScreenRaycast"].set_function([]() {
+		(*lua)["Physics"]["ScreenRaycast"].set_function([]() {
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 			return CollisionSystem::getInstance().ScreenRaycast(x, y);
@@ -874,14 +898,14 @@ void ScriptService::callScriptCollision(Ref<ScriptComponent> script, Ref<Actor> 
 
 			try {
 
-				lua["Script"] = script;
+				(*lua)["Script"] = script;
 
 				//restore the variables previously set
 
 				//define AFTER so that we don't accidentally give an unusable reference
 				defineUsertypes(user);
 
-				lua.script(R"(
+				(*lua).script(R"(
     setmetatable(_G, {
     __index = function(t, k) 
         return Script:GetLocal(k) or rawget(t, k)
@@ -899,33 +923,33 @@ void ScriptService::callScriptCollision(Ref<ScriptComponent> script, Ref<Actor> 
 				switch (type) {
 
 				case CollisionDetectionState::Enter:
-					if (lua["OnCollisionEnter"].valid())
-						lua["OnCollisionEnter"](other);
+					if ((*lua)["OnCollisionEnter"].valid())
+						(*lua)["OnCollisionEnter"](other);
 
 					break;
 				case CollisionDetectionState::Stay:
-					if (lua["OnCollisionStay"].valid())
-						lua["OnCollisionStay"](other);
+					if ((*lua)["OnCollisionStay"].valid())
+						(*lua)["OnCollisionStay"](other);
 
 					break;
 				case CollisionDetectionState::Exit:
-					if (lua["OnCollisionExit"].valid())
-						lua["OnCollisionExit"](other);
+					if ((*lua)["OnCollisionExit"].valid())
+						(*lua)["OnCollisionExit"](other);
 
 					break;
 				case CollisionDetectionState::TriggerEnter:
-					if (lua["OnTriggerEnter"].valid())
-						lua["OnTriggerEnter"](other);
+					if ((*lua)["OnTriggerEnter"].valid())
+						(*lua)["OnTriggerEnter"](other);
 
 					break;
 				case CollisionDetectionState::TriggerStay:
-					if (lua["OnTriggerStay"].valid())
-						lua["OnTriggerStay"](other);
+					if ((*lua)["OnTriggerStay"].valid())
+						(*lua)["OnTriggerStay"](other);
 
 					break;
 				case CollisionDetectionState::TriggerExit:
-					if (lua["OnTriggerExit"].valid())
-						lua["OnTriggerExit"](other);
+					if ((*lua)["OnTriggerExit"].valid())
+						(*lua)["OnTriggerExit"](other);
 
 					break;
 				default:

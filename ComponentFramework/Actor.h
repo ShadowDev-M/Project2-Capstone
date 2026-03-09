@@ -108,7 +108,6 @@ public:
 		} 
 
 
-
 		/// Finish building the component and add the component to the list 
 		components.push_back(std::make_shared<ComponentTemplate>(std::forward<Args>(args_)...));
 		
@@ -303,6 +302,7 @@ void Actor::DeleteComponent( int copy) {
 			it.operator*()->OnDestroy();
 
 			components.erase(it);
+			//it->reset();
 		}
 	}
 

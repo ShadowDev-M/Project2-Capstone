@@ -92,49 +92,50 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 
 				if (ImGui::Selectable("Mesh Component")) {
 					if (!selectedActor->second->GetComponent<MeshComponent>()) {
-						selectedActor->second->AddComponent<MeshComponent>(nullptr, "");
+						RECORD selectedActor->second->AddComponent<MeshComponent>(nullptr, "");
 					}
 				}
 
 				if (ImGui::Selectable("Material Component")) {
 					if (!selectedActor->second->GetComponent<MaterialComponent>()) {
-						selectedActor->second->AddComponent<MaterialComponent>(nullptr, "", "");
+						RECORD selectedActor->second->AddComponent<MaterialComponent>(nullptr, "", "");
 					}
 				}
 
 				if (ImGui::Selectable("Shader Component")) {
 					if (!selectedActor->second->GetComponent<ShaderComponent>()) {
-						selectedActor->second->AddComponent<ShaderComponent>(nullptr, "", "");
+						RECORD selectedActor->second->AddComponent<ShaderComponent>(nullptr, "", "");
 					}
 				}
 
 				if (ImGui::Selectable("Physics Component")) {
 					if (!selectedActor->second->GetComponent<PhysicsComponent>()) {
-						selectedActor->second->AddComponent<PhysicsComponent>();
+						RECORD selectedActor->second->AddComponent<PhysicsComponent>();
 						PhysicsSystem::getInstance().AddActor(selectedActor->second);
 					}
 				}
 
 				if (ImGui::Selectable("Collision Component")) {
 					if (!selectedActor->second->GetComponent<CollisionComponent>()) {
-						selectedActor->second->AddComponent<CollisionComponent>();
+						RECORD selectedActor->second->AddComponent<CollisionComponent>();
 						CollisionSystem::getInstance().AddActor(selectedActor->second);
 					}
 				}
 
 				if (ImGui::Selectable("Camera Component")) {
 					if (!selectedActor->second->GetComponent<CameraComponent>()) {
-						selectedActor->second->AddComponent<CameraComponent>(selectedActor->second, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
+						RECORD selectedActor->second->AddComponent<CameraComponent>(selectedActor->second, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
 					}
 				}
 				if (ImGui::Selectable("Script Component")) {
 				//	if (!selectedActor->second->GetComponent<ScriptComponent>()) {
-						selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get());
+						RECORD selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get());
 					//}
 				}
 				if (ImGui::Selectable("Animator Component")) {
-					if (selectedActor->second->GetComponent<MeshComponent>())
-					selectedActor->second->AddComponent<AnimatorComponent>(selectedActor->second.get());
+					if (selectedActor->second->GetComponent<MeshComponent>()) {
+						RECORD selectedActor->second->AddComponent<AnimatorComponent>(selectedActor->second.get());
+					}
 					else {
 						// if the actor can't be found by name or by ID
 #ifdef _DEBUG
@@ -145,7 +146,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				}
 				if (ImGui::Selectable("Light Component")) {
 					if (!selectedActor->second->GetComponent<LightComponent>()) {
-						selectedActor->second->AddComponent<LightComponent>();
+						RECORD selectedActor->second->AddComponent<LightComponent>();
 						sceneGraph->AddLight(selectedActor->second);
 						
 					}
@@ -206,7 +207,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Mesh Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<MeshComponent>()) {
-								pair.second->AddComponent<MeshComponent>(nullptr, "");
+								RECORD pair.second->AddComponent<MeshComponent>(nullptr, "");
 							}
 						}
 					}
@@ -216,7 +217,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Material Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<MaterialComponent>()) {
-								pair.second->AddComponent<MaterialComponent>(nullptr, "", "");
+								RECORD pair.second->AddComponent<MaterialComponent>(nullptr, "", "");
 							}
 						}
 					}
@@ -226,7 +227,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Shader Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<ShaderComponent>()) {
-								pair.second->AddComponent<ShaderComponent>(nullptr, "", "");
+								RECORD pair.second->AddComponent<ShaderComponent>(nullptr, "", "");
 							}
 						}
 					}
@@ -236,7 +237,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Physics Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<PhysicsComponent>()) {
-								pair.second->AddComponent<PhysicsComponent>();
+								RECORD pair.second->AddComponent<PhysicsComponent>();
 							}
 						}
 					}
@@ -246,7 +247,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Collision Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<CollisionComponent>()) {
-								pair.second->AddComponent<CollisionComponent>();
+								RECORD pair.second->AddComponent<CollisionComponent>();
 							}
 						}
 					}
@@ -256,7 +257,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Camera Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<CameraComponent>()) {
-								pair.second->AddComponent<CameraComponent>(pair.second);
+								RECORD pair.second->AddComponent<CameraComponent>(pair.second);
 							}
 						}
 					}
@@ -266,7 +267,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Script Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<ScriptComponent>()) {
-								pair.second->AddComponent<ScriptComponent>(nullptr);
+								RECORD pair.second->AddComponent<ScriptComponent>(nullptr);
 							}
 						}
 					}
@@ -277,7 +278,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 					if (ImGui::Selectable("Light Component")) {
 						for (const auto& pair : sceneGraph->debugSelectedAssets) {
 							if (!pair.second->GetComponent<LightComponent>()) {
-								pair.second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 200.0f);
+								RECORD pair.second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 200.0f);
 							}
 						}
 					}
