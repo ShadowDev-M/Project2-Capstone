@@ -109,9 +109,7 @@ void XMLObjectFile::createActorFromElement(SceneGraph* sceneGraph, XMLElement* a
     }
 
     //Add to scenegraph
-    sceneGraph->AddActor(std::make_shared<Actor>(nullptr, actorElement->Name()));
-
-    //        if (attribute->Next()) addAttributeRecursive(sceneGraph, attribute->Next());   
+    sceneGraph->AddActor(std::make_shared<Actor>(nullptr, actorElement->Name()));  
 }
 
 

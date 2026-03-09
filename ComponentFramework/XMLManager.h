@@ -26,8 +26,6 @@ class XMLObjectFile {
 
     static void runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XMLElement* actorElement, XMLElement* rootElement = nullptr);
 
-    static void addAttributeRecursive(SceneGraph* sceneGraph, const XMLAttribute* attribute);
-
 
 public:
 
