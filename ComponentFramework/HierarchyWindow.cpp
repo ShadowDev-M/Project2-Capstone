@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "HierarchyWindow.h"
 #include "EditorManager.h"
+#include "PhysicsSystem.h"
+#include "CollisionSystem.h"
 
 HierarchyWindow::HierarchyWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
 	EditorManager::getInstance().RegisterWindow("Hierarchy", true);
@@ -216,9 +218,6 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 		ImGui::Separator();
 		if (ImGui::MenuItem("Delete")) {
 			sceneGraph->RemoveLight(sceneGraph->GetActor(actorName_));
-			sceneGraph->GetActor(actorName_)->DeleteComponent<LightComponent>();
-			//sceneGraph->GetActor(actorName_)->DeleteComponent<Component>();
-
 			sceneGraph->RemoveActor(actorName_);
 			sceneGraph->checkValidCamera();
 
@@ -263,7 +262,7 @@ void HierarchyWindow::UpdateHierarchyGraph()
 			hierarchyGraph.emplace(actorName, HierarchyNode{ actor });
 
 			//set the children
-			hierarchyGraph[actorName].children = SetChildNodesRecurse(hierarchyGraph[actorName]);
+			hierarchyGraph[actorName].children = SetChildNodesRecurse(hierarchyGraph[actorName], allActorNames);
 
 		}
 	}
@@ -331,14 +330,42 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	if (auto camera = original_->GetComponent<CameraComponent>()) {
-		copy->AddComponent<CameraComponent>(copy);
+		copy->AddComponent<CameraComponent>(copy, camera->getFOV(), camera->getAspectRatio(), camera->getNearClipPlane(), camera->getFarClipPlane());
 	}
 
 	if (auto light = original_->GetComponent<LightComponent>()) {
 		copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
+		sceneGraph->AddLight(copy);
 	}
 
+	if (auto physics = original_->GetComponent<PhysicsComponent>()) {
+		copy->AddComponent<PhysicsComponent>(copy.get(), physics->getState(), physics->getConstraints(), physics->getMass(), physics->getUseGravity(), physics->getDrag(), physics->getAngularDrag(), physics->getFriction(), physics->getRestitution());
+		PhysicsSystem::getInstance().AddActor(copy);
+	}
 
+	if (auto col = original_->GetComponent<CollisionComponent>()) {
+		copy->AddComponent<CollisionComponent>(copy.get());
+		if (auto newCol = copy->GetComponent<CollisionComponent>()) {
+			newCol->setType(col->getType());
+			newCol->setState(col->getState());
+			newCol->setIsTrigger(col->getIsTrigger());
+			newCol->setRadius(col->getRadius());
+			newCol->setCentre(col->getCentre());
+			newCol->setCentrePosA(col->getCentrePosA());
+			newCol->setCentrePosB(col->getCentrePosB());
+			newCol->setHalfExtents(col->getHalfExtents());
+			newCol->setOrientation(col->getOrientation());
+		}
+		CollisionSystem::getInstance().AddActor(copy);
+	}
+
+	for (auto& script : original_->GetAllComponent<ScriptComponent>()) {
+		copy->AddComponent<ScriptComponent>(copy.get(), script->getBaseAsset());
+	}
+
+	if (auto anim = original_->GetComponent<AnimatorComponent>()) {
+		copy->AddComponent<AnimatorComponent>(copy.get());
+	}
 
 	return copy;
 }
@@ -470,21 +497,12 @@ bool HierarchyWindow::HasSelectedChild(const HierarchyNode& node)
 	return false;
 }
 
-std::unordered_map<std::string, HierarchyNode> HierarchyWindow::SetChildNodesRecurse(HierarchyNode& node)
+std::unordered_map<std::string, HierarchyNode> HierarchyWindow::SetChildNodesRecurse(HierarchyNode& node, const std::vector<std::string>& allActorNames)
 {
 	std::unordered_map<std::string, HierarchyNode> childActors;
 
-	// store all actors names in the scene 
-	std::vector<std::string> allActorNames = sceneGraph->GetAllActorNames();
-
-	// sort the names
-	std::sort(allActorNames.begin(), allActorNames.end());
-
-
 	for (const std::string& actorName : allActorNames) {
 		Ref<Actor> actor = sceneGraph->GetActor(actorName);
-
-
 
 		// actor is a child actor
 		if (actor && actor->getParentActor() == node.nodeActor.get()) {
@@ -493,7 +511,7 @@ std::unordered_map<std::string, HierarchyNode> HierarchyWindow::SetChildNodesRec
 			HierarchyNode childNode = { actor };
 
 			//recurse and find the child's children
-			childNode.children = SetChildNodesRecurse(childNode);
+			childNode.children = SetChildNodesRecurse(childNode, allActorNames);
 
 			childActors.emplace(actorName, childNode);
 		}

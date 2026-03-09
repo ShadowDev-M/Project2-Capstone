@@ -186,8 +186,6 @@ void EditorManager::RenderEditorToolbar()
 
 				sceneGraph->Start();
 				pendingFocusScene = true;
-				Ref<Actor> camera = sceneGraph->GetActor("CamTest");
-				sceneGraph->setUsedCamera(camera->GetComponent<CameraComponent>());
 			}
 		}
 

@@ -37,7 +37,7 @@ private:
 	bool HasSelectedChild(const HierarchyNode& node);
 
 	// refactored function to get a map of all child actors
-	std::unordered_map<std::string, HierarchyNode> SetChildNodesRecurse(HierarchyNode& node);
+	std::unordered_map<std::string, HierarchyNode> SetChildNodesRecurse(HierarchyNode& node, const std::vector<std::string>& allActorNames);
 
 	// rename, duplicate, and re-parenting functions
 	void DuplicateActor(Ref<Actor> original_);
