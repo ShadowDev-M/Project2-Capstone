@@ -302,7 +302,7 @@ void Actor::DeleteComponent( int copy) {
 			it.operator*()->OnDestroy();
 
 			components.erase(it);
-			it->reset();
+			//it->reset();
 		}
 	}
 
