@@ -16,6 +16,12 @@
 #include <mutex>
 #include <queue>
 
+struct ShadowInfo {
+	LightType type;
+	Matrix4 SkyMatrix;
+	Vec3 LightDir;
+	std::vector<Matrix4> PointMatrices;
+};
 
 class SceneGraph
 {
@@ -197,6 +203,10 @@ public:
 
 	//Colour picking for object selection
 	Ref<Actor> pickColour(int mouseX, int mouseY);
+
+	void ShadowPass() const;
+
+	ShadowInfo CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightType type) const;
 
 	// all const
 	void Render() const;

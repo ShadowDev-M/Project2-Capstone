@@ -293,6 +293,8 @@
     <None Include="shaders\phongVert.glsl" />
     <None Include="shaders\selectionFrag.glsl" />
     <None Include="shaders\selectionVert.glsl" />
+    <None Include="shaders\ShadowMappingFrag.glsl" />
+    <None Include="shaders\ShadowMappingVert.glsl" />
     <None Include="shaders\texturePhongFrag.glsl" />
     <None Include="shaders\texturePhongVert.glsl" />
   </ItemGroup>

@@ -444,5 +444,11 @@
     <None Include="shaders\colliderDebugVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="shaders\ShadowMappingFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\ShadowMappingVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

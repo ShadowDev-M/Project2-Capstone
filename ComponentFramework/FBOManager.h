@@ -4,7 +4,8 @@
 enum class FBO {
 	Scene, // TODO: Change to Edit
 	// Play,
-	ColorPicker
+	ColorPicker,
+	ShadowMap
 	// ShadowMap
 };
 

@@ -38,6 +38,8 @@ SceneManager::~SceneManager() {
 
 	AssetManager::getInstance().RemoveAllAssets();
 	
+	
+
 	SceneGraph::getInstance().OnDestroy();
 
 
@@ -68,6 +70,8 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	// creating FBOs
 	FBOManager::getInstance().CreateFBO(FBO::Scene, width_, height_);
 	FBOManager::getInstance().CreateFBO(FBO::ColorPicker, width_, height_);
+	FBOManager::getInstance().CreateFBO(FBO::ShadowMap, 2048, 2048);
+
 
 	timer = new Timer();
 	if (timer == nullptr) {

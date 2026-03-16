@@ -339,12 +339,12 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	if (auto physics = original_->GetComponent<PhysicsComponent>()) {
-		copy->AddComponent<PhysicsComponent>(copy.get(), physics->getState(), physics->getConstraints(), physics->getMass(), physics->getUseGravity(), physics->getDrag(), physics->getAngularDrag(), physics->getFriction(), physics->getRestitution());
+		RECORD copy->AddComponent<PhysicsComponent>(copy.get(), physics->getState(), physics->getConstraints(), physics->getMass(), physics->getUseGravity(), physics->getDrag(), physics->getAngularDrag(), physics->getFriction(), physics->getRestitution());
 		PhysicsSystem::getInstance().AddActor(copy);
 	}
 
 	if (auto col = original_->GetComponent<CollisionComponent>()) {
-		copy->AddComponent<CollisionComponent>(copy.get());
+		RECORD copy->AddComponent<CollisionComponent>(copy.get());
 		if (auto newCol = copy->GetComponent<CollisionComponent>()) {
 			newCol->setType(col->getType());
 			newCol->setState(col->getState());
@@ -360,11 +360,11 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	for (auto& script : original_->GetAllComponent<ScriptComponent>()) {
-		copy->AddComponent<ScriptComponent>(copy.get(), script->getBaseAsset());
+		RECORD copy->AddComponent<ScriptComponent>(copy.get(), script->getBaseAsset());
 	}
 
 	if (auto anim = original_->GetComponent<AnimatorComponent>()) {
-		copy->AddComponent<AnimatorComponent>(copy.get());
+		RECORD copy->AddComponent<AnimatorComponent>(copy.get());
 	}
 
 	return copy;

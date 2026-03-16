@@ -752,6 +752,189 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 
 
+void SceneGraph::ShadowPass() const {
+	
+	int w = ScreenManager::getInstance().getRenderWidth();
+	int h = ScreenManager::getInstance().getRenderHeight();
+	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
+	FBOData& sceneFBO = FBOManager::getInstance().getFBO(FBO::Scene);
+
+	FBOData& shadowFBO = FBOManager::getInstance().getFBO(FBO::ShadowMap);
+
+	Ref<ShaderComponent> shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Shadow");
+	glUseProgram(shader->GetProgram());
+	//size of the imgui window used for docking
+	Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
+
+
+	//pos of top left corner of docking window
+	GLint xPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.x;
+	GLint yPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.y;
+
+	GLsizei xSize;
+	GLsizei ySize;
+
+
+
+
+	// Calculate scaled dimensions based on aspect ratio
+	if (windowSize.x / aspectRatio <= windowSize.y)
+	{
+		xSize = (GLsizei)windowSize.x;
+		ySize = (GLsizei)(windowSize.x / aspectRatio);
+	}
+	else
+	{
+		ySize = (GLsizei)windowSize.y;
+		xSize = (GLsizei)(windowSize.y * aspectRatio);
+	}
+
+
+	//Add to the position to move to where the image is centred (non used space in the window would be counted otherwise)
+	ImVec2 imagePos = ImVec2((windowSize.x - xSize) * 0.5f, (windowSize.y - ySize) * 0.5f);
+	xPos += (GLint)imagePos.x;
+	yPos += (GLint)imagePos.y;
+
+	//proper height 
+	GLint glY = h - (yPos + ySize);
+
+
+	//use the picking buffer so it is seperated
+
+	Vec4 clearColour = Vec4(0.5f, 0.5f, 0.1f, 0.0f);
+
+	if (!RENDERMAINSCREEN) {
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO.fbo);
+		glViewport(0, 0, shadowFBO.width, shadowFBO.height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT); // reduces peter panning
+
+		for (const auto& pair : Actors) {
+
+
+			Ref<MeshComponent> mesh = pair.second->GetComponent<MeshComponent>();
+			if (!mesh) continue;
+
+			Ref<Actor> actor = pair.second;
+
+			bool isAnimating = (mesh && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
+
+
+			if (!isAnimating) glUniform1i(shader->GetUniformID("shadowCondition"), 1);
+			else 
+			{
+				glUniform1i(shader->GetUniformID("shadowCondition"), 2);
+
+				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
+
+				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
+
+				std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
+				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
+
+
+
+				GLint loc = shader->GetUniformID("bone_transforms[0]");
+				if (loc == -1) {
+					printf("ERROR: bone_transforms uniform not found!\n");
+				}
+				else {
+
+					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
+						reinterpret_cast<const float*>(finalBoneMatrices.data()));
+				}
+
+			}
+
+
+			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, pair.second->GetModelMatrix());
+
+			for (auto& light : lightActors) {
+				if (light->GetComponent<LightComponent>()->getType() != LightType::Sky) continue;
+
+				ShadowInfo SInfo = CalculateLightSpaceMatrix(light, LightType::Sky);
+				glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, SInfo.SkyMatrix);
+
+				pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
+			}
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO.fbo);
+		glViewport(0, 0, w, h);
+		glEnable(GL_DEPTH_TEST);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glCullFace(GL_BACK);
+	}
+
+
+}
+
+ShadowInfo SceneGraph::CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightType type) const {
+	Matrix4 lightProjection;
+	Ref<TransformComponent> transform = lightActor->GetComponent<TransformComponent>();
+	ShadowInfo data;
+	if (type == LightType::Sky) {
+
+
+		Vec3 position = transform->GetPosition();
+
+		Quaternion orientation = transform->GetOrientation();
+
+		//Rotation for the 'sun' position in the sky
+		Matrix4 cameraWorldTransform =  MMath::toMatrix4(orientation);
+
+		//Orbit's the view like the sun around the camera (kinda similar to how a skybox works)	
+		Matrix4 lightView = MMath::translate(-usedCamera->GetUserActorTransform()->GetPosition()) * MMath::translate(Vec3(0, 0, -100)) * MMath::inverse(cameraWorldTransform);
+
+			
+		float sceneSize = 60.0f;
+		Matrix4 lightProjection = MMath::orthographic(
+			-sceneSize, sceneSize,
+			-sceneSize, sceneSize,
+			0.0f, 200.0f
+		);
+
+		//needs -z for some reason unless im doing this wrong ¯\_()_/¯
+		Vec3 lightDirFromMatrix = Vec3(lightView[8], lightView[9], -lightView[10]);
+
+		data.SkyMatrix = lightProjection * lightView;
+		data.LightDir = lightDirFromMatrix;
+	}
+	else {
+		/*Vec3 target[6] = {
+		Vec3(1.0f, 0.0f, 0.0f),
+		Vec3(-1.0f, 0.0f, 0.0f),
+		Vec3(0.0f, 1.0f, 0.0f),
+		Vec3(0.0f, -1.0f, 0.0f),
+		Vec3(0.0f, 0.0f, 1.0f),
+		Vec3(0.0f, 0.0f, -1.0f) };
+		Vec3 up[6] = {
+			Vec3(0.0f, -1.0f, 0.0f),
+			Vec3(0.0f, -1.0f, 0.0f),
+			Vec3(0.0f, 0.0f, 1.0f),
+			Vec3(0.0f, 0.0f, -1.0f),
+			Vec3(0.0f, -1.0f, 0.0f),
+			Vec3(0.0f, -1.0f, 0.0f) };
+		int w = ScreenManager::getInstance().getRenderWidth();
+		int h = ScreenManager::getInstance().getRenderHeight();
+		float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
+
+		lightProjection = MMath::perspective(90.0f, aspectRatio, near, far);
+
+		Vec3 lightPos = lightActor->GetComponent<TransformComponent>()->GetPosition();
+
+		data.type = LightType::Point;
+		for (int i = 0; i < 6; ++i) {
+			data.PointMatrices.push_back(lightProjection * MMath::lookAt(lightPos, lightPos + target[i], up[i]));
+		}*/
+	}
+	return data;
+}
+
 void SceneGraph::Render() const
 {
 
@@ -871,6 +1054,19 @@ void SceneGraph::Render() const
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
+	ShadowPass();
+
+	Ref<Actor> skyLight;
+
+	for (auto& li : lightActors) {
+		if (li->GetComponent<LightComponent>() && li->GetComponent<LightComponent>()->getType() == LightType::Sky) {
+			skyLight = li;
+			break;
+		}
+	}
+
+
+
 	//glDisable(GL_BLEND);
 
 	// go through all actors
@@ -882,6 +1078,7 @@ void SceneGraph::Render() const
 
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
 
+	
 		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
 		bool isAnimating = (mesh && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
@@ -897,6 +1094,7 @@ void SceneGraph::Render() const
 			else {
 				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
 			}
+
 		}
 		else if (isSelected) {
 			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline");
@@ -948,6 +1146,20 @@ void SceneGraph::Render() const
 			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
+
+			if (!isSelected) {
+
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, FBOManager::getInstance().getFBO(FBO::ShadowMap).texture);
+				glUniform1i(shader->GetUniformID("shadowMap"), 2);
+				Vec3 camPos = getUsedCamera()->GetUserActorTransform()->GetPosition();
+				glUniform3fv(shader->GetUniformID("cameraPos"), 1, camPos);
+
+				ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Sky);
+				glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, lightInfo.SkyMatrix);
+				glUniform3fv(shader->GetUniformID("shadowLightDir"), 1, lightInfo.LightDir);
+
+			}
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
@@ -1022,6 +1234,9 @@ void SceneGraph::OnDestroy() {
 	//end the mesh loading thread
 	stopMeshLoadingWorker();
 
+	//stop to prevent memory leaks if you close on run
+	Stop();
+	
 	RemoveAllActors();
 	pickerShader->OnDestroy();
 }
