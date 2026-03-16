@@ -1,11 +1,11 @@
 #pragma once
 
-// creating an enum for FBOs, just to give them names
+// creating an enum for FBOs
 enum class FBO {
-	Scene, // TODO: Change to Edit
-	// Play,
-	ColorPicker
-	// ShadowMap
+	Scene,
+	Game,
+	ColorPicker,
+	ShadowMap
 };
 
 struct FBOData {

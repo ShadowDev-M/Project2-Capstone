@@ -7,7 +7,6 @@
 
 using namespace ImGui;
 
-
 enum class InputState {
 	Released,
 	Pressed,
@@ -21,25 +20,19 @@ auto BINDFUNCTION(T* obj) {
 	return std::bind(FUNCTION, obj, std::placeholders::_1, std::placeholders::_2);
 }
 
-
-
 ///Base form of functionKeyBinding without the function (The function size is dependant on arguments, so this should be used as a wrapper)
 struct FunctionKeyBindingWrapper {
-	
 	KeyBinding keyb;
 
 	virtual ~FunctionKeyBindingWrapper() = default;
 
-
 	virtual void call() = 0;
-
 };
 
 ///Structure to store a keybinding to a function
 template<typename... Args>
 struct FunctionKeyBinding : FunctionKeyBindingWrapper {
 public:
-
 	KeyBinding keyb;
 
 	//storage for internal function 
@@ -58,7 +51,6 @@ public:
 
 ///We can't store functionKeyBinding in a 
 struct PoolBindObject {
-
 	//ptr to object
 	FunctionKeyBindingWrapper* bindingPtr;
 
@@ -76,7 +68,6 @@ struct PoolBindObject {
 
 ///an object pool structure
 struct keyBindingObjectPool {
-	
 	std::vector<PoolBindObject> bindingPool;
 	
 	///return all poolObjects that share the parametre's keybinding
@@ -89,7 +80,6 @@ struct keyBindingObjectPool {
 
 class InputMap {
 protected:
-
 	//mapping a keyCode with it's current state
 	std::map<int, InputState> keyStates;
 	
@@ -133,11 +123,7 @@ public:
 };
 
 class mouseInputMap : public InputMap {
-private:
-
-
 public:
-
 	bool dockingHovered = 0;
 	bool dockingClicked = 0;
 	ImVec2 dockingPos;   // top-left corner
@@ -151,13 +137,8 @@ public:
 };
 
 class keyboardInputMap : public InputMap {
-private:
-
-	
 public:
-
 	void update(const float deltaTime) override;
-
 };
 
 class gamepadInputMap {
@@ -221,15 +202,11 @@ private:
 	mouseInputMap mouse;
 	gamepadInputMap gamepad;
 
-
-	float studMultiplier = 0.5f;
-
 	keyBindingObjectPool pool;
 
 	bool dockingFocused = false;
 
 public:
-	
 	keyboardInputMap* getKeyboardMap() { return &keyboard; }
 
 	mouseInputMap* getMouseMap() { return &mouse; }
@@ -242,33 +219,15 @@ public:
 		return instance;
 	}
 
-	
 	void update(float deltaTime, SceneGraph* sceneGraph);
-
-	// getter and setter for stud multipler (used in slider)
-	float GetStudMultiplier() { return studMultiplier; }
-	void SetStudMultiplier(float studMulti_) { studMultiplier = studMulti_; }
-
-	bool startGame(std::pair<KeyBinding, std::tuple<bool>> input, SceneGraph* sceneGraph);
-
-	void debugInputCamSwap(std::vector<std::pair<SDL_Scancode, Ref<CameraComponent>>> inputMap, SceneGraph* sceneGraph);
 
 	bool debugClearDebugSelected(std::pair<KeyBinding, std::tuple<bool>> input, SceneGraph* sceneGraph);
 
-
-	/// Allows for a KeyInput to be associated to a translation of a sceneGraph's debug selections
-	bool debugTapInputTranslation(std::pair<KeyBinding, std::tuple<Vec3>> inputMap, SceneGraph* sceneGraph);
-
-	bool debugCamInputTranslation(std::pair<KeyBinding, std::tuple<Vec3>> inputMap, SceneGraph* sceneGraph);
-
 	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph) {
-		sceneGraph->checkValidCamera();
-
 		mouse.HandleEvents(sdlEvent, sceneGraph);
 
 		gamepad.HandleEvents(sdlEvent);
 	}
-
 
 	~InputManager() { }
 };

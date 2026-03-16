@@ -210,6 +210,7 @@ private:
 
 	// header for renaming, isactive
 	void DrawActorHeader(Ref<Actor> actor_);
+	void ShowAddComponentPopup(const std::unordered_map<uint32_t, Ref<Actor>>& selected);
 
 	// component functions
 	void DrawTransformComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
@@ -280,14 +281,14 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 				if constexpr (std::is_same_v<ComponentTemplate, ScriptComponent>) {
 					auto scripts = pair.second->GetAllComponent<ScriptComponent>();
 					if (!scripts.empty()) {
-						pair.second->DeleteComponent<ScriptComponent>(copy);
+						pair.second->DeleteComponent<ScriptComponent>(copy); 
+						// TODO: should the script be deleted or just removed? does the ondestroy delete the script itself
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
 					if (pair.second->GetComponent<LightComponent>()) {
-						sceneGraph->RemoveLight(pair.second);
+						LightingSystem::getInstance().RemoveActor(pair.second);
 						pair.second->DeleteComponent<LightComponent>();
-
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, AnimatorComponent>) {
@@ -303,21 +304,6 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 				}
 			}
 		}
-
-		if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
-
-			// making sure that this only works when 1 actor is selected
-			if (componentState.allHaveComponent && selectedActors_.size() == 1)
-			{
-				if (ImGui::MenuItem("Use Camera")) {
-					std::cout << "USING CAMERA BUTTON" << std::endl;
-					sceneGraph->setUsedCamera(componentState.GetFirst());
-				}
-			}
-
-		}
-
-
 
 		ImGui::EndPopup();
 	}

@@ -2,80 +2,55 @@
 #include "TransformComponent.h"
 #include "Actor.h"
 
-using namespace MATH;
+enum class ProjectionType {
+	Perspective,
+	Orthographic
+};                                          
 
 class CameraComponent : public Component {
-private:
-	Ref<Actor> userActor;
-
-	int resizeCallbackID = -1;
-
-	Matrix4 projectionMatrix;
-	Matrix4 viewMatrix;
-
-	// camera member variables to be accesed by imgui
-	float m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane;
-	bool isOrthographic;
-
+	// deleting copy and move constructers, setting up singleton
+	CameraComponent(const CameraComponent&) = delete;
+	CameraComponent(CameraComponent&&) = delete;
+	CameraComponent& operator=(const CameraComponent&) = delete;
+	CameraComponent& operator=(CameraComponent&&) = delete;
 
 public:
-	CameraComponent(Ref<Actor> userActor_ = nullptr, float fovy = 45.0f, float aspectRatio = (16.0f / 9.0f), float nearClipPlane = 0.5f, float farClipPlane= 100.0f, bool orthographicState = false);
-	~CameraComponent();
+	CameraComponent(Component* parent_, ProjectionType type_ = ProjectionType::Perspective, float fov_ = 60.0f, float nearClipPlane_ = 0.03f, float farClipPlane= 1000.0f, float orthoSize_ = 5.0f);
+	~CameraComponent() = default;
+	
 	bool OnCreate();
-
-	bool getIsOrthographic() { return isOrthographic; }
-
-	void toggleOrthographic(bool state) { 
-		isOrthographic = state;
-		UpdateProjectionMatrix();
-	}
-
-	Ref<Actor> GetUserActor() { return userActor; }
-
-	Ref<TransformComponent> GetUserActorTransform() { return userActor->GetComponent<TransformComponent>(); }
-
-
-	Matrix4 GetProjectionMatrix() const { return projectionMatrix; }
-	//void SetProjectionMatrix(const Matrix4& projectionMatrix_) { projectionMatrix = projectionMatrix_; }
-
-	Matrix4 GetViewMatrix() const { return viewMatrix; }
-	//
-	//void SetViewMatrix(const Quaternion& orientation_, const Vec3& position_) { orientation = orientation_, position = position_; }
-
-	void fixCameraToTransform();
-
 	void OnDestroy();
-	void Update(const float deltaTime_);
-	void Render() const;
+	void Update(const float deltaTime_) {};
+	void Render() const {};
 
+	bool isMainCamera() const;
 
-	// setters and getters for the cameras member variables
-	
-	void UpdateProjectionMatrix();
-	
+	Matrix4 GetProjectionMatrix() const;
+	Matrix4 GetViewMatrix() const;
+
+	// helper functions if the camera is ever parented and need to get world transform
+	Vec3 getWorldPosition() const;
+	Vec3 getWorldForward() const;
+
+	// getters and setters for the cameras member variables
+	ProjectionType getType() const { return m_projectionType; }
 	float getFOV() const { return m_fov; }
-	float getAspectRatio() const { return m_aspectRatio; }
-	float getNearClipPlane() const { return m_nearClipPlane; }
-	float getFarClipPlane() const { return m_farClipPlane; }
+	float getNearClipPlane() const { return m_nearClip; }
+	float getFarClipPlane() const { return m_farClip; }
+	float getOrthoSize() const { return m_orthoSize; }
+	void setType(ProjectionType type_) { m_projectionType = type_; }
+	void setFOV(float fov) { m_fov = fov; }
+	void setNearClipPlane(float near) { m_nearClip = std::max(0.0001f, near); }
+	void setFarClipPlane(float far) { m_farClip = far; }
+	void setOrthoSize(float size) { m_orthoSize = size; }
 
-	void setUserActor(Ref<Actor> actor_) { userActor = actor_; }
+private:
 
-	void setFOV(float fov_) { 
-		m_fov = fov_;
-		UpdateProjectionMatrix();
-	}
-	void setAspectRatio(float aspectRatio_) { 
-		m_aspectRatio = aspectRatio_; 
-		UpdateProjectionMatrix();
-	}
-	void setNearClipPlane(float nearClipPlane_) { 
-		m_nearClipPlane = nearClipPlane_; 
-		UpdateProjectionMatrix();
-	}
-	void setFarClipPlane(float farClipPlane_) { 
-		m_farClipPlane = farClipPlane_; 
-		UpdateProjectionMatrix();
-	}
-
+	// camera member variables
+	ProjectionType m_projectionType = ProjectionType::Perspective;
+	float m_fov = 60.0f;
+	float m_nearClip = 0.03f;
+	float m_farClip = 10000.0f;
+	float m_orthoSize = 5.0f;
 };
 

@@ -3,115 +3,97 @@
 #include "InputManager.h"
 #include "ScreenManager.h"
 
-
-CameraComponent::CameraComponent(Ref<Actor> userActor_, float fovy, float aspectRatio, float nearClipPlane, float farClipPlane, bool orthographicState) :
-	Component(nullptr), m_fov(fovy), m_aspectRatio(aspectRatio), m_nearClipPlane(nearClipPlane), m_farClipPlane(farClipPlane), isOrthographic(orthographicState)
-{
-	userActor = userActor_;
-	UpdateProjectionMatrix();
-	viewMatrix.loadIdentity();
-	
-	// register the camera to the resize dispatcher
-	resizeCallbackID = ScreenManager::getInstance().OnRenderResize(
-		[this](int w, int h) {
-			m_aspectRatio = static_cast<float>(w) / static_cast<float>(h);
-			UpdateProjectionMatrix();
-		}
-	);
-}
-
-CameraComponent::~CameraComponent() {
-	OnDestroy();
-}
-
-void CameraComponent::OnDestroy() {
-	// unregister the camera from the resize dispatcher
-	if (resizeCallbackID != -1) {
-		ScreenManager::getInstance().RemoveRenderResizeCallback(resizeCallbackID);
-		resizeCallbackID = -1;
-	}
-
-	userActor = nullptr;
-}
-
-void CameraComponent::Update(const float deltaTime) {}
-
-
-
-void CameraComponent::Render()const {}
-
-void CameraComponent::UpdateProjectionMatrix()
-{
-
-	if (isOrthographic) {
-		Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
-
-
-		//pos of top left corner of docking window
-		GLint xPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.x;
-		GLint yPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.y;
-
-		GLsizei xSize;
-		GLsizei ySize;
-
-
-
-
-		// Calculate scaled dimensions based on aspect ratio
-		if (windowSize.x / m_aspectRatio <= windowSize.y)
-		{
-			xSize = (GLsizei)windowSize.x;
-			ySize = (GLsizei)(windowSize.x / m_aspectRatio);
-		}
-		else
-		{
-			ySize = (GLsizei)windowSize.y;
-			xSize = (GLsizei)(windowSize.y * m_aspectRatio);
-		}
-
-
-		//Add to the position to move to where the image is centred (non used space in the window would be counted otherwise)
-		ImVec2 imagePos = ImVec2((windowSize.x - xSize) * 0.5f, (windowSize.y - ySize) * 0.5f);
-		xPos += (GLint)imagePos.x;
-		yPos += (GLint)imagePos.y;
-
-		if (!userActor || !userActor->GetComponent<TransformComponent>()) return;
-		float z = userActor->GetComponent<TransformComponent>()->GetPosition().z;
-		float fovRad = m_fov * M_PI / 180.0f;   // if m_fov is in degrees
-		float halfSize = z * tanf(0.5 * fovRad);
-		halfSize *= 1.75f;
-
-		projectionMatrix = MMath::orthographic(
-			-halfSize, halfSize,      // X
-			-halfSize / m_aspectRatio, halfSize/ m_aspectRatio,      // Y
-			-100.0f, m_farClipPlane           // Z
-		);
-		//projectionMatrix = MMath::orthographic(??, ??, ??, ??, m_nearClipPlane, m_farClipPlane);
-	}
-	else {
-		projectionMatrix = MMath::perspective(m_fov, m_aspectRatio, m_nearClipPlane, m_farClipPlane);
-	}
-}
+CameraComponent::CameraComponent(Component* parent_, ProjectionType type_, float fov_, float nearClipPlane_, float farClipPlane_, float orthoSize_) :
+	Component(parent_), m_projectionType(type_), m_fov(fov_), m_nearClip(nearClipPlane_), m_farClip(farClipPlane_), m_orthoSize(orthoSize_) {}
 
 bool CameraComponent::OnCreate()
 {
-	fixCameraToTransform();
+	if (isCreated) return true;
+	isCreated = true;
 	return true;
 }
 
-void CameraComponent::fixCameraToTransform() {
-	if (userActor->GetComponent<TransformComponent>()) {
-		Ref<TransformComponent> transform = userActor->GetComponent<TransformComponent>();
+void CameraComponent::OnDestroy() {
+	isCreated = false;
+}
 
-		Vec3 position = transform->GetPosition();
-		Quaternion orientation = transform->GetOrientation();
+bool CameraComponent::isMainCamera() const {
+	// getting parent/actor of the component
+	if (!parent) return false;
+	Actor* owner = dynamic_cast<Actor*>(parent);
+	return owner && owner->getTag() == "MainCamera";
+}
 
-		Matrix4 cameraWorldTransform = MMath::translate(position) * MMath::toMatrix4(orientation);
+Matrix4 CameraComponent::GetProjectionMatrix() const {
+	float aspectRatio = ScreenManager::getInstance().getRenderAspectRatio();
 
-		viewMatrix = MMath::inverse(cameraWorldTransform);
-		
-		//for z
-		if (isOrthographic) UpdateProjectionMatrix();
-
+	if (m_projectionType == ProjectionType::Orthographic) {
+		float h = m_orthoSize;
+		float w = h * aspectRatio;
+		return MMath::orthographic(-w, w, -h, h, m_nearClip, m_farClip);
 	}
+	else {
+		return MMath::perspective(m_fov, aspectRatio, m_nearClip, m_farClip);
+	}
+}
+
+Matrix4 CameraComponent::GetViewMatrix() const {
+	// getting the transform from the parent
+	if (!parent) return Matrix4();
+	Actor* owner = dynamic_cast<Actor*>(parent);
+	if (!owner) return Matrix4();
+	Ref<TransformComponent> TC = owner->GetComponent<TransformComponent>();
+	if (!TC) return Matrix4();
+
+	// getting the position, forward, and up from the actors model matrix 
+	// colum 0 is the right 0-2
+	// colum 1 is up 4-6
+	// colum 2 is -forward 8-10 (because z is negative in opengl)
+	// colum 3 is position 12-14
+
+	Matrix4 world = owner->GetModelMatrix();
+	Vec3 up = world.getColumn(Matrix4::Colunm::one);
+	Vec3 forward = -world.getColumn(Matrix4::Colunm::two);
+	Vec3 pos = world.getColumn(Matrix4::Colunm::three);
+	return MMath::lookAt(pos, pos + forward, up);
+}
+
+Vec3 CameraComponent::getWorldPosition() const
+{
+	// getting the transform from the parent
+	if (!parent) return Vec3();
+	Actor* owner = dynamic_cast<Actor*>(parent);
+	if (!owner) return Vec3();
+	Ref<TransformComponent> TC = owner->GetComponent<TransformComponent>();
+	if (!TC) return Vec3();
+
+	// getting the position, forward, and up from the actors model matrix 
+	// colum 0 is the right 0-2
+	// colum 1 is up 4-6
+	// colum 2 is -forward 8-10 (because z is negative in opengl)
+	// colum 3 is position 12-14
+
+	Matrix4 world = owner->GetModelMatrix();
+	Vec3 pos = world.getColumn(Matrix4::Colunm::three);
+	return pos;
+}
+
+Vec3 CameraComponent::getWorldForward() const
+{
+	// getting the transform from the parent
+	if (!parent) return Vec3();
+	Actor* owner = dynamic_cast<Actor*>(parent);
+	if (!owner) return Vec3();
+	Ref<TransformComponent> TC = owner->GetComponent<TransformComponent>();
+	if (!TC) return Vec3();
+
+	// getting the position, forward, and up from the actors model matrix 
+	// colum 0 is the right 0-2
+	// colum 1 is up 4-6
+	// colum 2 is -forward 8-10 (because z is negative in opengl)
+	// colum 3 is position 12-14
+
+	Matrix4 world = owner->GetModelMatrix();
+	Vec3 forward = -world.getColumn(Matrix4::Colunm::two);
+	return forward;
 }

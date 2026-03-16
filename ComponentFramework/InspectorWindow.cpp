@@ -8,6 +8,7 @@
 //#include "ScriptComponent.h"
 #include "CollisionComponent.h"
 #include "ColliderDebug.h"
+#include "LightingSystem.h"
 
 
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
@@ -16,286 +17,173 @@ InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGrap
 
 void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 {
-	if (ImGui::Begin("Inspector", pOpen)) {
+	if (!ImGui::Begin("Inspector", pOpen)) { ImGui::End(); return; }
 
-		// no actors selected
-		if (sceneGraph->debugSelectedAssets.empty()) {
-			ImGui::Text("No Actor Selected");
+	const auto& selected = sceneGraph->debugSelectedAssets;
+
+	// no actors selected
+	if (selected.empty()) {
+		ImGui::Text("No Actor Selected");
+		ImGui::End();
+		return;
+	}
+
+	// only 1 actor is selected
+	if (selected.size() == 1) {
+		DrawActorHeader(selected.begin()->second);
+	}
+	else {
+		if (ImGui::CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
+			for (const auto& [id, actor] : selected) {
+				ImGui::Text("%s", actor->getActorName().c_str());
+			}
 		}
+		ImGui::Separator();
+	}
 
-		// only 1 actor is selected
-		else if (sceneGraph->debugSelectedAssets.size() == 1) {
-			auto selectedActor = sceneGraph->debugSelectedAssets.begin();
+	/// Components Section
+	DrawTransformComponent(selected);
+	DrawCameraComponent(selected);
+	DrawLightComponent(selected);
+	DrawMeshComponent(selected);
+	DrawMaterialComponent(selected);
+	DrawShaderComponent(selected);
+	DrawPhysicsComponent(selected);
+	DrawCollisionComponent(selected);
+	DrawScriptComponent(selected);
+	DrawAnimatorComponent(selected);
 
-			DrawActorHeader(selectedActor->second);
+	// Add Component
+	if (ImGui::Button("Add Component##Button", ImVec2(-1, 0))) {
+		ImGui::OpenPopup("Add Component##Popup");
+	}
 
-			/// Components Section
+	ShowAddComponentPopup(selected);
 
-			// transform
-			if (selectedActor->second->GetComponent<TransformComponent>()) {
-				DrawTransformComponent(sceneGraph->debugSelectedAssets);
-			}
+	ImGui::End();
+}
 
-			// mesh
-			if (selectedActor->second->GetComponent<MeshComponent>()) {
-				DrawMeshComponent(sceneGraph->debugSelectedAssets);
-			}
+void InspectorWindow::ShowAddComponentPopup(const std::unordered_map<uint32_t, Ref<Actor>>& selected)
+{
+	if (!ImGui::BeginPopup("Add Component##Popup", ImGuiWindowFlags_AlwaysAutoResize)) return;
+	
+	// TODO search bar
 
-			// material
-			if (selectedActor->second->GetComponent<MaterialComponent>()) {
-				DrawMaterialComponent(sceneGraph->debugSelectedAssets);
-			}
+	ImGui::Text("Component");
+	ImGui::Separator();
 
-			// shader
-			if (selectedActor->second->GetComponent<ShaderComponent>()) {
-				DrawShaderComponent(sceneGraph->debugSelectedAssets);
-			}
+	// states
+	ComponentState<MeshComponent> meshState(selected);
+	ComponentState<MaterialComponent> materialState(selected);
+	ComponentState<ShaderComponent> shaderState(selected);
+	ComponentState<PhysicsComponent> physicsState(selected);
+	ComponentState<CollisionComponent> collisionState(selected);
+	ComponentState<CameraComponent> cameraState(selected);
+	ComponentState<LightComponent> lightState(selected);
+	ComponentState<AnimatorComponent> animatorState(selected);
 
-			// physics (rigidbody)
-			if (selectedActor->second->GetComponent<PhysicsComponent>()) {
-				DrawPhysicsComponent(sceneGraph->debugSelectedAssets);
-			}
+	// lambda for greying out components
+	auto showIf = [](const auto& state) {
+		return state.noneHaveComponent || state.someHaveComponent;
+	};
 
-			// collision
-			if (selectedActor->second->GetComponent<CollisionComponent>()) {
-				DrawCollisionComponent(sceneGraph->debugSelectedAssets);
-			}
-
-			// camera
-			if (selectedActor->second->GetComponent<CameraComponent>()) {
-				DrawCameraComponent(sceneGraph->debugSelectedAssets);
-			}
-			
-			// script
-			if (selectedActor->second->GetComponent<ScriptComponent>()) {
-				DrawScriptComponent(sceneGraph->debugSelectedAssets);
-			}
-
-			if (selectedActor->second->GetComponent<AnimatorComponent>()) {
-				DrawAnimatorComponent(sceneGraph->debugSelectedAssets);
-			}	
-			
-			// light
-			if (selectedActor->second->GetComponent<LightComponent>()) {
-				DrawLightComponent(sceneGraph->debugSelectedAssets);
-			}
-
-			if (ImGui::Button("Add Component##Button", ImVec2(-1, 0))) {
-				ImGui::OpenPopup("Add Component");
-			}
-
-			if (ImGui::BeginPopup("Add Component", ImGuiWindowFlags_AlwaysAutoResize)) {
-				// TODO search bar
-				
-				ImGui::Text("Component");
-				ImGui::Separator();
-
-				if (ImGui::Selectable("Mesh Component")) {
-					if (!selectedActor->second->GetComponent<MeshComponent>()) {
-						RECORD selectedActor->second->AddComponent<MeshComponent>(nullptr, "");
-					}
+	if (showIf(meshState)) {
+		if (ImGui::Selectable("Mesh Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<MeshComponent>()) {
+					RECORD actor->AddComponent<MeshComponent>(nullptr, "");
 				}
-
-				if (ImGui::Selectable("Material Component")) {
-					if (!selectedActor->second->GetComponent<MaterialComponent>()) {
-						RECORD selectedActor->second->AddComponent<MaterialComponent>(nullptr, "", "");
-					}
-				}
-
-				if (ImGui::Selectable("Shader Component")) {
-					if (!selectedActor->second->GetComponent<ShaderComponent>()) {
-						RECORD selectedActor->second->AddComponent<ShaderComponent>(nullptr, "", "");
-					}
-				}
-
-				if (ImGui::Selectable("Physics Component")) {
-					if (!selectedActor->second->GetComponent<PhysicsComponent>()) {
-						RECORD selectedActor->second->AddComponent<PhysicsComponent>();
-						PhysicsSystem::getInstance().AddActor(selectedActor->second);
-					}
-				}
-
-				if (ImGui::Selectable("Collision Component")) {
-					if (!selectedActor->second->GetComponent<CollisionComponent>()) {
-						RECORD selectedActor->second->AddComponent<CollisionComponent>();
-						CollisionSystem::getInstance().AddActor(selectedActor->second);
-					}
-				}
-
-				if (ImGui::Selectable("Camera Component")) {
-					if (!selectedActor->second->GetComponent<CameraComponent>()) {
-						RECORD selectedActor->second->AddComponent<CameraComponent>(selectedActor->second, 45.0f, (16.0f / 9.0f), 0.5f, 100.0f);
-					}
-				}
-				if (ImGui::Selectable("Script Component")) {
-				//	if (!selectedActor->second->GetComponent<ScriptComponent>()) {
-						RECORD selectedActor->second->AddComponent<ScriptComponent>(selectedActor->second.get());
-					//}
-				}
-				if (ImGui::Selectable("Animator Component")) {
-					if (selectedActor->second->GetComponent<MeshComponent>()) {
-						RECORD selectedActor->second->AddComponent<AnimatorComponent>(selectedActor->second.get());
-					}
-					else {
-						// if the actor can't be found by name or by ID
-#ifdef _DEBUG
-						Debug::Error("You require a MeshComponent to create an Animator!: " + selectedActor->second->getActorName(), __FILE__, __LINE__);
-#endif
-					}
-
-				}
-				if (ImGui::Selectable("Light Component")) {
-					if (!selectedActor->second->GetComponent<LightComponent>()) {
-						RECORD selectedActor->second->AddComponent<LightComponent>();
-						sceneGraph->AddLight(selectedActor->second);
-						
-					}
-				}
-
-				ImGui::EndPopup();
 			}
-
 		}
-
-		// TODO: if an asset is selected in the assetbrowser it'll display some information about it in the inspector window
-
-
-		// more than 1 actor selected
-		else {
-			
-			// Header
-			if (ImGui::CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
-				for (const auto& pair : sceneGraph->debugSelectedAssets) {
-					ImGui::Text("%s", pair.second->getActorName().c_str());
+	}
+	
+	if (showIf(materialState)) {
+		if (ImGui::Selectable("Material Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<MaterialComponent>()) {
+					RECORD actor->AddComponent<MaterialComponent>(nullptr, "", "");
 				}
-			}
-			ImGui::Separator();
-
-			DrawTransformComponent(sceneGraph->debugSelectedAssets);
-			DrawMeshComponent(sceneGraph->debugSelectedAssets);
-			DrawMaterialComponent(sceneGraph->debugSelectedAssets);
-			DrawShaderComponent(sceneGraph->debugSelectedAssets);
-			DrawPhysicsComponent(sceneGraph->debugSelectedAssets);
-			DrawCollisionComponent(sceneGraph->debugSelectedAssets);
-			DrawScriptComponent(sceneGraph->debugSelectedAssets);
-			DrawCameraComponent(sceneGraph->debugSelectedAssets);
-			DrawLightComponent(sceneGraph->debugSelectedAssets);
-
-			if (ImGui::Button("Add Component##Button", ImVec2(-1, 0))) {
-				ImGui::OpenPopup("Add Component");
-			}
-
-			// sets the placement and size of the dialog box
-			const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 800, mainViewport->WorkPos.y - 600), ImGuiCond_Appearing);
-			ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
-
-			if (ImGui::BeginPopupModal("Add Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-				ImGui::Text("Select A Component");
-				ImGui::Separator();
-
-				ComponentState<MeshComponent> meshState(sceneGraph->debugSelectedAssets);
-				ComponentState<MaterialComponent> materialState(sceneGraph->debugSelectedAssets);
-				ComponentState<ShaderComponent> shaderState(sceneGraph->debugSelectedAssets);
-				ComponentState<PhysicsComponent> physicsState(sceneGraph->debugSelectedAssets);
-				ComponentState<CollisionComponent> collisionState(sceneGraph->debugSelectedAssets);
-				ComponentState<CameraComponent> cameraState(sceneGraph->debugSelectedAssets);
-				ComponentState<ScriptComponent> scriptState(sceneGraph->debugSelectedAssets);
-				ComponentState<LightComponent> lightState(sceneGraph->debugSelectedAssets);
-
-				if (meshState.noneHaveComponent || meshState.someHaveComponent) {
-					if (ImGui::Selectable("Mesh Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<MeshComponent>()) {
-								RECORD pair.second->AddComponent<MeshComponent>(nullptr, "");
-							}
-						}
-					}
-				}
-
-				if (materialState.noneHaveComponent || materialState.someHaveComponent) {
-					if (ImGui::Selectable("Material Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<MaterialComponent>()) {
-								RECORD pair.second->AddComponent<MaterialComponent>(nullptr, "", "");
-							}
-						}
-					}
-				}
-
-				if (shaderState.noneHaveComponent || shaderState.someHaveComponent) {
-					if (ImGui::Selectable("Shader Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<ShaderComponent>()) {
-								RECORD pair.second->AddComponent<ShaderComponent>(nullptr, "", "");
-							}
-						}
-					}
-				}
-
-				if (physicsState.noneHaveComponent || physicsState.someHaveComponent) {
-					if (ImGui::Selectable("Physics Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<PhysicsComponent>()) {
-								RECORD pair.second->AddComponent<PhysicsComponent>();
-							}
-						}
-					}
-				}
-
-				if (collisionState.noneHaveComponent || collisionState.someHaveComponent) {
-					if (ImGui::Selectable("Collision Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<CollisionComponent>()) {
-								RECORD pair.second->AddComponent<CollisionComponent>();
-							}
-						}
-					}
-				}
-
-				if (cameraState.noneHaveComponent || cameraState.someHaveComponent) {
-					if (ImGui::Selectable("Camera Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<CameraComponent>()) {
-								RECORD pair.second->AddComponent<CameraComponent>(pair.second);
-							}
-						}
-					}
-				}
-				
-				if (scriptState.noneHaveComponent || scriptState.someHaveComponent) {
-					if (ImGui::Selectable("Script Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<ScriptComponent>()) {
-								RECORD pair.second->AddComponent<ScriptComponent>(nullptr);
-							}
-						}
-					}
-				}
-
-
-				if (lightState.noneHaveComponent || lightState.someHaveComponent) {
-					if (ImGui::Selectable("Light Component")) {
-						for (const auto& pair : sceneGraph->debugSelectedAssets) {
-							if (!pair.second->GetComponent<LightComponent>()) {
-								RECORD pair.second->AddComponent<LightComponent>(nullptr, LightType::Point, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Vec4(0.5f, 0.5f, 0.5f, 1.0f), 200.0f);
-							}
-						}
-					}
-				}
-
-				ImGui::Separator();
-
-				if (ImGui::Button("Cancel")) {
-					ImGui::CloseCurrentPopup();
-				}
-
-				ImGui::EndPopup();
 			}
 		}
 	}
 
-	ImGui::End();
+	if (showIf(shaderState)) {
+		if (ImGui::Selectable("Shader Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<ShaderComponent>()) {
+					RECORD actor->AddComponent<ShaderComponent>(nullptr, "", "");
+				}
+			}
+		}
+	}
+
+	if (showIf(physicsState)) {
+		if (ImGui::Selectable("Physics Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<PhysicsComponent>()) {
+					RECORD actor->AddComponent<PhysicsComponent>();
+					PhysicsSystem::getInstance().AddActor(actor);
+				}
+			}
+		}
+	}
+
+	if (showIf(collisionState)) {
+		if (ImGui::Selectable("Collision Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<CollisionComponent>()) {
+					RECORD actor->AddComponent<CollisionComponent>();
+					CollisionSystem::getInstance().AddActor(actor);
+				}
+			}
+		}
+	}
+
+	if (showIf(cameraState)) {
+		if (ImGui::Selectable("Camera Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<CameraComponent>()) {
+					RECORD actor->AddComponent<CameraComponent>(actor.get(), ProjectionType::Perspective, 60.0f, 0.03f, 1000.0f, 5.0f);
+				}
+			}
+		}
+	}
+
+	if (ImGui::Selectable("Script Component")) {
+		for (auto& [id, actor] : selected) {
+			RECORD actor->AddComponent<ScriptComponent>(actor.get());
+		}
+	}
+
+	if (showIf(animatorState)) {
+		if (ImGui::Selectable("Animator Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<AnimatorComponent>()) {
+					if (actor->GetComponent<MeshComponent>()) {
+						RECORD actor->AddComponent<AnimatorComponent>(actor.get());
+					}
+					else {
+#ifdef _DEBUG
+						Debug::Error("You require a MeshComponent to create an Animator!: " + actor->getActorName(), __FILE__, __LINE__);
+#endif
+					}
+				}
+			}
+		}
+	}
+
+	if (showIf(lightState)) {
+		if (ImGui::Selectable("Light Component")) {
+			for (auto& [id, actor] : selected) {
+				if (!actor->GetComponent<LightComponent>()) {
+					RECORD actor->AddComponent<LightComponent>();
+					LightingSystem::getInstance().AddActor(actor);
+				}
+			}
+		}
+	}
+
+	ImGui::EndPopup();
 }
 
 void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
@@ -369,7 +257,7 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 			ImGui::PushID(i);
 
 			// untagged is the default tag, so can't remove that
-			bool isDefault = (allTags[i] == "Untagged");
+			bool isDefault = (allTags[i] == "Untagged" || allTags[i] == "MainCamera");
 			if (isDefault) ImGui::BeginDisabled();
 
 			if (ImGui::SmallButton("X")) {
@@ -723,49 +611,71 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 		RightClickContext<CameraComponent>("##CameraPopup", selectedActors_);
 		
 		Ref<CameraComponent> camera = cameraState.GetFirst();
-		float fov = camera->getFOV(), aspectRatio = camera->getAspectRatio(), 
-			nearClipPlane = camera->getNearClipPlane(), farClipPlane = camera->getFarClipPlane();
 
-		bool isOrtho = camera->getIsOrthographic();
+		ProjectionType type = camera->getType();
+		float fov = camera->getFOV();
+		float nearClipPlane = camera->getNearClipPlane(), farClipPlane = camera->getFarClipPlane();
+		float orthoSize = camera->getOrthoSize();
 
 		int fovInt = static_cast<int>(fov);
 
 		bool hasMixedFOV = cameraState.HasMixedFloat(&CameraComponent::getFOV);
 		bool hasMixedNear = cameraState.HasMixedFloat(&CameraComponent::getNearClipPlane);
 		bool hasMixedFar = cameraState.HasMixedFloat(&CameraComponent::getFarClipPlane);
+		bool hasMixedOrthoSzie = cameraState.HasMixedFloat(&CameraComponent::getOrthoSize);
 
 		ImGui::AlignTextToFramePadding();
-		ImGui::Text("Ortho");
-		ImGui::SameLine(labelWidth);
+		ImGui::Text("Projection");
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 
+		// Projection type
+		ProjectionType currentType = cameraState.GetFirst()->getType();
 
-		if (ImGui::Checkbox("##orthocheckbox", &isOrtho)) {
+		// creating a dropdown
+		const char* typeModes[] = { "Perspective", "Orthographic" };
+		int typeIndex = static_cast<int>(currentType);
+
+		// dropdown for types
+		if (ImGui::Combo("##ProjectionTypes", &typeIndex, typeModes, 2)) {
+			ProjectionType newType = static_cast<ProjectionType>(typeIndex);
+
 			for (auto& component : cameraState.components) {
-				component->toggleOrthographic(isOrtho);
-			}
-
-		}
-
-		ImGui::AlignTextToFramePadding();
-		ImGui::Text("FOV");
-		ImGui::SameLine(labelWidth);
-		ImGui::SetNextItemWidth(-1);
-
-		
-
-		if (ImGui::SliderInt("##fovslider", &fovInt, 0, 120, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
-			for (auto& component : cameraState.components) {
-				component->setFOV((float)fovInt);
+				component->setType(newType);
 			}
 		}
 		
+		if (cameraState.GetFirst()->getType() == ProjectionType::Perspective) {
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("FOV");
+			ImGui::SameLine(labelWidth + 20);
+			ImGui::SetNextItemWidth(-1);
+
+			if (ImGui::SliderInt("##fovslider", &fovInt, 0, 120, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+				for (auto& component : cameraState.components) {
+					component->setFOV((float)fovInt);
+				}
+			}
+		}
+
+		if (cameraState.GetFirst()->getType() == ProjectionType::Orthographic) {
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Size");
+			ImGui::SameLine(labelWidth + 20);
+			ImGui::SetNextItemWidth(-1);
+
+			if (ImGui::SliderFloat("##orthoslider", &orthoSize, 0.0f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+				for (auto& component : cameraState.components) {
+					component->setOrthoSize(orthoSize);
+				}
+			}
+		}
 
 		ImGui::Text("Clipping Planes");
 		
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Near");
-		ImGui::SameLine(labelWidth);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 		if (ImGui::DragFloat("##NearDrag", &nearClipPlane, 1.0f, 0.0f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 			for (auto& component : cameraState.components) {
@@ -775,7 +685,7 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Far");
-		ImGui::SameLine(labelWidth);
+		ImGui::SameLine(labelWidth + 20);
 		ImGui::SetNextItemWidth(-1);
 		if (ImGui::DragFloat("##FarDrag", &farClipPlane, 1.0f, 0.0f, 1000.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 			for (auto& component : cameraState.components) {

@@ -611,11 +611,11 @@ void ScriptService::loadLibraries()
 		);
 
 	(*lua).new_usertype<CameraComponent>("Camera",
+		"ProjectionType", sol::property(&CameraComponent::getType, &CameraComponent::setType),
 		"FOV", sol::property(&CameraComponent::getFOV, &CameraComponent::setFOV),
 		"NearClipPlane", sol::property(&CameraComponent::getNearClipPlane, &CameraComponent::setNearClipPlane),
 		"FarClipPlane", sol::property(&CameraComponent::getFarClipPlane, &CameraComponent::setFarClipPlane),
-		"AspectRatio", sol::property(&CameraComponent::getAspectRatio, &CameraComponent::setAspectRatio),
-		"Transform", sol::property(&CameraComponent::GetUserActorTransform)
+		"OrthoSize", sol::property(&CameraComponent::getOrthoSize, &CameraComponent::setOrthoSize)
 	);
 
 	(*lua).new_usertype<AnimationClip>("AnimationClip",
@@ -719,7 +719,9 @@ void ScriptService::loadLibraries()
 
 	lua->new_usertype<SceneGraph>("Game",
 		"Find", &SceneGraph::GetActorCStr, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
-		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera(); }),
+		"FindCamera", [](SceneGraph&, const std::string& name) {return SceneGraph::getInstance().GetCameraByName(name); },
+		"GetMainCamera", [](SceneGraph&) { return SceneGraph::getInstance().GetMainCamera(); },
+		"SetMainCamera", [](SceneGraph&, Ref<Actor> actor) {SceneGraph::getInstance().SetMainCamera(actor); },
 		"Input", tab
 	);
 	

@@ -15,11 +15,7 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
 		
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("Camera")) {                
-                if (ImGui::MenuItem("Change Camera to Default ##MenuItem", "Ctrl+M")) {
-                    if (sceneGraph) {
-                        sceneGraph->useDebugCamera();
-                    }
-                }
+               
                 
                 ImGui::EndMenu();
             }
@@ -72,14 +68,6 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
             }
 
             if (ImGui::BeginMenu("Tools")) {
-                // slider for increasing stud multiplier (in-scene movement with wasd)
-                float sliderMulti = InputManager::getInstance().GetStudMultiplier();
-                ImGui::Text("Stud Multi");
-                ImGui::SameLine();
-                if (ImGui::SliderFloat("##StudSlider", &sliderMulti, 0.0f, 10.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
-                    InputManager::getInstance().SetStudMultiplier(sliderMulti);
-                }
-
                 ImGui::EndMenu();
             }
 
@@ -145,7 +133,10 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
 
         InputManager::getInstance().updateDockingFocused(ImGui::IsWindowFocused());
 
-
+        //if !editorcameRMBheld()
+        if (ImGui::IsKeyPressed(ImGuiKey_W)) currentGizmoOperation = ImGuizmo::TRANSLATE;
+        if (ImGui::IsKeyPressed(ImGuiKey_E)) currentGizmoOperation = ImGuizmo::ROTATE;
+        if (ImGui::IsKeyPressed(ImGuiKey_R)) currentGizmoOperation = ImGuizmo::SCALE;
 
 	}
 	ImGui::End();
@@ -162,11 +153,13 @@ void SceneWindow::DrawGizmos(ImVec2 scaledTexture_, ImVec2 imagePos_) {
     ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
     ImGuizmo::SetRect(viewportX, viewportY, scaledTexture_.x, scaledTexture_.y);
 
+    //TOOD: gizmos affect all actors, but only shows 1 gizmo and its for the most recent selected actor
+
     // make sure only one actor is selected
     if (sceneGraph->debugSelectedAssets.size() == 1) {
         auto selectedActor = sceneGraph->debugSelectedAssets.begin()->second;
 
-        Ref<CameraComponent> camera = sceneGraph->getUsedCamera();
+        Ref<CameraComponent> camera = sceneGraph->GetMainCamera()->GetComponent<CameraComponent>();
 
         if (camera && selectedActor->GetComponent<TransformComponent>()) {
             Matrix4 view = camera->GetViewMatrix();

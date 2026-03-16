@@ -3,6 +3,7 @@
 #include "EditorManager.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
+#include "LightingSystem.h"
 
 HierarchyWindow::HierarchyWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
 	EditorManager::getInstance().RegisterWindow("Hierarchy", true);
@@ -212,15 +213,8 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 			DuplicateActor(actor_);
 		}
 		ImGui::Separator();
-		if (ImGui::MenuItem("Move Camera To")) {
-			sceneGraph->moveUsedCameraTo(actor_);
-		}
-		ImGui::Separator();
 		if (ImGui::MenuItem("Delete")) {
-			sceneGraph->RemoveLight(sceneGraph->GetActor(actorName_));
 			sceneGraph->RemoveActor(actorName_);
-			sceneGraph->checkValidCamera();
-
 		}
 		ImGui::EndPopup();
 	}
@@ -240,11 +234,6 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 
 void HierarchyWindow::UpdateHierarchyGraph()
 {
-
-	//std::unordered_map<std::string, Ref<Actor>> rootActors;
-
-	
-
 	// store all actors names in the scene 
 	std::vector<std::string> allActorNames = sceneGraph->GetAllActorNames();
 
@@ -330,12 +319,12 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	if (auto camera = original_->GetComponent<CameraComponent>()) {
-		RECORD copy->AddComponent<CameraComponent>(copy, camera->getFOV(), camera->getAspectRatio(), camera->getNearClipPlane(), camera->getFarClipPlane());
+		RECORD copy->AddComponent<CameraComponent>(copy.get(), camera->getType(), camera->getFOV(), camera->getNearClipPlane(), camera->getFarClipPlane(), camera->getOrthoSize());
 	}
 
 	if (auto light = original_->GetComponent<LightComponent>()) {
 		RECORD copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
-		sceneGraph->AddLight(copy);
+		LightingSystem::getInstance().AddActor(copy);
 	}
 
 	if (auto physics = original_->GetComponent<PhysicsComponent>()) {

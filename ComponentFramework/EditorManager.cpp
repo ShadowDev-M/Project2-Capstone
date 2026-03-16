@@ -207,10 +207,7 @@ void EditorManager::RenderEditorToolbar()
 			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
 			//XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
 
-			sceneGraph->setUsedCamera(nullptr);
-			sceneGraph->checkValidCamera();
 			sceneGraph->OnCreate();
-			sceneGraph->useDebugCamera();
 
 			// removing temporary save file data
 			//std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
@@ -428,8 +425,6 @@ void EditorManager::ShowLoadDialog() {
 
 				XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
 				ScreenManager::getInstance().setWindowTitle(SceneGraph::getInstance().cellFileName);
-				sceneGraph->setUsedCamera(nullptr);
-				sceneGraph->checkValidCamera();
 				sceneGraph->OnCreate();
 				Debug::Info("Loaded file: " + sceneGraph->cellFileName, __FILE__, __LINE__);
 			}

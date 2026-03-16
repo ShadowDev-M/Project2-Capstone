@@ -1851,6 +1851,11 @@ std::vector<RaycastHit> CollisionSystem::RaycastAll(const Vec3& origin, const Ve
 
 RaycastHit CollisionSystem::ScreenRaycast(int mouseX, int mouseY)
 {
+	Ref<Actor> mainCamera = SceneGraph::getInstance().GetMainCamera();
+	if (!mainCamera) return RaycastHit{};
+	Ref<CameraComponent> cam = mainCamera->GetComponent<CameraComponent>();
+	if (!cam) return RaycastHit{};
+
 	auto& im = InputManager::getInstance();
 	auto* mouseMap = im.getMouseMap();
 
@@ -1868,8 +1873,6 @@ RaycastHit CollisionSystem::ScreenRaycast(int mouseX, int mouseY)
 	// world space converisons
 	float ndcX = ((mouseX - vpX) / vpW) * 2.0f - 1.0f;
 	float ndcY = (1.0f - (mouseY - vpY) / vpH) * 2.0f - 1.0f;
-
-	Ref<CameraComponent> cam = SceneGraph::getInstance().getUsedCamera();
 
 	Matrix4 invProj = MMath::inverse(cam->GetProjectionMatrix());
 	Matrix4 invView = MMath::inverse(cam->GetViewMatrix());

@@ -14,12 +14,53 @@
 #include "ColliderDebug.h"
 #include "ScreenManager.h"
 #include "FBOManager.h"
+#include "LightingSystem.h"
+
+SceneGraph::SceneGraph()
+{
+	pickerShader->OnCreate();
+
+	ScriptService::loadLibraries();
+	startMeshLoadingWorkerThread();
+}
+
+SceneGraph::~SceneGraph()
+{
+	OnDestroy();
+}
+
+bool SceneGraph::OnCreate()
+{
+	// if an actor was setup wrong throw an error
+	for (auto& actor : Actors) {
+		if (!actor.second->OnCreate()) {
+#ifdef _DEBUG
+			Debug::Error("Actor failed to initialize: " + actor.second->getActorName(), __FILE__, __LINE__);
+#endif
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void SceneGraph::OnDestroy() {
+	//end the mesh loading thread
+	stopMeshLoadingWorker();
+	
+	// TODO: instead of just calling stop straight up to stop scripts, stop scripts directly
+	Stop();
+	
+	RemoveAllActors();
+	pickerShader->OnDestroy();
+}
+
 void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
 
 	if (!mesh->queryLoadStatus()) {
 		auto it = std::find(workerQueue.begin(), workerQueue.end(), mesh);
 		if (it == workerQueue.end()) {
-			workerQueue.push_back(mesh); 
+			workerQueue.push_back(mesh);
 		}
 	}
 }
@@ -33,7 +74,6 @@ void SceneGraph::pushAnimationToWorker(Ref<Animation> animation) {
 		}
 	}
 }
-
 
 void SceneGraph::stopMeshLoadingWorker()
 {
@@ -79,13 +119,13 @@ void SceneGraph::meshLoadingWorker()
 
 			animation->InitializeAnimation();
 
-			
+
 
 		}
 		else {
 
 		}
-	
+
 	}
 }
 
@@ -100,15 +140,6 @@ void SceneGraph::processMainThreadTasks() {
 	}
 }
 
-void SceneGraph::moveUsedCameraTo(Ref<Actor> actor_)
-{
-	if (EditorManager::getInstance().GetEditorMode() == EditorMode::Play) return;
-	//ModelMatrix is in world space, so instead of getting transform local space get the world space and extract the position 
-	Vec3 worldPos = actor_->GetModelMatrix() * Vec4(Vec3(), 1);
-
-	Ref<TransformComponent> transfCam = usedCamera->GetUserActor()->GetComponent<TransformComponent>();
-	transfCam->SetPos(worldPos.x, worldPos.y, transfCam->GetPosition().z);
-}
 void SceneGraph::scheduleOnMain(std::function<void()> task)
 {
 	{
@@ -121,7 +152,7 @@ void SceneGraph::scheduleOnMain(std::function<void()> task)
 bool SceneGraph::queryMeshLoadStatus(std::string name)
 {
 	for (auto& obj : Actors) {
-		
+
 		Ref<MeshComponent> queriedMesh = obj.second->GetComponent<MeshComponent>();
 		if (queriedMesh && queriedMesh->getMeshName() == name.c_str()) {
 			return queriedMesh->queryLoadStatus();
@@ -133,133 +164,10 @@ bool SceneGraph::queryMeshLoadStatus(std::string name)
 	return false;
 }
 
-
-SceneGraph::SceneGraph()
-{
-	pickerShader->OnCreate();
-
-	ScriptService::loadLibraries();
-	startMeshLoadingWorkerThread();
-}
-
-SceneGraph::~SceneGraph()
-{
-	OnDestroy();
-}
-
-void SceneGraph::useDebugCamera()
-{
-	usedCamera = debugCamera->GetComponent<CameraComponent>();
-
-	checkValidCamera();
-}
-
-void SceneGraph::setUsedCamera(Ref<CameraComponent> newCam) {
-	if (newCam) {
-		usedCamera = newCam;
-		newCam->fixCameraToTransform();
-		checkValidCamera();
-
-	}
-	else if (!newCam) {
-		useDebugCamera();
-	}
-}
-
 void SceneGraph::startMeshLoadingWorkerThread()
 {
 	workerThread = std::thread(&SceneGraph::meshLoadingWorker, this);
 	//t.detach();              
-}
-
-Ref<CameraComponent> SceneGraph::getUsedCamera() const
-{
-	if (!usedCamera || !usedCamera->GetUserActor()) {
-		return debugCamera->GetComponent<CameraComponent>();
-	}
-
-	return usedCamera;
-}
-
-void SceneGraph::checkValidCamera()
-{
-	if (!usedCamera || !usedCamera->GetUserActor()) {
-		std::cout << "usedCamera is invalid" << std::endl;
-
-
-
-		std::cout << "try debugCam" << std::endl;
-
-		if (debugCamera && debugCamera->GetComponent<CameraComponent>()) {
-			std::cout << "DebugCam is found" << std::endl;
-		}
-		else {
-
-			std::cout << "DebugCam is invalid" << std::endl;
-			RECORD debugCamera = std::make_shared<Actor>(nullptr, "cameraDebugOne");
-			RECORD debugCamera->AddComponent<TransformComponent>(debugCamera.get(), Vec3(0.0f, 0.0f, 40.0f), QMath::inverse(Quaternion()));
-			debugCamera->OnCreate();
-
-			//doesn't need to be added to the sceneGraph
-			//sceneGraph.AddActor(debugCamera);
-
-			RECORD debugCamera->AddComponent<CameraComponent>(debugCamera, 45.0f, (16.0f / 9.0f), 0.5f, 300.0f);
-			debugCamera->GetComponent<CameraComponent>()->OnCreate();
-			debugCamera->GetComponent<CameraComponent>()->fixCameraToTransform();
-
-			setUsedCamera(debugCamera->GetComponent<CameraComponent>());
-		}
-		usedCamera = debugCamera->GetComponent<CameraComponent>();
-
-
-	}
-}
-
-void SceneGraph::ValidateAllLights()
-{
-	if (lightActors.size() != 0) {
-		for (std::vector<Ref<Actor>>::iterator it = lightActors.begin(); it != lightActors.end(); ++it) {
-			if (!(*it)->ValidateLight()) {
-				lightActors.erase(std::remove_if(lightActors.begin(), lightActors.end(), [](const Ref<Actor>& actor) { return !actor->ValidateLight(); }), lightActors.end());
-			}
-		}
-	}
-}
-
-bool SceneGraph::AddLight(Ref<Actor> actor)
-{
-	if (!actor->ValidateLight()) return false;
-
-	lightActors.push_back(actor);
-
-
-	return true;
-}
-
-std::vector<Vec3> SceneGraph::GetLightsPos() const
-{
-	std::vector<Vec3> lightPositions;
-
-	for (auto& obj : lightActors) {
-		//lightPositions.push_back(obj->GetComponent<TransformComponent>()->GetPosition());
-		lightPositions.push_back(obj->GetModelMatrix() * Vec4(Vec3(), 1));
-
-	}
-
-	return lightPositions;
-}
-
-bool SceneGraph::GetLightExist(Ref<Actor> actor)
-{
-	if (lightActors.size() == 0) return false;
-	auto it = std::find(lightActors.begin(), lightActors.end(), actor);
-
-	if (it != lightActors.end()) {
-		// Element found
-		return true;
-	}
-
-	return false;
 }
 
 bool SceneGraph::AddActor(Ref<Actor> actor)
@@ -309,12 +217,6 @@ void SceneGraph::Stop()
 {
 	for (auto& actor : Actors) {
 		ScriptService::stopActorScripts(actor.second);
-//		lua.script("for k,v in pairs(_G) do if type(v)=='userdata' then _G[k]=nil end end");
-		//lua = std::make_unique<sol::state>();
-		
-		//ScriptService::loadLibraries();
-
-
 
 		Ref<AnimatorComponent> actorAnimator =  actor.second->GetComponent<AnimatorComponent>();
 		if (actorAnimator) {
@@ -323,17 +225,10 @@ void SceneGraph::Stop()
 		}
 	}
 
-	
-
 	ScriptService::ClearLuaState();
 
 	// Stop physics engine 
 	PhysicsSystem::getInstance().ResetPhysics();
-
-
-	//for (auto& actor : Actors) {
-//		ScriptService::preloadActorScripts(actor.second);
-	//}
 
 }
 
@@ -380,45 +275,35 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			RECORD actor_->AddComponent<ScriptComponent>(actor_.get(), AssetManager::getInstance().GetAsset<ScriptAbstract>(scriptName), XMLObjectFile::getPublicVars(name_, i-1));
 			scriptName = XMLObjectFile::getComponent<ScriptComponent>(name_, i);
 
-
-
-
 			//in case of infinite error
 			if (i == 40) break;
 		}
 	}
 	
-
-
-	/*Ref<TransformComponent> transfC = Ref<TransformComponent>(std::apply([](auto&&... args) {
-		return new TransformComponent(args...);
-		}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TransformComponent>(name_))));*/
-
-	
-
-
 	actor_->AddComponent<TransformComponent>(Ref<TransformComponent>(std::apply([](auto&&... args) {
 		RECORD return std::make_shared<TransformComponent>(args...);
 		}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TransformComponent>(name_)))));
 	
-
-
 	if (XMLObjectFile::hasComponent<CameraComponent>(name_)) {
-		Ref<CameraComponent> CamC = Ref<CameraComponent>(std::apply([](auto&&... args) {
-			RECORD return std::make_shared<CameraComponent>(args...);
-			}, XMLObjectFile::getComponent<CameraComponent>(name_)));
+		auto camArgs = XMLObjectFile::getComponent<CameraComponent>(name_);
+
+		// manually settting the arguments in order to pass the actors pointer to the camera
+		RECORD Ref<CameraComponent> CamC = std::make_shared<CameraComponent>(
+			actor_.get(),
+			std::get<1>(camArgs), 
+			std::get<2>(camArgs),
+			std::get<3>(camArgs),
+			std::get<4>(camArgs),
+			std::get<5>(camArgs) 
+		);
 
 		if (!actor_->GetComponent<CameraComponent>()) {
 			actor_->AddComponent(CamC);
-			actor_->GetComponent<CameraComponent>()->setUserActor(actor_);
 		}
 	}
 
 	if (XMLObjectFile::hasComponent<LightComponent>(name_)) {
-		std::cout << "Has a Light" << std::endl;
-
 		std::tuple arguments = XMLObjectFile::getComponent<LightComponent>(name_);
-		
 
 		//tried to apply it directly to addcomponent but it always defaulted yet this works fine ¯\_()_/¯			
 		Ref<LightComponent> lightG = Ref<LightComponent>(std::apply([](auto&&... args) {
@@ -426,11 +311,8 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			}, XMLObjectFile::getComponent<LightComponent>(name_)));
 
 		if (!actor_->GetComponent<LightComponent>()) {
-
 			actor_->AddComponent(lightG);
-
-			//Light will be Added to scenegraph after entire actor is loaded fully to avoid issues (in LoadActor function)
-			
+			LightingSystem::getInstance().AddActor(actor_);
 		}
 
 
@@ -482,7 +364,9 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 	actor_->OnCreate();
 	AddActor(actor_);
 
-
+	if (actor_->getTag() == "MainCamera" && actor_->GetComponent<CameraComponent>()) {
+		SetMainCamera(actor_);
+	}
 }
 
 Ref<Actor> SceneGraph::GetActorCStr(const char* actorName) const {
@@ -549,11 +433,15 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 
 	Ref<Actor> actorToRemove = actorIt->second;
 
+	// check to see if actor is in lighting system and remove it
+	if (actorToRemove->GetComponent<LightComponent>()) {
+		LightingSystem::getInstance().RemoveActor(actorToRemove);
+	}
 	// check to see if actor is in physicssystem and remove it
 	if (actorToRemove->GetComponent<PhysicsComponent>()) {
 		PhysicsSystem::getInstance().RemoveActor(actorToRemove);
 	}
-	// check to see if actor is in physicssystem and remove it
+	// check to see if actor is in collisison system and remove it
 	if (actorToRemove->GetComponent<CollisionComponent>()) {
 		CollisionSystem::getInstance().RemoveActor(actorToRemove);
 	}
@@ -578,6 +466,10 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 
 	actorToRemove->OnDestroy();
 
+	if (actorToRemove == m_mainCamera) {
+		m_mainCamera = nullptr;
+	}
+
 	// remove from both maps
 	Actors.erase(actorId);
 	ActorNameToId.erase(actorName);
@@ -599,6 +491,7 @@ void SceneGraph::RemoveAllActors()
 {
 	std::cout << "Deleting All Actors In The Scene" << std::endl;
 
+	LightingSystem::getInstance().ClearActors();
 	PhysicsSystem::getInstance().ClearActors();
 	CollisionSystem::getInstance().ClearActors();
 
@@ -610,6 +503,7 @@ void SceneGraph::RemoveAllActors()
 	}
 
 	// clear the maps
+	m_mainCamera = nullptr;
 	Actors.clear();
 	EditorManager::getInstance().UpdateActorHierarchy();
 
@@ -622,11 +516,6 @@ void SceneGraph::Update(const float deltaTime)
 	AnimationClip::updateClipTimes(deltaTime);
 	//Load any models that the worker thread finishes loading through assimp
 	//storeInitializedMeshData();
-
-	getUsedCamera()->fixCameraToTransform();
-
-	//	std::cout << usedCamera << std::endl;
-
 
 	//ScriptService::callActorScripts(GetActor("Cube"), deltaTime)
 	
@@ -650,71 +539,36 @@ void SceneGraph::Update(const float deltaTime)
 }
 
 Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
-	//Width of SDL Window
+	Ref<Actor> mainCamera = GetMainCamera();
+	if (!mainCamera) return nullptr;
+	Ref<CameraComponent> cam = mainCamera->GetComponent<CameraComponent>();
+	if (!cam) return nullptr;
+	
 	int w = ScreenManager::getInstance().getRenderWidth();
 	int h = ScreenManager::getInstance().getRenderHeight();
 
 	FBOData& pickingFBO = FBOManager::getInstance().getFBO(FBO::ColorPicker);
 
-	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
-
-	//size of the imgui window used for docking
-	Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
-
-
-	//pos of top left corner of docking window
-	GLint xPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.x;
-	GLint yPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.y;
-
-	GLsizei xSize;
-	GLsizei ySize;
-
-
-
-
-	// Calculate scaled dimensions based on aspect ratio
-	if (windowSize.x / aspectRatio <= windowSize.y)
-	{
-		xSize = (GLsizei)windowSize.x;
-		ySize = (GLsizei)(windowSize.x / aspectRatio);
-	}
-	else
-	{
-		ySize = (GLsizei)windowSize.y;
-		xSize = (GLsizei)(windowSize.y * aspectRatio);
-	}
-
-
-	//Add to the position to move to where the image is centred (non used space in the window would be counted otherwise)
-	ImVec2 imagePos = ImVec2((windowSize.x - xSize) * 0.5f, (windowSize.y - ySize) * 0.5f);
-	xPos += (GLint)imagePos.x;
-	yPos += (GLint)imagePos.y;
-
-	//proper height 
-	GLint glY = h - (yPos + ySize);
-
-
 	//use the picking buffer so it is seperated
 	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO.fbo);
-	glViewport(xPos, glY, xSize, ySize);
+	glViewport(0, 0, pickingFBO.width, pickingFBO.height);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-
 	//get the special shader for picking and set its uniforms
 	glUseProgram(pickerShader->GetProgram());
 
-	glUniformMatrix4fv(pickerShader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
-	glUniformMatrix4fv(pickerShader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
+	glUniformMatrix4fv(pickerShader->GetUniformID("uProjection"), 1, GL_FALSE, cam->GetProjectionMatrix());
+	glUniformMatrix4fv(pickerShader->GetUniformID("uView"), 1, GL_FALSE, cam->GetViewMatrix());
 
 	for (auto& actor : Actors) {
 
 		if (!actor.second->GetComponent<MeshComponent>()) { continue; }//no meshcomponent for actor
 
 		//set matrix with its camera (i forgot to put in camera parametre and spent 5 hours why it was coming back as completely black)
-		glUniformMatrix4fv(pickerShader->GetUniformID("uModel"), 1, GL_FALSE, actor.second->GetModelMatrix(getUsedCamera()));
+		glUniformMatrix4fv(pickerShader->GetUniformID("uModel"), 1, GL_FALSE, actor.second->GetModelMatrix(cam)); //TODO change to editorcamera
 
 		//encode the id of the actor as rgb
 		Vec3 idColor = Actor::encodeID(actor.second->getId());
@@ -731,9 +585,32 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 
+	// scaled viewport to get uv conversion for fbo coords
+	float imgW, imgH;
+	float aspect = ScreenManager::getInstance().getRenderAspectRatio();
+	Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
+	GLint xPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.x;
+	GLint yPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.y;
+
+	if (windowSize.x / aspect <= windowSize.y) {
+		imgW = windowSize.x;
+		imgH = windowSize.x / aspect;
+	}
+	else {
+		imgH = windowSize.y;
+		imgW = windowSize.y * aspect;
+	}
+
+	float imgX = xPos + (windowSize.x - imgW) * 0.5f;
+	float imgY = yPos + (windowSize.y - imgH) * 0.5f;
+
+	float u = ((float)mouseX - imgX) / imgW;
+	float v = ((float)mouseY - imgY) / imgH;
+	GLint fboX = (GLint)(u * pickingFBO.width);
+	GLint fboY = (GLint)((1.0f - v) * pickingFBO.height);
+
 	//get the mouse click's rgb pixel data
-	glReadPixels(mouseX, h - mouseY, 1, 1,
-		GL_RGB, GL_UNSIGNED_BYTE, pixel);
+	glReadPixels(fboX, fboY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
 
 	//reverse selected pixel's rgb and decode into an id
 	uint32_t pickedID = Actor::decodeID(pixel[0], pixel[1], pixel[2]);
@@ -750,121 +627,35 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 	return nullptr; // nothing clicked
 }
 
-
-
 void SceneGraph::Render() const
 {
-
+	Ref<Actor> mainCamera = GetMainCamera();
+	if (!mainCamera) return;
+	Ref<CameraComponent> cam = mainCamera->GetComponent<CameraComponent>();
+	if (!cam) return;
+	
 	int w = ScreenManager::getInstance().getRenderWidth();
 	int h = ScreenManager::getInstance().getRenderHeight();
 
 	FBOData& sceneFBO = FBOManager::getInstance().getFBO(FBO::Scene);
 	FBOData& pickingFBO = FBOManager::getInstance().getFBO(FBO::ColorPicker);
 
-	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
-
-	//size of the imgui window used for docking
-	Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
-
-
-	//pos of top left corner of docking window
-	GLint xPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.x;
-	GLint yPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.y;
-
-	GLsizei xSize;
-	GLsizei ySize;
-
-
-
-
-	// Calculate scaled dimensions based on aspect ratio
-	if (windowSize.x / aspectRatio <= windowSize.y)
-	{
-		xSize = (GLsizei)windowSize.x;
-		ySize = (GLsizei)(windowSize.x / aspectRatio);
-	}
-	else
-	{
-		ySize = (GLsizei)windowSize.y;
-		xSize = (GLsizei)(windowSize.y * aspectRatio);
-	}
-
-
-	//Add to the position to move to where the image is centred (non used space in the window would be counted otherwise)
-	ImVec2 imagePos = ImVec2((windowSize.x - xSize) * 0.5f, (windowSize.y - ySize) * 0.5f);
-	xPos += (GLint)imagePos.x;
-	yPos += (GLint)imagePos.y;
-
-	//proper height 
-	GLint glY = h - (yPos + ySize);
-
-
 	//use the picking buffer so it is seperated
 	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO.fbo);
-	glViewport(xPos, glY, xSize, ySize);
+	glViewport(0, 0, pickingFBO.width, pickingFBO.height);
 
 	if (!RENDERMAINSCREEN) {
-		Vec4 clearColour = Vec4(0.1f, 0.1f, 0.15f, 0.0f);
-
-
-		std::vector<Vec3> lightPos;
-		std::vector<Vec4> lightSpec;
-		std::vector<Vec4> lightDiff;
-		std::vector<float> lightIntensity;
-		std::vector<GLuint> lightTypes;
-		if (!lightActors.empty()) {
-			for (auto& light : lightActors) {
-				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
-					lightPos.push_back(Vec3(light->GetModelMatrix().getColumn(Matrix4::Colunm::three))); // "Colunm" scott-typo lol
-					lightTypes.push_back(1u);
-				}
-				else {
-
-					lightPos.push_back(light->GetComponent<TransformComponent>()->GetForward());
-					lightTypes.push_back(0u);
-				}
-				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
-				lightDiff.push_back(light->GetComponent<LightComponent>()->getDiff());
-				lightIntensity.push_back(light->GetComponent<LightComponent>()->getIntensity());
-			}
-
-			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
-			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
-			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
-
-			glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-
-			glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("lightPos[0]"), lightActors.size(), lightPos[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("diffuse[0]"), lightActors.size(), lightDiff[0]);
-			glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("specular[0]"), lightActors.size(), lightSpec[0]);
-			glUniform1fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("intensity[0]"), lightActors.size(), lightIntensity.data());
-			glUniform1uiv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("lightType[0]"), lightActors.size(), lightTypes.data());
-
-		}
-		glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
-
-		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("numLights"), lightActors.size());
-
-		// Without an Ambient the light components won't work at all
-		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("ambient"), 1, clearColour);
-
-
-		glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-
-		glUniform1ui(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("numLights"), lightActors.size());
-
-		glUniform4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("ambient"), 1, clearColour);
-
+		// upload shader
+		LightingSystem::getInstance().UploadUniforms(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
+		LightingSystem::getInstance().UploadUniforms(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
+		
 		//use the picking buffer so it is seperated
 		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO.fbo);
 		glViewport(0, 0, w, h);
-		glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 	}
 
 	//glEnable(GL_BLEND);
@@ -910,8 +701,8 @@ void SceneGraph::Render() const
 
 		if (!shader || !mesh || !material) { continue; }
 
-		glUniformMatrix4fv(shader->GetUniformID("uProjection"), 1, GL_FALSE, getUsedCamera()->GetProjectionMatrix());
-		glUniformMatrix4fv(shader->GetUniformID("uView"), 1, GL_FALSE, getUsedCamera()->GetViewMatrix());
+		glUniformMatrix4fv(shader->GetUniformID("uProjection"), 1, GL_FALSE, cam->GetProjectionMatrix());
+		glUniformMatrix4fv(shader->GetUniformID("uView"), 1, GL_FALSE, cam->GetViewMatrix());
 
 		if (shader && mesh && material) {
 			//MODELMATRIX
@@ -972,8 +763,8 @@ void SceneGraph::Render() const
 	glDisable(GL_DEPTH_TEST);
 	glLineWidth(2.0f);
 
-	Matrix4 view = getUsedCamera()->GetViewMatrix();
-	Matrix4 projection = getUsedCamera()->GetProjectionMatrix();
+	Matrix4 view = cam->GetViewMatrix();
+	Matrix4 projection = cam->GetProjectionMatrix();
 
 	for (const auto& selectedPair : debugSelectedAssets) {
 		auto actorIt = Actors.find(selectedPair.first);
@@ -1002,27 +793,36 @@ void SceneGraph::Preload(ScriptComponent* script){
 	ScriptService::preloadScript(script);
 }
 
-bool SceneGraph::OnCreate()
+Ref<Actor> SceneGraph::GetMainCamera() const
 {
-	// if an actor was setup wrong throw an error
-	for (auto& actor : Actors) {
-		if (!actor.second->OnCreate()) {
-#ifdef _DEBUG
-			Debug::Error("Actor failed to initialize: " + actor.second->getActorName(), __FILE__, __LINE__);
-#endif
-			return false;
+	// if main camera already exisits
+	if (m_mainCamera && m_mainCamera->GetComponent<CameraComponent>()) {
+		return m_mainCamera;
+	}
+
+	// a fallback tag search
+	for (auto& [id, actor] : Actors) {
+		if (actor->getTag() == "MainCamera" && actor->GetComponent<CameraComponent>()) {
+			return actor;
 		}
 	}
 
-
-	return true;
+	return nullptr;
 }
 
-void SceneGraph::OnDestroy() {
-	//end the mesh loading thread
-	stopMeshLoadingWorker();
-
-	RemoveAllActors();
-	pickerShader->OnDestroy();
+void SceneGraph::SetMainCamera(Ref<Actor> actor_)
+{
+	if (actor_ && actor_->GetComponent<CameraComponent>()) {
+		m_mainCamera = actor_;
+	}
 }
 
+Ref<Actor> SceneGraph::GetCameraByName(const std::string& name_) const
+{
+	Ref<Actor> actor = GetActor(name_);
+	if (actor && actor->GetComponent<CameraComponent>()) {
+		return actor;
+	}
+
+	return nullptr;
+}
