@@ -36,43 +36,40 @@ layout (location = 0) out vec4 fragColor;
 uniform vec3 shadowLightDir; // add near top with other uniforms
 
 float ShadowCalculation() {
-    // Perspective divide
     vec3 projCoords = vFragPosLightSpace.xyz / vFragPosLightSpace.w;
-
-    // To [0,1] texture space
     vec2 shadowUV = projCoords.xy * 0.5 + 0.5;
     float currentDepth = projCoords.z * 0.5 + 0.5;
 
-    // Check if fragment is inside light frustum in clip space
     if(abs(vFragPosLightSpace.x) > vFragPosLightSpace.w ||
-      abs(vFragPosLightSpace.y) > vFragPosLightSpace.w ||
-     abs(vFragPosLightSpace.z) > vFragPosLightSpace.w)
-    return 1.0;
+       abs(vFragPosLightSpace.z) > vFragPosLightSpace.w)
+        return 1.0;
+    if(vFragPosLightSpace.y > vFragPosLightSpace.w)
+        return 1.0;
+    if(vFragPosLightSpace.y < -vFragPosLightSpace.w)
+        return 0.0;
 
     vec3 N = normalize(vertNormal);
-    vec3 L = normalize(-shadowLightDir); // toward light
-
-    // Back face — fully shadowed, skip PCF
+    vec3 L = normalize(-shadowLightDir);
     float NdotL = dot(N, L);
+
     if(NdotL <= 0.0)
         return 0.0;
 
-    // Slope scaled bias
-    float bias = mix(0.003, 0.0005, NdotL);
-
-
-
-    // 5x5 PCF
-    float shadow = 0.0;
+float bias = mix(0.005, 0.0005, NdotL * NdotL); 
+float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
     for(int x = -2; x <= 2; ++x) {
     for(int y = -2; y <= 2; ++y) {
-        float closestDepth = texture(shadowMap, shadowUV + vec2(x, y) * texelSize).r;
+        vec2 sampleUV = clamp(shadowUV + vec2(x, y) * texelSize, 0.001, 0.999);
+        float closestDepth = texture(shadowMap, sampleUV).r;
         shadow += (currentDepth > closestDepth + bias) ? 1.0 : 0.0;
     }}
 
     shadow /= 25.0;
-    return 1.0 - shadow;
+
+    float sunAngleFade = smoothstep(0.0, 0.20, NdotL);
+    return 1.0 - (shadow * sunAngleFade);
 }
 
 void main() {

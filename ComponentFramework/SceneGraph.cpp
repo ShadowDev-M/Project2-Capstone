@@ -810,8 +810,9 @@ void SceneGraph::ShadowPass() const {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT); // reduces peter panning
-
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
 		for (const auto& pair : Actors) {
 
 
@@ -866,7 +867,7 @@ void SceneGraph::ShadowPass() const {
 		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO.fbo);
 		glViewport(0, 0, w, h);
 		glEnable(GL_DEPTH_TEST);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glCullFace(GL_BACK);
 	}
 
@@ -880,7 +881,7 @@ ShadowInfo SceneGraph::CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightTyp
 	if (type == LightType::Sky) {
 
 
-		Vec3 position = transform->GetPosition();
+		Vec3 position = lightActor->GetModelMatrix() * Vec4(Vec3(0,0,0),1);
 
 		Quaternion orientation = transform->GetOrientation();
 
@@ -888,7 +889,7 @@ ShadowInfo SceneGraph::CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightTyp
 		Matrix4 cameraWorldTransform =  MMath::toMatrix4(orientation);
 
 		//Orbit's the view like the sun around the camera (kinda similar to how a skybox works)	
-		Matrix4 lightView = MMath::translate(-usedCamera->GetUserActorTransform()->GetPosition()) * MMath::translate(Vec3(0, 0, -100)) * MMath::inverse(cameraWorldTransform);
+		Matrix4 lightView = MMath::translate(Vec3(0, 0, -100)) * MMath::inverse(cameraWorldTransform);
 
 			
 		float sceneSize = 60.0f;

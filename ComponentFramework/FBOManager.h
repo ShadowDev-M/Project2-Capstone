@@ -30,6 +30,7 @@ private:
 
 	// private helpers for creating and destroying fbos
 	void createFBO(FBOData& data, int w, int h);
+	void createShadowFBO(FBOData& data, int w, int h);
 	void destroyFBO(FBOData& data);
 	
 	std::unordered_map<FBO, FBOData> fbos;
@@ -42,6 +43,7 @@ public:
 	}
 
 	FBOData& CreateFBO(FBO fbo_, int w, int h);
+	FBOData& CreateShadowFBO(FBO fbo_, int w, int h);
 	void OnDestroy();
 	void OnResize(FBO fbo_, int w, int h);
 
