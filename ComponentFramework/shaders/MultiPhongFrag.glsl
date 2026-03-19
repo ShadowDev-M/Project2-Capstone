@@ -17,7 +17,7 @@ uniform float intensity[MAX_LIGHTS];
 uniform uint lightType[MAX_LIGHTS];
 uniform vec4 ambient;
 uniform uint numLights;
-uniform int hasSpec;
+uniform bool hasSpec;
 
 uniform bool isTiled;
 uniform vec3 uvTiling;
@@ -35,33 +35,47 @@ void main() {
     vec3 normal = normalize(vertNormal);
     vec3 viewDir = normalize(cameraPos - worldPos);
     vec4 kt;
+    vec2 tiledTextureCoords;
 
-    if (isTiled == true){
+    if (isTiled == true) {
         vec3 n = abs(localNormal);
         vec2 tiledTex;
 
-        vec2 finalOffset = tileOffset * tileScale;
+		vec2 correctedScale = -tileScale / 100;
+
+        vec2 finalOffset = tileOffset * correctedScale;
 
         vec3 scaledPos = localPos * uvTiling;
 
         if (n.y > n.x && n.y > n.z)
-            tiledTex = scaledPos.xz * tileScale; // top  
+            tiledTex = scaledPos.xz * correctedScale; // top  
         else if (n.x > n.z)
-            tiledTex = scaledPos.zy * tileScale; // side
+            tiledTex = scaledPos.zy * correctedScale; // side
         else
-            tiledTex = scaledPos.xy * tileScale; // front
+            tiledTex = scaledPos.xy * correctedScale; // front
             
-        kt = texture(diffuseTexture, tiledTex + finalOffset);
-       
-    } else {
-        kt = texture(diffuseTexture, textureCoords);
-    }
+		tiledTextureCoords = tiledTex + finalOffset;
+		if (tiledTextureCoords.x == 0) {
+			tiledTextureCoords.x = textureCoords.x;
+		} 
+		if (tiledTextureCoords.y == 0) {
+			tiledTextureCoords.y = textureCoords.y;
+		}
+
+        kt = texture(diffuseTexture, tiledTextureCoords);
+	} else {
+		kt = texture(diffuseTexture, textureCoords); 
+	}
     
     vec4 phongResult = ambient * kt;
     
     if (numLights > 0) {
         for(uint i = 0u; i < numLights; i++) {
-            vec4 ks = (hasSpec == 1) ? texture(specularTexture, textureCoords) * specular[i] : specular[i];
+            vec4 ks = (hasSpec == true) ? (isTiled == true) ? 
+                        texture(specularTexture, tiledTextureCoords) * specular[i] : 
+                        texture(specularTexture, textureCoords) * specular[i] : 
+                        specular[i];
+        
             vec4 kd = diffuse[i];
             
             vec3 lightWorldPos = lightPos[i]; 

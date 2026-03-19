@@ -120,10 +120,18 @@ void AssetManagerWindow::ShowAddAssetDialog()
 			ImGui::TextWrapped("Example: meshes/Mesh.obj");
 		}
 		else if (selectedAssetType == 1) {
+			// diffuse
 			ImGui::Text("Diffuse Map:");
 			ImGui::InputText("##DiffusePath", &newDiffuseMapPath);
+
+			// specular
 			ImGui::Text("Specular Map (Optional):");
 			ImGui::InputText("##SpecularPath", &newSpecularMapPath);
+			
+			// normal
+			ImGui::Text("Normal Map (Optional):");
+			ImGui::InputText("##NormalPath", &newNormalMapPath);
+
 			ImGui::TextWrapped("Example: textures/Texture.png");
 		}
 		else if (selectedAssetType == 2) {
@@ -224,12 +232,18 @@ bool AssetManagerWindow::AddNewAssetToDatabase()
 			break;
 
 		case 1: // Material Component
-			if (newSpecularMapPath.empty()) {
+			if (newSpecularMapPath.empty() && newNormalMapPath.empty()) {
 				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
 					newAssetName, nullptr, newDiffuseMapPath.c_str());
-			} else {
+			} else if (!newSpecularMapPath.empty() && newNormalMapPath.empty()) {
 				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
 					newAssetName, nullptr, newDiffuseMapPath.c_str(), newSpecularMapPath.c_str());
+			} else if (newSpecularMapPath.empty() && !newNormalMapPath.empty()) {
+				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
+					newAssetName, nullptr, newDiffuseMapPath.c_str(), "", newNormalMapPath.c_str());
+			} else {
+				success = AssetManager::getInstance().LoadAsset<MaterialComponent>(
+					newAssetName, nullptr, newDiffuseMapPath.c_str(), newSpecularMapPath.c_str(), newNormalMapPath.c_str());
 			}
 			break;
 
@@ -363,6 +377,11 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 
 				}
 
+				if (material->getNormalName() != "") {
+					std::string command = "start \"\" \"" + std::string((material->getNormalName())) + "\"";
+					system(command.c_str());
+				}
+
 			}
 			else if (shader) {
 
@@ -429,14 +448,15 @@ void AssetManagerWindow::DrawAssetThumbnail(const std::string& assetName, Ref<Co
 			ImGui::Text("File Path: %s", mesh->getMeshName());
 		}
 		if (material) {
-			if (material->getSpecularName()) {
-				ImGui::Text("Diffuse Texture ID: %u", material->getDiffuseID());
+			ImGui::Text("Diffuse Texture ID: %u", material->getDiffuseID());
+			ImGui::Text("Diffuse File Path: %s", material->getDiffuseName());
+			if (material->getSpecularID() != 0) {
 				ImGui::Text("Specular Texture ID: %u", material->getSpecularID());
-				ImGui::Text("Diffuse File Path: %s", material->getDiffuseName());
 				ImGui::Text("Specular File Path: %s", material->getSpecularName());
-			} else {
-				ImGui::Text("Diffuse Texture ID: %u", material->getDiffuseID());
-				ImGui::Text("File Path: %s", material->getDiffuseName());
+			}
+			if (material->getNormalID() != 0) {
+				ImGui::Text("Normal Texture ID: %u", material->getNormalID());
+				ImGui::Text("Normal File Path: %s", material->getNormalName());
 			}
 		}
 		if (shader) {

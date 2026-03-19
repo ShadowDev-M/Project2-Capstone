@@ -78,6 +78,7 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				DrawScriptComponent(sceneGraph->debugSelectedAssets);
 			}
 
+			// animator
 			if (selectedActor->second->GetComponent<AnimatorComponent>()) {
 				DrawAnimatorComponent(sceneGraph->debugSelectedAssets);
 			}	
@@ -110,6 +111,9 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				if (ImGui::Selectable("Material Component")) {
 					if (!selectedActor->second->GetComponent<MaterialComponent>()) {
 						selectedActor->second->AddComponent<MaterialComponent>(nullptr, "", "");
+					}
+					if (!selectedActor->second->GetComponent<TilingSettings>()) {
+						selectedActor->second->AddComponent<TilingSettings>(nullptr, false);
 					}
 				}
 
@@ -598,6 +602,7 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 
 			ImGui::TextWrapped("Diffuse ID: %u", material->getDiffuseID());
 			if (material->getSpecularID() != 0) ImGui::TextWrapped("Specular ID: %u", material->getSpecularID());
+			if (material->getNormalID() != 0) ImGui::TextWrapped("Normal ID: %u", material->getNormalID());
 		}
 		else if (materialState.allHaveComponent) {
 			ImGui::TextWrapped("All Selected Actors Have a MaterialComponent");
@@ -655,6 +660,49 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 			ImGui::EndDragDropTarget();
 		}
 
+		/// REPLACE materialState with a TilingSettingsState var
+
+		if (materialState.Count() == 1) {
+			ImGui::Text("Tiling: ");
+			ImGui::SameLine();
+			for (auto& component : materialState.components) {
+				for (const auto& pair : selectedActors_) {
+					
+					if (!pair.second->GetComponent<TilingSettings>()) {
+						pair.second->AddComponent<TilingSettings>(nullptr, false);
+					}
+
+					Ref<TilingSettings> tileSettings = pair.second->GetComponent<TilingSettings>();
+					bool isTiled = tileSettings->getIsTiled();
+				
+					if (ImGui::Checkbox("##isTiled", &isTiled)) {				
+						tileSettings->setIsTiled(isTiled);
+					}
+
+					Vec2 scale = tileSettings->getTileScale();
+					float tileScale[2] = { scale.x, scale.y };
+
+					Vec2 offset = tileSettings->getTileOffset();
+					float tileOffset[2] = { offset.x, offset.y };
+
+					if (isTiled == true) {
+						ImGui::Text("Tile Scale: ");
+						ImGui::SameLine();
+
+						if (ImGui::DragFloat2("##tileScale", tileScale, 0.01f)) {
+							tileSettings->setTileScale(Vec2(tileScale[0], tileScale[1]));
+						}
+
+						ImGui::Text("Tile Offset: ");
+						ImGui::SameLine();
+
+						if (ImGui::DragFloat2("##tileOffset", tileOffset, 0.01f)) {
+							tileSettings->setTileOffset(Vec2(tileOffset[0], tileOffset[1]));
+						}
+					}
+				}
+			}
+		}
 	}
 	ImGui::Separator();
 }

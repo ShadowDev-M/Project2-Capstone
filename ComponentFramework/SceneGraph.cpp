@@ -160,7 +160,6 @@ SceneGraph::~SceneGraph()
 {
 	//end the mesh loading thread
 	
-
 	RemoveAllActors();
 	pickerShader->OnDestroy();
 	glDeleteFramebuffers(1, &pickingFBO);
@@ -170,6 +169,8 @@ SceneGraph::~SceneGraph()
 	glDeleteFramebuffers(1, &dockingFBO);
 	glDeleteRenderbuffers(1, &dockingDepth);
 	glDeleteTextures(1, &dockingTexture);
+
+	//Stop();
 }
 
 void SceneGraph::useDebugCamera()
@@ -379,6 +380,16 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			Ref<MaterialComponent> materialComponent = AssetManager::getInstance().GetAsset<MaterialComponent>(materialName);
 			if (materialComponent) {
 				actor_->ReplaceComponent<MaterialComponent>(materialComponent);
+
+				if (XMLObjectFile::hasComponent<TilingSettings>(name_)) {
+					Ref<TilingSettings> TSC = Ref<TilingSettings>(std::apply([](auto&&... args) {
+						return new TilingSettings(args...);
+						}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TilingSettings>(name_))));
+
+					if (!actor_->GetComponent<TilingSettings>()) {
+						actor_->AddComponent(TSC);
+					}
+				}
 			}
 		}
 	}
@@ -1062,7 +1073,20 @@ void SceneGraph::Render() const
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 			Matrix4 modelMatrix = actor->GetModelMatrix();
 			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+			
+			//TILING
+			Ref<TilingSettings> TS = actor->GetComponent<TilingSettings>();
+			if (TS) {	
+				Vec3 scale = actor->GetComponent<TransformComponent>()->GetScale();
+				glUniform1i(shader->GetUniformID("isTiled"), TS->getIsTiled());
+				glUniform3fv(shader->GetUniformID("uvTiling"), 1, scale);
 
+				Vec2 tileScale = TS->getTileScale();
+				glUniform2f(shader->GetUniformID("tileScale"), tileScale.x, tileScale.y);
+
+				Vec2 tileOffset = TS->getTileOffset();
+				glUniform2f(shader->GetUniformID("tileOffset"), tileOffset.x, tileOffset.y);
+			}
 
 			//ANIMATION
 			if (isAnimating) {

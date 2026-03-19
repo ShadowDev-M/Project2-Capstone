@@ -1,5 +1,4 @@
 #pragma once
-class MeshComponent;
 using namespace MATH;
 
 class Actor : public Component {
@@ -20,7 +19,6 @@ class Actor : public Component {
 	}
 	
 	uint32_t id;  // unique per actor
-
 
 protected:
 	std::vector<Ref<Component>> components;
@@ -56,6 +54,7 @@ public:
 	// getter for the actor name
 	const std::string& getActorName() { return actorName; }
 	void setActorName(const std::string& actorName_) { actorName = actorName_; }
+
 
 	// for actor tag
 	const std::string& getTag() const { return actorTag; }

@@ -5,6 +5,11 @@
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="51.099998" y="51.099998" z="51.099998"/>
     </TransformComponent>
+    <TilingSettings>
+        <isTiled state="1"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
     <MeshComponent name="SM_Plane"/>
     <MaterialComponent name="M_Sky"/>
     <ShaderComponent name="S_Multi"/>

@@ -6,7 +6,6 @@
         <Board/>
         <CamTest/>
         <Cube/>
-        <Cube_1D/>
         <SkyLight/>
         <Door/>
         <Board_1D/>
@@ -20,10 +19,10 @@
     </Actors>
     <Components>
         <Animation>
-            <svgvuijwerjtuiew/>
             <dancing/>
-            <falling/>
+            <svgvuijwerjtuiew/>
             <walking/>
+            <falling/>
             <idle/>
             <land/>
             <jump/>
@@ -32,58 +31,79 @@
         </Animation>
         <MaterialComponent>
             <M_Sphere>
-                <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
+                <Texture diff="textures/Black Chess Base Colour.png" spec="" norm=""/>
             </M_Sphere>
-            <M_Hammer>
-                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
-            </M_Hammer>
             <M_MarioFire>
-                <Texture diff="textures/mario_fire.png" spec=""/>
+                <Texture diff="textures/mario_fire.png" spec="" norm=""/>
             </M_MarioFire>
+            <M_Hammer>
+                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png" norm=""/>
+            </M_Hammer>
             <M_MarioN>
-                <Texture diff="textures/mario_main.png" spec=""/>
+                <Texture diff="textures/mario_main.png" spec="" norm=""/>
             </M_MarioN>
             <M_Moon>
-                <Texture diff="textures/moon.jpg" spec=""/>
+                <Texture diff="textures/moon.jpg" spec="" norm=""/>
             </M_Moon>
             <M_ChessBoard>
-                <Texture diff="textures/8x8_checkered_board.png" spec=""/>
+                <Texture diff="textures/8x8_checkered_board.png" spec="" norm=""/>
             </M_ChessBoard>
             <M_Skull>
-                <Texture diff="textures/skull_texture.jpg" spec=""/>
+                <Texture diff="textures/skull_texture.jpg" spec="" norm=""/>
             </M_Skull>
-            <M_TestSpec>
-                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
-            </M_TestSpec>
             <testtex>
-                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
+                <Texture diff="textures/Underwater Box_Negz.png" spec="" norm=""/>
             </testtex>
+            <M_TestSpec>
+                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png" norm=""/>
+            </M_TestSpec>
             <skeletonTexture>
-                <Texture diff="textures/skeleton_d.png" spec=""/>
+                <Texture diff="textures/skeleton_d.png" spec="" norm=""/>
             </skeletonTexture>
             <gridtexture2>
-                <Texture diff="textures/gridimage.png" spec=""/>
+                <Texture diff="textures/gridimage.png" spec="" norm=""/>
             </gridtexture2>
+            <M_Sky>
+                <Texture diff="textures/seamsky.jpg" spec="" norm=""/>
+            </M_Sky>
             <testtex2>
-                <Texture diff="textures/UnderwaterBox_Negx.png" spec=""/>
+                <Texture diff="textures/UnderwaterBox_Negx.png" spec="" norm=""/>
             </testtex2>
+            <M_Floor>
+                <Texture diff="textures/terrainDiffuse.png" spec="" norm=""/>
+            </M_Floor>
+            <M_TestNormal>
+                <Texture diff="textures\terrainDiffuse.png" spec="textures\Test_Normal.png" norm=""/>
+            </M_TestNormal>
+            <M_TestNormal1>
+                <Texture diff="textures\terrainDiffuse.png" spec="" norm="textures\Test_Normal.png"/>
+            </M_TestNormal1>
         </MaterialComponent>
         <MeshComponent>
-            <SM_Sphere>
-                <Mesh path="meshes/Sphere.obj"/>
-            </SM_Sphere>
             <SM_Cube>
                 <Mesh path="meshes/Cube.obj"/>
             </SM_Cube>
+            <SM_Sphere>
+                <Mesh path="meshes/Sphere.obj"/>
+            </SM_Sphere>
             <SM_King>
                 <Mesh path="meshes/King.obj"/>
             </SM_King>
             <dancingRobot>
                 <Mesh path="meshes/dancingRobot.fbx"/>
             </dancingRobot>
+            <SM_Pipe>
+                <Mesh path="meshes/3D_Models/SM_Pipe_Straight.fbx"/>
+            </SM_Pipe>
+            <SM_Gear2>
+                <Mesh path="meshes/3D_Models/SM_Gear_Medium.fbx"/>
+            </SM_Gear2>
             <SM_Pawn>
                 <Mesh path="meshes/Pawn.obj"/>
             </SM_Pawn>
+            <grid>
+                <Mesh path="meshes/grid.obj"/>
+            </grid>
             <SM_Plane>
                 <Mesh path="meshes/Plane.obj"/>
             </SM_Plane>
@@ -99,18 +119,15 @@
             <SM_Skull>
                 <Mesh path="meshes/Skull.obj"/>
             </SM_Skull>
-            <testRuntimeMesh>
-                <Mesh path="meshes/Mario.obj"/>
-            </testRuntimeMesh>
             <manni>
                 <Mesh path="meshes/Ch36_nonPBR.fbx"/>
             </manni>
+            <testRuntimeMesh>
+                <Mesh path="meshes/Mario.obj"/>
+            </testRuntimeMesh>
             <testassetfbx>
                 <Mesh path="meshes/cliff_rock1.fbx"/>
             </testassetfbx>
-            <grid>
-                <Mesh path="meshes/grid.obj"/>
-            </grid>
             <Crate>
                 <Mesh path="meshes/3D_Models/SM_Crate_01.fbx"/>
             </Crate>
@@ -120,20 +137,27 @@
             <SM_Gear1>
                 <Mesh path="meshes/3D_Models/SM_Gear_Large.fbx"/>
             </SM_Gear1>
-            <PressurePlate>
-                <Mesh path="meshes/PressurePlate.fbx"/>
-            </PressurePlate>
+            <SM_Pipe_Curved>
+                <Mesh path="meshes/3D_Models/SM_Pipe_Curved.fbx"/>
+            </SM_Pipe_Curved>
+            <SM_Gear3>
+                <Mesh path="meshes/3D_Models/SM_Gear_Small.fbx"/>
+            </SM_Gear3>
         </MeshComponent>
         <ScriptAbstract>
+            <S_Lever/>
+            <S_Lever2/>
             <script1/>
-            <testScriptTwo/>
             <PlayerController/>
+            <testScriptTwo/>
             <lerjgklktbl/>
             <animScript/>
             <testScript/>
             <FixCamera/>
             <PressurePad/>
             <GearTurn/>
+            <S_PressurePad2/>
+            <S_PressurePad3/>
         </ScriptAbstract>
         <ShaderComponent>
             <S_Default>
@@ -145,15 +169,15 @@
             <S_Outline>
                 <Shader frag="shaders/outline.glsl" vert="shaders/MultiPhongVert.glsl"/>
             </S_Outline>
+            <S_AnimOutline>
+                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
+            </S_AnimOutline>
             <S_Phong>
                 <Shader frag="shaders/texturePhongFrag.glsl" vert="shaders/texturePhongVert.glsl"/>
             </S_Phong>
             <S_Animated>
                 <Shader frag="shaders/MultiPhongFrag.glsl" vert="shaders/animationVert.glsl"/>
             </S_Animated>
-            <S_AnimOutline>
-                <Shader frag="shaders/outline.glsl" vert="shaders/animationVert.glsl"/>
-            </S_AnimOutline>
         </ShaderComponent>
     </Components>
 </CellFile>
