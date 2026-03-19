@@ -32,6 +32,9 @@
         <looping state="false"/>
         <animName name="idle2"/>
     </AnimatorComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
     <MeshComponent name="manni"/>
     <MaterialComponent name="skeletonTexture"/>
     <ShaderComponent name="S_Multi"/>

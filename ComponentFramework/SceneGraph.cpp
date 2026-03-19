@@ -351,6 +351,9 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 				actor_->ReplaceComponent<MaterialComponent>(materialComponent);
 			}
 		}
+
+
+		
 	}
 
 	if (XMLObjectFile::hasComponent<ShaderComponent>(name_)) {
@@ -369,7 +372,12 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			Ref<MeshComponent> meshComponent = AssetManager::getInstance().GetAsset<MeshComponent>(meshName);
 			if (meshComponent) {
 				actor_->ReplaceComponent<MeshComponent>(meshComponent);
+
+
+			
 			}
+
+
 		}
 	}
 
@@ -434,6 +442,16 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}
 
 
+	}
+
+	if (XMLObjectFile::hasComponent<ShadowSettings>(name_)) {
+		Ref<ShadowSettings> SSC = Ref<ShadowSettings>(std::apply([](auto&&... args) {
+			RECORD return std::make_shared<ShadowSettings>(args...);
+			}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<ShadowSettings>(name_))));
+
+		if (!actor_->GetComponent<ShadowSettings>()) {
+			actor_->AddComponent(SSC);
+		}
 	}
 
 	if (XMLObjectFile::hasComponent<AnimatorComponent>(name_)) {
@@ -601,7 +619,7 @@ void SceneGraph::RemoveAllActors()
 
 	PhysicsSystem::getInstance().ClearActors();
 	CollisionSystem::getInstance().ClearActors();
-
+	lightActors.clear();
 	// call the OnDestroy for each actor 
 	for (auto& pair : Actors) {
 		if (pair.second) {
@@ -815,9 +833,13 @@ void SceneGraph::ShadowPass() const {
 		glPolygonOffset(3.0f, 6.0f);
 		for (const auto& pair : Actors) {
 
-
+			
 			Ref<MeshComponent> mesh = pair.second->GetComponent<MeshComponent>();
-			if (!mesh) continue;
+			
+			if (!mesh || !pair.second->GetComponent<ShadowSettings>() || !pair.second->GetComponent<ShadowSettings>()->getCastShadow()) continue;
+			
+
+
 
 			Ref<Actor> actor = pair.second;
 
@@ -889,7 +911,7 @@ ShadowInfo SceneGraph::CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightTyp
 		Matrix4 cameraWorldTransform =  MMath::toMatrix4(orientation);
 
 		//Orbit's the view like the sun around the camera (kinda similar to how a skybox works)	
-		Matrix4 lightView = MMath::translate(Vec3(0, 0, -100)) * MMath::inverse(cameraWorldTransform);
+		Matrix4 lightView = MMath::translate(Vec3(0, 0, -100)) * MMath::inverse(cameraWorldTransform) * MMath::translate(-(usedCamera->GetUserActor()->GetModelMatrix() * Vec4(Vec3(0,0,0), 1)));
 
 			
 		float sceneSize = 60.0f;
@@ -999,12 +1021,12 @@ void SceneGraph::Render() const
 		if (!lightActors.empty()) {
 			for (auto& light : lightActors) {
 				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
-					lightPos.push_back(Vec3(light->GetModelMatrix().getColumn(Matrix4::Colunm::three))); // "Colunm" scott-typo lol
+					lightPos.push_back(Vec3(light->GetModelMatrix() * Vec4(Vec3(0,0,0), 1))); // "Colunm" scott-typo lol
 					lightTypes.push_back(1u);
 				}
 				else {
 
-					lightPos.push_back(light->GetComponent<TransformComponent>()->GetForward());
+					lightPos.push_back(VMath::normalize(light->GetComponent<TransformComponent>()->GetForward()));
 					lightTypes.push_back(0u);
 				}
 				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());

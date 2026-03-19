@@ -26,6 +26,9 @@
         <halfExtents x="1" y="1" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
     <MeshComponent name="SM_Cube"/>
     <MaterialComponent name="M_Sphere"/>
     <ShaderComponent name="S_Multi"/>

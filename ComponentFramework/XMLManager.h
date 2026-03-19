@@ -6,7 +6,7 @@
 #include "ScriptComponent.h"
 #include "CollisionComponent.h"
 #include "SceneGraph.h"
-
+#include "ShadowSettings.h"
 
 template <typename T>
 constexpr auto TypeName = static_cast<std::string>(typeid(T).name()).substr(6);
@@ -731,7 +731,23 @@ public:
             );
             return args;
 
-            }
+        }
+        else if constexpr (std::is_same_v<ComponentTemplate, ShadowSettings>) {
+            /////// TILE SETTINGS ///////
+
+                XMLElement* castShadow = component->FirstChildElement("castShadow");
+               
+
+                bool castShadowArg = GetAttrF(castShadow, "state");
+
+              
+
+                auto args = std::make_tuple(
+                    castShadowArg
+                );
+
+                return args;
+                }
         else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent> || std::is_same_v<ComponentTemplate, ScriptComponent>) {
 
             AssetManager& assetMgr = AssetManager::getInstance();
@@ -1180,6 +1196,20 @@ public:
             componentElement->InsertEndChild(animNameElement);
 
             }
+        else if constexpr (std::is_same_v<ComponentTemplate, ShadowSettings>) {
+            ShadowSettings* shadowToWrite = dynamic_cast<ShadowSettings*>(toWrite);
+
+            bool castShadow = shadowToWrite->getCastShadow();
+
+            // isTiled
+            XMLElement* isShadowElement;
+            isShadowElement = doc.NewElement("castShadow");
+            {
+                isShadowElement->SetAttribute("state", (int)castShadow);
+            }
+            componentElement->InsertEndChild(isShadowElement);
+
+        }
         else {
 
             std::cout << "ComponentWriteError: " << componentType << " is not a supported component type" << std::endl;

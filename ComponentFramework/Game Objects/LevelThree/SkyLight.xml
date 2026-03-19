@@ -11,6 +11,9 @@
         <intensity magnitude="1"/>
         <LightType type="0"/>
     </LightComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
     <MeshComponent name="SM_Sphere"/>
     <ShaderComponent name="S_Multi"/>
 </Actor>

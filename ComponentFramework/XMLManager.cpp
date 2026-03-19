@@ -242,6 +242,8 @@ void SceneGraph::SaveFile(std::string name) const {
         if (GetActor(obj.first)->GetComponent<AnimatorComponent>())
             XMLObjectFile::writeUniqueComponent<AnimatorComponent>(obj.first, GetActor(obj.first)->GetComponent<AnimatorComponent>().get());
 
+        if (GetActor(obj.first)->GetComponent<ShadowSettings>())
+            XMLObjectFile::writeUniqueComponent<ShadowSettings>(obj.first, GetActor(obj.first)->GetComponent<ShadowSettings>().get());
 
 
         AssetManager& assetMgr = AssetManager::getInstance();
@@ -250,9 +252,13 @@ void SceneGraph::SaveFile(std::string name) const {
 
 
         //write a referenced component (asset)
-        if (GetActor(obj.first)->GetComponent<MeshComponent>())
+        if (GetActor(obj.first)->GetComponent<MeshComponent>()) {
             XMLObjectFile::writeReferenceComponent<MeshComponent>(obj.first, GetActor(obj.first)->GetComponent<MeshComponent>());
+        }
 
+
+
+        
         if (GetActor(obj.first)->GetComponent<MaterialComponent>())
             XMLObjectFile::writeReferenceComponent<MaterialComponent>(obj.first, GetActor(obj.first)->GetComponent<MaterialComponent>());
 
