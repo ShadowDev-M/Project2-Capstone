@@ -76,7 +76,10 @@ void GameWindow::ShowGameWindow(bool* pOpen)
         InputManager::getInstance().getMouseMap()->gameHovered = ImGui::IsWindowHovered();
 
         if (EditorManager::getInstance().isPlayMode()) {
-            InputManager::getInstance().updateDockingFocused(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows));
+            InputManager::getInstance().setGameInputActive(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows));
+        }
+        else {
+            InputManager::getInstance().setGameInputActive(false);
         }
     }
     ImGui::End();

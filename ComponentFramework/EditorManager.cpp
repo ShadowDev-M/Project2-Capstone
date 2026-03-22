@@ -2,6 +2,7 @@
 #include "EditorManager.h"
 #include "ScreenManager.h"
 #include "AnimationSystem.h"
+#include "InputManager.h"
 
 void EditorManager::CreateEditorIcons()
 {
@@ -209,6 +210,7 @@ void EditorManager::Play()
 	if (!AnimationSystem::getInstance().isAllComponentsLoaded()) return;
 
 	SetEditorMode(EditorMode::Play);
+	InputManager::getInstance().setGameInputActive(true);
 
 	// on play, save data to a temporary save file
 	//std::filesystem::create_directory("Game Objects/" + tempSaveFile);
@@ -221,6 +223,7 @@ void EditorManager::Play()
 void EditorManager::Stop()
 {
 	SetEditorMode(EditorMode::Edit);
+	InputManager::getInstance().setGameInputActive(false);
 	sceneGraph->Stop();
 
 	std::string cellFile = sceneGraph->cellFileName;

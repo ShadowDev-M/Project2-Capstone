@@ -217,10 +217,7 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
         InputManager::getInstance().getMouseMap()->sceneSize = ImGui::GetWindowSize();
         InputManager::getInstance().getMouseMap()->sceneHovered = ImGui::IsWindowHovered();
         InputManager::getInstance().getMouseMap()->sceneClicked = InputManager::getInstance().getMouseMap()->sceneHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-        
-        if (!EditorManager::getInstance().isPlayMode()) {
-            InputManager::getInstance().updateDockingFocused(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows));
-        }
+        InputManager::getInstance().updateWindowFocused(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows));
 
         // for editor camera controls
         EditorManager::getInstance().getEditorCamera().Update(ImGui::GetIO().DeltaTime, ImGui::IsWindowHovered());

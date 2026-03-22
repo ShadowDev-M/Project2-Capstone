@@ -6,6 +6,5 @@
 class InputCreatorManager {
 public:
 	static int getInputState(std::string input);
-
-
+	static int getMouseButtonState(int button);
 };

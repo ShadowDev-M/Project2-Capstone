@@ -210,14 +210,17 @@ private:
 
 	keyBindingObjectPool pool;
 
-	bool dockingFocused = false;
+	bool windowFocused = false;
+	bool gameInputActive = false;
 
 public:
 	keyboardInputMap* getKeyboardMap() { return &keyboard; }
 
 	mouseInputMap* getMouseMap() { return &mouse; }
 
-	void updateDockingFocused(bool state) { dockingFocused = state; }
+	void updateWindowFocused(bool state) { windowFocused = state; }
+	void setGameInputActive(bool state) { gameInputActive = state; }
+	bool isGameInputActive() const { return gameInputActive; }
 
 	// Meyers Singleton (from JPs class)
 	static InputManager& getInstance() {

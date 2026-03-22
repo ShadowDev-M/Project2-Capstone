@@ -692,30 +692,22 @@ void ScriptService::loadLibraries()
 		});
 
 	// Mouse functions
-	// getting the inputmanager mouse map directly instead of creating something for the inputcreatormanager,
-	// there is only like 3 mouse states we need to get anyways instead of the like 100s on a keyboard
 	tab.set_function("GetMouseButton", [](int button) -> int {
-		InputManager& im = InputManager::getInstance();
-		return static_cast<int>(im.getMouseMap()->getInputState(button));
+		return InputCreatorManager::getMouseButtonState(button);
 		});
 
 	// helper functions for getting if key down, pressed, released
 	tab.set_function("IsMouseButtonDown", [](int button) -> bool {
-		InputManager& im = InputManager::getInstance();
-		InputState s = im.getMouseMap()->getInputState(button);
-		return s == InputState::Pressed || s == InputState::Held;
+		int s = InputCreatorManager::getMouseButtonState(button);
+		return s == (int)InputState::Pressed || s == (int)InputState::Held;
 		});
 
 	tab.set_function("IsMouseButtonPressed", [](int button) -> bool {
-		InputManager& im = InputManager::getInstance();
-		InputState s = im.getMouseMap()->getInputState(button);
-		return s == InputState::Pressed;
+		return InputCreatorManager::getMouseButtonState(button) == (int)InputState::Pressed;
 		});
 
 	tab.set_function("IsMouseButtonReleased", [](int button) -> bool {
-		InputManager& im = InputManager::getInstance();
-		InputState s = im.getMouseMap()->getInputState(button);
-		return s == InputState::Released;
+		return InputCreatorManager::getMouseButtonState(button) == (int)InputState::Released;
 		});
 
 	lua->new_usertype<SceneGraph>("Game",

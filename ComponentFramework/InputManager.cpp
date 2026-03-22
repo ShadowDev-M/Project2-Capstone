@@ -32,23 +32,17 @@ void InputManager::update(float deltaTime)
 	SceneGraph& sceneGraph = SceneGraph::getInstance();
 
 	mouse.update(deltaTime);
+	keyboard.update(deltaTime);
+	gamepad.Update(deltaTime);
 
 #ifdef ENGINE_EDITOR
-	if (GetIO().WantCaptureKeyboard && !dockingFocused) {
+	if (GetIO().WantCaptureKeyboard && !windowFocused && !gameInputActive) {
 		return;
 	}
 #endif
 
-	//update keyboard object
-	keyboard.update(deltaTime);
-
-	gamepad.Update(deltaTime);
-
-	//Check which scene debug vs playing
-	if (true) { //temp set to always true until we can define debug vs playable scenes
-		for (auto& obj : pool.bindingPool) {
-			obj.bindingPtr->call();
-		}
+	for (auto& obj : pool.bindingPool) {
+		obj.bindingPtr->call();
 	}
 }
 
@@ -291,7 +285,7 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 		}
 		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
 #ifdef ENGINE_EDITOR
-			if (!EditorManager::getInstance().isPlayMode() && sceneHovered) {
+			if (sceneHovered) {
 				//prepare for unintelligible logic for selecting 
 				Ref<Actor> raycastedActor = Renderer::getInstance().PickActor(sdlEvent.button.x, sdlEvent.button.y);
 
