@@ -245,6 +245,15 @@
     <ClInclude Include="EditorCamera.h">
       <Filter>Header Files\Tools</Filter>
     </ClInclude>
+    <ClInclude Include="AnimationSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GameWindow.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -402,6 +411,15 @@
     </ClCompile>
     <ClCompile Include="EditorCamera.cpp">
       <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="GameWindow.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

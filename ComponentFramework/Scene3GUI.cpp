@@ -12,6 +12,7 @@
 #include "CollisionSystem.h"
 #include "ColliderDebug.h"
 #include "ScreenManager.h"
+#include "AnimationSystem.h"
 
 Scene3GUI::Scene3GUI() {
 	Debug::Info("Created Scene3GUI: ", __FILE__, __LINE__);
@@ -44,10 +45,6 @@ bool Scene3GUI::OnCreate() {
 
 
 void Scene3GUI::OnDestroy() {
-	Debug::Info("Disabling Mesh-Loading Thread", __FILE__, __LINE__);
-
-	SceneGraph::getInstance().stopMeshLoadingWorker();
-
 	Debug::Info("Deleting assets Scene3GUI: ", __FILE__, __LINE__);
 
 	// save all the assets in the assetmanager to the xml file then remove them all locally
@@ -74,57 +71,7 @@ void Scene3GUI::HandleEvents(const SDL_Event& sdlEvent) {
 
 void Scene3GUI::Update(const float deltaTime) {
 	
-	InputManager::getInstance().update(deltaTime, &SceneGraph::getInstance());
-	
-	SceneGraph::getInstance().Update(deltaTime);
-
-	if (EditorManager::getInstance().isPlayMode()) {
-		PhysicsSystem::getInstance().Update(deltaTime);
-		CollisionSystem::getInstance().Update(deltaTime);
-	}
-
-	/*Ref<Actor> cameraActor = SceneGraph::getInstance().getUsedCamera()->GetUserActor();
-	if (cameraActor && cameraActor->GetComponent<TransformComponent>()) {
-		Vec3 cameraPos = cameraActor->GetComponent<TransformComponent>()->GetPosition();
-		Vec3 lookDir = cameraActor->GetComponent<TransformComponent>()->GetForward();
-		AudioManager::getInstance().SetListenerPos(cameraPos, lookDir);
-	}*/
-	
-//	AudioManager::getInstance().SetSoundPos(marioSFX, SceneGraph::getInstance().GetActor("Mario")->GetComponent<TransformComponent>()->GetPosition());
 }
 
 void Scene3GUI::Render() const {
-	/// Set the background color then clear the screen
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
-	Ref<CameraComponent> mainCamera = SceneGraph::getInstance().GetMainCamera()->GetComponent<CameraComponent>();
-
-	// Rendering	
-	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, mainCamera->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("viewMatrix"), 1, GL_FALSE, mainCamera->GetViewMatrix());
-	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline")->GetUniformID("cameraPos"), 1, mainCamera->getWorldPosition());
-
-	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("projectionMatrix"), 1, GL_FALSE, mainCamera->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("viewMatrix"), 1, GL_FALSE, mainCamera->GetViewMatrix());
-	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline")->GetUniformID("cameraPos"), 1, mainCamera->getWorldPosition());
-
-	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("projectionMatrix"), 1, GL_FALSE, mainCamera->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("viewMatrix"), 1, GL_FALSE, mainCamera->GetViewMatrix());
-	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetUniformID("cameraPos"), 1, mainCamera->getWorldPosition());
-
-	glUseProgram(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, mainCamera->GetProjectionMatrix());
-	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, mainCamera->GetViewMatrix());
-	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("cameraPos"), 1, mainCamera->getWorldPosition());
-
-	SceneGraph::getInstance().Render();
-
-	glUseProgram(0);
 }

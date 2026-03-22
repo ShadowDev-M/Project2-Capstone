@@ -13,9 +13,6 @@
 #include "MemoryRecorder.h"
 
 #include "ScriptAbstract.h"
-#include <mutex>
-#include <queue>
-
 
 class SceneGraph
 {
@@ -37,15 +34,6 @@ private:
 	// TODO: save tags throughout engine lifetime (closing/opening)
 	std::vector<std::string> allTags = { "Untagged", "MainCamera", "Player", "Ground" };
 
-	GLenum drawMode = GL_FILL;
-
-	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
-
-	std::thread workerThread;
-	std::atomic<bool> shouldStop{ false };  // Thread-safe flag
-
-	bool RENDERMAINSCREEN = 0;
-
 	// helper function for renaming an actor
 	void UpdateActorNameMap(uint32_t actorID_, const std::string& oldName_, const std::string& newName_) {
 		if (!oldName_.empty()) {
@@ -53,19 +41,6 @@ private:
 		}
 		ActorNameToId[newName_] = actorID_;
 	}
-
-	std::vector<Ref<Component>> workerQueue;
-	//std::vector<Ref<Component>> finishedQueue;
-
-
-	std::queue<std::function<void()>> mainThreadTasks;
-
-	std::mutex queueMutex;
-
-	std::mutex taskMutex;
-	std::condition_variable taskCV;
-
-	void meshLoadingWorker();
 
 	// reference to the maincamera
 	Ref<Actor> m_mainCamera;
@@ -83,17 +58,6 @@ public:
 	bool OnCreate();
 	void OnDestroy();
 	void Update(const float deltaTime);
-	void Render() const;
-
-	// Animation functions
-	void processMainThreadTasks();
-	void scheduleOnMain(std::function<void()> task);
-	bool queryMeshLoadStatus(std::string name);
-	void pushMeshToWorker(Ref<MeshComponent> mesh);
-	void pushAnimationToWorker(Ref<Animation> animation);
-	void stopMeshLoadingWorker();
-	bool isAllComponentsLoaded() { return (workerQueue.empty()); }
-	void startMeshLoadingWorkerThread();
 
 	// Camera functions
 	Ref<Actor> GetMainCamera() const;
@@ -120,7 +84,7 @@ public:
 		allTags.erase(std::remove(allTags.begin(), allTags.end(), tag), allTags.end());
 	}
 
-	std::unordered_map<uint32_t, Ref<Actor>> getAllActors() { return Actors; }
+	const std::unordered_map<uint32_t, Ref<Actor>> getAllActors() const { return Actors; }
 
 	Ref<Actor>GetActorCStr(const char* actorName) const;
 
@@ -134,21 +98,9 @@ public:
 	std::vector<std::string> GetAllActorNames() const;
 
 	bool RemoveActor(const std::string& actorName);
-
-	// lists all actors name and ID
-	void ListAllActors() const;
-
 	void RemoveAllActors();
-
-	//Colour picking for object selection
-	Ref<Actor> pickColour(int mouseX, int mouseY);
 	
 	void Preload(ScriptComponent* script);
-
-
-	void SetDrawMode(GLenum drawMode_) { drawMode = drawMode_; }
-
-	GLenum GetDrawMode() const { return drawMode; }
 
 	// map to store selected/colorpicked actors
 	std::unordered_map<uint32_t, Ref<Actor>> debugSelectedAssets;

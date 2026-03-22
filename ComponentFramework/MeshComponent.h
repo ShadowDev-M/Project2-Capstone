@@ -5,9 +5,9 @@ static const int BONE_WEIGHTS_SIZE = 4;  // Each vertex affected by max 4 bones
 using namespace MATH;
 struct Vertex { Vec3 pos; Vec3 normal; Vec2 uv; int boneIds[4]; float boneWeights[4]; };
 class MeshComponent : public Component {
-	friend class AnimatorComponent;
-	friend class SceneGraph;
 	friend class Animation;
+	friend class AnimatorComponent;
+	friend class AnimationSystem;
 
 	MeshComponent(const MeshComponent&) = delete;
 	MeshComponent(MeshComponent&&) = delete;
@@ -70,5 +70,9 @@ public:
 	size_t getVertices() const {
 		return dataLength;
 	}
+
+	bool hasSkeleton() const { return skeleton != nullptr; }
+	Skeleton* getSkeleton() const { return skeleton.get(); }
+	size_t getBoneCount() const;
 };
 

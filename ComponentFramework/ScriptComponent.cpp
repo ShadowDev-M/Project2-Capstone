@@ -5,6 +5,7 @@
 #include "InputCreatorManager.h"
 #include "InputManager.h"
 #include "CollisionSystem.h"
+#include "ScreenManager.h"
 
 
 
@@ -580,8 +581,8 @@ void ScriptService::loadLibraries()
 		"Position", sol::property(&TransformComponent::GetPosition, TRANSFORM_SETPOSVEC3),
 		"Rotation", sol::property(&TransformComponent::GetOrientation, &TransformComponent::SetOrientation),
 		"Scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale),
+		"WorldPosition", sol::property(&TransformComponent::GetWorldPosition),
 		"GameObject", sol::property(&TransformComponent::getParent)
-
 	);
 
 	(*lua).new_usertype<ScriptComponent>("ScriptComponent",
@@ -719,9 +720,10 @@ void ScriptService::loadLibraries()
 
 	lua->new_usertype<SceneGraph>("Game",
 		"Find", &SceneGraph::GetActorCStr, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
-		"FindCamera", [](SceneGraph&, const std::string& name) {return SceneGraph::getInstance().GetCameraByName(name); },
+		"FindCamera", [](SceneGraph&, const std::string& name) { return SceneGraph::getInstance().GetCameraByName(name); },
 		"GetMainCamera", [](SceneGraph&) { return SceneGraph::getInstance().GetMainCamera(); },
-		"SetMainCamera", [](SceneGraph&, Ref<Actor> actor) {SceneGraph::getInstance().SetMainCamera(actor); },
+		"UsedCamera", sol::property([](SceneGraph&) { return SceneGraph::getInstance().GetMainCamera(); }),
+		"SetMainCamera", [](SceneGraph&, Ref<Actor> actor) { SceneGraph::getInstance().SetMainCamera(actor); },
 		"Input", tab
 	);
 	
@@ -885,7 +887,18 @@ void ScriptService::loadLibraries()
 			});
 	}
 
-	
+	// ScreenManager tables
+	(*lua)["Screen"] = sol::new_table();
+	{
+		// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Screen.html
+
+		(*lua)["Screen"]["GetRenderWidth"].set_function([]() { return ScreenManager::getInstance().getRenderWidth(); });
+		(*lua)["Screen"]["GetRenderHeight"].set_function([]() { return ScreenManager::getInstance().getRenderHeight(); });
+		(*lua)["Screen"]["GetAspectRatio"].set_function([]() { return ScreenManager::getInstance().getRenderAspectRatio(); });
+		(*lua)["Screen"]["SetResolution"].set_function([](int w, int h) { 
+			return ScreenManager::getInstance().HandleResize(w, h, Source::Script); });
+		
+	}
 
 }
 

@@ -6,6 +6,7 @@
 #include "InputManager.h"
 #include "SceneGraph.h"
 #include "AnimatorComponent.h"
+#include "AnimationSystem.h"
 static uint32_t idCounter = 1;
 
 Actor::Actor(Component* parent_) :Component(parent_) { id = idCounter++; }
@@ -60,16 +61,16 @@ void Actor::RemoveAllComponents() {
 	components.clear();
 }
 
-void Actor::pushToSceneGraphWorker(Ref<Component> component)
+void Actor::PushToAnimationSystem(Ref<Component> component)
 {
 	Ref<MeshComponent> mesh = std::dynamic_pointer_cast<MeshComponent>(component);
 	Ref<Animation> animation = std::dynamic_pointer_cast<Animation>(component);
 
 	if (mesh) {
-		SceneGraph::getInstance().pushMeshToWorker(mesh);
+		AnimationSystem::getInstance().PushMeshToWorker(mesh);
 	}
 	else if (animation) {
-		SceneGraph::getInstance().pushAnimationToWorker(animation);
+		AnimationSystem::getInstance().PushAnimationToWorker(animation);
 	}
 }
 
@@ -81,14 +82,14 @@ void Actor::ListComponents() const {
 	std::cout << '\n';
 }
 
-Matrix4 Actor::GetModelMatrix(Ref<Component> camera_) {
+Matrix4 Actor::GetModelMatrix() {
 	Ref<TransformComponent> transform = GetComponent<TransformComponent>();
 	modelMatrix = transform ? transform->GetTransformMatrix() : Matrix4();
 
 	// multiples the parents model matrix by the childs (hierarchly/recursivly multiples parent matrix/transform)
 	// TODO: find something better for parent/child movement
 	if (parent && dynamic_cast<Actor*>(parent)) {
-		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix(camera_) * modelMatrix;
+		modelMatrix = dynamic_cast<Actor*>(parent)->GetModelMatrix() * modelMatrix;
 	}
 
 	return modelMatrix;

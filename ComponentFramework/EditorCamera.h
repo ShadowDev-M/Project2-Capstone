@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // full freefly camera seperated from actor and cameracomponent
 // solely accessed by the scenewindow
@@ -14,11 +14,15 @@ public:
 
 	void Update(float deltaTime, bool isHovered);
 
-	void ResetPosition();
+	void ResetView();
 	void ResetSettings();
 
 	void SetOrientation(float yawDeg, float pitchDeg);
-	void MoveToTarget(const Vec3& target, float distance);
+	void FrameTarget(const Vec3& target, float distance = 15.0f);
+
+	// 2D Mode helpers
+	void EnterMode2D(const std::vector<Vec3>& positions);
+	void Enforce2DModeConstraints();
 
 	// getters for transform 
 	Vec3 GetPosition() const { return m_position; }
@@ -38,6 +42,8 @@ public:
 	float GetCameraSpeed() const { return m_speed; }
 	float GetSpeedMin() const { return m_speedMin; }
 	float GetSpeedMax() const { return m_speedMax; }
+	float GetScrollSpeed() const { return m_scrollSpeed; }
+	Mode GetMode() const { return m_mode; }
 
 	// setters for settings
 	void SetFOV(float fov) { m_fov = fov; }
@@ -50,16 +56,24 @@ public:
 		m_speed = std::clamp(m_speed, m_speedMin, m_speedMax);
 	}
 	void SetSpeedMax(float speedMax) { 
-		m_speedMin = std::min(10000.0f, speedMax);
+		m_speedMax = std::min(10000.0f, speedMax);
 		m_speed = std::clamp(m_speed, m_speedMin, m_speedMax);
 	}
+	void SetScrollSpeed(float speed) { m_scrollSpeed = speed; }
+	void SetMode(Mode mode) { m_mode = mode; }
 
 	// calculates the projection and view matrices and returns them (the editor camera itself has no view or projection variables)
 	Matrix4 GetViewMatrix() const;
-	Matrix4 GetProjectionMatrix(float aspectRatio) const;
+	Matrix4 GetProjectionMatrix() const;
 
+	// speed popup
+	bool GetShowSpeedPopup() const { return m_showSpeedPopup; }
+	float GetSpeedPopupAlpha() const { return std::min(1.0f, m_speedPopupTimer / 0.4f); }
+
+	void SetIsOrtho(bool ortho) { m_isOrtho = ortho; m_position.z = 100.0f; }
 	bool isOrtho() const { return m_mode == Mode::Mode2D || m_isOrtho; }
-	bool isRMBHeld() const { return ImGui::GetIO().MouseDown[ImGuiMouseButton_Right]; }
+	bool isRMBHeld() const { return m_rmbActive; }
+	bool isMMBHeld() const { return m_mmbActive; }
 
 private:
 	// very heavily based off unitys editor/scene camera
@@ -72,6 +86,10 @@ private:
 	Vec3 GetRight() const;
 	Vec3 GetUp() const;
 
+	// for speed popup
+	bool m_showSpeedPopup = false;
+	float m_speedPopupTimer = 0.0f;
+
 	// transform based variables
 	Vec3 m_position = Vec3(0.0f, 0.0f, 0.0f);
 	float m_yaw = 0.0f;
@@ -82,13 +100,29 @@ private:
 	float m_nearClip = 0.03f;
 	float m_farClip = 10000.0f;
 	float m_orthoSize = 5.0f;
-	float m_speed = 1.0f;
-	float m_speedMin = 0.01f;
-	float m_speedMax = 2.0f;
+	float m_speed = 5.0f;
+	float m_speedMin = 0.1f;
+	float m_speedMax = 100.0f;
+	float m_scrollSpeed = 5.0f;
+	float m_panSpeed = 10.0f;
 	bool m_isOrtho = false;
 	Mode m_mode = Mode::Mode3D;
 
 	// TODO: sort of placeholders so theres no magic/floating numbers in the calculations, could make getters and setters for them after
 	float m_lookSens = 0.2f;
 	float m_panSens = 0.003f;
+
+	// rmb state
+	bool m_rmbActive = false;
+	bool m_wasRMBDown = false;
+	bool m_skipRMBDelta = false;
+	int m_RMBCursorX = 0;
+	int m_RMBCursorY = 0;
+
+	// mmb state
+	bool m_mmbActive = false;
+	bool m_wasMMBDown = false;
+	bool m_skipMMBDelta = false;
+	int m_MMBCursorX = 0;
+	int m_MMBCursorY = 0;
 };

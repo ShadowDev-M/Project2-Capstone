@@ -61,5 +61,6 @@ public:
 		return orientation * localForward;
 	}
 
+	Vec3 GetWorldPosition() const;
 };
 

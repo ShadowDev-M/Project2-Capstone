@@ -30,6 +30,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 					for (const auto& actorName : allActorNames) {
 						Ref<Actor> actor = sceneGraph->GetActor(actorName);
 						sceneGraph->debugSelectedAssets.emplace(actor->getId(), actor);
+						EditorManager::getInstance().SetLastSelected(actor->getId());
 					}
 				}
 
@@ -169,11 +170,12 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 
 	// draw node if it is selected and/or in filter
 	if (!showSelection || !showFilter) {
+		ImGui::PopStyleColor();
 		return;
 	}
 
 	// default flags for the the tree nodes
-	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | 
+	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | //ImGuiTreeNodeFlags_OpenOnDoubleClick | 
 								   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_NavLeftJumpsToParent;
 
 	if (isSelected) {
@@ -202,6 +204,12 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 		}
 		else {
 			sceneGraph->debugSelectedAssets.emplace(actor_->getId(), actor_);
+			EditorManager::getInstance().SetLastSelected(actor_->getId());
+		}
+
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+			Matrix4 modelMatrix = actor_->GetModelMatrix();
+			EditorManager::getInstance().getEditorCamera().FrameTarget(modelMatrix.getColumn(Matrix4::Colunm(3)));
 		}
 	}
 
@@ -270,13 +278,11 @@ void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 		parentActor->OnCreate();
 		sceneGraph->AddActor(parentActor);
 
-
-
 		if (hierarchyGraph[original_->getActorName()].children.size() != 0) {
 			for (const auto& child : hierarchyGraph[original_->getActorName()].children) {
 				newName = GenerateDuplicateName(child.first);
 				
-				Ref<Actor> childActor = DeepCopyActor(newName, hierarchyGraph[original_->getActorName()].nodeActor);
+				Ref<Actor> childActor = DeepCopyActor(newName, child.second.nodeActor);
 				childActor->setParentActor(parentActor.get());
 				childActor->OnCreate();
 				sceneGraph->AddActor(childActor);

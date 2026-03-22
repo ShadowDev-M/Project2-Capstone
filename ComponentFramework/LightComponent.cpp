@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "LightComponent.h"
-#include "SceneGraph.h"
 
 LightComponent::LightComponent(Component* parent_) : Component(parent_){}
 

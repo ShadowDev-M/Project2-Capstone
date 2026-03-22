@@ -15,14 +15,15 @@ end
 --Game Handler Script 
 
 function Update(deltaTime) 
-	local tPos = Transform.Position
+	local cam = Game.UsedCamera
+	if cam == nil then return end
 
-	tPos.z = Game.UsedCamera.Transform.Position.z
-	
+	local tPos = Transform.WorldPosition
+
+	tPos.z = cam.Transform.WorldPosition.z
 	tPos.y = tPos.y + 5
 
-	Game.UsedCamera.Transform.Position = tPos
-
+	cam.Transform.Position = tPos
 end
 
 

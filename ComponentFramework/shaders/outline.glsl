@@ -15,7 +15,7 @@ layout (location = 2) in vec3 worldPos;
 layout (location = 3) in vec3 localPos;
 layout (location = 4) in vec3 localNormal;
 
-uniform sampler2D myTexture; 
+uniform sampler2D diffuseTexture; 
 
 void main() {
     vec3 viewDir = normalize(cameraPos - worldPos);
@@ -39,9 +39,9 @@ void main() {
         else
             tiledTex = scaledPos.xy * tileScale; // front
             
-        kt = texture(myTexture, tiledTex + finalOffset);
+        kt = texture(diffuseTexture, tiledTex + finalOffset);
 	} else {
-		kt = texture(myTexture, textureCoords); 
+		kt = texture(diffuseTexture, textureCoords); 
 	}
 
 	vec3 lightWorldDir = normalize(viewDir);

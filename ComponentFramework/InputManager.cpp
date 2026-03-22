@@ -2,6 +2,7 @@
 #include "InputManager.h"
 #include "EditorManager.h"
 #include "ScreenManager.h"
+#include "Renderer.h"
 
 bool PoolBindObject::call() {
 	//Normally i'd place this code within the internal structure, however, due to compiling stuff, InputManager can't be accessed if the struct has <typename> above it and i don't want to overcomplicate
@@ -26,18 +27,22 @@ InputManager::InputManager()
 	pool.bindingPool[0].bindingPtr = new FunctionKeyBinding<bool>{ { SDL_SCANCODE_ESCAPE }, BINDFUNCTION<&InputManager::debugClearDebugSelected>(this), true };
 }
 
-void InputManager::update(float deltaTime, SceneGraph* sceneGraph)
+void InputManager::update(float deltaTime)
 {
+	SceneGraph& sceneGraph = SceneGraph::getInstance();
+
 	mouse.update(deltaTime);
 
+#ifdef ENGINE_EDITOR
 	if (GetIO().WantCaptureKeyboard && !dockingFocused) {
 		return;
 	}
+#endif
 
 	//update keyboard object
 	keyboard.update(deltaTime);
 
-	gamepad.Update(deltaTime, sceneGraph);
+	gamepad.Update(deltaTime);
 
 	//Check which scene debug vs playing
 	if (true) { //temp set to always true until we can define debug vs playable scenes
@@ -157,10 +162,12 @@ void gamepadInputMap::HandleAxisMotion(Uint8 axis, Sint16 value)
 	}
 }
 
-void gamepadInputMap::Update(float deltaTime, SceneGraph* sceneGraph_)
+void gamepadInputMap::Update(float deltaTime)
 {
+	SceneGraph& sceneGraph = SceneGraph::getInstance();
+
 	if (!isConnected()) return;
-	if (sceneGraph_->debugSelectedAssets.empty()) return;
+	if (sceneGraph.debugSelectedAssets.empty()) return;
 
 	// function will move a selected actor based on joystick movement and shoulder button input
 	// move values are holders for the actual inputs
@@ -176,7 +183,7 @@ void gamepadInputMap::Update(float deltaTime, SceneGraph* sceneGraph_)
 		float moveSpeed = 15.0f * deltaTime;
 
 		// moving transform based on controller inputs
-		for (const auto& actor : sceneGraph_->debugSelectedAssets) {
+		for (const auto& actor : sceneGraph.debugSelectedAssets) {
 			Ref<TransformComponent> transform = actor.second->GetComponent<TransformComponent>();
 
 			if (transform) {
@@ -231,17 +238,20 @@ void keyboardInputMap::update(const float deltaTime)
 
 void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph)
 {
-	//std::cout << dockingClicked << std
+	bool activeWindowHovered;
+
+#ifdef ENGINE_EDITOR
+	if (gameHovered) activeWindowHovered = gameHovered;
+	else activeWindowHovered = sceneHovered;
+#else
+	activeWindowHovered = true;
+#endif
 
 	//Just checking if the title bar is clicked, just for convenience.
-	if ((!dockingHovered) || (sdlEvent.motion.y >= dockingPos.y && sdlEvent.motion.y <= (dockingPos.y + frameHeight))) {
-
-		//if (dockingClicked) { std::cout << "eee \n"; }
-
-
+	if ((!activeWindowHovered) || (sdlEvent.motion.y >= scenePos.y && sdlEvent.motion.y <= (scenePos.y + sceneFrame))) {
 		return;
-
 	}
+
 	static int lastX = 0, lastY = 0;
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 
@@ -280,30 +290,26 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 			mouseHeld = false;
 		}
 		if (sdlEvent.button.button == SDL_BUTTON_LEFT) {
+#ifdef ENGINE_EDITOR
+			if (!EditorManager::getInstance().isPlayMode() && sceneHovered) {
+				//prepare for unintelligible logic for selecting 
+				Ref<Actor> raycastedActor = Renderer::getInstance().PickActor(sdlEvent.button.x, sdlEvent.button.y);
 
-			// makes it so ImGui handles the mouse click
-			if (!dockingHovered) {
-				mouseHeld = false;
-				return;
+				//an object was clicked
+				if (raycastedActor) {
+					if (!keys[SDL_SCANCODE_LCTRL] && !(sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end())) { sceneGraph->debugSelectedAssets.clear(); }
+
+					if (sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end() && keys[SDL_SCANCODE_LCTRL]) { sceneGraph->debugSelectedAssets.erase(raycastedActor->getId()); }
+
+					else {
+						sceneGraph->debugSelectedAssets.emplace(raycastedActor->getId(), raycastedActor);
+						EditorManager::getInstance().SetLastSelected(raycastedActor->getId());
+					}
+				}
+				//no object was clicked, and left control isn't pressed (making sure the user didn't accidentally misclicked during multi object selection before clearing selection)
+				else if (!keys[SDL_SCANCODE_LCTRL])sceneGraph->debugSelectedAssets.clear();
 			}
-
-			lastX = sdlEvent.button.x;
-			lastY = sdlEvent.button.y;
-
-			//prepare for unintelligible logic for selecting 
-			Ref<Actor> raycastedActor = sceneGraph->pickColour(sdlEvent.button.x, sdlEvent.button.y);
-
-			//an object was clicked
-			if (raycastedActor) {
-				if (!keys[SDL_SCANCODE_LCTRL] && !(sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end())) { sceneGraph->debugSelectedAssets.clear(); }
-
-				if (sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end() && keys[SDL_SCANCODE_LCTRL]) { sceneGraph->debugSelectedAssets.erase(raycastedActor->getId()); }
-
-				else sceneGraph->debugSelectedAssets.emplace(raycastedActor->getId(), raycastedActor);
-			}
-			//no object was clicked, and left control isn't pressed (making sure the user didn't accidentally misclicked during multi object selection before clearing selection)
-			else if (!keys[SDL_SCANCODE_LCTRL])sceneGraph->debugSelectedAssets.clear();
-
+#endif
 			mouseHeld = false;
 		}
 
@@ -316,7 +322,7 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 			}
 
 			// makes it so ImGui handles the mouse motion
-			if (!dockingHovered) {
+			if (!sceneHovered) {
 				toggleKeyPress(sdlEvent.button.button);
 				return;
 			}

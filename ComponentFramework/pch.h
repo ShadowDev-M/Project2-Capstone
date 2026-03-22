@@ -24,6 +24,8 @@
 #include <thread>
 #include <chrono>
 #include <algorithm>
+#include <queue>
+#include <mutex>
 
 // SDL & OpenGL
 #include <SDL.h>

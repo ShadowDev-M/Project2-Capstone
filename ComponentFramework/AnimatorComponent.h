@@ -175,6 +175,8 @@ public:
 		if (time_ >= startTime && time_ <= clipLength) { currentTime = time_; }
 	}
 
+	Ref<Animation> getAnim() { return animation; }
+
 	std::string getAnimName() { 
 		if (animation && animation->queryLoadStatus()) { return animation->getName(); }
 		else { return "LOADING..."; }

@@ -1,18 +1,20 @@
 #include "pch.h"
 #include "SceneManager.h"
-
 #include "Timer.h"
 #include "Window.h"
-
 #include "Scene3GUI.h"
 #include "EditorManager.h"
 #include "SceneGraph.h"
 #include "ScreenManager.h"
 #include "FBOManager.h"
+#include "AnimationSystem.h"
+#include "Renderer.h"
+#include "InputManager.h"
+#include "PhysicsSystem.h"
 
 SceneManager::SceneManager() :
 	currentScene{ nullptr }, window{ nullptr }, timer{ nullptr },
-	fps(60), isRunning{ false }, fullScreen{ false } {
+	isRunning{ false }, fullScreen{ false } {
 	Debug::Info("Starting the SceneManager", __FILE__, __LINE__);
 }
 
@@ -23,6 +25,7 @@ SceneManager::~SceneManager() {
 		EditorManager::getInstance().Shutdown();
 	}
 
+	Renderer::getInstance().OnDestroy();
 	FBOManager::getInstance().OnDestroy();
 
 	if (currentScene) {
@@ -36,16 +39,14 @@ SceneManager::~SceneManager() {
 		timer = nullptr;
 	}
 
+	AnimationSystem::getInstance().StopMeshLoadingWorker();
 	AssetManager::getInstance().RemoveAllAssets();
-	
 	SceneGraph::getInstance().OnDestroy();
-
 
 	if (window) {
 		delete window;
 		window = nullptr;
 	}
-
 }
 
 bool SceneManager::Initialize(std::string name_, int width_, int height_) {
@@ -66,15 +67,23 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	ScreenManager::getInstance().Initialize(window->getWindow(), cfg);
 
 	// creating FBOs
+#ifdef ENGINE_EDITOR
 	FBOManager::getInstance().CreateFBO(FBO::Scene, width_, height_);
 	FBOManager::getInstance().CreateFBO(FBO::Game, width_, height_);
 	FBOManager::getInstance().CreateFBO(FBO::ColorPicker, width_, height_);
+#endif
+
+	if (!Renderer::getInstance().OnCreate()) {
+		return false;
+	}
 
 	timer = new Timer();
 	if (timer == nullptr) {
 		Debug::FatalError("Failed to initialize Timer object", __FILE__, __LINE__);
 		return false;
 	}
+
+	AnimationSystem::getInstance().StartMeshLoadingWorker();
 
 	/********************************   Default first scene   ***********************/
 	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
@@ -102,15 +111,41 @@ void SceneManager::Run() {
 	while (isRunning) {
 		timer->UpdateFrameTicks();
 
-		SceneGraph::getInstance().processMainThreadTasks();
+		AnimationSystem::getInstance().ProcessMainThreadTasks();
 		HandleEvents();
-		currentScene->Update(timer->GetDeltaTime());
-		currentScene->Render();
+		Update(timer->GetDeltaTime());
+		Render();
 		editor.RenderEditorUI();
 		SDL_GL_SwapWindow(window->getWindow());
 		
 		timer->LimitFrameRate(cfg.targetFPS, cfg.vsync);
 	}
+}
+
+void SceneManager::Update(float deltaTime) {
+	AnimationSystem::getInstance().Update(deltaTime);
+	InputManager::getInstance().update(deltaTime);
+	SceneGraph::getInstance().Update(deltaTime);
+
+#ifdef ENGINE_EDITOR
+	if (EditorManager::getInstance().isPlayMode()) {
+		PhysicsSystem::getInstance().Update(deltaTime);
+		CollisionSystem::getInstance().Update(deltaTime);
+	}
+#else
+	PhysicsSystem::getInstance().Update(deltaTime);
+	CollisionSystem::getInstance().Update(deltaTime);
+#endif
+}
+
+void SceneManager::Render() {
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	Renderer::getInstance().RenderSceneView();
+	Renderer::getInstance().RenderGameView();
 }
 
 void SceneManager::HandleEvents() {

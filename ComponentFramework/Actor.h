@@ -165,26 +165,26 @@ public:
 				component = newComponent;
 				if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MeshComponent") {
 
-					pushToSceneGraphWorker(newComponent);
+					PushToAnimationSystem(newComponent);
 				}
 				return;
 			}
 		}
 		if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MeshComponent") {
 
-			pushToSceneGraphWorker(newComponent);
+			PushToAnimationSystem(newComponent);
 		}
 		// if the component that is trying to be replaced doesn't exist, add it instead
 		AddComponent(newComponent);
 	}
 
-	void pushToSceneGraphWorker(Ref<Component> component);
+	void PushToAnimationSystem(Ref<Component> component);
 
 	void ListComponents() const;
 	void RemoveAllComponents();
 
 	//
-	Matrix4 GetModelMatrix(Ref<Component> camera = nullptr);
+	Matrix4 GetModelMatrix();
 
 	// function to get the parent of an actor
 	Actor* getParentActor() const {

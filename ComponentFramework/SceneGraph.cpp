@@ -4,24 +4,16 @@
 #include "InputManager.h"
 #include "AnimatorComponent.h"
 #include "Skeleton.h"
-#include <iostream>
-#include <tuple>
-#include <string>
 #include "HierarchyWindow.h"
 #include "EditorManager.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
-#include "ColliderDebug.h"
 #include "ScreenManager.h"
-#include "FBOManager.h"
 #include "LightingSystem.h"
 
 SceneGraph::SceneGraph()
 {
-	pickerShader->OnCreate();
-
 	ScriptService::loadLibraries();
-	startMeshLoadingWorkerThread();
 }
 
 SceneGraph::~SceneGraph()
@@ -45,129 +37,10 @@ bool SceneGraph::OnCreate()
 }
 
 void SceneGraph::OnDestroy() {
-	//end the mesh loading thread
-	stopMeshLoadingWorker();
-	
 	// TODO: instead of just calling stop straight up to stop scripts, stop scripts directly
 	Stop();
 	
 	RemoveAllActors();
-	pickerShader->OnDestroy();
-}
-
-void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
-
-	if (!mesh->queryLoadStatus()) {
-		auto it = std::find(workerQueue.begin(), workerQueue.end(), mesh);
-		if (it == workerQueue.end()) {
-			workerQueue.push_back(mesh);
-		}
-	}
-}
-
-void SceneGraph::pushAnimationToWorker(Ref<Animation> animation) {
-
-	if (!animation->queryLoadStatus()) {
-		auto it = std::find(workerQueue.begin(), workerQueue.end(), animation);
-		if (it == workerQueue.end()) {
-			workerQueue.push_back(animation);
-		}
-	}
-}
-
-void SceneGraph::stopMeshLoadingWorker()
-{
-	shouldStop = true;
-	if (workerThread.joinable()) {
-		workerThread.join();
-	}
-}
-void SceneGraph::meshLoadingWorker()
-{
-	while (!shouldStop) {
-
-		Ref<MeshComponent> model = nullptr;
-		Ref<Animation> animation = nullptr;
-
-		{
-			std::lock_guard<std::mutex> lock(queueMutex);
-			if (workerQueue.empty()) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(20));
-				continue;
-			}
-
-
-			model = std::dynamic_pointer_cast<MeshComponent>(workerQueue.back());
-			animation = std::dynamic_pointer_cast<Animation>(workerQueue.back());
-			workerQueue.pop_back();
-
-		}
-
-		if (model) {
-
-			//std::cout << "Loading Model: " << model->getMeshName() << std::endl;
-
-			model->InitializeMesh();
-
-			scheduleOnMain([model]() {
-
-				model->storeLoadedModel();
-				});
-		}
-		else if (animation) {
-			//std::cout << "Loading Animation: " << animation << std::endl;
-
-			animation->InitializeAnimation();
-
-
-
-		}
-		else {
-
-		}
-
-	}
-}
-
-void SceneGraph::processMainThreadTasks() {
-	std::unique_lock<std::mutex> lock(taskMutex);
-	while (!mainThreadTasks.empty()) {
-		auto task = std::move(mainThreadTasks.front());
-		mainThreadTasks.pop();
-		lock.unlock();  // Release lock before OpenGL
-		task();
-		lock.lock();
-	}
-}
-
-void SceneGraph::scheduleOnMain(std::function<void()> task)
-{
-	{
-		std::lock_guard<std::mutex> lock(taskMutex);
-		mainThreadTasks.push(std::move(task));
-	}
-	taskCV.notify_one();
-}
-
-bool SceneGraph::queryMeshLoadStatus(std::string name)
-{
-	for (auto& obj : Actors) {
-
-		Ref<MeshComponent> queriedMesh = obj.second->GetComponent<MeshComponent>();
-		if (queriedMesh && queriedMesh->getMeshName() == name.c_str()) {
-			return queriedMesh->queryLoadStatus();
-		}
-
-	}
-
-
-	return false;
-}
-
-void SceneGraph::startMeshLoadingWorkerThread()
-{
-	workerThread = std::thread(&SceneGraph::meshLoadingWorker, this);
-	//t.detach();              
 }
 
 bool SceneGraph::AddActor(Ref<Actor> actor)
@@ -211,7 +84,6 @@ void SceneGraph::Start()
 		ScriptService::startActorScripts(actor.second);
 	}
 }
-
 
 void SceneGraph::Stop()
 {
@@ -479,14 +351,6 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 	return true;
 }
 
-void SceneGraph::ListAllActors() const
-{
-	std::cout << "All actors in the scene: " << std::endl;
-	for (const auto& pair : Actors) {
-		std::cout << pair.second->getActorName() << " (ID: " << pair.first << ")" << std::endl;
-	}
-}
-
 void SceneGraph::RemoveAllActors()
 {
 	std::cout << "Deleting All Actors In The Scene" << std::endl;
@@ -513,12 +377,6 @@ void SceneGraph::RemoveAllActors()
 
 void SceneGraph::Update(const float deltaTime)
 {
-	AnimationClip::updateClipTimes(deltaTime);
-	//Load any models that the worker thread finishes loading through assimp
-	//storeInitializedMeshData();
-
-	//ScriptService::callActorScripts(GetActor("Cube"), deltaTime)
-	
 	ScriptService::updateAllScripts(deltaTime);
 
 	for (auto& pair : Actors) {
@@ -532,260 +390,6 @@ void SceneGraph::Update(const float deltaTime)
 		}
 
 		// check for collision system
-	}
-	/*if (!(usedCamera == nullptr)) {
-		setUsedCamera();
-	}*/
-}
-
-Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
-	Ref<Actor> mainCamera = GetMainCamera();
-	if (!mainCamera) return nullptr;
-	Ref<CameraComponent> cam = mainCamera->GetComponent<CameraComponent>();
-	if (!cam) return nullptr;
-	
-	int w = ScreenManager::getInstance().getRenderWidth();
-	int h = ScreenManager::getInstance().getRenderHeight();
-
-	FBOData& pickingFBO = FBOManager::getInstance().getFBO(FBO::ColorPicker);
-
-	//use the picking buffer so it is seperated
-	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO.fbo);
-	glViewport(0, 0, pickingFBO.width, pickingFBO.height);
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	//get the special shader for picking and set its uniforms
-	glUseProgram(pickerShader->GetProgram());
-
-	glUniformMatrix4fv(pickerShader->GetUniformID("uProjection"), 1, GL_FALSE, cam->GetProjectionMatrix());
-	glUniformMatrix4fv(pickerShader->GetUniformID("uView"), 1, GL_FALSE, cam->GetViewMatrix());
-
-	for (auto& actor : Actors) {
-
-		if (!actor.second->GetComponent<MeshComponent>()) { continue; }//no meshcomponent for actor
-
-		//set matrix with its camera (i forgot to put in camera parametre and spent 5 hours why it was coming back as completely black)
-		glUniformMatrix4fv(pickerShader->GetUniformID("uModel"), 1, GL_FALSE, actor.second->GetModelMatrix(cam)); //TODO change to editorcamera
-
-		//encode the id of the actor as rgb
-		Vec3 idColor = Actor::encodeID(actor.second->getId());
-
-		//send over the rbg to the shader to use as its rendered colour
-		glUniform3fv(pickerShader->GetUniformID("uIDColor"), 1, &idColor.x);
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-		actor.second->GetComponent<MeshComponent>()->Render();
-	}
-
-	//rgb pixel data
-	unsigned char pixel[3];
-
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-
-	// scaled viewport to get uv conversion for fbo coords
-	float imgW, imgH;
-	float aspect = ScreenManager::getInstance().getRenderAspectRatio();
-	Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
-	GLint xPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.x;
-	GLint yPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.y;
-
-	if (windowSize.x / aspect <= windowSize.y) {
-		imgW = windowSize.x;
-		imgH = windowSize.x / aspect;
-	}
-	else {
-		imgH = windowSize.y;
-		imgW = windowSize.y * aspect;
-	}
-
-	float imgX = xPos + (windowSize.x - imgW) * 0.5f;
-	float imgY = yPos + (windowSize.y - imgH) * 0.5f;
-
-	float u = ((float)mouseX - imgX) / imgW;
-	float v = ((float)mouseY - imgY) / imgH;
-	GLint fboX = (GLint)(u * pickingFBO.width);
-	GLint fboY = (GLint)((1.0f - v) * pickingFBO.height);
-
-	//get the mouse click's rgb pixel data
-	glReadPixels(fboX, fboY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
-
-	//reverse selected pixel's rgb and decode into an id
-	uint32_t pickedID = Actor::decodeID(pixel[0], pixel[1], pixel[2]);
-
-	//unbind framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, w, h);
-
-	//check if the clicked pixel's colour id is the same as any of the actors
-	for (auto& actor : Actors) {
-		if (actor.second->getId() == pickedID) return actor.second;
-	}
-
-	return nullptr; // nothing clicked
-}
-
-void SceneGraph::Render() const
-{
-	Ref<Actor> mainCamera = GetMainCamera();
-	if (!mainCamera) return;
-	Ref<CameraComponent> cam = mainCamera->GetComponent<CameraComponent>();
-	if (!cam) return;
-	
-	int w = ScreenManager::getInstance().getRenderWidth();
-	int h = ScreenManager::getInstance().getRenderHeight();
-
-	FBOData& sceneFBO = FBOManager::getInstance().getFBO(FBO::Scene);
-	FBOData& pickingFBO = FBOManager::getInstance().getFBO(FBO::ColorPicker);
-
-	//use the picking buffer so it is seperated
-	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO.fbo);
-	glViewport(0, 0, pickingFBO.width, pickingFBO.height);
-
-	if (!RENDERMAINSCREEN) {
-		// upload shader
-		LightingSystem::getInstance().UploadUniforms(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetProgram());
-		LightingSystem::getInstance().UploadUniforms(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated")->GetProgram());
-		
-		//use the picking buffer so it is seperated
-		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO.fbo);
-		glViewport(0, 0, w, h);
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_DEPTH_TEST);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
-
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
-	//glDisable(GL_BLEND);
-
-	// go through all actors
-	for (const auto& pair : Actors) {
-
-		Ref<Actor> actor = pair.second;
-		// getting the shader, mesh, and mat for each indivual actor, using mainly for the if statement to check if the actor has each of these components
-		Ref<ShaderComponent> shader = actor->GetComponent<ShaderComponent>();
-
-		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
-
-		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
-
-		bool isAnimating = (mesh && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
-			actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
-
-		//replace shader if it should be using another shader for whatever purpose- such as outline.
-
-		if (isAnimating) {
-			if (isSelected) {
-				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_AnimOutline");
-
-			}
-			else {
-				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
-			}
-		}
-		else if (isSelected) {
-			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline");
-
-		}
-
-		if (shader) glUseProgram(shader->GetProgram());
-		else continue;
-
-		Ref<MaterialComponent> material = actor->GetComponent<MaterialComponent>();
-
-		if (!shader || !mesh || !material) { continue; }
-
-		glUniformMatrix4fv(shader->GetUniformID("uProjection"), 1, GL_FALSE, cam->GetProjectionMatrix());
-		glUniformMatrix4fv(shader->GetUniformID("uView"), 1, GL_FALSE, cam->GetViewMatrix());
-
-		if (shader && mesh && material) {
-			//MODELMATRIX
-			glEnable(GL_DEPTH_TEST);
-			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
-			Matrix4 modelMatrix = actor->GetModelMatrix();
-			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
-
-
-			//ANIMATION
-			if (isAnimating) {
-				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
-
-				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
-
-				std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
-				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
-
-
-
-				GLint loc = shader->GetUniformID("bone_transforms[0]");
-				if (loc == -1) {
-					printf("ERROR: bone_transforms uniform not found!\n");
-				}
-				else {
-
-					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
-						reinterpret_cast<const float*>(finalBoneMatrices.data()));
-				}
-			}
-
-
-
-			//TEXTURE
-			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
-			glUniform1i(shader->GetUniformID("specularTexture"), 1);
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
-			if (material->getSpecularID() != 0) {
-				glUniform1i(shader->GetUniformID("hasSpec"), 1);
-				glActiveTexture(GL_TEXTURE1);
-				glBindTexture(GL_TEXTURE_2D, material->getSpecularID());
-			}
-			else {
-				glUniform1i(shader->GetUniformID("hasSpec"), 0);
-			}
-
-			//RENDER
-			mesh->Render(GL_TRIANGLES);
-			glBindTexture(GL_TEXTURE_2D, 0);
-
-		}
-
-	}
-
-	// collider debug
-	glDisable(GL_DEPTH_TEST);
-	glLineWidth(2.0f);
-
-	Matrix4 view = cam->GetViewMatrix();
-	Matrix4 projection = cam->GetProjectionMatrix();
-
-	for (const auto& selectedPair : debugSelectedAssets) {
-		auto actorIt = Actors.find(selectedPair.first);
-		if (actorIt == Actors.end()) continue;
-
-		Ref<Actor> actor = actorIt->second;
-		Ref<TransformComponent> TC = actor->GetComponent<TransformComponent>();
-		Ref<CollisionComponent> CC = actor->GetComponent<CollisionComponent>();
-
-		if (!TC && !CC) continue;
-
-		ColliderDebug::getInstance().Render(CC, TC, view, projection);
-	}
-
-	glLineWidth(1.0f);
-	glEnable(GL_DEPTH_TEST);
-
-	//
-	if (!RENDERMAINSCREEN) {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, w, h);
 	}
 }
 

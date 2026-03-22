@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include "AssetManager.h"
+#include "AnimationSystem.h"
 static std::vector<AnimatorComponent*> animators;
 
 void AnimatorComponent::queryAllAnimators(MeshComponent* caller)
@@ -202,7 +203,7 @@ void AnimationClip::setAnimation(Ref<Animation> animation_)
 
 	startTime = 0.0f;
 	if (animation_ && !animation_->queryLoadStatus()) {
-		SceneGraph::getInstance().pushAnimationToWorker(animation_);
+		AnimationSystem::getInstance().PushAnimationToWorker(animation_);
 	}
 	animation = animation_;
 
@@ -215,7 +216,7 @@ void Animation::preloadAnimation(std::string animationName)
 	if (!animation_) return;
 
 	if (animation_ && !animation_->queryLoadStatus()) {
-		SceneGraph::getInstance().pushAnimationToWorker(animation_);
+		AnimationSystem::getInstance().PushAnimationToWorker(animation_);
 	}
 
 }

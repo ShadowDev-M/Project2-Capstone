@@ -124,12 +124,18 @@ public:
 
 class mouseInputMap : public InputMap {
 public:
-	bool dockingHovered = 0;
-	bool dockingClicked = 0;
-	ImVec2 dockingPos;   // top-left corner
-	ImVec2 dockingSize;  // width/height
+	
+	// Scene viewport bounds
+	float sceneFrame = 0.0f;
+	bool sceneHovered = false;
+	bool sceneClicked = false;
+	ImVec2 scenePos;   // top-left corner
+	ImVec2 sceneSize;  // width/height
 
-	float frameHeight = 0;
+	// Game viewport bounds
+	bool gameHovered = false;
+	ImVec2 gamePos;
+	ImVec2 gameSize;
 
 	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph);
 
@@ -185,7 +191,7 @@ public:
 	// for joystick movement
 	void HandleAxisMotion(Uint8 axis, Sint16 value);
 
-	void Update(float deltaTime, SceneGraph* sceneGraph_);
+	void Update(float deltaTime);
 };
 
 class InputManager
@@ -219,7 +225,7 @@ public:
 		return instance;
 	}
 
-	void update(float deltaTime, SceneGraph* sceneGraph);
+	void update(float deltaTime);
 
 	bool debugClearDebugSelected(std::pair<KeyBinding, std::tuple<bool>> input, SceneGraph* sceneGraph);
 

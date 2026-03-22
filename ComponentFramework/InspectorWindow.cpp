@@ -5,7 +5,6 @@
 #include "AnimatorComponent.h"
 #include "PhysicsSystem.h"
 #include <algorithm>
-//#include "ScriptComponent.h"
 #include "CollisionComponent.h"
 #include "ColliderDebug.h"
 #include "LightingSystem.h"
@@ -17,173 +16,175 @@ InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGrap
 
 void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 {
-	if (!ImGui::Begin("Inspector", pOpen)) { ImGui::End(); return; }
+	if (ImGui::Begin("Inspector", pOpen)) {
 
-	const auto& selected = sceneGraph->debugSelectedAssets;
+		const auto& selected = sceneGraph->debugSelectedAssets;
 
-	// no actors selected
-	if (selected.empty()) {
-		ImGui::Text("No Actor Selected");
-		ImGui::End();
-		return;
-	}
-
-	// only 1 actor is selected
-	if (selected.size() == 1) {
-		DrawActorHeader(selected.begin()->second);
-	}
-	else {
-		if (ImGui::CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
-			for (const auto& [id, actor] : selected) {
-				ImGui::Text("%s", actor->getActorName().c_str());
-			}
+		// no actors selected
+		if (selected.empty()) {
+			ImGui::Text("No Actor Selected");
+			ImGui::End();
+			return;
 		}
-		ImGui::Separator();
+
+		// only 1 actor is selected
+		if (selected.size() == 1) {
+			DrawActorHeader(selected.begin()->second);
+		}
+		else {
+			if (ImGui::CollapsingHeader("Selected Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
+				for (const auto& [id, actor] : selected) {
+					ImGui::Text("%s", actor->getActorName().c_str());
+				}
+			}
+			ImGui::Separator();
+		}
+
+		/// Components Section
+		DrawTransformComponent(selected);
+		DrawCameraComponent(selected);
+		DrawLightComponent(selected);
+		DrawMeshComponent(selected);
+		DrawMaterialComponent(selected);
+		DrawShaderComponent(selected);
+		DrawPhysicsComponent(selected);
+		DrawCollisionComponent(selected);
+		DrawScriptComponent(selected);
+		DrawAnimatorComponent(selected);
+
+		// Add Component
+		if (ImGui::Button("Add Component##Button", ImVec2(-1, 0))) {
+			ImGui::OpenPopup("Add Component##Popup");
+		}
+
+		ShowAddComponentPopup(selected);
+
 	}
-
-	/// Components Section
-	DrawTransformComponent(selected);
-	DrawCameraComponent(selected);
-	DrawLightComponent(selected);
-	DrawMeshComponent(selected);
-	DrawMaterialComponent(selected);
-	DrawShaderComponent(selected);
-	DrawPhysicsComponent(selected);
-	DrawCollisionComponent(selected);
-	DrawScriptComponent(selected);
-	DrawAnimatorComponent(selected);
-
-	// Add Component
-	if (ImGui::Button("Add Component##Button", ImVec2(-1, 0))) {
-		ImGui::OpenPopup("Add Component##Popup");
-	}
-
-	ShowAddComponentPopup(selected);
-
 	ImGui::End();
 }
 
 void InspectorWindow::ShowAddComponentPopup(const std::unordered_map<uint32_t, Ref<Actor>>& selected)
 {
-	if (!ImGui::BeginPopup("Add Component##Popup", ImGuiWindowFlags_AlwaysAutoResize)) return;
-	
-	// TODO search bar
+	if (ImGui::BeginPopup("Add Component##Popup", ImGuiWindowFlags_AlwaysAutoResize)) {
 
-	ImGui::Text("Component");
-	ImGui::Separator();
+		// TODO search bar
 
-	// states
-	ComponentState<MeshComponent> meshState(selected);
-	ComponentState<MaterialComponent> materialState(selected);
-	ComponentState<ShaderComponent> shaderState(selected);
-	ComponentState<PhysicsComponent> physicsState(selected);
-	ComponentState<CollisionComponent> collisionState(selected);
-	ComponentState<CameraComponent> cameraState(selected);
-	ComponentState<LightComponent> lightState(selected);
-	ComponentState<AnimatorComponent> animatorState(selected);
+		ImGui::Text("Component");
+		ImGui::Separator();
 
-	// lambda for greying out components
-	auto showIf = [](const auto& state) {
-		return state.noneHaveComponent || state.someHaveComponent;
-	};
+		// states
+		ComponentState<MeshComponent> meshState(selected);
+		ComponentState<MaterialComponent> materialState(selected);
+		ComponentState<ShaderComponent> shaderState(selected);
+		ComponentState<PhysicsComponent> physicsState(selected);
+		ComponentState<CollisionComponent> collisionState(selected);
+		ComponentState<CameraComponent> cameraState(selected);
+		ComponentState<LightComponent> lightState(selected);
+		ComponentState<AnimatorComponent> animatorState(selected);
 
-	if (showIf(meshState)) {
-		if (ImGui::Selectable("Mesh Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<MeshComponent>()) {
-					RECORD actor->AddComponent<MeshComponent>(nullptr, "");
-				}
-			}
-		}
-	}
-	
-	if (showIf(materialState)) {
-		if (ImGui::Selectable("Material Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<MaterialComponent>()) {
-					RECORD actor->AddComponent<MaterialComponent>(nullptr, "", "");
-				}
-			}
-		}
-	}
+		// lambda for greying out components
+		auto showIf = [](const auto& state) {
+			return state.noneHaveComponent || state.someHaveComponent;
+			};
 
-	if (showIf(shaderState)) {
-		if (ImGui::Selectable("Shader Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<ShaderComponent>()) {
-					RECORD actor->AddComponent<ShaderComponent>(nullptr, "", "");
-				}
-			}
-		}
-	}
-
-	if (showIf(physicsState)) {
-		if (ImGui::Selectable("Physics Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<PhysicsComponent>()) {
-					RECORD actor->AddComponent<PhysicsComponent>();
-					PhysicsSystem::getInstance().AddActor(actor);
-				}
-			}
-		}
-	}
-
-	if (showIf(collisionState)) {
-		if (ImGui::Selectable("Collision Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<CollisionComponent>()) {
-					RECORD actor->AddComponent<CollisionComponent>();
-					CollisionSystem::getInstance().AddActor(actor);
-				}
-			}
-		}
-	}
-
-	if (showIf(cameraState)) {
-		if (ImGui::Selectable("Camera Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<CameraComponent>()) {
-					RECORD actor->AddComponent<CameraComponent>(actor.get(), ProjectionType::Perspective, 60.0f, 0.03f, 1000.0f, 5.0f);
-				}
-			}
-		}
-	}
-
-	if (ImGui::Selectable("Script Component")) {
-		for (auto& [id, actor] : selected) {
-			RECORD actor->AddComponent<ScriptComponent>(actor.get());
-		}
-	}
-
-	if (showIf(animatorState)) {
-		if (ImGui::Selectable("Animator Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<AnimatorComponent>()) {
-					if (actor->GetComponent<MeshComponent>()) {
-						RECORD actor->AddComponent<AnimatorComponent>(actor.get());
+		if (showIf(meshState)) {
+			if (ImGui::Selectable("Mesh Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<MeshComponent>()) {
+						RECORD actor->AddComponent<MeshComponent>(nullptr, "");
 					}
-					else {
+				}
+			}
+		}
+
+		if (showIf(materialState)) {
+			if (ImGui::Selectable("Material Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<MaterialComponent>()) {
+						RECORD actor->AddComponent<MaterialComponent>(nullptr, "", "");
+					}
+				}
+			}
+		}
+
+		if (showIf(shaderState)) {
+			if (ImGui::Selectable("Shader Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<ShaderComponent>()) {
+						RECORD actor->AddComponent<ShaderComponent>(nullptr, "", "");
+					}
+				}
+			}
+		}
+
+		if (showIf(physicsState)) {
+			if (ImGui::Selectable("Physics Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<PhysicsComponent>()) {
+						RECORD actor->AddComponent<PhysicsComponent>();
+						PhysicsSystem::getInstance().AddActor(actor);
+					}
+				}
+			}
+		}
+
+		if (showIf(collisionState)) {
+			if (ImGui::Selectable("Collision Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<CollisionComponent>()) {
+						RECORD actor->AddComponent<CollisionComponent>();
+						CollisionSystem::getInstance().AddActor(actor);
+					}
+				}
+			}
+		}
+
+		if (showIf(cameraState)) {
+			if (ImGui::Selectable("Camera Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<CameraComponent>()) {
+						RECORD actor->AddComponent<CameraComponent>(actor.get(), ProjectionType::Perspective, 60.0f, 0.03f, 1000.0f, 5.0f);
+					}
+				}
+			}
+		}
+
+		if (ImGui::Selectable("Script Component")) {
+			for (auto& [id, actor] : selected) {
+				RECORD actor->AddComponent<ScriptComponent>(actor.get());
+			}
+		}
+
+		if (showIf(animatorState)) {
+			if (ImGui::Selectable("Animator Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<AnimatorComponent>()) {
+						if (actor->GetComponent<MeshComponent>()) {
+							RECORD actor->AddComponent<AnimatorComponent>(actor.get());
+						}
+						else {
 #ifdef _DEBUG
-						Debug::Error("You require a MeshComponent to create an Animator!: " + actor->getActorName(), __FILE__, __LINE__);
+							Debug::Error("You require a MeshComponent to create an Animator!: " + actor->getActorName(), __FILE__, __LINE__);
 #endif
+						}
 					}
 				}
 			}
 		}
-	}
 
-	if (showIf(lightState)) {
-		if (ImGui::Selectable("Light Component")) {
-			for (auto& [id, actor] : selected) {
-				if (!actor->GetComponent<LightComponent>()) {
-					RECORD actor->AddComponent<LightComponent>();
-					LightingSystem::getInstance().AddActor(actor);
+		if (showIf(lightState)) {
+			if (ImGui::Selectable("Light Component")) {
+				for (auto& [id, actor] : selected) {
+					if (!actor->GetComponent<LightComponent>()) {
+						RECORD actor->AddComponent<LightComponent>();
+						LightingSystem::getInstance().AddActor(actor);
+					}
 				}
 			}
 		}
-	}
 
-	ImGui::EndPopup();
+		ImGui::EndPopup();
+	}
 }
 
 void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
@@ -422,10 +423,10 @@ void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, 
 		bool scaleChanged = false;
 
 		if (hasMixedScale && !isEditingScale) {
-			ImGui::DragFloat3("##Scale", scale, 0.1f, 0.1f, 100.0f, "---");
+			ImGui::DragFloat3("##Scale", scale, 0.1f, 0.1f, 100.0f, "---", ImGuiSliderFlags_AlwaysClamp);
 		}
 		else {
-			scaleChanged = ImGui::DragFloat3("##Scale", scale, 0.1f, 0.1f, 100.0f);
+			scaleChanged = ImGui::DragFloat3("##Scale", scale, 0.1f, 0.001f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp);
 		}
 
 		if (scaleChanged) {
@@ -651,7 +652,7 @@ void InspectorWindow::DrawCameraComponent(const std::unordered_map<uint32_t, Ref
 			ImGui::SameLine(labelWidth + 20);
 			ImGui::SetNextItemWidth(-1);
 
-			if (ImGui::SliderInt("##fovslider", &fovInt, 0, 120, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+			if (ImGui::SliderInt("##fovslider", &fovInt, 1, 120, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 				for (auto& component : cameraState.components) {
 					component->setFOV((float)fovInt);
 				}
@@ -823,7 +824,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 							std::snprintf(displayTimeRatioBuffer, sizeof(displayTimeRatioBuffer), "%%.3f / %.3f", clipLength);
 
 							currentTimeChanged = ImGui::DragFloat("##CurrentTime", &currentTime,
-								0.1f, 0.0f, clipLength, displayTimeRatioBuffer);
+								0.1f, 0.0f, clipLength, displayTimeRatioBuffer, ImGuiSliderFlags_AlwaysClamp);
 
 							currentTime = std::clamp(currentTime, 0.0f, clipLength);
 
@@ -853,7 +854,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 							std::snprintf(displayTimeRatioBuffer, sizeof(displayTimeRatioBuffer), "%%.3f / %.3f", clipLength);
 
 							startTimeChanged = ImGui::DragFloat("##StartTime", &startTime,
-								0.1f, 0.0f, clipLength, displayTimeRatioBuffer);
+								0.1f, 0.0f, clipLength, displayTimeRatioBuffer, ImGuiSliderFlags_AlwaysClamp);
 
 							startTime = std::clamp(startTime, 0.0f, clipLength);
 
@@ -877,7 +878,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 						ImGui::SameLine(labelWidth + 30);
 						ImGui::SetNextItemWidth(-1);
 						speedMultChanged = ImGui::DragFloat("##SpeedMult", &speedMult,
-							0.1f, -10, 10);
+							0.1f, -10, 10, nullptr, ImGuiSliderFlags_AlwaysClamp);
 						speedMult = std::clamp(speedMult, -10.0f, 10.0f);
 						if (speedMultChanged) {
 							animator->setSpeedMult(speedMult);
@@ -1167,10 +1168,10 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			float mass = displayMass;
 
 			if (hasMixedMass && !isEditingMass) {
-				ImGui::DragFloat("##Mass", &mass, 0.1f, 0.0f, 100.0f, "---");
+				ImGui::DragFloat("##Mass", &mass, 0.1f, 0.0f, 100.0f, "---", ImGuiSliderFlags_AlwaysClamp);
 			}
 			else { // no delta (might add later)
-				if (ImGui::DragFloat("##Mass", &mass, 0.1f, 0.1f, 100.0f)) {
+				if (ImGui::DragFloat("##Mass", &mass, 0.1f, 0.1f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 					for (auto& component : physicsState.components) {
 						component->setMass(mass);
 					}
@@ -1191,10 +1192,10 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			float drag = displayDrag;
 
 			if (hasMixedDrag && !isEditingDrag) {
-				ImGui::DragFloat("##Drag", &drag, 0.1f, 0.0f, 2.0f, "---");
+				ImGui::DragFloat("##Drag", &drag, 0.1f, 0.0f, 2.0f, "---", ImGuiSliderFlags_AlwaysClamp);
 			}
 			else { // no delta (might add later)
-				if (ImGui::DragFloat("##Drag", &drag, 0.1f, 0.1f, 2.0f)) {
+				if (ImGui::DragFloat("##Drag", &drag, 0.1f, 0.1f, 2.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 					for (auto& component : physicsState.components) {
 						component->setDrag(drag);
 					}
@@ -1253,10 +1254,10 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		float friction = displayFriction;
 
 		if (hasMixedFriction && !isEditingFriction) {
-			ImGui::DragFloat("##Friction", &friction, 0.01f, 0.0f, 1.0f, "---");
+			ImGui::DragFloat("##Friction", &friction, 0.01f, 0.0f, 1.0f, "---", ImGuiSliderFlags_AlwaysClamp);
 		}
 		else { // no delta (might add later)
-			if (ImGui::DragFloat("##Friction", &friction, 0.01f, 0.1f, 1.0f)) {
+			if (ImGui::DragFloat("##Friction", &friction, 0.01f, 0.1f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 				for (auto& component : physicsState.components) {
 					component->setFriction(friction);
 				}
@@ -1277,10 +1278,10 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 		float restitution = displayRestitution;
 
 		if (hasMixedRestitution && !isEditingRestitution) {
-			ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.0f, 1.0f, "---");
+			ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.0f, 1.0f, "---", ImGuiSliderFlags_AlwaysClamp);
 		}
 		else { // no delta (might add later)
-			if (ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.1f, 1.0f)) {
+			if (ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.1f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 				for (auto& component : physicsState.components) {
 					component->setRestitution(restitution);
 				}
@@ -1445,10 +1446,10 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 			float radius = displayRadius;
 
 			if (hasMixedRadius && !isEditingRadius) {
-				ImGui::DragFloat("##Radius", &radius, 0.1f, 0.0f, 100.0f, "---");
+				ImGui::DragFloat("##Radius", &radius, 0.1f, 0.0f, 100.0f, "---", ImGuiSliderFlags_AlwaysClamp);
 			}
 			else { // no delta (might add later)
-				if (ImGui::DragFloat("##Radius", &radius, 0.1f, 0.1f, 100.0f)) {
+				if (ImGui::DragFloat("##Radius", &radius, 0.1f, 0.1f, 100.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 					for (auto& component : collisionState.components) {
 						component->setRadius(radius);
 					}
