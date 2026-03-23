@@ -26,11 +26,16 @@ private:
 	// using imgui_stdlib for InputText(), these will help with passing on the names and paths of assets
 	std::string newAssetName = "";
 	std::string newAssetPath = "";
+	
 	std::string newDiffuseMapPath = "";
 	std::string newSpecularMapPath = "";
+	std::string newNormalMapPath = "";
+
 	std::string newVertShaderPath = "";
 	std::string newFragShaderPath = "";
+	
 	std::string newScriptPath = "";
+	
 	std::string newAnimationPath = "";
 
 

@@ -32,6 +32,11 @@
         <looping state="false"/>
         <animName name="idle2"/>
     </AnimatorComponent>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="0.23" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
     <MeshComponent name="manni"/>
     <MaterialComponent name="skeletonTexture"/>
     <ShaderComponent name="S_Multi"/>

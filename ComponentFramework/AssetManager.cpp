@@ -60,6 +60,9 @@ bool AssetManager::SaveAssetDatabaseXML() const
                 auto meshComponent = std::dynamic_pointer_cast<MeshComponent>(asset.second);
                 if (meshComponent && meshComponent->getMeshName()) {
                     assetElement->SetAttribute("filepath", meshComponent->getMeshName());
+
+
+
                 }
             }
             else if (componentType.first == "MaterialComponent") {
@@ -70,6 +73,9 @@ bool AssetManager::SaveAssetDatabaseXML() const
                     }
                     if (materialComponent->getSpecularName()) {
                         assetElement->SetAttribute("specularMap", materialComponent->getSpecularName());
+                    }
+                    if (materialComponent->getNormalName()) {
+                        assetElement->SetAttribute("normalMap", materialComponent->getNormalName());
                     }
                 }
             }
@@ -260,9 +266,13 @@ bool AssetManager::LoadAssetTypeXML(XMLElement* assetElement_, const std::string
         if (!specularPath) {
             specularPath = "";
         }
+        const char* normalPath = assetElement_->Attribute("normalMap");
+        if (!normalPath) {
+            normalPath = "";
+        }
 
         // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-        bool result = AddAsset<MaterialComponent>(assetName_, nullptr, diffusePath, specularPath);
+        bool result = AddAsset<MaterialComponent>(assetName_, nullptr, diffusePath, specularPath, normalPath);
         if (!result) {
             Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
             return false;

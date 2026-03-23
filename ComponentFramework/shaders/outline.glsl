@@ -28,18 +28,28 @@ void main() {
         vec3 n = abs(localNormal);
         vec2 tiledTex;
 
-        vec2 finalOffset = tileOffset * tileScale;
+		vec2 correctedScale = -tileScale / 100;
+
+        vec2 finalOffset = tileOffset * correctedScale;
 
         vec3 scaledPos = localPos * uvTiling;
 
         if (n.y > n.x && n.y > n.z)
-            tiledTex = scaledPos.xz * tileScale; // top  
+            tiledTex = scaledPos.xz * correctedScale; // top  
         else if (n.x > n.z)
-            tiledTex = scaledPos.zy * tileScale; // side
+            tiledTex = scaledPos.zy * correctedScale; // side
         else
-            tiledTex = scaledPos.xy * tileScale; // front
+            tiledTex = scaledPos.xy * correctedScale; // front
             
-        kt = texture(myTexture, tiledTex + finalOffset);
+		vec2 tiledTextureCoords = tiledTex + finalOffset;
+		if (tiledTextureCoords.x == 0) {
+			tiledTextureCoords.x = textureCoords.x;
+		} 
+		if (tiledTextureCoords.y == 0) {
+			tiledTextureCoords.y = textureCoords.y;
+		}
+
+        kt = texture(myTexture, tiledTextureCoords);
 	} else {
 		kt = texture(myTexture, textureCoords); 
 	}
