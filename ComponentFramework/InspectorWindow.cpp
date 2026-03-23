@@ -636,7 +636,8 @@ void InspectorWindow::DrawMeshComponent(const std::unordered_map<uint32_t, Ref<A
 		}
 
 		if (meshState.Count() >= 1) {
-			ImGui::Text("Cast Shadow: ");
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Cast Shadow");
 			ImGui::SameLine();
 
 			bool castShadow = false;
@@ -745,7 +746,8 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 		/// REPLACE materialState with a TilingSettingsState var
 
 		if (materialState.Count() == 1) {
-			ImGui::Text("Tiling: ");
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Tiling");
 			ImGui::SameLine();
 			for (auto& component : materialState.components) {
 				for (const auto& pair : selectedActors_) {
@@ -768,15 +770,19 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 					float tileOffset[2] = { offset.x, offset.y };
 
 					if (isTiled == true) {
-						ImGui::Text("Tile Scale: ");
-						ImGui::SameLine();
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("Tile Scale");
+						ImGui::SameLine(labelWidth + 40);
+						ImGui::SetNextItemWidth(-1);
 
 						if (ImGui::DragFloat2("##tileScale", tileScale, 0.01f)) {
 							tileSettings->setTileScale(Vec2(tileScale[0], tileScale[1]));
 						}
 
-						ImGui::Text("Tile Offset: ");
-						ImGui::SameLine();
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("Tile Offset");
+						ImGui::SameLine(labelWidth + 40);
+						ImGui::SetNextItemWidth(-1);
 
 						if (ImGui::DragFloat2("##tileOffset", tileOffset, 0.01f)) {
 							tileSettings->setTileOffset(Vec2(tileOffset[0], tileOffset[1]));

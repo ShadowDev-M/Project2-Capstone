@@ -762,7 +762,6 @@ public:
 
             return args;
             }
-        }
         else if constexpr (std::is_same_v<ComponentTemplate, ShadowSettings>) {
             /////// TILE SETTINGS ///////
 
