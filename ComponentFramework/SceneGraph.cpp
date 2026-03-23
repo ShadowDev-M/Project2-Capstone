@@ -869,6 +869,36 @@ void SceneGraph::ShadowPass() const {
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(3.0f, 6.0f);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO.fbo);
 		glViewport(0, 0, shadowFBO.width, shadowFBO.height);
 
@@ -900,10 +930,11 @@ void SceneGraph::ShadowPass() const {
 
 
 			LightType currentLightType = LightType::Sky;
-
+			int pointLightCount = 0;
+			int skyLightCount = 0;
+			int totalLightCount = 0;
 			for (auto& light : lightActors) {
-
-
+				if (totalLightCount >= 4) break;
 
 				if (light->GetComponent<LightComponent>()->getType() == LightType::Sky) {
 
@@ -924,20 +955,43 @@ void SceneGraph::ShadowPass() const {
 
 
 					pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
+					skyLightCount++;
 
 				}
-				else if(light->GetComponent<LightComponent>()->getType() == LightType::Point) {
+				else if(light->GetComponent<LightComponent>()->getType() == LightType::Point && pointLightCount < 4) {
 					
+					//each pointlight gets its own cubemap buffer (you could do it in one but the expensive part isn't the buffer but the content so its easier to do with existing framework)
+					FBO CubeMapFBO;
+
+					switch (pointLightCount) {
+					case 0:
+						CubeMapFBO = FBO::ShadowCubeMap;
+						break;
+					case 1: 
+						CubeMapFBO = FBO::ShadowCubeMap1;
+						break;
+					case 2:
+						CubeMapFBO = FBO::ShadowCubeMap2;
+						break;
+					case 3: 
+						CubeMapFBO = FBO::ShadowCubeMap3;
+						break;
+					default:
+						// shouldn't be called
+						//CubeMapFBO = FBO::ShadowCubeMap3;
+						break;
+
+					}
+
 					//redo the uniforms when change of light type
-					if (currentLightType != LightType::Point) {
 						shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_PointShadow");
 
-						glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).fbo);
-						glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).height);						
+						glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(CubeMapFBO).texture);
+						glViewport(0, 0, FBOManager::getInstance().getFBO(CubeMapFBO).width, FBOManager::getInstance().getFBO(CubeMapFBO).height);
 						SetUniformShadowPass(shader, actor, isAnimating);
 					//	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-					}
+					
 					currentLightType = LightType::Point;
 					
 				
@@ -949,25 +1003,17 @@ void SceneGraph::ShadowPass() const {
 					glUniform3fv(shader->GetUniformID("lightPos"), 1, lightPosition);
 					glUniform1f(shader->GetUniformID("farPlane"), 200);
 
-					//glm::value_ptr(SInfo.PointMatrices[0])
 					glUniformMatrix4fv(shader->GetUniformID("shadowMatrices[0]"), 6, GL_FALSE, reinterpret_cast<const float*>(SInfo.PointMatrices.data()));
 
 					
 					//point lights only need to render the regular data, no special light matrixes needed
 					pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
 
-
-					
-
-					/*std::vector<float> pixels(FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).width* FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).height);
-					glBindTexture(GL_TEXTURE_CUBE_MAP, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).texture);
-					glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_DEPTH_COMPONENT, GL_FLOAT, pixels.data());
-					float minVal = *std::min_element(pixels.begin(), pixels.end());
-					float maxVal = *std::max_element(pixels.begin(), pixels.end());
-					printf("Depth range: %f - %f\n", minVal, maxVal);*/
+					pointLightCount++;
+				
 				}
 				
-
+				totalLightCount++;
 			}
 		}
 
@@ -1283,19 +1329,37 @@ void SceneGraph::Render() const
 				Vec3 camPos = getUsedCamera()->GetUserActorTransform()->GetPosition();
 				glUniform3fv(shader->GetUniformID("cameraPos"), 1, camPos);
 
-				ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Sky);
-				glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, lightInfo.SkyMatrix);
-				glUniform3fv(shader->GetUniformID("shadowLightDir"), 1, lightInfo.LightDir);
+				int allowedPointLights = 4;
+
+				if (skyLight) {
+					allowedPointLights--;
+					ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Sky);
+					glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, lightInfo.SkyMatrix);
+					glUniform3fv(shader->GetUniformID("shadowLightDir"), 1, lightInfo.LightDir);
+				}
+
+
 
 				//ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Point);
 				//glUniform3fv(shader->GetUniformID("lightPos[0]"), 1, skyLight->GetModelMatrix() * Vec4(Vec3(), 1));
 
-				
+				std::vector<GLuint> shadowCubemaps = { 
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).texture, 
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).texture,
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).texture,
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).texture
+				};
 
-				glActiveTexture(GL_TEXTURE3);
-				glBindTexture(GL_TEXTURE_CUBE_MAP, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).texture);
 
-				glUniform1i(shader->GetUniformID("pointShadowMap"), 3);
+
+				for (int i = 0; i < shadowCubemaps.size(); i++) {
+					glActiveTexture(GL_TEXTURE3 + i); // GL_TEXTURE3, 4, 5, 6
+					glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubemaps[i]);
+				}
+
+				// Upload array of sampler indices to shader
+				int samplerIndices[4] = { 3, 4, 5, 6 };
+				glUniform1iv(shader->GetUniformID("pointShadowMaps[0]"), allowedPointLights, samplerIndices);
 
 			}
 

@@ -29,7 +29,7 @@ uniform vec2 tileOffset;
 uniform sampler2D shadowMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
-uniform samplerCube pointShadowMap; // one cubemap per point light
+uniform samplerCube pointShadowMaps[MAX_LIGHTS]; // one cubemap per light
 
 layout (location = 0) out vec4 fragColor;
 
@@ -43,22 +43,27 @@ vec3 sampleOffsetDirections[20] = vec3[]
    vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
    vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
 );   
-float PointShadowCalculation(vec3 fragPos, vec3 lightWorldPos) {
-   vec3 fragToLight = fragPos - lightWorldPos; 
-   float currentDepth = length(fragToLight);  
-   float viewDistance = length(cameraPos - fragPos);
-float shadow = 0.0;
-float bias   = 0.15;
-int samples  = 20;
-float diskRadius = (1.0 + (viewDistance / 200)) / 25.0;  
-for(int i = 0; i < samples; ++i)
-{
-    float closestDepth = texture(pointShadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
-    closestDepth *= 200.0;   // undo mapping [0;1]
-    if(currentDepth - bias > closestDepth)
-        shadow += 1.0;
-}
-shadow /= float(samples);  
+
+float PointShadowCalculation(vec3 fragPos, vec3 lightWorldPos, int index) {
+       
+   //https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
+    vec3 fragToLight = fragPos - lightWorldPos; 
+    float currentDepth = length(fragToLight);  
+    float viewDistance = length(cameraPos - fragPos);
+    float shadow = 0.0;
+    float bias   = 0.15;
+    int samples  = 20;
+    float diskRadius = (1.0 + (viewDistance / 200)) / 25.0;  
+
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(pointShadowMaps[index], fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+        closestDepth *= 200.0;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+
+    shadow /= float(samples);  
 
     return 1 - shadow;
 }
@@ -84,6 +89,7 @@ float ShadowCalculation() {
         return 0.0;
 
 float bias = mix(0.005, 0.0005, NdotL * NdotL); 
+
 float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
@@ -96,7 +102,7 @@ float shadow = 0.0;
 
     shadow /= 25.0;
 
-    float sunAngleFade = smoothstep(0.0, 0.0, NdotL); // makes shadows fade a bit but seems to also cause issues with no shadows on 90 degree angle surfaces 
+    float sunAngleFade = smoothstep(0.0, 0.0, NdotL); // makes shadows fade a bit but seems to also cause issues with no shadows on 90 degree angle surfaces so ill change it from 0.15 to 0 
     return 1.0 - (shadow * sunAngleFade);
 }
 
@@ -127,11 +133,14 @@ void main() {
     }
     
     vec4 phongResult = ambient * kt;
-    float shadow = 0.0;  // Default: fully lit
     float visibility = 1.0f;
+
+    int pointLightCounter = 0;
 
     if (numLights > 0) {
         for(uint i = 0u; i < numLights; i++) {
+            if (i >= MAX_LIGHTS) break;
+            
             vec4 ks = (hasSpec == 1) ? texture(specularTexture, textureCoords) * specular[i] : specular[i];
             vec4 kd = diffuse[i];
             
@@ -167,17 +176,18 @@ void main() {
                 lightContrib = ((diff * kd) + (spec * ks)) * kt * attenuation;
             }
             
-            phongResult += lightContrib;
-            //phongResult += vec4(lightDir * 0.5 + 0.5, 1.0);;
-
+            
+            float shadow = 1.0;
 
             if (lightType[i] == 0u) {
-                visibility *= ShadowCalculation();
+                shadow = ShadowCalculation() / float(MAX_LIGHTS);
             }
-            if (lightType[i] == 1u) {
-                visibility *= PointShadowCalculation(worldPos, lightWorldPos);
+            if (lightType[i] == 1u && pointLightCounter < MAX_LIGHTS) {
+                shadow = PointShadowCalculation(worldPos, lightWorldPos, pointLightCounter);
+                pointLightCounter++;
+            }
 
-            }
+            phongResult += lightContrib * shadow;
 
 
         }
@@ -193,6 +203,5 @@ void main() {
     
 
     //shadow = ShadowCalculation();
-    vec3 shadowedLighting = phongResult.rgb * visibility;
-    fragColor = vec4(shadowedLighting, phongResult.a);
+    fragColor = vec4(phongResult.rgb, phongResult.a);
 }

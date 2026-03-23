@@ -6,7 +6,10 @@ enum class FBO {
 	// Play,
 	ColorPicker,
 	ShadowMap,
-	ShadowCubeMap //for point lights
+	ShadowCubeMap, //for point lights
+	ShadowCubeMap1,
+	ShadowCubeMap2,
+	ShadowCubeMap3
 	// ShadowMap
 };
 
