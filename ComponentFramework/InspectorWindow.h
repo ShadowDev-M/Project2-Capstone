@@ -3,6 +3,7 @@
 #include "ScriptComponent.h"
 #include "AnimatorComponent.h"
 #include "CollisionComponent.h"
+#include "ShadowSettings.h"
 class InspectorWindow
 {
 	// delete the move and copy constructers
@@ -254,7 +255,15 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 					if (pair.second->GetComponent<MeshComponent>()) {
 						pair.second->RemoveComponent<MeshComponent>();
 
+
+
+
 					}
+					if (pair.second->GetComponent<ShadowSettings>()) {
+						pair.second->DeleteComponent<ShadowSettings>();
+
+					}
+
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, MaterialComponent>) {
 					if (pair.second->GetComponent<MaterialComponent>()) {

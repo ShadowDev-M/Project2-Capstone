@@ -8,12 +8,14 @@ layout (location = 2) in vec2 texCoords;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 lightSpaceMatrix;
 
 layout (location = 0) out vec3 vertNormal;
 layout (location = 1) out vec2 textureCoords;
 layout (location = 2) out vec3 worldPos;
 layout (location = 3) out vec3 localPos;
 layout (location = 4) out vec3 localNormal;
+layout (location = 5) out vec4 vFragPosLightSpace;
 
 void main() {
     localPos = vVertex.xyz;
@@ -28,6 +30,10 @@ void main() {
     vec3 eyePos = (viewMatrix * modelMatrix * vVertex).xyz;
     
     worldPos = (modelMatrix * vVertex).xyz;  // Pass world pos to fragment
+    
+    vFragPosLightSpace = lightSpaceMatrix * modelMatrix * vVertex;
+
+  
     
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vVertex;
 }

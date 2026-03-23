@@ -16,7 +16,7 @@ uniform mat4 bone_transforms[MAX_BONES];       // CHANGED: bone_transforms
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
-
+uniform mat4 lightSpaceMatrix;
 // Your lights (UNCHANGED)
 //uniform vec3 lightPos[MAX_LIGHTS];
 //uniform vec4 diffuse[MAX_LIGHTS];
@@ -31,7 +31,8 @@ layout (location = 1) out vec2 textureCoords;
 layout (location = 2) out vec3 vertPos;
 layout (location = 3) out vec3 localPos;
 layout (location = 4) out vec3 localNormal;
- 
+layout (location = 5) out vec4 vFragPosLightSpace;
+
 void main() {
     localPos = aPosition;
     localNormal = aNormal;
@@ -56,6 +57,7 @@ void main() {
     vertNormal = normalize(mat3(transpose(inverse(modelMatrix))) * skinnedNormal);
     vertPos = vec3(worldPos);
 
-    
+    vFragPosLightSpace = lightSpaceMatrix * modelMatrix * skinnedPos;
+
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * skinnedPos;
 }

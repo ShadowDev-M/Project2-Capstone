@@ -242,6 +242,9 @@
     <ClInclude Include="TilingSettings.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowSettings.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -266,9 +269,6 @@
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="ShaderComponent.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="CollisionComponent.cpp">
@@ -397,6 +397,12 @@
     <ClCompile Include="TilingSettings.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\colourPickFrag.glsl">
@@ -448,6 +454,21 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="shaders\colliderDebugVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\ShadowMappingFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\ShadowMappingVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\ShadowMappingPointGeom.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\ShadowMappingPointVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\ShadowMappingPointFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

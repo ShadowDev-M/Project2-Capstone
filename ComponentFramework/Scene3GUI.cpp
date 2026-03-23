@@ -127,7 +127,8 @@ void Scene3GUI::Render() const {
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("projectionMatrix"), 1, GL_FALSE, usedCamera->GetProjectionMatrix());
 	glUniformMatrix4fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("viewMatrix"), 1, GL_FALSE, usedCamera->GetViewMatrix());
 	glUniform3fv(AssetManager::getInstance().GetAsset<ShaderComponent>("S_Multi")->GetUniformID("cameraPos"), 1, usedCamera->GetUserActorTransform()->GetPosition());
-
+	
+	//SceneGraph::getInstance().ShadowPass();
 	SceneGraph::getInstance().Render();
 
 	glUseProgram(0);

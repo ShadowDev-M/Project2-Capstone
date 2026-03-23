@@ -9,7 +9,6 @@
 #include "CollisionComponent.h"
 #include "ColliderDebug.h"
 
-
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
 	EditorManager::getInstance().RegisterWindow("Inspector", true);
 }
@@ -94,6 +93,8 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 				if (ImGui::Selectable("Mesh Component")) {
 					if (!selectedActor->second->GetComponent<MeshComponent>()) {
 						RECORD selectedActor->second->AddComponent<MeshComponent>(nullptr, "");
+						RECORD selectedActor->second->AddComponent<ShadowSettings>(nullptr, true);
+
 					}
 				}
 
@@ -634,7 +635,34 @@ void InspectorWindow::DrawMeshComponent(const std::unordered_map<uint32_t, Ref<A
 			ImGui::EndDragDropTarget();
 		}
 
+		if (meshState.Count() >= 1) {
+			ImGui::Text("Cast Shadow: ");
+			ImGui::SameLine();
 
+			bool castShadow = false;
+
+			for (auto& component : meshState.components) {
+				for (const auto& pair : selectedActors_) {
+					
+					if (!pair.second->GetComponent<ShadowSettings>()) {
+						pair.second->AddComponent<ShadowSettings>(nullptr, true);
+					}
+					if (!castShadow) {
+						castShadow = pair.second->GetComponent<ShadowSettings>()->getCastShadow();
+					}
+				}
+			}
+			
+			if (ImGui::Checkbox("##castShadow", &castShadow)) {
+				for (auto& component : meshState.components) {
+					for (const auto& pair : selectedActors_) {
+						pair.second->GetComponent<ShadowSettings>()->setCastShadow(castShadow);
+					}
+				}
+			}
+						
+
+		}
 		// alternatively, a drop dowm menu that has a list of all meshes
 
 	}

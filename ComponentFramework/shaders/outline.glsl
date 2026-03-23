@@ -14,7 +14,10 @@ layout (location = 1) in vec2 textureCoords;
 layout (location = 2) in vec3 worldPos;
 layout (location = 3) in vec3 localPos;
 layout (location = 4) in vec3 localNormal;
+layout (location = 5) in vec4 vFragPosLightSpace;
 
+
+uniform sampler2D shadowMap;
 uniform sampler2D myTexture; 
 
 void main() {
@@ -70,5 +73,6 @@ void main() {
 	vec4 outlineColor = vec4(1.0, 1.0, 3.0, 0.0); // white
 
 	vec4 litColor = (ka + (diff * kd) + (spec * ks)) * kt;
+
 	fragColor = mix(outlineColor, litColor, outlineFactor);
 }

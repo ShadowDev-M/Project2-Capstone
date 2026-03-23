@@ -7,9 +7,9 @@ layout (location = 1) in vec2 textureCoords;
 layout (location = 2) in vec3 worldPos;
 layout (location = 3) in vec3 localPos;
 layout (location = 4) in vec3 localNormal;
+layout(location = 5) in vec4 vFragPosLightSpace;  
 
 uniform vec3 cameraPos;
-
 uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec4 diffuse[MAX_LIGHTS];
 uniform vec4 specular[MAX_LIGHTS];
@@ -19,17 +19,92 @@ uniform vec4 ambient;
 uniform uint numLights;
 uniform bool hasSpec;
 
+
+
 uniform bool isTiled;
 uniform vec3 uvTiling;
 uniform vec2 tileScale;
 uniform vec2 tileOffset;
 
+uniform sampler2D shadowMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
+uniform samplerCube pointShadowMaps[MAX_LIGHTS]; // one cubemap per light
 
 layout (location = 0) out vec4 fragColor;
 
 
+uniform vec3 shadowLightDir; 
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);   
+
+float PointShadowCalculation(vec3 fragPos, vec3 lightWorldPos, int index) {
+       
+   //https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
+    vec3 fragToLight = fragPos - lightWorldPos; 
+    float currentDepth = length(fragToLight);  
+    float viewDistance = length(cameraPos - fragPos);
+    float shadow = 0.0;
+    float bias   = 0.15;
+    int samples  = 20;
+    float diskRadius = (1.0 + (viewDistance / 200)) / 25.0;  
+
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(pointShadowMaps[index], fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+        closestDepth *= 200.0;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+
+    shadow /= float(samples);  
+
+    return 1 - shadow;
+}
+
+float ShadowCalculation() {
+    vec3 projCoords = vFragPosLightSpace.xyz / vFragPosLightSpace.w;
+    vec2 shadowUV = projCoords.xy * 0.5 + 0.5;
+    float currentDepth = projCoords.z * 0.5 + 0.5;
+
+    if(abs(vFragPosLightSpace.x) > vFragPosLightSpace.w ||
+       abs(vFragPosLightSpace.z) > vFragPosLightSpace.w)
+        return 1.0;
+    if(vFragPosLightSpace.y > vFragPosLightSpace.w)
+        return 1.0;
+    if(vFragPosLightSpace.y < -vFragPosLightSpace.w)
+        return 0.0;
+
+    vec3 N = normalize(vertNormal);
+    vec3 L = normalize(-shadowLightDir);
+    float NdotL = dot(N, L);
+
+    if(NdotL < 0.0)
+        return 0.0;
+
+float bias = mix(0.005, 0.0005, NdotL * NdotL); 
+
+float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
+    for(int x = -2; x <= 2; ++x) {
+    for(int y = -2; y <= 2; ++y) {
+        vec2 sampleUV = clamp(shadowUV + vec2(x, y) * texelSize, 0.001, 0.999);
+        float closestDepth = texture(shadowMap, sampleUV).r;
+        shadow += (currentDepth > closestDepth + bias) ? 1.0 : 0.0;
+    }}
+
+    shadow /= 25.0;
+
+    float sunAngleFade = smoothstep(0.0, 0.0, NdotL); // makes shadows fade a bit but seems to also cause issues with no shadows on 90 degree angle surfaces so ill change it from 0.15 to 0 
+    return 1.0 - (shadow * sunAngleFade);
+}
 
 void main() {
     vec3 normal = normalize(vertNormal);
@@ -68,7 +143,10 @@ void main() {
 	}
     
     vec4 phongResult = ambient * kt;
-    
+    float visibility = 1.0f;
+
+    int pointLightCounter = 0;
+
     if (numLights > 0) {
         for(uint i = 0u; i < numLights; i++) {
             vec4 ks = (hasSpec == true) ? (isTiled == true) ? 
@@ -82,6 +160,7 @@ void main() {
             vec3 lightDir;
             
             if (lightType[i] == 0u) {  
+
                 // this is directional
                 lightDir = -lightWorldPos; // when a sky light is passed lightPos[i] becomes lightDir
             } else {  
@@ -109,9 +188,32 @@ void main() {
                 lightContrib = ((diff * kd) + (spec * ks)) * kt * attenuation;
             }
             
-            phongResult += lightContrib;
-            //phongResult += vec4(lightDir * 0.5 + 0.5, 1.0);;
+            
+            float shadow = 1.0;
+
+            if (lightType[i] == 0u) {
+                shadow = ShadowCalculation() / float(MAX_LIGHTS);
+            }
+            if (lightType[i] == 1u && pointLightCounter < MAX_LIGHTS) {
+                shadow = PointShadowCalculation(worldPos, lightWorldPos, pointLightCounter);
+                pointLightCounter++;
+            }
+
+            phongResult += lightContrib * shadow;
+
+
         }
+
+
+//        //SHADOW
+//        vec3 projCoords = vFragPosLightSpace.xyz / vFragPosLightSpace.w * 0.5 + 0.5;
+//        float closestDepth = texture(shadowMap, projCoords.xy).r;
+//        float currentDepth = projCoords.z;
+//        float bias = 0.005;
+//        shadow = (currentDepth - bias > closestDepth) ? 1.0 : 0.0;
     }
-    fragColor = phongResult;
+    
+
+    //shadow = ShadowCalculation();
+    fragColor = vec4(phongResult.rgb, phongResult.a);
 }

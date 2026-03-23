@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Ground"/>
     <TransformComponent>
-        <position x="6.5547581" y="-7.296279" z="0"/>
-        <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="68.835403" y="1" z="20"/>
+        <position x="22.142963" y="14.045823" z="0"/>
+        <rotation w="0.707129" x="0" y="0" z="0.70708454"/>
+        <scale x="68.83448" y="0.99999279" z="20"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -26,6 +26,9 @@
         <halfExtents x="1" y="1" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
+    <ShadowSettings>
+        <castShadow state="0"/>
+    </ShadowSettings>
     <MeshComponent name="SM_Cube"/>
     <MaterialComponent name="M_Sphere"/>
     <ShaderComponent name="S_Multi"/>

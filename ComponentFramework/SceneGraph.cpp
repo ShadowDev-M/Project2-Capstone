@@ -14,6 +14,7 @@
 #include "ColliderDebug.h"
 #include "ScreenManager.h"
 #include "FBOManager.h"
+#include "glm/gtc/type_ptr.hpp"
 void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
 
 	if (!mesh->queryLoadStatus()) {
@@ -361,6 +362,9 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 				}
 			}
 		}
+
+
+		
 	}
 
 	if (XMLObjectFile::hasComponent<ShaderComponent>(name_)) {
@@ -379,7 +383,12 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			Ref<MeshComponent> meshComponent = AssetManager::getInstance().GetAsset<MeshComponent>(meshName);
 			if (meshComponent) {
 				actor_->ReplaceComponent<MeshComponent>(meshComponent);
+
+
+			
 			}
+
+
 		}
 	}
 
@@ -444,6 +453,16 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 		}
 
 
+	}
+
+	if (XMLObjectFile::hasComponent<ShadowSettings>(name_)) {
+		Ref<ShadowSettings> SSC = Ref<ShadowSettings>(std::apply([](auto&&... args) {
+			RECORD return std::make_shared<ShadowSettings>(args...);
+			}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<ShadowSettings>(name_))));
+
+		if (!actor_->GetComponent<ShadowSettings>()) {
+			actor_->AddComponent(SSC);
+		}
 	}
 
 	if (XMLObjectFile::hasComponent<AnimatorComponent>(name_)) {
@@ -611,7 +630,7 @@ void SceneGraph::RemoveAllActors()
 
 	PhysicsSystem::getInstance().ClearActors();
 	CollisionSystem::getInstance().ClearActors();
-
+	lightActors.clear();
 	// call the OnDestroy for each actor 
 	for (auto& pair : Actors) {
 		if (pair.second) {
@@ -760,7 +779,342 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 	return nullptr; // nothing clicked
 }
 
+void SceneGraph::SetUniformShadowPass(Ref<ShaderComponent> shader, Ref<Actor> actor, bool isAnim) const {
 
+	glUseProgram(shader->GetProgram());
+
+
+	if (!isAnim) glUniform1i(shader->GetUniformID("shadowCondition"), 1);
+	else
+	{
+		glUniform1i(shader->GetUniformID("shadowCondition"), 2);
+
+		Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
+
+		double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
+
+		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
+
+		std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
+		animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
+
+
+
+		GLint loc = shader->GetUniformID("bone_transforms[0]");
+		if (loc == -1) {
+			printf("ERROR: bone_transforms uniform not found!\n");
+		}
+		else {
+
+			glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
+				reinterpret_cast<const float*>(finalBoneMatrices.data()));
+		}
+
+	}
+
+
+	glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix());
+
+}
+
+void SceneGraph::ShadowPass() const {
+	
+	int w = ScreenManager::getInstance().getRenderWidth();
+	int h = ScreenManager::getInstance().getRenderHeight();
+	float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
+	FBOData& sceneFBO = FBOManager::getInstance().getFBO(FBO::Scene);
+
+	FBOData& shadowFBO = FBOManager::getInstance().getFBO(FBO::ShadowMap);
+
+	Ref<ShaderComponent> shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Shadow");
+	glUseProgram(shader->GetProgram());
+	//size of the imgui window used for docking
+	Vec2 windowSize = Vec2(InputManager::getInstance().getMouseMap()->dockingSize.x, InputManager::getInstance().getMouseMap()->dockingSize.y);
+
+
+	//pos of top left corner of docking window
+	GLint xPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.x;
+	GLint yPos = (GLint)InputManager::getInstance().getMouseMap()->dockingPos.y;
+
+	GLsizei xSize;
+	GLsizei ySize;
+
+
+
+
+	// Calculate scaled dimensions based on aspect ratio
+	if (windowSize.x / aspectRatio <= windowSize.y)
+	{
+		xSize = (GLsizei)windowSize.x;
+		ySize = (GLsizei)(windowSize.x / aspectRatio);
+	}
+	else
+	{
+		ySize = (GLsizei)windowSize.y;
+		xSize = (GLsizei)(windowSize.y * aspectRatio);
+	}
+
+
+	//Add to the position to move to where the image is centred (non used space in the window would be counted otherwise)
+	ImVec2 imagePos = ImVec2((windowSize.x - xSize) * 0.5f, (windowSize.y - ySize) * 0.5f);
+	xPos += (GLint)imagePos.x;
+	yPos += (GLint)imagePos.y;
+
+	//proper height 
+	GLint glY = h - (yPos + ySize);
+
+
+	//use the picking buffer so it is seperated
+
+	Vec4 clearColour = Vec4(0.5f, 0.5f, 0.1f, 0.0f);
+
+	if (!RENDERMAINSCREEN) {
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).height);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO.fbo);
+		glViewport(0, 0, shadowFBO.width, shadowFBO.height);
+
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+
+		for (const auto& pair : Actors) {
+
+		
+			Ref<MeshComponent> mesh = pair.second->GetComponent<MeshComponent>();
+			
+			if (!mesh || !pair.second->GetComponent<ShadowSettings>() || !pair.second->GetComponent<ShadowSettings>()->getCastShadow()) continue;
+			
+
+
+
+			Ref<Actor> actor = pair.second;
+
+			bool isAnimating = (mesh && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
+				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
+			
+			SetUniformShadowPass(shader, actor, isAnimating);
+
+
+			LightType currentLightType = LightType::Sky;
+			int pointLightCount = 0;
+			int skyLightCount = 0;
+			int totalLightCount = 0;
+			for (auto& light : lightActors) {
+				if (totalLightCount >= 4) break;
+
+				if (light->GetComponent<LightComponent>()->getType() == LightType::Sky) {
+
+
+					//redo the uniforms when change of light type
+					if (currentLightType != LightType::Sky) {
+						shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Shadow");
+						glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO.fbo);
+						glViewport(0, 0, shadowFBO.width, shadowFBO.height);
+
+						SetUniformShadowPass(shader, actor, isAnimating);
+
+					}
+					currentLightType = LightType::Sky;
+
+					ShadowInfo SInfo = CalculateLightSpaceMatrix(light, LightType::Sky);
+					glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, SInfo.SkyMatrix);
+
+
+					pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
+					skyLightCount++;
+
+				}
+				else if(light->GetComponent<LightComponent>()->getType() == LightType::Point && pointLightCount < 4) {
+					
+					//each pointlight gets its own cubemap buffer (you could do it in one but the expensive part isn't the buffer but the content so its easier to do with existing framework)
+					FBO CubeMapFBO;
+
+					switch (pointLightCount) {
+					case 0:
+						CubeMapFBO = FBO::ShadowCubeMap;
+						break;
+					case 1: 
+						CubeMapFBO = FBO::ShadowCubeMap1;
+						break;
+					case 2:
+						CubeMapFBO = FBO::ShadowCubeMap2;
+						break;
+					case 3: 
+						CubeMapFBO = FBO::ShadowCubeMap3;
+						break;
+					default:
+						// shouldn't be called
+						//CubeMapFBO = FBO::ShadowCubeMap3;
+						break;
+
+					}
+
+					//redo the uniforms when change of light type
+						shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_PointShadow");
+
+						glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(CubeMapFBO).texture);
+						glViewport(0, 0, FBOManager::getInstance().getFBO(CubeMapFBO).width, FBOManager::getInstance().getFBO(CubeMapFBO).height);
+						SetUniformShadowPass(shader, actor, isAnimating);
+					//	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+					
+					currentLightType = LightType::Point;
+					
+				
+					ShadowInfo SInfo = CalculateLightSpaceMatrix(light, LightType::Point);
+
+
+
+					Vec3 lightPosition = light->GetModelMatrix() * Vec4(Vec3(0, 0, 0), 1);
+					glUniform3fv(shader->GetUniformID("lightPos"), 1, lightPosition);
+					glUniform1f(shader->GetUniformID("farPlane"), 200);
+
+					glUniformMatrix4fv(shader->GetUniformID("shadowMatrices[0]"), 6, GL_FALSE, reinterpret_cast<const float*>(SInfo.PointMatrices.data()));
+
+					
+					//point lights only need to render the regular data, no special light matrixes needed
+					pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
+
+					pointLightCount++;
+				
+				}
+				
+				totalLightCount++;
+			}
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO.fbo);
+		glViewport(0, 0, w, h);
+		glEnable(GL_DEPTH_TEST);
+		//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glCullFace(GL_BACK);
+	}
+
+
+}
+
+
+
+ShadowInfo SceneGraph::CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightType type) const {
+	Matrix4 lightProjection;
+	Ref<TransformComponent> transform = lightActor->GetComponent<TransformComponent>();
+	ShadowInfo data;
+	if (type == LightType::Sky) {
+
+
+		Vec3 position = lightActor->GetModelMatrix() * Vec4(Vec3(0,0,0),1);
+
+		Quaternion orientation = transform->GetOrientation();
+
+		//Rotation for the 'sun' position in the sky
+		Matrix4 cameraWorldTransform =  MMath::toMatrix4(orientation);
+
+		//Orbit's the view like the sun around the camera (kinda similar to how a skybox works)	
+		Matrix4 lightView = MMath::translate(Vec3(0, 0, -100)) * MMath::inverse(cameraWorldTransform) * MMath::translate(-(usedCamera->GetUserActor()->GetModelMatrix() * Vec4(Vec3(0,0,0), 1)));
+
+			
+		float sceneSize = 60.0f;
+		Matrix4 lightProjection = MMath::orthographic(
+			-sceneSize, sceneSize,
+			-sceneSize, sceneSize,
+			0.0f, 200.0f
+		);
+
+		//needs -z for some reason unless im doing this wrong ¯\_()_/¯
+		Vec3 lightDirFromMatrix = Vec3(lightView[8], lightView[9], -lightView[10]);
+
+		data.SkyMatrix = lightProjection * lightView;
+		data.LightDir = lightDirFromMatrix;
+	}
+	else {
+
+
+		Vec3 position = lightActor->GetModelMatrix() * Vec4(Vec3(0, 0, 0), 1);
+
+		//position = Vec3(-position.x, position.y, -position.z);
+		//position = Vec3(5, 0, 0);
+
+		Matrix4 faceViews[6] = {
+			MMath::lookAt(Vec3(-position.x, position.y, position.z), Vec3(-position.x, position.y, position.z) + Vec3(1,  0,  0), Vec3(0, -1,  0)), // +X
+			MMath::lookAt(Vec3(-position.x, position.y, position.z), Vec3(-position.x, position.y, position.z) + Vec3(-1,  0,  0), Vec3(0, -1,  0)), // -X
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0, -1,  0), Vec3(0,  0, -1)), // +Y 
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0,  1,  0), Vec3(0,  0,  1)), // -Y 
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0,  0,  1), Vec3(0, -1,  0)), // +Z
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0,  0, -1), Vec3(0, -1,  0)), // -Z
+		};
+		lightProjection = MMath::perspective(90.0f, 1.0f, 0.0001f, 200.0f);
+
+		
+
+		data.type = LightType::Point;
+		for (int i = 0; i < 6; i++) {
+			data.PointMatrices.push_back(lightProjection * (faceViews[i]));
+		}
+		/*data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(1.0, 0.0, 0.0), Vec3(0.0, -1.0, 0.0)));
+
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(-1.0, 0.0, 0.0), Vec3(0.0, -1.0, 0.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, -1.0, 0.0), Vec3(0.0, 0.0, 1.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, 1.0, 0.0), Vec3(0.0, 0.0, -1.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, 0.0, 1.0), Vec3(0.0, -1.0, 0.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, 0.0, -1.0), Vec3(0.0, -1.0, 0.0)));*/
+
+
+		/*for (int i = 0; i < 6; ++i) {
+			data.PointMatrices.push_back(lightProjection * MMath::lookAt(position, position + target[i], up[i]));
+		}*/
+	}
+	return data;
+}
 
 void SceneGraph::Render() const
 {
@@ -825,12 +1179,12 @@ void SceneGraph::Render() const
 		if (!lightActors.empty()) {
 			for (auto& light : lightActors) {
 				if (light->GetComponent<LightComponent>()->getType() == LightType::Point) {
-					lightPos.push_back(Vec3(light->GetModelMatrix().getColumn(Matrix4::Colunm::three))); // "Colunm" scott-typo lol
+					lightPos.push_back(Vec3(light->GetModelMatrix() * Vec4(Vec3(0,0,0), 1))); // "Colunm" scott-typo lol
 					lightTypes.push_back(1u);
 				}
 				else {
 
-					lightPos.push_back(light->GetComponent<TransformComponent>()->GetForward());
+					lightPos.push_back(VMath::normalize(light->GetComponent<TransformComponent>()->GetForward()));
 					lightTypes.push_back(0u);
 				}
 				lightSpec.push_back(light->GetComponent<LightComponent>()->getSpec());
@@ -881,6 +1235,22 @@ void SceneGraph::Render() const
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
+	ShadowPass();
+
+	
+
+
+	Ref<Actor> skyLight;
+
+	for (auto& li : lightActors) {
+		if (li->GetComponent<LightComponent>() && li->GetComponent<LightComponent>()->getType() == LightType::Sky) {
+			skyLight = li;
+			break;
+		}
+	}
+
+
+
 	//glDisable(GL_BLEND);
 
 	// go through all actors
@@ -892,6 +1262,7 @@ void SceneGraph::Render() const
 
 		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
 
+	
 		bool isSelected = !debugSelectedAssets.empty() && debugSelectedAssets.find(actor->getId()) != debugSelectedAssets.end();
 
 		bool isAnimating = (mesh && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
@@ -907,6 +1278,7 @@ void SceneGraph::Render() const
 			else {
 				shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Animated");
 			}
+
 		}
 		else if (isSelected) {
 			shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Outline");
@@ -971,6 +1343,48 @@ void SceneGraph::Render() const
 			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
+
+			if (!isSelected) {
+
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, FBOManager::getInstance().getFBO(FBO::ShadowMap).texture);
+				glUniform1i(shader->GetUniformID("shadowMap"), 2);
+				Vec3 camPos = getUsedCamera()->GetUserActorTransform()->GetPosition();
+				glUniform3fv(shader->GetUniformID("cameraPos"), 1, camPos);
+
+				int allowedPointLights = 4;
+
+				if (skyLight) {
+					allowedPointLights--;
+					ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Sky);
+					glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, lightInfo.SkyMatrix);
+					glUniform3fv(shader->GetUniformID("shadowLightDir"), 1, lightInfo.LightDir);
+				}
+
+
+
+				//ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Point);
+				//glUniform3fv(shader->GetUniformID("lightPos[0]"), 1, skyLight->GetModelMatrix() * Vec4(Vec3(), 1));
+
+				std::vector<GLuint> shadowCubemaps = { 
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).texture, 
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap1).texture,
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap2).texture,
+					FBOManager::getInstance().getFBO(FBO::ShadowCubeMap3).texture
+				};
+
+
+
+				for (int i = 0; i < shadowCubemaps.size(); i++) {
+					glActiveTexture(GL_TEXTURE3 + i); // GL_TEXTURE3, 4, 5, 6
+					glBindTexture(GL_TEXTURE_CUBE_MAP, shadowCubemaps[i]);
+				}
+
+				// Upload array of sampler indices to shader
+				int samplerIndices[4] = { 3, 4, 5, 6 };
+				glUniform1iv(shader->GetUniformID("pointShadowMaps[0]"), allowedPointLights, samplerIndices);
+
+			}
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
@@ -1045,6 +1459,9 @@ void SceneGraph::OnDestroy() {
 	//end the mesh loading thread
 	stopMeshLoadingWorker();
 
+	//stop to prevent memory leaks if you close on run
+	Stop();
+	
 	RemoveAllActors();
 	pickerShader->OnDestroy();
 }

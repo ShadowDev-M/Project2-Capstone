@@ -204,7 +204,7 @@ namespace  MATH {
 
 			result[12] = -VMath::dot(side, eye);
 			result[13] = -VMath::dot(up, eye);
-			result[14] = VMath::dot(forward, eye);
+			result[14] = -VMath::dot(forward, eye);
 			result[15] = 1.0;
 
 			return result;

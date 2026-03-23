@@ -10,7 +10,13 @@ ShaderComponent::ShaderComponent(Component* parent_,const char* vertFilename_, c
 	fragFilename(fragFilename_),
 	tessCtrlFilename(tessCtrlFilename_),
 	tessEvalFilename(tessEvalFilename_),
-	geomFilename(geomFilename_) { }
+	geomFilename(geomFilename_) {
+	
+	if (vertFilename == "shaders/ShadowMappingPointVert.glsl") {
+		geomFilename = "shaders/ShadowMappingPointGeom.glsl";
+	}
+
+}
 
 
 ShaderComponent::~ShaderComponent() {}

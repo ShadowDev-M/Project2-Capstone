@@ -10,6 +10,9 @@
         <tileScale x="1" y="1"/>
         <tileOffset x="0" y="0"/>
     </TilingSettings>
+    <ShadowSettings>
+        <castShadow state="0"/>
+    </ShadowSettings>
     <MeshComponent name="SM_Plane"/>
     <MaterialComponent name="steampunkbackgr"/>
     <ShaderComponent name="S_Multi"/>

@@ -2,6 +2,9 @@
 class Skeleton;
 static const int BONE_WEIGHTS_SIZE = 4;  // Each vertex affected by max 4 bones
 
+
+
+
 using namespace MATH;
 struct Vertex { Vec3 pos; Vec3 normal; Vec2 uv; int boneIds[4]; float boneWeights[4]; Vec3 tangents; };
 class MeshComponent : public Component {
