@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0" y="234.60521" z="0"/>
+        <position x="4.74997" y="1.2107415" z="11.1"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="1" y="1" z="1"/>
+        <scale x="0.40000001" y="0.40000001" z="0.40000001"/>
     </TransformComponent>
     <LightComponent>
         <diffuse x="0.5" y="0.5" z="1" w="1"/>
@@ -11,4 +11,10 @@
         <intensity magnitude="9.3999996"/>
         <LightType type="1"/>
     </LightComponent>
+    <ShadowSettings>
+        <castShadow state="0"/>
+    </ShadowSettings>
+    <MeshComponent name="SM_Sphere"/>
+    <MaterialComponent name="M_Sky"/>
+    <ShaderComponent name="S_Multi"/>
 </Actor>

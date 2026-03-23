@@ -14,6 +14,7 @@
 #include "ColliderDebug.h"
 #include "ScreenManager.h"
 #include "FBOManager.h"
+#include "glm/gtc/type_ptr.hpp"
 void SceneGraph::pushMeshToWorker(Ref<MeshComponent> mesh) {
 
 	if (!mesh->queryLoadStatus()) {
@@ -768,7 +769,43 @@ Ref<Actor> SceneGraph::pickColour(int mouseX, int mouseY) {
 	return nullptr; // nothing clicked
 }
 
+void SceneGraph::SetUniformShadowPass(Ref<ShaderComponent> shader, Ref<Actor> actor, bool isAnim) const {
 
+	glUseProgram(shader->GetProgram());
+
+
+	if (!isAnim) glUniform1i(shader->GetUniformID("shadowCondition"), 1);
+	else
+	{
+		glUniform1i(shader->GetUniformID("shadowCondition"), 2);
+
+		Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
+
+		double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
+
+		Ref<MeshComponent> mesh = actor->GetComponent<MeshComponent>();
+
+		std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
+		animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
+
+
+
+		GLint loc = shader->GetUniformID("bone_transforms[0]");
+		if (loc == -1) {
+			printf("ERROR: bone_transforms uniform not found!\n");
+		}
+		else {
+
+			glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
+				reinterpret_cast<const float*>(finalBoneMatrices.data()));
+		}
+
+	}
+
+
+	glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, actor->GetModelMatrix());
+
+}
 
 void SceneGraph::ShadowPass() const {
 	
@@ -822,8 +859,8 @@ void SceneGraph::ShadowPass() const {
 	Vec4 clearColour = Vec4(0.5f, 0.5f, 0.1f, 0.0f);
 
 	if (!RENDERMAINSCREEN) {
-		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO.fbo);
-		glViewport(0, 0, shadowFBO.width, shadowFBO.height);
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).fbo);
+		glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).height);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
@@ -831,9 +868,22 @@ void SceneGraph::ShadowPass() const {
 		glCullFace(GL_BACK); // normal culling, not front
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(3.0f, 6.0f);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO.fbo);
+		glViewport(0, 0, shadowFBO.width, shadowFBO.height);
+
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // normal culling, not front
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(3.0f, 6.0f);
+
+
 		for (const auto& pair : Actors) {
 
-			
+		
 			Ref<MeshComponent> mesh = pair.second->GetComponent<MeshComponent>();
 			
 			if (!mesh || !pair.second->GetComponent<ShadowSettings>() || !pair.second->GetComponent<ShadowSettings>()->getCastShadow()) continue;
@@ -845,44 +895,79 @@ void SceneGraph::ShadowPass() const {
 
 			bool isAnimating = (mesh && actor->GetComponent<AnimatorComponent>() && mesh->skeleton &&
 				actor->GetComponent<AnimatorComponent>()->activeClip.getActiveState());
+			
+			SetUniformShadowPass(shader, actor, isAnimating);
 
 
-			if (!isAnimating) glUniform1i(shader->GetUniformID("shadowCondition"), 1);
-			else 
-			{
-				glUniform1i(shader->GetUniformID("shadowCondition"), 2);
-
-				Ref<AnimatorComponent> animComp = actor->GetComponent<AnimatorComponent>();
-
-				double timeInTicks = animComp->activeClip.getCurrentTimeInFrames();
-
-				std::vector<Matrix4> finalBoneMatrices(mesh->skeleton->bones.size(), Matrix4());
-				animComp->activeClip.animation->calculatePose(timeInTicks, mesh->skeleton.get(), finalBoneMatrices);
-
-
-
-				GLint loc = shader->GetUniformID("bone_transforms[0]");
-				if (loc == -1) {
-					printf("ERROR: bone_transforms uniform not found!\n");
-				}
-				else {
-
-					glUniformMatrix4fv(loc, (GLsizei)finalBoneMatrices.size(), GL_FALSE,
-						reinterpret_cast<const float*>(finalBoneMatrices.data()));
-				}
-
-			}
-
-
-			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, pair.second->GetModelMatrix());
+			LightType currentLightType = LightType::Sky;
 
 			for (auto& light : lightActors) {
-				if (light->GetComponent<LightComponent>()->getType() != LightType::Sky) continue;
 
-				ShadowInfo SInfo = CalculateLightSpaceMatrix(light, LightType::Sky);
-				glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, SInfo.SkyMatrix);
 
-				pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
+
+				if (light->GetComponent<LightComponent>()->getType() == LightType::Sky) {
+
+
+					//redo the uniforms when change of light type
+					if (currentLightType != LightType::Sky) {
+						shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_Shadow");
+						glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO.fbo);
+						glViewport(0, 0, shadowFBO.width, shadowFBO.height);
+
+						SetUniformShadowPass(shader, actor, isAnimating);
+
+					}
+					currentLightType = LightType::Sky;
+
+					ShadowInfo SInfo = CalculateLightSpaceMatrix(light, LightType::Sky);
+					glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, SInfo.SkyMatrix);
+
+
+					pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
+
+				}
+				else if(light->GetComponent<LightComponent>()->getType() == LightType::Point) {
+					
+					//redo the uniforms when change of light type
+					if (currentLightType != LightType::Point) {
+						shader = AssetManager::getInstance().GetAsset<ShaderComponent>("S_PointShadow");
+
+						glBindFramebuffer(GL_FRAMEBUFFER, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).fbo);
+						glViewport(0, 0, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).width, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).height);						
+						SetUniformShadowPass(shader, actor, isAnimating);
+					//	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+					}
+					currentLightType = LightType::Point;
+					
+				
+					ShadowInfo SInfo = CalculateLightSpaceMatrix(light, LightType::Point);
+
+
+
+					Vec3 lightPosition = light->GetModelMatrix() * Vec4(Vec3(0, 0, 0), 1);
+					glUniform3fv(shader->GetUniformID("lightPos"), 1, lightPosition);
+					glUniform1f(shader->GetUniformID("farPlane"), 200);
+
+					//glm::value_ptr(SInfo.PointMatrices[0])
+					glUniformMatrix4fv(shader->GetUniformID("shadowMatrices[0]"), 6, GL_FALSE, reinterpret_cast<const float*>(SInfo.PointMatrices.data()));
+
+					
+					//point lights only need to render the regular data, no special light matrixes needed
+					pair.second->GetComponent<MeshComponent>()->Render(GL_TRIANGLES);
+
+
+					
+
+					/*std::vector<float> pixels(FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).width* FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).height);
+					glBindTexture(GL_TEXTURE_CUBE_MAP, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).texture);
+					glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_DEPTH_COMPONENT, GL_FLOAT, pixels.data());
+					float minVal = *std::min_element(pixels.begin(), pixels.end());
+					float maxVal = *std::max_element(pixels.begin(), pixels.end());
+					printf("Depth range: %f - %f\n", minVal, maxVal);*/
+				}
+				
+
 			}
 		}
 
@@ -895,6 +980,8 @@ void SceneGraph::ShadowPass() const {
 
 
 }
+
+
 
 ShadowInfo SceneGraph::CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightType type) const {
 	Matrix4 lightProjection;
@@ -928,31 +1015,46 @@ ShadowInfo SceneGraph::CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightTyp
 		data.LightDir = lightDirFromMatrix;
 	}
 	else {
-		/*Vec3 target[6] = {
-		Vec3(1.0f, 0.0f, 0.0f),
-		Vec3(-1.0f, 0.0f, 0.0f),
-		Vec3(0.0f, 1.0f, 0.0f),
-		Vec3(0.0f, -1.0f, 0.0f),
-		Vec3(0.0f, 0.0f, 1.0f),
-		Vec3(0.0f, 0.0f, -1.0f) };
-		Vec3 up[6] = {
-			Vec3(0.0f, -1.0f, 0.0f),
-			Vec3(0.0f, -1.0f, 0.0f),
-			Vec3(0.0f, 0.0f, 1.0f),
-			Vec3(0.0f, 0.0f, -1.0f),
-			Vec3(0.0f, -1.0f, 0.0f),
-			Vec3(0.0f, -1.0f, 0.0f) };
-		int w = ScreenManager::getInstance().getRenderWidth();
-		int h = ScreenManager::getInstance().getRenderHeight();
-		float aspectRatio = static_cast<float>(w) / static_cast<float>(h);
 
-		lightProjection = MMath::perspective(90.0f, aspectRatio, near, far);
 
-		Vec3 lightPos = lightActor->GetComponent<TransformComponent>()->GetPosition();
+		Vec3 position = lightActor->GetModelMatrix() * Vec4(Vec3(0, 0, 0), 1);
+
+		//position = Vec3(-position.x, position.y, -position.z);
+		//position = Vec3(5, 0, 0);
+
+		Matrix4 faceViews[6] = {
+			MMath::lookAt(Vec3(-position.x, position.y, position.z), Vec3(-position.x, position.y, position.z) + Vec3(1,  0,  0), Vec3(0, -1,  0)), // +X
+			MMath::lookAt(Vec3(-position.x, position.y, position.z), Vec3(-position.x, position.y, position.z) + Vec3(-1,  0,  0), Vec3(0, -1,  0)), // -X
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0, -1,  0), Vec3(0,  0, -1)), // +Y 
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0,  1,  0), Vec3(0,  0,  1)), // -Y 
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0,  0,  1), Vec3(0, -1,  0)), // +Z
+			MMath::lookAt(Vec3(position.x, position.y, -position.z), Vec3(position.x, position.y, -position.z) + Vec3(0,  0, -1), Vec3(0, -1,  0)), // -Z
+		};
+		lightProjection = MMath::perspective(90.0f, 1.0f, 0.0001f, 200.0f);
+
+		
 
 		data.type = LightType::Point;
-		for (int i = 0; i < 6; ++i) {
-			data.PointMatrices.push_back(lightProjection * MMath::lookAt(lightPos, lightPos + target[i], up[i]));
+		for (int i = 0; i < 6; i++) {
+			data.PointMatrices.push_back(lightProjection * (faceViews[i]));
+		}
+		/*data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(1.0, 0.0, 0.0), Vec3(0.0, -1.0, 0.0)));
+
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(-1.0, 0.0, 0.0), Vec3(0.0, -1.0, 0.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, -1.0, 0.0), Vec3(0.0, 0.0, 1.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, 1.0, 0.0), Vec3(0.0, 0.0, -1.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, 0.0, 1.0), Vec3(0.0, -1.0, 0.0)));
+		data.PointMatrices.push_back(lightProjection *
+			MMath::lookAt(position, position + Vec3(0.0, 0.0, -1.0), Vec3(0.0, -1.0, 0.0)));*/
+
+
+		/*for (int i = 0; i < 6; ++i) {
+			data.PointMatrices.push_back(lightProjection * MMath::lookAt(position, position + target[i], up[i]));
 		}*/
 	}
 	return data;
@@ -1079,6 +1181,9 @@ void SceneGraph::Render() const
 
 	ShadowPass();
 
+	
+
+
 	Ref<Actor> skyLight;
 
 	for (auto& li : lightActors) {
@@ -1181,6 +1286,16 @@ void SceneGraph::Render() const
 				ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Sky);
 				glUniformMatrix4fv(shader->GetUniformID("lightSpaceMatrix"), 1, GL_FALSE, lightInfo.SkyMatrix);
 				glUniform3fv(shader->GetUniformID("shadowLightDir"), 1, lightInfo.LightDir);
+
+				//ShadowInfo lightInfo = CalculateLightSpaceMatrix(skyLight, LightType::Point);
+				//glUniform3fv(shader->GetUniformID("lightPos[0]"), 1, skyLight->GetModelMatrix() * Vec4(Vec3(), 1));
+
+				
+
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_CUBE_MAP, FBOManager::getInstance().getFBO(FBO::ShadowCubeMap).texture);
+
+				glUniform1i(shader->GetUniformID("pointShadowMap"), 3);
 
 			}
 

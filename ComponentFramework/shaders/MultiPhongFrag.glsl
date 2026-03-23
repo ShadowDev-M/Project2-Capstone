@@ -29,11 +29,39 @@ uniform vec2 tileOffset;
 uniform sampler2D shadowMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
+uniform samplerCube pointShadowMap; // one cubemap per point light
 
 layout (location = 0) out vec4 fragColor;
 
 
-uniform vec3 shadowLightDir; // add near top with other uniforms
+uniform vec3 shadowLightDir; 
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);   
+float PointShadowCalculation(vec3 fragPos, vec3 lightWorldPos) {
+   vec3 fragToLight = fragPos - lightWorldPos; 
+   float currentDepth = length(fragToLight);  
+   float viewDistance = length(cameraPos - fragPos);
+float shadow = 0.0;
+float bias   = 0.15;
+int samples  = 20;
+float diskRadius = (1.0 + (viewDistance / 200)) / 25.0;  
+for(int i = 0; i < samples; ++i)
+{
+    float closestDepth = texture(pointShadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+    closestDepth *= 200.0;   // undo mapping [0;1]
+    if(currentDepth - bias > closestDepth)
+        shadow += 1.0;
+}
+shadow /= float(samples);  
+
+    return 1 - shadow;
+}
 
 float ShadowCalculation() {
     vec3 projCoords = vFragPosLightSpace.xyz / vFragPosLightSpace.w;
@@ -52,7 +80,7 @@ float ShadowCalculation() {
     vec3 L = normalize(-shadowLightDir);
     float NdotL = dot(N, L);
 
-    if(NdotL <= 0.0)
+    if(NdotL < 0.0)
         return 0.0;
 
 float bias = mix(0.005, 0.0005, NdotL * NdotL); 
@@ -68,7 +96,7 @@ float shadow = 0.0;
 
     shadow /= 25.0;
 
-    float sunAngleFade = smoothstep(0.0, 0.20, NdotL);
+    float sunAngleFade = smoothstep(0.0, 0.0, NdotL); // makes shadows fade a bit but seems to also cause issues with no shadows on 90 degree angle surfaces 
     return 1.0 - (shadow * sunAngleFade);
 }
 
@@ -100,6 +128,7 @@ void main() {
     
     vec4 phongResult = ambient * kt;
     float shadow = 0.0;  // Default: fully lit
+    float visibility = 1.0f;
 
     if (numLights > 0) {
         for(uint i = 0u; i < numLights; i++) {
@@ -140,6 +169,17 @@ void main() {
             
             phongResult += lightContrib;
             //phongResult += vec4(lightDir * 0.5 + 0.5, 1.0);;
+
+
+            if (lightType[i] == 0u) {
+                visibility *= ShadowCalculation();
+            }
+            if (lightType[i] == 1u) {
+                visibility *= PointShadowCalculation(worldPos, lightWorldPos);
+
+            }
+
+
         }
 
 
@@ -151,8 +191,8 @@ void main() {
 //        shadow = (currentDepth - bias > closestDepth) ? 1.0 : 0.0;
     }
     
+
     //shadow = ShadowCalculation();
-    float visibility = ShadowCalculation();
     vec3 shadowedLighting = phongResult.rgb * visibility;
     fragColor = vec4(shadowedLighting, phongResult.a);
 }

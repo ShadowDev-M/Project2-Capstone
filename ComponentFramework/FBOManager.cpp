@@ -16,7 +16,7 @@ FBOData& FBOManager::CreateFBO(FBO fbo_, int w, int h)
 	return fbos[fbo_];
 }
 
-FBOData& FBOManager::CreateShadowFBO(FBO fbo_, int w, int h)
+FBOData& FBOManager::CreateShadowFBO(FBO fbo_, int w, int h, bool cube)
 {
 	// if the fbo is already in the map, and its already created, call resize just incase
 	if (fbos.count(fbo_) && fbos[fbo_].isCreated) {
@@ -26,7 +26,8 @@ FBOData& FBOManager::CreateShadowFBO(FBO fbo_, int w, int h)
 
 	// otherwise, create the fbo and pass its data
 	FBOData data;
-	createShadowFBO(data, w, h);
+	if (cube) createShadowCubeFBO(data, w, h);
+	else createShadowFBO(data, w, h);
 	fbos[fbo_] = data;
 	return fbos[fbo_];
 }
@@ -159,6 +160,48 @@ void FBOManager::createShadowFBO(FBOData& data, int w, int h)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+void FBOManager::createShadowCubeFBO(FBOData& data, int w, int h)
+{
+	data.width = w;
+	data.height = h;
+
+	glGenFramebuffers(1, &data.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, data.fbo);
+
+	glGenTextures(1, &data.texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, data.texture);
+	for (int face = 0; face < 6; face++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_DEPTH_COMPONENT, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+	float border[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, border);
+
+
+	// Attach as depth, no color buffer needed
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, data.texture, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		data.isCreated = false;
+#ifdef _DEBUG
+		std::cerr << "Shadow framebuffer is not complete!" << std::endl;
+#endif
+	}
+	else {
+		data.isCreated = true;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+}
+
 
 void FBOManager::destroyFBO(FBOData& data)
 {

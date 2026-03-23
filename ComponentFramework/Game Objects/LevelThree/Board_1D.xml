@@ -6,7 +6,7 @@
         <scale x="36" y="36" z="36"/>
     </TransformComponent>
     <ShadowSettings>
-        <castShadow state="1"/>
+        <castShadow state="0"/>
     </ShadowSettings>
     <MeshComponent name="SM_Plane"/>
     <MaterialComponent name="testtex"/>

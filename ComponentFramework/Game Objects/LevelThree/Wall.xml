@@ -27,7 +27,7 @@
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
     <ShadowSettings>
-        <castShadow state="1"/>
+        <castShadow state="0"/>
     </ShadowSettings>
     <MeshComponent name="Crate"/>
     <MaterialComponent name="M_Sphere"/>

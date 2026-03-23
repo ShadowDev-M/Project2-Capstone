@@ -6,15 +6,15 @@
         <Tag value="PortalSurface"/>
     </Tags>
     <Actors>
-        <Mario>
-            <LightP/>
-        </Mario>
+        <Cube_2D/>
         <Board/>
-        <CamTest/>
+        <Mario/>
+        <LightP/>
         <Cube/>
-        <Cube_1D/>
+        <CamTest/>
         <SkyLight/>
         <Board_1D/>
+        <Cube_5D/>
         <PressureSensor>
             <Pressure_Pad/>
         </PressureSensor>
@@ -188,6 +188,9 @@
             <S_Shadow>
                 <Shader frag="shaders/ShadowMappingFrag.glsl" vert="shaders/ShadowMappingVert.glsl"/>
             </S_Shadow>
+            <S_PointShadow>
+                <Shader frag="shaders/ShadowMappingPointFrag.glsl" vert="shaders/ShadowMappingPointVert.glsl"/>
+            </S_PointShadow>
         </ShaderComponent>
     </Components>
 </CellFile>

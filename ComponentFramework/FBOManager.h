@@ -5,7 +5,8 @@ enum class FBO {
 	Scene, // TODO: Change to Edit
 	// Play,
 	ColorPicker,
-	ShadowMap
+	ShadowMap,
+	ShadowCubeMap //for point lights
 	// ShadowMap
 };
 
@@ -31,6 +32,7 @@ private:
 	// private helpers for creating and destroying fbos
 	void createFBO(FBOData& data, int w, int h);
 	void createShadowFBO(FBOData& data, int w, int h);
+	void createShadowCubeFBO(FBOData& data, int w, int h);
 	void destroyFBO(FBOData& data);
 	
 	std::unordered_map<FBO, FBOData> fbos;
@@ -43,7 +45,7 @@ public:
 	}
 
 	FBOData& CreateFBO(FBO fbo_, int w, int h);
-	FBOData& CreateShadowFBO(FBO fbo_, int w, int h);
+	FBOData& CreateShadowFBO(FBO fbo_, int w, int h, bool cube = false);
 	void OnDestroy();
 	void OnResize(FBO fbo_, int w, int h);
 

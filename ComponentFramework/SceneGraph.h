@@ -204,6 +204,8 @@ public:
 	//Colour picking for object selection
 	Ref<Actor> pickColour(int mouseX, int mouseY);
 
+	void SetUniformShadowPass(Ref<ShaderComponent> shader, Ref<Actor> actor, bool isAnim) const;
+
 	void ShadowPass() const;
 
 	ShadowInfo CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightType type) const;

@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="-8.967" y="33.418488" z="0"/>
+        <position x="6.5547581" y="14.045823" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="20" y="0.80000001" z="0.80000001"/>
+        <scale x="68.835403" y="1" z="20"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -13,23 +13,23 @@
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
         <friction value="0.5"/>
-        <restitution value="0"/>
+        <restitution value="0.2"/>
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
-        <CollisionType type="2"/>
+        <CollisionType type="3"/>
         <isTrigger trigger="0"/>
         <radius value="1"/>
         <centre x="0" y="0" z="0"/>
         <centrePosA x="0" y="1" z="0"/>
         <centrePosB x="0" y="-1" z="0"/>
-        <halfExtents x="2.5" y="2.5" z="2.5"/>
+        <halfExtents x="1" y="1" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
     <ShadowSettings>
         <castShadow state="0"/>
     </ShadowSettings>
-    <MeshComponent name="Crate"/>
+    <MeshComponent name="SM_Cube"/>
     <MaterialComponent name="M_Sphere"/>
     <ShaderComponent name="S_Multi"/>
 </Actor>
