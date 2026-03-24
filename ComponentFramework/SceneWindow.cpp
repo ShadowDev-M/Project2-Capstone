@@ -243,7 +243,7 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
                 }
                 Ref<Actor> lastActor = sceneGraph->debugSelectedAssets.at(lastID);
 
-                editorCam.FrameTarget(lastActor->GetModelMatrix().getColumn(Matrix4::Colunm(3)));
+                editorCam.FrameTarget(lastActor->GetModelMatrix().getColumn(Matrix4::Colunm::three));
                 //ImGui::SetWindowFocus("Scene");
             }
         }
@@ -314,7 +314,7 @@ void SceneWindow::DrawGizmos(ImVec2 scaledTexture_, ImVec2 imagePos_) {
     ConvertMat4toFloatArray(model, modelmatrix);
 
     // makes sdl capture mouse so using gizmos doesnt get stopped when hitting another window
-    SDL_CaptureMouse(ImGuizmo::IsUsing() ? SDL_TRUE : SDL_FALSE);
+    //SDL_CaptureMouse(ImGuizmo::IsUsing() ? SDL_TRUE : SDL_FALSE);
     
     bool isManipulating = ImGuizmo::Manipulate(viewMatrix, projectionMatrix, currentGizmoOperation, currentGizmoMode, modelmatrix, nullptr, useGizmoSnap ? gizmoSnapValues : nullptr);
     

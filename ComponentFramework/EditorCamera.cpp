@@ -184,8 +184,8 @@ void EditorCamera::HandleFly3D(float deltaTime)
 	if (ImGui::IsKeyDown(ImGuiKey_A)) m_position = m_position - right * speed;
 	if (ImGui::IsKeyDown(ImGuiKey_S)) m_position = m_position - fwd * speed;
 	if (ImGui::IsKeyDown(ImGuiKey_D)) m_position = m_position + right * speed;
-	if (ImGui::IsKeyDown(ImGuiKey_Q)) m_position = m_position - up * speed;
-	if (ImGui::IsKeyDown(ImGuiKey_E)) m_position = m_position + up * speed;
+	if (ImGui::IsKeyDown(ImGuiKey_Q)) m_position = m_position + up * speed;
+	if (ImGui::IsKeyDown(ImGuiKey_E)) m_position = m_position - up * speed;
 }
 
 Matrix4 EditorCamera::GetProjectionMatrix() const {
