@@ -20,7 +20,7 @@ function Update(deltaTime)
 
 	local tPos = Transform.WorldPosition
 
-	tPos.z = cam.Transform.WorldPosition.z
+	tPos.z = 33
 	tPos.y = tPos.y + 5
 
 	cam.Transform.Position = tPos
