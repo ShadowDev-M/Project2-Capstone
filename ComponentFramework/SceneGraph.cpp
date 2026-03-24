@@ -383,7 +383,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 
 				if (XMLObjectFile::hasComponent<TilingSettings>(name_)) {
 					Ref<TilingSettings> TSC = Ref<TilingSettings>(std::apply([](auto&&... args) {
-						return new TilingSettings(args...);
+						return std::make_shared<TilingSettings>(args...);
 						}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TilingSettings>(name_))));
 
 					if (!actor_->GetComponent<TilingSettings>()) {
@@ -1115,6 +1115,7 @@ void SceneGraph::Render() const
 			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
+			glUniform1i(shader->GetUniformID("normalTexture"), 2);
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
@@ -1126,6 +1127,15 @@ void SceneGraph::Render() const
 			else {
 				glUniform1i(shader->GetUniformID("hasSpec"), 0);
 			}
+			if (material->getNormalID() != 0) {
+				glUniform1i(shader->GetUniformID("hasNorm"), 1);
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, material->getNormalID());
+			}
+			else {
+				glUniform1i(shader->GetUniformID("hasNorm"), 0);
+			}
+
 
 			//RENDER
 			mesh->Render(GL_TRIANGLES);

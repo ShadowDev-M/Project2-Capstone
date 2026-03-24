@@ -308,9 +308,9 @@ void MeshComponent::StoreMeshData(GLenum drawmode_) {
 
         offset = 0;
         glEnableVertexAttribArray(0); glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += vertices.size() * sizeof(Vec3);
-        glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += vertices.size() * sizeof(Vec3);
-        glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += vertices.size() * sizeof(Vec2);
-        glEnableVertexAttribArray(5); glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));    //tangents
+        glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += normals.size() * sizeof(Vec3);
+        glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += uvCoords.size() * sizeof(Vec2);
+        glEnableVertexAttribArray(5); glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset)); offset += tangents.size() * sizeof(Vec3); //tangents
 
         glDisableVertexAttribArray(3); glVertexAttribI4i(3, 0, 0, 0, 0);
         glDisableVertexAttribArray(4); glVertexAttrib4f(4, 0, 0, 0, 1);

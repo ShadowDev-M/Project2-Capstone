@@ -9,11 +9,11 @@ uniform vec2 tileScale;
 uniform vec2 tileOffset;
 uniform vec3 cameraPos;
 
-layout (location = 0) in vec3 vertNormal;
-layout (location = 1) in vec2 textureCoords;
-layout (location = 2) in vec3 worldPos;
-layout (location = 3) in vec3 localPos;
-layout (location = 4) in vec3 localNormal;
+layout (location = 0) in mat3 TBN;
+layout (location = 3) in vec2 textureCoords;
+layout (location = 4) in vec3 worldPos;
+layout (location = 5) in vec3 localPos;
+layout (location = 6) in vec3 localNormal;
 
 uniform sampler2D myTexture; 
 
@@ -23,6 +23,8 @@ void main() {
 	vec4 kd = vec4(0.75, 0.6, 0.6, 0.0);
 	vec4 kt;
 	vec4 ka = 0.1 * kd;
+
+	vec3 vertNormal = TBN[2];
 
 	if (isTiled == true) {
         vec3 n = abs(localNormal);

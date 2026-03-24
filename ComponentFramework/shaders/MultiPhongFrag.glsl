@@ -2,11 +2,11 @@
 #extension GL_ARB_separate_shader_objects : enable
 #define MAX_LIGHTS 4
 
-layout (location = 0) in vec3 vertNormal;
-layout (location = 1) in vec2 textureCoords;
-layout (location = 2) in vec3 worldPos;
-layout (location = 3) in vec3 localPos;
-layout (location = 4) in vec3 localNormal;
+layout (location = 0) in mat3 TBN;
+layout (location = 3) in vec2 textureCoords;
+layout (location = 4) in vec3 worldPos;
+layout (location = 5) in vec3 localPos;
+layout (location = 6) in vec3 localNormal;
 
 uniform vec3 cameraPos;
 
@@ -18,6 +18,7 @@ uniform uint lightType[MAX_LIGHTS];
 uniform vec4 ambient;
 uniform uint numLights;
 uniform bool hasSpec;
+uniform bool hasNorm;
 
 uniform bool isTiled;
 uniform vec3 uvTiling;
@@ -26,17 +27,18 @@ uniform vec2 tileOffset;
 
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
+uniform sampler2D normalTexture;
 
 layout (location = 0) out vec4 fragColor;
 
 
 
 void main() {
-    vec3 normal = normalize(vertNormal);
     vec3 viewDir = normalize(cameraPos - worldPos);
     vec4 kt;
     vec2 tiledTextureCoords;
 
+    // Tiling
     if (isTiled == true) {
         vec3 n = abs(localNormal);
         vec2 tiledTex;
@@ -67,10 +69,19 @@ void main() {
 		kt = texture(diffuseTexture, textureCoords); 
 	}
     
+     // normal mapping in "one" line
+    vec3 normal = (hasNorm == true) ? (isTiled == true) ?
+                                        normalize(TBN * (2.0 * texture2D(normalTexture, tiledTextureCoords).xyz - 1)) :
+                                        normalize(TBN * (2.0 * texture2D(normalTexture, textureCoords).xyz - 1)) : 
+                                        normalize(TBN[2]);
+
+    // ambient
     vec4 phongResult = ambient * kt;
     
+    // light calculation
     if (numLights > 0) {
         for(uint i = 0u; i < numLights; i++) {
+            // single line specular map texturing
             vec4 ks = (hasSpec == true) ? (isTiled == true) ? 
                         texture(specularTexture, tiledTextureCoords) * specular[i] : 
                         texture(specularTexture, textureCoords) * specular[i] : 
@@ -114,4 +125,6 @@ void main() {
         }
     }
     fragColor = phongResult;
+    //fragColor = vec4(normal * 0.5 + 0.5, 1.0);
+
 }

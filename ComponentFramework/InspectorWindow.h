@@ -2,6 +2,7 @@
 #include "SceneGraph.h"
 #include "ScriptComponent.h"
 #include "AnimatorComponent.h"
+#include "TilingSettings.h"
 class InspectorWindow
 {
 	// delete the move and copy constructers
@@ -255,6 +256,9 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 				if constexpr (std::is_same_v<ComponentTemplate, MaterialComponent>) {
 					if (pair.second->GetComponent<MaterialComponent>()) {
 						pair.second->RemoveComponent<MaterialComponent>();
+					}
+					if (pair.second->GetComponent<TilingSettings>()) {
+						pair.second->RemoveComponent<TilingSettings>();
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, ShaderComponent>) {
