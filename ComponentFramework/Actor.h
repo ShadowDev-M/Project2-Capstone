@@ -24,7 +24,6 @@ class Actor : public Component {
 	
 	uint32_t id;  // unique per actor
 
-
 protected:
 	std::vector<Ref<Component>> components;
 	Matrix4 modelMatrix;
@@ -59,6 +58,7 @@ public:
 	// getter for the actor name
 	const std::string& getActorName() { return actorName; }
 	void setActorName(const std::string& actorName_) { actorName = actorName_; }
+
 
 	// for actor tag
 	const std::string& getTag() const { return actorTag; }

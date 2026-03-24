@@ -238,12 +238,14 @@ void SceneGraph::SaveFile(std::string name) const {
         if (GetActor(obj.first)->GetComponent<LightComponent>())
             XMLObjectFile::writeUniqueComponent<LightComponent>(obj.first, GetActor(obj.first)->GetComponent<LightComponent>().get());
 
-       
         if (GetActor(obj.first)->GetComponent<AnimatorComponent>())
             XMLObjectFile::writeUniqueComponent<AnimatorComponent>(obj.first, GetActor(obj.first)->GetComponent<AnimatorComponent>().get());
 
         if (GetActor(obj.first)->GetComponent<ShadowSettings>())
             XMLObjectFile::writeUniqueComponent<ShadowSettings>(obj.first, GetActor(obj.first)->GetComponent<ShadowSettings>().get());
+        
+        if (GetActor(obj.first)->GetComponent<TilingSettings>())
+            XMLObjectFile::writeUniqueComponent<TilingSettings>(obj.first, GetActor(obj.first)->GetComponent<TilingSettings>().get());
 
 
         AssetManager& assetMgr = AssetManager::getInstance();
@@ -266,9 +268,7 @@ void SceneGraph::SaveFile(std::string name) const {
             XMLObjectFile::writeReferenceComponent<ShaderComponent>(obj.first, GetActor(obj.first)->GetComponent<ShaderComponent>());
 
         for (auto& script : GetActor(obj.first)->GetAllComponent<ScriptComponent>()) {
-            
             XMLObjectFile::writeReferenceComponent<ScriptComponent>(obj.first, script->getBaseAsset());
-
         }
 
 

@@ -6,10 +6,7 @@ static const int BONE_WEIGHTS_SIZE = 4;  // Each vertex affected by max 4 bones
 
 
 using namespace MATH;
-
-
-
-struct Vertex { Vec3 pos; Vec3 normal; Vec2 uv; int boneIds[4]; float boneWeights[4]; };
+struct Vertex { Vec3 pos; Vec3 normal; Vec2 uv; int boneIds[4]; float boneWeights[4]; Vec3 tangents; };
 class MeshComponent : public Component {
 	friend class AnimatorComponent;
 	friend class SceneGraph;
@@ -27,6 +24,7 @@ private:
 	std::vector<Vec3> vertices;
 	std::vector<Vec3> normals;
 	std::vector<Vec2> uvCoords;
+	std::vector<Vec3> tangents;
 
 	std::vector<int> boneIds;
 	std::vector<float> boneWeights;
@@ -36,6 +34,9 @@ private:
 	void LoadSkeleton(const char* filename); 
 
 	bool fullyLoaded = false;
+
+	///////// TO BE IMPLEMENTED /////////
+	bool renderShadows;
 	
 	size_t dataLength;
 	GLenum drawmode;
@@ -53,7 +54,7 @@ public:
 
 	void storeLoadedModel();
 
-	MeshComponent(Component *parent_,const char* filename_);
+	MeshComponent(Component *parent_,const char* filename_, bool renderShadows_ = true);
 	~MeshComponent();
 	bool OnCreate() override;
 	bool InitializeMesh();

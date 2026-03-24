@@ -2,12 +2,12 @@
 #extension GL_ARB_separate_shader_objects : enable
 #define MAX_LIGHTS 4
 
-layout (location = 0) in vec3 vertNormal;
-layout (location = 1) in vec2 textureCoords;
-layout (location = 2) in vec3 worldPos;
-layout (location = 3) in vec3 localPos;
-layout (location = 4) in vec3 localNormal;
-layout(location = 5) in vec4 vFragPosLightSpace;  
+layout (location = 0) in mat3 TBN;
+layout (location = 3) in vec2 textureCoords;
+layout (location = 4) in vec3 worldPos;
+layout (location = 5) in vec3 localPos;
+layout (location = 6) in vec3 localNormal;
+layout (location = 7) in vec4 vFragPosLightSpace;
 
 uniform vec3 cameraPos;
 uniform vec3 lightPos[MAX_LIGHTS];
@@ -17,7 +17,8 @@ uniform float intensity[MAX_LIGHTS];
 uniform uint lightType[MAX_LIGHTS];
 uniform vec4 ambient;
 uniform uint numLights;
-uniform int hasSpec;
+uniform bool hasSpec;
+uniform bool hasNorm;
 
 
 
@@ -29,6 +30,7 @@ uniform vec2 tileOffset;
 uniform sampler2D shadowMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
+uniform sampler2D normalTexture;
 uniform samplerCube pointShadowMaps[MAX_LIGHTS]; // one cubemap per light
 
 layout (location = 0) out vec4 fragColor;
@@ -107,41 +109,65 @@ float shadow = 0.0;
 }
 
 void main() {
-    vec3 normal = normalize(vertNormal);
     vec3 viewDir = normalize(cameraPos - worldPos);
     vec4 kt;
+    vec2 tiledTextureCoords;
 
-    if (isTiled == true){
+    // Tiling
+    if (isTiled == true) {
         vec3 n = abs(localNormal);
         vec2 tiledTex;
 
-        vec2 finalOffset = tileOffset * tileScale;
+		vec2 correctedScale = -tileScale / 100;
+
+        vec2 finalOffset = tileOffset * correctedScale;
 
         vec3 scaledPos = localPos * uvTiling;
 
         if (n.y > n.x && n.y > n.z)
-            tiledTex = scaledPos.xz * tileScale; // top  
+            tiledTex = scaledPos.xz * correctedScale; // top  
         else if (n.x > n.z)
-            tiledTex = scaledPos.zy * tileScale; // side
+            tiledTex = scaledPos.zy * correctedScale; // side
         else
-            tiledTex = scaledPos.xy * tileScale; // front
+            tiledTex = scaledPos.xy * correctedScale; // front
             
-        kt = texture(diffuseTexture, tiledTex + finalOffset);
-       
-    } else {
-        kt = texture(diffuseTexture, textureCoords);
-    }
+		tiledTextureCoords = tiledTex + finalOffset;
+		if (tiledTextureCoords.x == 0) {
+			tiledTextureCoords.x = textureCoords.x;
+		} 
+		if (tiledTextureCoords.y == 0) {
+			tiledTextureCoords.y = textureCoords.y;
+		}
+
+        kt = texture(diffuseTexture, tiledTextureCoords);
+	} else {
+		kt = texture(diffuseTexture, textureCoords); 
+	}
     
+     // normal mapping in "one" line
+    vec3 normal = (hasNorm == true) ? (isTiled == true) ?
+                                        normalize(TBN * (2.0 * texture2D(normalTexture, tiledTextureCoords).xyz - 1)) :
+                                        normalize(TBN * (2.0 * texture2D(normalTexture, textureCoords).xyz - 1)) : 
+                                        normalize(TBN[2]);
+
+    // ambient
     vec4 phongResult = ambient * kt;
     float visibility = 1.0f;
 
     int pointLightCounter = 0;
 
+    
+    // light calculation
     if (numLights > 0) {
         for(uint i = 0u; i < numLights; i++) {
             if (i >= MAX_LIGHTS) break;
             
-            vec4 ks = (hasSpec == 1) ? texture(specularTexture, textureCoords) * specular[i] : specular[i];
+            // single line specular map texturing
+            vec4 ks = (hasSpec == true) ? (isTiled == true) ? 
+                        texture(specularTexture, tiledTextureCoords) * specular[i] : 
+                        texture(specularTexture, textureCoords) * specular[i] : 
+                        specular[i];
+
             vec4 kd = diffuse[i];
             
             vec3 lightWorldPos = lightPos[i]; 
@@ -200,8 +226,7 @@ void main() {
 //        float bias = 0.005;
 //        shadow = (currentDepth - bias > closestDepth) ? 1.0 : 0.0;
     }
-    
+    fragColor = phongResult;
+    //fragColor = vec4(normal * 0.5 + 0.5, 1.0);
 
-    //shadow = ShadowCalculation();
-    fragColor = vec4(phongResult.rgb, phongResult.a);
 }

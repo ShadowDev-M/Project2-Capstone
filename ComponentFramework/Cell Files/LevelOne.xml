@@ -58,46 +58,46 @@
         </Animation>
         <MaterialComponent>
             <M_Sphere>
-                <Texture diff="textures/Black Chess Base Colour.png" spec=""/>
+                <Texture diff="textures/Black Chess Base Colour.png" spec="" norm=""/>
             </M_Sphere>
             <M_MarioFire>
-                <Texture diff="textures/mario_fire.png" spec=""/>
+                <Texture diff="textures/mario_fire.png" spec="" norm=""/>
             </M_MarioFire>
             <M_Hammer>
-                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png"/>
+                <Texture diff="textures\hammer_BaseColor.png" spec="textures\hammer_specular.png" norm=""/>
             </M_Hammer>
             <M_MarioN>
-                <Texture diff="textures/mario_main.png" spec=""/>
+                <Texture diff="textures/mario_main.png" spec="" norm=""/>
             </M_MarioN>
             <M_Moon>
-                <Texture diff="textures/moon.jpg" spec=""/>
+                <Texture diff="textures/moon.jpg" spec="" norm=""/>
             </M_Moon>
             <M_ChessBoard>
-                <Texture diff="textures/8x8_checkered_board.png" spec=""/>
+                <Texture diff="textures/8x8_checkered_board.png" spec="" norm=""/>
             </M_ChessBoard>
             <M_Skull>
-                <Texture diff="textures/skull_texture.jpg" spec=""/>
+                <Texture diff="textures/skull_texture.jpg" spec="" norm=""/>
             </M_Skull>
             <testtex>
-                <Texture diff="textures/Underwater Box_Negz.png" spec=""/>
+                <Texture diff="textures/Underwater Box_Negz.png" spec="" norm=""/>
             </testtex>
             <M_TestSpec>
-                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png"/>
+                <Texture diff="textures\8x8_checkered_board.png" spec="textures\TestSpecMap.png" norm=""/>
             </M_TestSpec>
             <skeletonTexture>
-                <Texture diff="textures/skeleton_d.png" spec=""/>
+                <Texture diff="textures/skeleton_d.png" spec="" norm=""/>
             </skeletonTexture>
             <gridtexture2>
-                <Texture diff="textures/gridimage.png" spec=""/>
+                <Texture diff="textures/gridimage.png" spec="" norm=""/>
             </gridtexture2>
             <M_Sky>
-                <Texture diff="textures/seamsky.jpg" spec=""/>
+                <Texture diff="textures/seamsky.jpg" spec="" norm=""/>
             </M_Sky>
             <testtex2>
-                <Texture diff="textures/UnderwaterBox_Negx.png" spec=""/>
+                <Texture diff="textures/UnderwaterBox_Negx.png" spec="" norm=""/>
             </testtex2>
             <M_Floor>
-                <Texture diff="textures/terrainDiffuse.png" spec=""/>
+                <Texture diff="textures/terrainDiffuse.png" spec="" norm=""/>
             </M_Floor>
             <steampunkbackgr>
                 <Texture diff="textures/steampunk.png" spec=""/>

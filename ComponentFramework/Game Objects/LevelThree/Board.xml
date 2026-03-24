@@ -8,7 +8,12 @@
     <ShadowSettings>
         <castShadow state="0"/>
     </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
     <MeshComponent name="SM_Plane"/>
-    <MaterialComponent name="steampunkbackgr"/>
+    <MaterialComponent name="M_TestNormal1"/>
     <ShaderComponent name="S_Multi"/>
 </Actor>

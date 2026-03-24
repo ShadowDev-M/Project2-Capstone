@@ -5,6 +5,7 @@
 #include "LightComponent.h"  
 #include "ScriptComponent.h"
 #include "CollisionComponent.h"
+#include "TilingSettings.h"
 #include "SceneGraph.h"
 #include "ShadowSettings.h"
 
@@ -80,7 +81,7 @@ public:
     {
         std::string path = "Cell Files/" + sceneName + ".xml";
         std::vector<std::string> tags;
-        
+
         XMLDocument doc;
         if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return tags;
 
@@ -154,10 +155,10 @@ public:
         XMLElement* actorList = cRoot->FirstChildElement("Actors");
         //XMLElement* newElementList = actorList->NextSiblingElement("Test");
 
-        
+
         //Loop through each element and add it 
 
-        
+
         runCreateActorsOfElementChildren(sceneGraph, actorList);
 
         return 1;
@@ -265,6 +266,7 @@ public:
 
                             if (componentRef->getDiffuseName()) componentObjElement->SetAttribute("diff", componentRef->getDiffuseName());
                             if (componentRef->getSpecularName()) componentObjElement->SetAttribute("spec", componentRef->getSpecularName());
+                            if (componentRef->getNormalName()) componentObjElement->SetAttribute("norm", componentRef->getNormalName());
 
                         }
                         else {
@@ -322,7 +324,7 @@ public:
 
                     }
 
-                    
+
 
 
                 };
@@ -403,7 +405,7 @@ public:
         //return shouldn't matter as its already attached.
         writeActorRecursive(actor_.get(), actorList);
 
- 
+
 
         //string value for name as function return cannot be made into a cstr
         std::string nameStr = actor_->getActorName();
@@ -700,7 +702,7 @@ public:
                 specArg,
                 diffArg,
                 intensityArg
-                );
+            );
             return args;
 
         }
@@ -732,22 +734,52 @@ public:
             return args;
 
         }
+        else if constexpr (std::is_same_v<ComponentTemplate, TilingSettings>) {
+            /////// TILE SETTINGS ///////
+
+            XMLElement* isTiled = component->FirstChildElement("isTiled");
+            XMLElement* tilingScale = component->FirstChildElement("tileScale");
+            XMLElement* tilingOffset = component->FirstChildElement("tileOffset");
+
+            bool isTiledArg = GetAttrF(isTiled, "state");
+
+            Vec2 tilingScaleArgs = Vec2(
+                GetAttrF(tilingScale, "x"),
+                GetAttrF(tilingScale, "y")
+            );
+
+
+            Vec2 tilingOffsetArgs = Vec2(
+                GetAttrF(tilingOffset, "x"),
+                GetAttrF(tilingOffset, "y")
+            );
+
+            auto args = std::make_tuple(
+                isTiledArg,
+                tilingScaleArgs,
+                tilingOffsetArgs
+            );
+
+            return args;
+        }
+    }
         else if constexpr (std::is_same_v<ComponentTemplate, ShadowSettings>) {
             /////// TILE SETTINGS ///////
 
-                XMLElement* castShadow = component->FirstChildElement("castShadow");
-               
+            XMLElement* castShadow = component->FirstChildElement("castShadow");
 
-                bool castShadowArg = GetAttrF(castShadow, "state");
 
-              
+            bool castShadowArg = GetAttrF(castShadow, "state");
 
-                auto args = std::make_tuple(
-                    castShadowArg
-                );
 
-                return args;
+
+            auto args = std::make_tuple(
+                castShadowArg
+            );
+
+            return args;
                 }
+}
         else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent> || std::is_same_v<ComponentTemplate, ScriptComponent>) {
 
             AssetManager& assetMgr = AssetManager::getInstance();
@@ -763,7 +795,7 @@ public:
                 else { 
                     
                     return std::string(); 
-                }
+                }                
             }
             //return the asset reference in AssetManager named in element
             std::string assetName = component->FindAttribute("name")->Value();
@@ -852,7 +884,7 @@ public:
         std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
         const char* id = path.c_str();
         XMLDocument doc;
-
+        
         //try loading the file into doc
         XMLError eResult = doc.LoadFile(id);
         if (eResult != XML_SUCCESS) {
@@ -868,7 +900,9 @@ public:
 
         //the basic format for any component
         XMLNode* cRoot = doc.RootElement();
-        std::string componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
+        std::string componentType;
+
+        componentType = static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6);
 
         XMLElement* componentElement = cRoot->FirstChildElement(componentType.c_str());
         if (componentElement) {
@@ -881,10 +915,6 @@ public:
 
         //The element for the new component you are adding
         componentElement = doc.NewElement(componentType.c_str());
-
-
-
-
 
 
         if constexpr (std::is_same_v<ComponentTemplate, TransformComponent>) {
@@ -1065,8 +1095,6 @@ public:
             orientation->SetAttribute("z", ori.ijk.z);
 
             componentElement->InsertEndChild(orientation);
-
-
         }
         else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
             CameraComponent* componentToWrite = dynamic_cast<CameraComponent*>(toWrite);
@@ -1102,10 +1130,6 @@ public:
             Vec4 spec = componentToWrite->getSpec();
             GLfloat intensity = componentToWrite->getIntensity();
             LightType lightType = componentToWrite->getType();
-
-
-
-
 
             //diffuse
             XMLElement* diffElement;
@@ -1157,11 +1181,6 @@ public:
 
             if (componentToWrite->hasAnim()) animName = componentToWrite->getAnimName();
 
-            
-
-
-
-
             //startTime
             XMLElement* startTimeElement;
             startTimeElement = doc.NewElement("startTime");
@@ -1196,6 +1215,10 @@ public:
             componentElement->InsertEndChild(animNameElement);
 
             }
+        // Material Tiling
+        else if constexpr (std::is_same_v<ComponentTemplate, TilingSettings>) {
+            TilingSettings* tilingToWrite = dynamic_cast<TilingSettings*>(toWrite);
+        }
         else if constexpr (std::is_same_v<ComponentTemplate, ShadowSettings>) {
             ShadowSettings* shadowToWrite = dynamic_cast<ShadowSettings*>(toWrite);
 
@@ -1212,13 +1235,40 @@ public:
         }
         else {
 
+            bool isTiled = tilingToWrite->getIsTiled();
+            Vec2 tilingScale = tilingToWrite->getTileScale();
+            Vec2 tilingOffset = tilingToWrite->getTileOffset();
+
+            // isTiled
+            XMLElement* isTiledElement;
+            isTiledElement = doc.NewElement("isTiled");
+            {
+                isTiledElement->SetAttribute("state", (int)isTiled);
+            }
+            componentElement->InsertEndChild(isTiledElement);
+
+            // tileScale
+            XMLElement* tilingScaleElement;
+            tilingScaleElement = doc.NewElement("tileScale");
+            {
+                tilingScaleElement->SetAttribute("x", tilingScale.x);
+                tilingScaleElement->SetAttribute("y", tilingScale.y);
+            }
+            componentElement->InsertEndChild(tilingScaleElement);
+
+            // tileOffset
+            XMLElement* tilingOffsetElement;
+            tilingOffsetElement = doc.NewElement("tileOffset");
+            {
+                tilingOffsetElement->SetAttribute("x", tilingOffset.x);
+                tilingOffsetElement->SetAttribute("y", tilingOffset.y);
+            }
+            componentElement->InsertEndChild(tilingOffsetElement);
+        }
+        else {
+
             std::cout << "ComponentWriteError: " << componentType << " is not a supported component type" << std::endl;
         }
-
-
-
-
-
 
 
         cRoot->InsertEndChild(componentElement);

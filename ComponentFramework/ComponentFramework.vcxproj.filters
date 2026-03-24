@@ -242,6 +242,9 @@
     <ClInclude Include="ShadowSettings.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="TilingSettings.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -396,6 +399,9 @@
     </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
       <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="TilingSettings.cpp">
+      <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

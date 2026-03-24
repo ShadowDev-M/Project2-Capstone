@@ -350,6 +350,16 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			Ref<MaterialComponent> materialComponent = AssetManager::getInstance().GetAsset<MaterialComponent>(materialName);
 			if (materialComponent) {
 				actor_->ReplaceComponent<MaterialComponent>(materialComponent);
+
+				if (XMLObjectFile::hasComponent<TilingSettings>(name_)) {
+					Ref<TilingSettings> TSC = Ref<TilingSettings>(std::apply([](auto&&... args) {
+						return std::make_shared<TilingSettings>(args...);
+						}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TilingSettings>(name_))));
+
+					if (!actor_->GetComponent<TilingSettings>()) {
+						actor_->AddComponent(TSC);
+					}
+				}
 			}
 		}
 
@@ -1291,7 +1301,20 @@ void SceneGraph::Render() const
 			glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 			Matrix4 modelMatrix = actor->GetModelMatrix();
 			glUniformMatrix4fv(shader->GetUniformID("modelMatrix"), 1, GL_FALSE, modelMatrix);
+			
+			//TILING
+			Ref<TilingSettings> TS = actor->GetComponent<TilingSettings>();
+			if (TS) {	
+				Vec3 scale = actor->GetComponent<TransformComponent>()->GetScale();
+				glUniform1i(shader->GetUniformID("isTiled"), TS->getIsTiled());
+				glUniform3fv(shader->GetUniformID("uvTiling"), 1, scale);
 
+				Vec2 tileScale = TS->getTileScale();
+				glUniform2f(shader->GetUniformID("tileScale"), tileScale.x, tileScale.y);
+
+				Vec2 tileOffset = TS->getTileOffset();
+				glUniform2f(shader->GetUniformID("tileOffset"), tileOffset.x, tileOffset.y);
+			}
 
 			//ANIMATION
 			if (isAnimating) {
@@ -1320,6 +1343,7 @@ void SceneGraph::Render() const
 			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
+			glUniform1i(shader->GetUniformID("normalTexture"), 2);
 
 			if (!isSelected) {
 
@@ -1373,6 +1397,15 @@ void SceneGraph::Render() const
 			else {
 				glUniform1i(shader->GetUniformID("hasSpec"), 0);
 			}
+			if (material->getNormalID() != 0) {
+				glUniform1i(shader->GetUniformID("hasNorm"), 1);
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, material->getNormalID());
+			}
+			else {
+				glUniform1i(shader->GetUniformID("hasNorm"), 0);
+			}
+
 
 			//RENDER
 			mesh->Render(GL_TRIANGLES);

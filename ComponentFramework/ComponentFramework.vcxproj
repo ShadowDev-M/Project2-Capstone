@@ -159,6 +159,7 @@
     <ClInclude Include="SettingsConfig.h" />
     <ClInclude Include="ShadowSettings.h" />
     <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="TilingSettings.h" />
     <ClInclude Include="XMLManager.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="include\imguizmo\ImGuizmo.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="ScreenManager.cpp" />
     <ClCompile Include="ScriptAbstract.cpp" />
     <ClCompile Include="ShadowSettings.cpp" />
+    <ClCompile Include="TilingSettings.cpp" />
     <ClCompile Include="XMLManager.cpp" />
     <ClCompile Include="HierarchyWindow.cpp" />
     <ClCompile Include="include\imguizmo\ImGuizmo.cpp">
