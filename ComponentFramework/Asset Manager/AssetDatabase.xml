@@ -27,8 +27,8 @@
         <Asset name="M_Floor" diffuseMap="textures/terrainDiffuse.png" specularMap="" normalMap=""/>
         <Asset name="M_TestNormal" diffuseMap="textures\terrainDiffuse.png" specularMap="textures\Test_Normal.png" normalMap=""/>
         <Asset name="M_TestNormal1" diffuseMap="textures\terrainDiffuse.png" specularMap="" normalMap="textures\Test_Normal.png"/>
-		<Asset name="steampunkbackgr" diffuseMap="textures/steampunk.png" specularMap="" normalMap=""/>
-	</MaterialComponent>
+        <Asset name="steampunkbackgr" diffuseMap="textures/steampunk.png" specularMap="" normalMap=""/>
+    </MaterialComponent>
     <MeshComponent>
         <Asset name="SM_Sphere" filepath="meshes/Sphere.obj"/>
         <Asset name="SM_Cube" filepath="meshes/Cube.obj"/>

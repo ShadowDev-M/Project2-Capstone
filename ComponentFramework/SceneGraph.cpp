@@ -1343,7 +1343,7 @@ void SceneGraph::Render() const
 			//TEXTURE
 			glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 			glUniform1i(shader->GetUniformID("specularTexture"), 1);
-			glUniform1i(shader->GetUniformID("normalTexture"), 2);
+			glUniform1i(shader->GetUniformID("normalTexture"), 7);
 
 			if (!isSelected) {
 
@@ -1399,7 +1399,7 @@ void SceneGraph::Render() const
 			}
 			if (material->getNormalID() != 0) {
 				glUniform1i(shader->GetUniformID("hasNorm"), 1);
-				glActiveTexture(GL_TEXTURE2);
+				glActiveTexture(GL_TEXTURE7);
 				glBindTexture(GL_TEXTURE_2D, material->getNormalID());
 			}
 			else {

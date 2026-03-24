@@ -762,7 +762,6 @@ public:
 
             return args;
         }
-    }
         else if constexpr (std::is_same_v<ComponentTemplate, ShadowSettings>) {
             /////// TILE SETTINGS ///////
 
@@ -778,8 +777,7 @@ public:
             );
 
             return args;
-                }
-}
+        }
         else if constexpr (std::is_same_v<ComponentTemplate, MeshComponent> || std::is_same_v<ComponentTemplate, MaterialComponent> || std::is_same_v<ComponentTemplate, ShaderComponent> || std::is_same_v<ComponentTemplate, ScriptComponent>) {
 
             AssetManager& assetMgr = AssetManager::getInstance();
@@ -1215,10 +1213,6 @@ public:
             componentElement->InsertEndChild(animNameElement);
 
             }
-        // Material Tiling
-        else if constexpr (std::is_same_v<ComponentTemplate, TilingSettings>) {
-            TilingSettings* tilingToWrite = dynamic_cast<TilingSettings*>(toWrite);
-        }
         else if constexpr (std::is_same_v<ComponentTemplate, ShadowSettings>) {
             ShadowSettings* shadowToWrite = dynamic_cast<ShadowSettings*>(toWrite);
 
@@ -1233,8 +1227,10 @@ public:
             componentElement->InsertEndChild(isShadowElement);
 
         }
-        else {
-
+        // Material Tiling
+        else if constexpr (std::is_same_v<ComponentTemplate, TilingSettings>) {
+            TilingSettings* tilingToWrite = dynamic_cast<TilingSettings*>(toWrite);
+        
             bool isTiled = tilingToWrite->getIsTiled();
             Vec2 tilingScale = tilingToWrite->getTileScale();
             Vec2 tilingOffset = tilingToWrite->getTileOffset();

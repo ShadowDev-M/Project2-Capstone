@@ -40,7 +40,7 @@ void main() {
     
     worldPos = (modelMatrix * aPos).xyz;  // Pass world pos to fragment
     
-    vFragPosLightSpace = lightSpaceMatrix * modelMatrix * vVertex;
+    vFragPosLightSpace = lightSpaceMatrix * modelMatrix * aPos;
     
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * aPos;
 }

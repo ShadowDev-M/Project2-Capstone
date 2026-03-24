@@ -83,7 +83,7 @@ float ShadowCalculation() {
     if(vFragPosLightSpace.y < -vFragPosLightSpace.w)
         return 0.0;
 
-    vec3 N = normalize(vertNormal);
+    vec3 N = normalize(TBN[2]);
     vec3 L = normalize(-shadowLightDir);
     float NdotL = dot(N, L);
 
