@@ -30,22 +30,10 @@ void XMLObjectFile::runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XML
             if (actorElement == rootElement) {
                 //If the element is the same as the root therefore ignore the parent as to not conflict with any actors called "Actors" 
                 sceneGraph->LoadActor(itNameCstr);
-
-                //Add Light here after actor is fully loaded 
-                if (sceneGraph->GetActor(itNameCstr)->GetComponent<LightComponent>()) {
-                    sceneGraph->AddLight(sceneGraph->GetActor(itNameCstr));
-
-                }
-
-
             }
             else {
                 //Actor must therefore have parent of actorElement's name
                 sceneGraph->LoadActor(itNameCstr, sceneGraph->GetActor(actorName));
-                if (sceneGraph->GetActor(itNameCstr)->GetComponent<LightComponent>()) {
-                    sceneGraph->AddLight(sceneGraph->GetActor(itNameCstr));
-
-                }
             }
 
             createActorFromElement(sceneGraph, it);

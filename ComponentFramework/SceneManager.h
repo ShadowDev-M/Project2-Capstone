@@ -25,11 +25,13 @@ private:
 		SCENE6
 	};
 
+	void Update(float deltaTime);
+	void Render();
+
 	class Scene* currentScene;
 	class Timer* timer;
 	class Window* window;
 
-	unsigned int fps;
 	bool isRunning;
 	bool fullScreen;
 	bool BuildNewScene(SCENE_NUMBER scene_);

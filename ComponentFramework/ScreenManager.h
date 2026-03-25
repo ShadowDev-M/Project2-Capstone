@@ -39,7 +39,8 @@ public:
 	int getDisplayWidth() const { return cfg.displayWidth; }
 	int getDisplayHeight() const { return cfg.displayHeight; }
 	int getTargetFPS() const { return cfg.targetFPS; }
-	float getAspectRatio() const { return static_cast<float>(cfg.renderWidth) / static_cast<float>(cfg.renderHeight); }
+	float getRenderAspectRatio() const { return static_cast<float>(cfg.renderWidth) / static_cast<float>(cfg.renderHeight); }
+	float getDisplayAspectRatio() const { return static_cast<float>(cfg.displayWidth) / static_cast<float>(cfg.displayHeight); }
 	const SettingsConfig& getConfig() const { return cfg; }
 	SDL_Window* getWindow() const { return window; }
 
@@ -99,4 +100,3 @@ private:
 	std::vector<std::pair<int, ResizeDispatcher>> displayResizeCallbacks;
 	int nextDispatchId = 0;
 };
-

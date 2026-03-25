@@ -304,6 +304,11 @@ void MeshComponent::Render(GLenum drawmode_) const {
 	glBindVertexArray(0); // Unbind the VAO
 }
 
+size_t MeshComponent::getBoneCount() const
+{
+    return skeleton ? skeleton->bones.size() : 0;
+}
+
 void MeshComponent::OnDestroy() {
     glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);

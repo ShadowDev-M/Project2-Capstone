@@ -13,56 +13,26 @@
 #include "MemoryRecorder.h"
 
 #include "ScriptAbstract.h"
-#include <mutex>
-#include <queue>
-
-struct ShadowInfo {
-	LightType type;
-	Matrix4 SkyMatrix;
-	Vec3 LightDir;
-	std::vector<Matrix4> PointMatrices;
-};
 
 class SceneGraph
 {
 	friend class XMLObjectFile;
-
-	//I don't want anything else to really touch the docking FBOs yet, so may as well give SceneWindow access to the private members of SceneGraph
-	friend class SceneWindow;
-private:
-	// main actor map, replaced old name lookup system with new id lookup system (this makes things more optimized and better in the longrun when we expand the engine)
-	// mainly did this because renaming was annoying and this system makes things so easy
-	std::unordered_map<uint32_t, Ref<Actor>> Actors;
-
-	// seconday actor map, this acts as an inbetween the original name key to actor lookup and the new id key 
-	// this way we can still look up actors by name but it'll still be optimized with the actor ids
-	std::unordered_map<std::string, uint32_t> ActorNameToId;
-	
-	// vector that holds all tags (giving some default ones here)
-	// TODO: save tags throughout engine lifetime (closing/opening)
-	std::vector<std::string> allTags = { "Untagged", "Player", "Ground" };
-
-	GLenum drawMode = GL_FILL;
-
-	Ref<ShaderComponent> pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
-
-
-	std::thread workerThread;
-	std::atomic<bool> shouldStop{ false };  // Thread-safe flag
-
-	bool RENDERMAINSCREEN = 0;
- 
-	Ref<Actor> debugCamera;
-
-	Ref<CameraComponent> usedCamera;
-
-	std::vector<Ref<Actor>> lightActors;
 
 	// delete copy and move constructers
 	SceneGraph(const SceneGraph&) = delete;
 	SceneGraph(SceneGraph&&) = delete;
 	SceneGraph& operator = (const SceneGraph&) = delete;
 	SceneGraph& operator = (SceneGraph&&) = delete;
+private:
+	// main actor map, ids and actors
+	std::unordered_map<uint32_t, Ref<Actor>> Actors;
+
+	// seconday actor map, acts as an inbetween the original name key to actor lookup and the new id key 
+	std::unordered_map<std::string, uint32_t> ActorNameToId;
+	
+	// vector that holds all tags (giving some default ones here)
+	// TODO: save tags throughout engine lifetime (closing/opening)
+	std::vector<std::string> allTags = { "Untagged", "MainCamera", "Player", "Ground" };
 
 	// helper function for renaming an actor
 	void UpdateActorNameMap(uint32_t actorID_, const std::string& oldName_, const std::string& newName_) {
@@ -72,95 +42,34 @@ private:
 		ActorNameToId[newName_] = actorID_;
 	}
 
-	std::vector<Ref<Component>> workerQueue;
-	//std::vector<Ref<Component>> finishedQueue;
-
-
-	std::queue<std::function<void()>> mainThreadTasks;
-
-	std::mutex queueMutex;
-
-	std::mutex taskMutex;
-	std::condition_variable taskCV;
-
-	void meshLoadingWorker();
-
-
-	
+	// reference to the maincamera
+	Ref<Actor> m_mainCamera;
 
 public:
-	void processMainThreadTasks();
-
-
-	void moveUsedCameraTo(Ref<Actor> transf);
-
-	void scheduleOnMain(std::function<void()> task);
-
-	bool queryMeshLoadStatus(std::string name);
-
-	void pushMeshToWorker(Ref<MeshComponent> mesh);
-
-	void pushAnimationToWorker(Ref<Animation> animation);
-
-	void stopMeshLoadingWorker();
-
 	// Meyers Singleton (from JPs class)
 	static SceneGraph& getInstance() {
 		static SceneGraph instance;
 		return instance;
 	}
 
-	bool isAllComponentsLoaded() { return (workerQueue.empty()); }
-
 	SceneGraph();
-
 	~SceneGraph();
+	
+	bool OnCreate();
+	void OnDestroy();
+	void Update(const float deltaTime);
 
-	void useDebugCamera();
-
-	// changing this to use actor ids as well
-	// pretty much all of the code stays the same (just instead of getting actor name get id) but some code actually got cut down cause of this which is nice
-	std::unordered_map<uint32_t, Ref<Actor>> debugSelectedAssets;
-
-	mutable std::string cellFileName = "LevelThree";
-
-	void setUsedCamera(Ref<CameraComponent> newCam);
-
-	void startMeshLoadingWorkerThread();
-
-	Ref<CameraComponent> getUsedCamera() const;
-
-	void checkValidCamera();
-
-	void ValidateAllLights();
-
-	bool AddLight(Ref<Actor> actor);
-
-	std::vector<Vec3> GetLightsPos() const;
-
-	bool GetLightExist(Ref<Actor> actor);
-
-	std::vector<Ref<Actor>> GetLightActors() { return lightActors; }
-
-	void RemoveLight(Ref<Actor> actor) {
-		if (GetLightExist(actor)) lightActors.erase(std::find(lightActors.begin(), lightActors.end(), actor));
-	}
-
-	// now uses ID
-	bool AddActor(Ref<Actor> actor);
+	// Camera functions
+	Ref<Actor> GetMainCamera() const;
+	void SetMainCamera(Ref<Actor> actor_);
+	Ref<Actor> GetCameraByName(const std::string& name_) const;
 
 	void Start();
-
 	void Stop();
-
-	// 
-	bool RenameActor(const std::string& oldName_, const std::string& newName_);
-
 	void SaveFile(std::string name) const;
 
-	/// <summary>
-	/// Loads actor from file into scenegraph
-	/// </summary>
+	bool AddActor(Ref<Actor> actor);
+	bool RenameActor(const std::string& oldName_, const std::string& newName_);
 	void LoadActor(const char* name_, Ref<Actor> parent = Ref<Actor>());
 
 	std::vector<std::string>& getAllTags() { return allTags; }
@@ -175,7 +84,7 @@ public:
 		allTags.erase(std::remove(allTags.begin(), allTags.end(), tag), allTags.end());
 	}
 
-	std::unordered_map<uint32_t, Ref<Actor>> getAllActors() { return Actors; }
+	const std::unordered_map<uint32_t, Ref<Actor>> getAllActors() const { return Actors; }
 
 	Ref<Actor>GetActorCStr(const char* actorName) const;
 
@@ -189,37 +98,12 @@ public:
 	std::vector<std::string> GetAllActorNames() const;
 
 	bool RemoveActor(const std::string& actorName);
-
-	// lists all actors name and ID
-	void ListAllActors() const;
-
 	void RemoveAllActors();
-
-	/// <summary>
-	/// The update called to handle physics components
-	/// </summary>
-	/// <param name="deltaTime"></param>
-	void Update(const float deltaTime);
-
-	//Colour picking for object selection
-	Ref<Actor> pickColour(int mouseX, int mouseY);
-
-	void SetUniformShadowPass(Ref<ShaderComponent> shader, Ref<Actor> actor, bool isAnim) const;
-
-	void ShadowPass() const;
-
-	ShadowInfo CalculateLightSpaceMatrix(Ref<Actor> lightActor, LightType type) const;
-
-	// all const
-	void Render() const;
+	
 	void Preload(ScriptComponent* script);
 
+	// map to store selected/colorpicked actors
+	std::unordered_map<uint32_t, Ref<Actor>> debugSelectedAssets;
 
-	bool OnCreate();
-	void OnDestroy();
-
-	void SetDrawMode(GLenum drawMode_) { drawMode = drawMode_; }
-
-	GLenum GetDrawMode() const { return drawMode; }
+	mutable std::string cellFileName = "LevelThree";
 };
-

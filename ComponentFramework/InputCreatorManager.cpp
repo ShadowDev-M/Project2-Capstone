@@ -5,6 +5,12 @@
 
 int InputCreatorManager::getInputState(std::string input)
 {
+#ifdef ENGINE_EDITOR
+    if (!InputManager::getInstance().isGameInputActive()) {
+        return static_cast<int>(InputState::Released);
+    }
+#endif
+    
     InputManager& im = InputManager::getInstance();
 
     SDL_Scancode scancode = SDL_GetScancodeFromName(input.c_str());
@@ -19,6 +25,17 @@ int InputCreatorManager::getInputState(std::string input)
 
 
     return result;
+}
+
+int InputCreatorManager::getMouseButtonState(int button)
+{
+#ifdef ENGINE_EDITOR
+    if (!InputManager::getInstance().isGameInputActive()) {
+        return static_cast<int>(InputState::Released);
+    }
+#endif
+
+    return static_cast<int>(InputManager::getInstance().getMouseMap()->getInputState(button));
 }
 
 

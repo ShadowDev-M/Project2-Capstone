@@ -9,16 +9,13 @@ uniform vec2 tileScale;
 uniform vec2 tileOffset;
 uniform vec3 cameraPos;
 
-layout (location = 0) in mat3 TBN;
-layout (location = 3) in vec2 textureCoords;
-layout (location = 4) in vec3 worldPos;
-layout (location = 5) in vec3 localPos;
-layout (location = 6) in vec3 localNormal;
-layout (location = 7) in vec4 vFragPosLightSpace;
+layout (location = 0) in vec3 vertNormal;
+layout (location = 1) in vec2 textureCoords;
+layout (location = 2) in vec3 worldPos;
+layout (location = 3) in vec3 localPos;
+layout (location = 4) in vec3 localNormal;
 
-
-uniform sampler2D shadowMap;
-uniform sampler2D myTexture; 
+uniform sampler2D diffuseTexture; 
 
 void main() {
     vec3 viewDir = normalize(cameraPos - worldPos);
@@ -27,36 +24,24 @@ void main() {
 	vec4 kt;
 	vec4 ka = 0.1 * kd;
 
-	vec3 vertNormal = TBN[2];
-
 	if (isTiled == true) {
         vec3 n = abs(localNormal);
         vec2 tiledTex;
 
-		vec2 correctedScale = -tileScale / 100;
-
-        vec2 finalOffset = tileOffset * correctedScale;
+        vec2 finalOffset = tileOffset * tileScale;
 
         vec3 scaledPos = localPos * uvTiling;
 
         if (n.y > n.x && n.y > n.z)
-            tiledTex = scaledPos.xz * correctedScale; // top  
+            tiledTex = scaledPos.xz * tileScale; // top  
         else if (n.x > n.z)
-            tiledTex = scaledPos.zy * correctedScale; // side
+            tiledTex = scaledPos.zy * tileScale; // side
         else
-            tiledTex = scaledPos.xy * correctedScale; // front
+            tiledTex = scaledPos.xy * tileScale; // front
             
-		vec2 tiledTextureCoords = tiledTex + finalOffset;
-		if (tiledTextureCoords.x == 0) {
-			tiledTextureCoords.x = textureCoords.x;
-		} 
-		if (tiledTextureCoords.y == 0) {
-			tiledTextureCoords.y = textureCoords.y;
-		}
-
-        kt = texture(myTexture, tiledTextureCoords);
+        kt = texture(diffuseTexture, tiledTex + finalOffset);
 	} else {
-		kt = texture(myTexture, textureCoords); 
+		kt = texture(diffuseTexture, textureCoords); 
 	}
 
 	vec3 lightWorldDir = normalize(viewDir);
@@ -75,6 +60,5 @@ void main() {
 	vec4 outlineColor = vec4(1.0, 1.0, 3.0, 0.0); // white
 
 	vec4 litColor = (ka + (diff * kd) + (spec * ks)) * kt;
-
 	fragColor = mix(outlineColor, litColor, outlineFactor);
 }

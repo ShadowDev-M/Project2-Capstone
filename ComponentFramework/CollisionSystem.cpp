@@ -5,6 +5,7 @@
 #include "SceneGraph.h"
 #include "InputManager.h"
 #include "PhysicsSystem.h"
+#include "ScreenManager.h"
 using namespace GEOMETRY;
 
 void CollisionSystem::AddActor(Ref<Actor> actor_) {
@@ -1851,25 +1852,35 @@ std::vector<RaycastHit> CollisionSystem::RaycastAll(const Vec3& origin, const Ve
 
 RaycastHit CollisionSystem::ScreenRaycast(int mouseX, int mouseY)
 {
+	Ref<Actor> mainCamera = SceneGraph::getInstance().GetMainCamera();
+	if (!mainCamera) return RaycastHit{};
+	Ref<CameraComponent> cam = mainCamera->GetComponent<CameraComponent>();
+	if (!cam) return RaycastHit{};
+
+	// Editor uses GameWindow 
+#ifdef ENGINE_EDITOR
 	auto& im = InputManager::getInstance();
 	auto* mouseMap = im.getMouseMap();
 
-	// scene viewport bounds
-	float vpX = mouseMap->dockingPos.x;
-	float vpY = mouseMap->dockingPos.y;
-	float vpW = mouseMap->dockingSize.x;
-	float vpH = mouseMap->dockingSize.y;
+	// game viewport bounds
+	float vpX = mouseMap->gamePos.x;
+	float vpY = mouseMap->gamePos.y;
+	float vpW = mouseMap->gameSize.x;
+	float vpH = mouseMap->gameSize.y;
 	
 	// if mouse is out of bounds
 	if (mouseX < vpX || mouseX > vpX + vpW || mouseY < vpY || mouseY > vpY + vpH) {
 		return RaycastHit{};
 	}
+#else
+	float vpX = 0.0f, vpY = 0.0f;
+	float vpW = (float)ScreenManager::getInstance().getDisplayWidth();
+	float vpH = (float)ScreenManager::getInstance().getDisplayHeight();
+#endif
 
 	// world space converisons
 	float ndcX = ((mouseX - vpX) / vpW) * 2.0f - 1.0f;
 	float ndcY = (1.0f - (mouseY - vpY) / vpH) * 2.0f - 1.0f;
-
-	Ref<CameraComponent> cam = SceneGraph::getInstance().getUsedCamera();
 
 	Matrix4 invProj = MMath::inverse(cam->GetProjectionMatrix());
 	Matrix4 invView = MMath::inverse(cam->GetViewMatrix());

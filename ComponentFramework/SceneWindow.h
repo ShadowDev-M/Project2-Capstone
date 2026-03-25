@@ -16,6 +16,8 @@ private:
 	bool useGizmoSnap = false;
 	float gizmoSnapValues[3] = { 1.0f, 1.0f, 1.0f };
 
+	bool showDebugGizmos = true;
+
 	void DrawGizmos(ImVec2 scaledTexture_, ImVec2 imagePos_);
 
 	void ConvertMat4toFloatArray(const Matrix4& matrix_, float* array_);
@@ -33,5 +35,3 @@ public:
 
 	void ShowSceneWindow(bool* pOpen);
 };
-
-

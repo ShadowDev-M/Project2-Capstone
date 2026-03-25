@@ -11,7 +11,6 @@ class Actor : public Component {
 	//However, code should be written in a way to avoid lua scripts having this access.
 	friend class ScriptService;
 
-
 	Actor(const Actor&) = delete;
 	Actor(Actor&&) = delete;
 	Actor& operator= (const Actor&) = delete;
@@ -33,7 +32,6 @@ protected:
 	Vec3 selectionColour = Vec3(0.5f,0.5f,0.5f);
 public:
 
-
 	uint32_t getId() const { return id; }
 
 	//For colour picker 
@@ -52,8 +50,12 @@ public:
 
 	// constructer for setting the parent and the name of an actor (name is const because it doesn't need to be changed when its set)
 	Actor(Component* parent_, const std::string& actorName_);
-
-
+	
+	~Actor();
+	virtual bool OnCreate() override;
+	virtual void OnDestroy() override;
+	virtual void Update(const float deltaTime) override;
+	virtual void Render() const override;
 
 	// getter for the actor name
 	const std::string& getActorName() { return actorName; }
@@ -65,13 +67,6 @@ public:
 	void setTag(const std::string& tag) { actorTag = tag; }
 	bool compareTag(const std::string& tag) const { return actorTag == tag; }
 
-
-	~Actor();
-	virtual bool OnCreate() override;
-	virtual void OnDestroy() override;
-	virtual void Update(const float deltaTime) override;
-	virtual void Render() const override;
-
 	Vec3 getSelectionColour() { return selectionColour; }
 
 	template<typename ComponentTemplate>
@@ -82,16 +77,6 @@ public:
 #endif
 			return;
 		}
-
-		if (typeid(ComponentTemplate).name() == "LightComponent" && typeid(ComponentTemplate).name() == "TransformComponent") {
-			if (ValidateLight()) {
-				InitalizeLight();
-			}
-		}
-
-
-
-
 
 		components.push_back(component_);
 	}
@@ -107,16 +92,8 @@ public:
 			return;
 		} 
 
-
 		/// Finish building the component and add the component to the list 
 		components.push_back(std::make_shared<ComponentTemplate>(std::forward<Args>(args_)...));
-		
-
-		if (typeid(ComponentTemplate).name() == "LightComponent" && typeid(ComponentTemplate).name() == "TransformComponent") {
-			if (ValidateLight()) {
-				InitalizeLight();
-			}
-		}
 	}
 
 	template<typename ComponentTemplate>
@@ -160,29 +137,13 @@ public:
 
 	}
 
-	bool ValidateLight();
-
-	bool InitalizeLight();
-
-	bool DeinitalizeLight();
-
-
 	template<typename ComponentTemplate>
 	void DeleteComponent(int copy = 0);
 
-
-	
 	// Removes the component from the actor
 	// DOES NOT CALL OnDestroy, USE THIS FUNCTION FOR SHARED COMPONENTS, USE DeleteComponent FOR EVERYTHING ELSE
 	template<typename ComponentTemplate>
 	void RemoveComponent() {
-
-		if (typeid(ComponentTemplate).name() == "LightComponent") {
-			if (ValidateLight()) {
-				DeinitalizeLight();
-			}
-		}
-
 		/// check if the component exists
 		if (GetComponent<ComponentTemplate>().get() == nullptr) {
 #ifdef _DEBUG
@@ -190,8 +151,6 @@ public:
 #endif
 			return;
 		}
-
-
 
 		auto it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
 		if (it != components.end()) {
@@ -207,35 +166,26 @@ public:
 				component = newComponent;
 				if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MeshComponent") {
 
-					pushToSceneGraphWorker(newComponent);
+					PushToAnimationSystem(newComponent);
 				}
 				return;
 			}
 		}
 		if (static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) == "MeshComponent") {
 
-			pushToSceneGraphWorker(newComponent);
+			PushToAnimationSystem(newComponent);
 		}
 		// if the component that is trying to be replaced doesn't exist, add it instead
 		AddComponent(newComponent);
 	}
 
-	void pushToSceneGraphWorker(Ref<Component> component);
+	void PushToAnimationSystem(Ref<Component> component);
 
 	void ListComponents() const;
 	void RemoveAllComponents();
 
 	//
-	Matrix4 GetModelMatrix(Ref<Component> camera = nullptr);
-
-	Vec3 GetPositionFromHierarchy(Ref<Component> camera = nullptr);
-	
-	/// <summary>
-	/// Determines whether a ray intersects with the mesh of the actor
-	/// </summary>
-	/// <param name="intersectSpot">Pointer to Vec3 value to be set to the triangle position the ray intersects with, if it does. </param>
-	bool GetIntersectTriangles(Vec3 start, Vec3 dir, Vec3* intersectSpot = nullptr);
-
+	Matrix4 GetModelMatrix();
 
 	// function to get the parent of an actor
 	Actor* getParentActor() const {
@@ -262,12 +212,9 @@ public:
 };
 
 // Added this function previously but realized since the components are shared if I remove a component and several actors share that component it just deletes the component, 
-	// However this function can still be used later on when components are created in the scene and need to be deleted
+// However this function can still be used later on when components are created in the scene and need to be deleted
 template<typename ComponentTemplate>
 void Actor::DeleteComponent( int copy) {
-	if (typeid(ComponentTemplate).name() == "LightComponent") {
-		DeinitalizeLight();
-	}
 	/// check if the component exists
 	if (GetComponent<ComponentTemplate>().get() == nullptr) {
 #ifdef _DEBUG
@@ -276,7 +223,6 @@ void Actor::DeleteComponent( int copy) {
 		return;
 	}
 	/// Finish building the component and add the component to the list 
-
 
 	if (GetComponent<ComponentTemplate>()) {
 		std::vector<Ref<Component>>::iterator it = std::find(components.begin(), components.end(), GetComponent<ComponentTemplate>());
@@ -294,9 +240,6 @@ void Actor::DeleteComponent( int copy) {
 			it = std::find(components.begin(), components.end(), componentsCopy.at(copy));
 
 		}
-		
-		
-		
 
 		if (it != components.end()) {
 			it.operator*()->OnDestroy();
@@ -305,7 +248,4 @@ void Actor::DeleteComponent( int copy) {
 			//it->reset();
 		}
 	}
-
-	
-
 }

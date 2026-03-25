@@ -3,6 +3,7 @@
 #include "EditorManager.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
+#include "LightingSystem.h"
 
 HierarchyWindow::HierarchyWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
 	EditorManager::getInstance().RegisterWindow("Hierarchy", true);
@@ -29,6 +30,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 					for (const auto& actorName : allActorNames) {
 						Ref<Actor> actor = sceneGraph->GetActor(actorName);
 						sceneGraph->debugSelectedAssets.emplace(actor->getId(), actor);
+						EditorManager::getInstance().SetLastSelected(actor->getId());
 					}
 				}
 
@@ -168,11 +170,12 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 
 	// draw node if it is selected and/or in filter
 	if (!showSelection || !showFilter) {
+		ImGui::PopStyleColor();
 		return;
 	}
 
 	// default flags for the the tree nodes
-	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | 
+	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | //ImGuiTreeNodeFlags_OpenOnDoubleClick | 
 								   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_NavLeftJumpsToParent;
 
 	if (isSelected) {
@@ -201,6 +204,12 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 		}
 		else {
 			sceneGraph->debugSelectedAssets.emplace(actor_->getId(), actor_);
+			EditorManager::getInstance().SetLastSelected(actor_->getId());
+		}
+
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+			Matrix4 modelMatrix = actor_->GetModelMatrix();
+			EditorManager::getInstance().getEditorCamera().FrameTarget(modelMatrix.getColumn(Matrix4::Colunm(3)));
 		}
 	}
 
@@ -212,15 +221,8 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 			DuplicateActor(actor_);
 		}
 		ImGui::Separator();
-		if (ImGui::MenuItem("Move Camera To")) {
-			sceneGraph->moveUsedCameraTo(actor_);
-		}
-		ImGui::Separator();
 		if (ImGui::MenuItem("Delete")) {
-			sceneGraph->RemoveLight(sceneGraph->GetActor(actorName_));
 			sceneGraph->RemoveActor(actorName_);
-			sceneGraph->checkValidCamera();
-
 		}
 		ImGui::EndPopup();
 	}
@@ -240,11 +242,6 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 
 void HierarchyWindow::UpdateHierarchyGraph()
 {
-
-	//std::unordered_map<std::string, Ref<Actor>> rootActors;
-
-	
-
 	// store all actors names in the scene 
 	std::vector<std::string> allActorNames = sceneGraph->GetAllActorNames();
 
@@ -281,13 +278,11 @@ void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 		parentActor->OnCreate();
 		sceneGraph->AddActor(parentActor);
 
-
-
 		if (hierarchyGraph[original_->getActorName()].children.size() != 0) {
 			for (const auto& child : hierarchyGraph[original_->getActorName()].children) {
 				newName = GenerateDuplicateName(child.first);
 				
-				Ref<Actor> childActor = DeepCopyActor(newName, hierarchyGraph[original_->getActorName()].nodeActor);
+				Ref<Actor> childActor = DeepCopyActor(newName, child.second.nodeActor);
 				childActor->setParentActor(parentActor.get());
 				childActor->OnCreate();
 				sceneGraph->AddActor(childActor);
@@ -330,12 +325,12 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 	}
 
 	if (auto camera = original_->GetComponent<CameraComponent>()) {
-		RECORD copy->AddComponent<CameraComponent>(copy, camera->getFOV(), camera->getAspectRatio(), camera->getNearClipPlane(), camera->getFarClipPlane());
+		RECORD copy->AddComponent<CameraComponent>(copy.get(), camera->getType(), camera->getFOV(), camera->getNearClipPlane(), camera->getFarClipPlane(), camera->getOrthoSize());
 	}
 
 	if (auto light = original_->GetComponent<LightComponent>()) {
 		RECORD copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
-		sceneGraph->AddLight(copy);
+		LightingSystem::getInstance().AddActor(copy);
 	}
 
 	if (auto physics = original_->GetComponent<PhysicsComponent>()) {

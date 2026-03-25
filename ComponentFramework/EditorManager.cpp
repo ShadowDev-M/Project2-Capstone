@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "EditorManager.h"
 #include "ScreenManager.h"
+#include "AnimationSystem.h"
+#include "InputManager.h"
 
 void EditorManager::CreateEditorIcons()
 {
@@ -45,16 +47,15 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 		inspectorWindow = std::make_unique<InspectorWindow>(sceneGraph);
 		assetManagerWindow = std::make_unique<AssetManagerWindow>(sceneGraph);
 		sceneWindow = std::make_unique<SceneWindow>(sceneGraph);
+		gameWindow = std::make_unique<GameWindow>();
 		memoryWindow = std::make_unique<MemoryManagerWindow>(sceneGraph);
 
 
 		CreateEditorIcons();
 	}
 
-	// register default windows (leaving demo window commented out for now)
-	//RegisterWindow("Demo", false);
-
 	imguiInit = true;
+	pendingFocusWindow = "Scene";
 	Debug::Info("EditorManager succesfully initalized", __FILE__, __LINE__);
 	return true;
 }
@@ -69,6 +70,7 @@ void EditorManager::Shutdown() {
 	inspectorWindow.reset();
 	assetManagerWindow.reset();
 	sceneWindow.reset();
+	gameWindow.reset();
 	memoryWindow.reset();
 	windowStates.clear();
 
@@ -143,6 +145,9 @@ void EditorManager::RenderEditorUI() {
 	if (IsWindowOpen("AssetManager") && assetManagerWindow) {
 		assetManagerWindow->ShowAssetManagerWindow(GetWindowStatePtr("AssetManager"));
 	}
+	if (IsWindowOpen("Game") && gameWindow) {
+		gameWindow->ShowGameWindow(GetWindowStatePtr("Game"));
+	}
 	if (IsWindowOpen("Scene") && sceneWindow) {
 		sceneWindow->ShowSceneWindow(GetWindowStatePtr("Scene"));
 	}
@@ -150,15 +155,98 @@ void EditorManager::RenderEditorUI() {
 		memoryWindow->ShowMemoryManagerWindow(GetWindowStatePtr("Memory"));
 	}
 
-	if (pendingFocusScene) {
-		ImGui::SetWindowFocus("Scene");
-		pendingFocusScene = false;
+	if (!pendingFocusWindow.empty()) {
+		ImGui::SetWindowFocus(pendingFocusWindow.c_str());
+		pendingFocusWindow.clear();
 	}
 
 	// Render
 	ImGui::Render();
 	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void EditorManager::SaveScene(const std::string& name)
+{
+	std::string saveName = name.empty() ? sceneGraph->cellFileName : name;
+	if (saveName.empty()) {
+		saveLoadDialog.showSaveDialog = true;
+		return;
+	}
+
+	sceneGraph->cellFileName = saveName;
+	std::filesystem::create_directory("Game Objects/" + saveName);
+	sceneGraph->SaveFile(saveName);
+	AssetManager::getInstance().SaveAssetDatabaseXML();
+	ScreenManager::getInstance().setWindowTitle(saveName);
+	Debug::Info("Saved Scene: " + saveName, __FILE__, __LINE__);
+
+}
+
+void EditorManager::LoadScene(const std::string& name)
+{
+	std::string loadName = name.empty() ? sceneGraph->cellFileName : name;
+	if (loadName.empty()) {
+		saveLoadDialog.showLoadDialog = true;
+		return;
+	}
+
+	sceneGraph->RemoveAllActors();
+	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(loadName);
+	for (const auto& tag : sceneTags) sceneGraph->addTag(tag);
+	
+	//set active memory to stale for later comparison
+	MemoryStale();
+
+	XMLObjectFile::addActorsFromFile(sceneGraph, loadName);
+	sceneGraph->cellFileName = loadName;
+	ScreenManager::getInstance().setWindowTitle(loadName);
+	sceneGraph->OnCreate();
+	Debug::Info("Loaded file: " + sceneGraph->cellFileName, __FILE__, __LINE__);
+}
+
+void EditorManager::Play()
+{
+	if (!AnimationSystem::getInstance().isAllComponentsLoaded()) return;
+
+	SetEditorMode(EditorMode::Play);
+	InputManager::getInstance().setGameInputActive(true);
+
+	// on play, save data to a temporary save file
+	//std::filesystem::create_directory("Game Objects/" + tempSaveFile);
+	//sceneGraph->SaveFile(tempSaveFile);
+
+	sceneGraph->Start();
+	pendingFocusWindow = "Game";
+}
+
+void EditorManager::Stop()
+{
+	SetEditorMode(EditorMode::Edit);
+	InputManager::getInstance().setGameInputActive(false);
+	sceneGraph->Stop();
+
+	std::string cellFile = sceneGraph->cellFileName;
+	sceneGraph->RemoveAllActors();
+
+	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(cellFile);
+	for (const auto& tag : sceneTags) sceneGraph->addTag(tag);
+
+	// removing temporary save file data
+	//std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
+	//std::filesystem::remove_all("Game Objects/" + tempSaveFile);
+	
+	//Make the memory stale so we can see if its potentially a leak
+	MemoryStale();
+
+	XMLObjectFile::addActorsFromFile(sceneGraph, cellFile);
+	sceneGraph->OnCreate();
+
+	pendingFocusWindow = "Scene";
+}
+
+void EditorManager::Pause()
+{
 }
 
 void EditorManager::RenderEditorToolbar()
@@ -171,50 +259,31 @@ void EditorManager::RenderEditorToolbar()
 
 	ImGui::SetCursorPosX(centreButtonPos);
 
+	bool isLoading = !AnimationSystem::getInstance().isAllComponentsLoaded();
+
 	if (isEditMode()) {
+		if (isLoading) ImGui::BeginDisabled();
+
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.314f, 0.314f, 0.314f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.467f, 0.467f, 0.467f, 1.0f));
 		
 		if (ImGui::ImageButton("##PlayButton", ImTextureID(editorIcons.playIcon->getDiffuseID()), buttonSize)) {
-			if (SceneGraph::getInstance().isAllComponentsLoaded()) {
-				SetEditorMode(EditorMode::Play);
-
-				// on play, save data to a temporary save file
-				//std::filesystem::create_directory("Game Objects/" + tempSaveFile);
-				//sceneGraph->SaveFile(tempSaveFile);
-
-				sceneGraph->Start();
-				pendingFocusScene = true;
-			}
+			Play();
 		}
 
 		ImGui::PopStyleColor(3);
+
+		if (isLoading) {
+			ImGui::EndDisabled();
+		}
 	}
 	else if (isPlayMode() || isPaused()) {
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.298f, 0.373f, 0.471f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.357f, 0.447f, 0.569f, 1.0f));
 		if (ImGui::ImageButton("##StopButton", ImTextureID(editorIcons.stopIcon->getDiffuseID()), buttonSize)) {
-			SetEditorMode(EditorMode::Edit);
-			sceneGraph->Stop();
-
-			sceneGraph->RemoveAllActors();
-
-			//Make the memory stale so we can see if its potentially a leak
-			MemoryStale();
-
-			XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
-			//XMLObjectFile::addActorsFromFile(sceneGraph, tempSaveFile);
-
-			sceneGraph->setUsedCamera(nullptr);
-			sceneGraph->checkValidCamera();
-			sceneGraph->OnCreate();
-			sceneGraph->useDebugCamera();
-
-			// removing temporary save file data
-			//std::filesystem::remove("Cell Files/" + tempSaveFile + ".xml");
-			//std::filesystem::remove_all("Game Objects/" + tempSaveFile);
+			Stop();
 		}
 
 		ImGui::PopStyleColor(3);
@@ -361,12 +430,7 @@ void EditorManager::ShowSaveDialog() {
 		}
 
 		if (ImGui::Button("Save File") && canSave) {
-			if (sceneGraph) {
-				std::filesystem::create_directory("Game Objects/" + sceneGraph->cellFileName);
-				sceneGraph->SaveFile(sceneGraph->cellFileName);
-				Debug::Info("Saved file: " + sceneGraph->cellFileName, __FILE__, __LINE__);
-			}
-			
+			SaveScene(sceneGraph->cellFileName);
 			//sceneGraph->cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
@@ -414,26 +478,7 @@ void EditorManager::ShowLoadDialog() {
 		}
 
 		if (ImGui::Button("Load File") && canLoad) {
-			if (sceneGraph) {
-				sceneGraph->RemoveAllActors();
-				
-				std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(sceneGraph->cellFileName);
-				for (const auto& tag : sceneTags) {
-					sceneGraph->addTag(tag);
-				}
-
-
-				//set active memory to stale for later comparison
-				MemoryStale();
-
-				XMLObjectFile::addActorsFromFile(sceneGraph, sceneGraph->cellFileName);
-				ScreenManager::getInstance().setWindowTitle(SceneGraph::getInstance().cellFileName);
-				sceneGraph->setUsedCamera(nullptr);
-				sceneGraph->checkValidCamera();
-				sceneGraph->OnCreate();
-				Debug::Info("Loaded file: " + sceneGraph->cellFileName, __FILE__, __LINE__);
-			}
-
+			LoadScene(sceneGraph->cellFileName);
 			//sceneGraph->cellFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
@@ -477,11 +522,11 @@ void EditorManager::RenderMainMenuBar() {
 		}
 
 		if (ImGui::BeginMenu("Window")) {
-			//ImGui::MenuItem("Demo", nullptr, GetWindowStatePtr("Demo"));
 			ImGui::MenuItem("Hierarchy", nullptr, GetWindowStatePtr("Hierarchy"));
 			ImGui::MenuItem("Inspector", nullptr, GetWindowStatePtr("Inspector"));
 			ImGui::MenuItem("Asset Manager", nullptr, GetWindowStatePtr("AssetManager"));
 			ImGui::MenuItem("Scene", nullptr, GetWindowStatePtr("Scene"));
+			ImGui::MenuItem("Game", nullptr, GetWindowStatePtr("Game"));
 			ImGui::MenuItem("Memory Manager", nullptr, GetWindowStatePtr("Memory"));
 
 			ImGui::EndMenu();

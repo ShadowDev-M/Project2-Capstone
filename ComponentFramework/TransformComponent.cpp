@@ -49,15 +49,21 @@ Ref<Actor> TransformComponent::getParent()
 #ifdef _DEBUG
 		Debug::Error("Transform exists with no parent: ", __FILE__, __LINE__);
 #endif
-
-
 	}
 
-	
 	return SceneGraph::getInstance().GetActorById(dynamic_cast<Actor*>(parent)->getId());
 }
 
 Matrix4 TransformComponent::GetTransformMatrix() const {
 	// T * R * S
 	return MMath::translate(pos) * MMath::toMatrix4(orientation) * MMath::scale(scale);
+}
+
+Vec3 TransformComponent::GetWorldPosition() const
+{
+	if (!parent) return pos;
+	Actor* owner = dynamic_cast<Actor*>(parent);
+	if (!owner) return pos;
+	Matrix4 world = owner->GetModelMatrix();
+	return world.getColumn(Matrix4::Colunm::three);
 }

@@ -641,7 +641,11 @@ public:
             XMLElement* fovElement = component->FirstChildElement("fov");
             XMLElement* nearElement = component->FirstChildElement("near");
             XMLElement* farElement = component->FirstChildElement("far");
-            XMLElement* orthographicElement = component->FirstChildElement("orthographic");
+            XMLElement* typeElement = component->FirstChildElement("type");
+            XMLElement* orthoSizeElement = component->FirstChildElement("orthoSize");
+
+            // type (giving default value so it doesnt break everything)
+            ProjectionType typeArg = typeElement ? static_cast<ProjectionType>(typeElement->FindAttribute("value")->IntValue()) : ProjectionType::Perspective;
 
             // fov
             float fovArg = GetAttrF(fovElement, "value");
@@ -652,15 +656,16 @@ public:
             // far
             float farArg = GetAttrF(farElement, "value");
 
-            bool orthographicArg = orthographicElement->FindAttribute("value")->BoolValue();
+            // orthoSize (giving default value so it doesnt break everything)
+            float orthoSizeArg = orthoSizeElement ? GetAttrF(orthoSizeElement, "value") : 5.0f;
 
             //return the tuple to act as arguments
             auto args = std::make_tuple(nullptr,
+                typeArg,
                 fovArg,
-                (16.0f / 9.0f),
                 nearArg,
                 farArg,
-                orthographicArg
+                orthoSizeArg
             );
             return args;
 
@@ -1097,7 +1102,13 @@ public:
         else if constexpr (std::is_same_v<ComponentTemplate, CameraComponent>) {
             CameraComponent* componentToWrite = dynamic_cast<CameraComponent*>(toWrite);
 
-            // radius
+            // projection type
+            XMLElement* typeElement;
+            typeElement = doc.NewElement("type");
+            typeElement->SetAttribute("value", static_cast<int>(componentToWrite->getType()));
+            componentElement->InsertEndChild(typeElement);
+
+            // fov
             XMLElement* fovElement;
             fovElement = doc.NewElement("fov");
             fovElement->SetAttribute("value", componentToWrite->getFOV());
@@ -1115,11 +1126,11 @@ public:
             farElement->SetAttribute("value", componentToWrite->getFarClipPlane());
             componentElement->InsertEndChild(farElement);
 
-            // orthographic
-            XMLElement* orthoElement;
-            orthoElement = doc.NewElement("orthographic");
-            orthoElement->SetAttribute("value", componentToWrite->getIsOrthographic());
-            componentElement->InsertEndChild(orthoElement);
+            // ortho size
+            XMLElement* orthoSizeElement;
+            orthoSizeElement = doc.NewElement("orthoSize");
+            orthoSizeElement->SetAttribute("value", componentToWrite->getOrthoSize());
+            componentElement->InsertEndChild(orthoSizeElement);
         }
         else if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {
             LightComponent* componentToWrite = dynamic_cast<LightComponent*>(toWrite);

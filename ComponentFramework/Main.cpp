@@ -31,6 +31,7 @@ int main(int argc, char* args[]) {
 	delete gsm;
 	ReportLeaks();
 
+	// TODO: fix closing engine
 	while (true) {
 
 	}

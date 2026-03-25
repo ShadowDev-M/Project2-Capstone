@@ -5,6 +5,7 @@
 #include "InputCreatorManager.h"
 #include "InputManager.h"
 #include "CollisionSystem.h"
+#include "ScreenManager.h"
 
 
 
@@ -580,8 +581,8 @@ void ScriptService::loadLibraries()
 		"Position", sol::property(&TransformComponent::GetPosition, TRANSFORM_SETPOSVEC3),
 		"Rotation", sol::property(&TransformComponent::GetOrientation, &TransformComponent::SetOrientation),
 		"Scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale),
+		"WorldPosition", sol::property(&TransformComponent::GetWorldPosition),
 		"GameObject", sol::property(&TransformComponent::getParent)
-
 	);
 
 	(*lua).new_usertype<ScriptComponent>("ScriptComponent",
@@ -611,11 +612,11 @@ void ScriptService::loadLibraries()
 		);
 
 	(*lua).new_usertype<CameraComponent>("Camera",
+		"ProjectionType", sol::property(&CameraComponent::getType, &CameraComponent::setType),
 		"FOV", sol::property(&CameraComponent::getFOV, &CameraComponent::setFOV),
 		"NearClipPlane", sol::property(&CameraComponent::getNearClipPlane, &CameraComponent::setNearClipPlane),
 		"FarClipPlane", sol::property(&CameraComponent::getFarClipPlane, &CameraComponent::setFarClipPlane),
-		"AspectRatio", sol::property(&CameraComponent::getAspectRatio, &CameraComponent::setAspectRatio),
-		"Transform", sol::property(&CameraComponent::GetUserActorTransform)
+		"OrthoSize", sol::property(&CameraComponent::getOrthoSize, &CameraComponent::setOrthoSize)
 	);
 
 	(*lua).new_usertype<AnimationClip>("AnimationClip",
@@ -691,35 +692,30 @@ void ScriptService::loadLibraries()
 		});
 
 	// Mouse functions
-	// getting the inputmanager mouse map directly instead of creating something for the inputcreatormanager,
-	// there is only like 3 mouse states we need to get anyways instead of the like 100s on a keyboard
 	tab.set_function("GetMouseButton", [](int button) -> int {
-		InputManager& im = InputManager::getInstance();
-		return static_cast<int>(im.getMouseMap()->getInputState(button));
+		return InputCreatorManager::getMouseButtonState(button);
 		});
 
 	// helper functions for getting if key down, pressed, released
 	tab.set_function("IsMouseButtonDown", [](int button) -> bool {
-		InputManager& im = InputManager::getInstance();
-		InputState s = im.getMouseMap()->getInputState(button);
-		return s == InputState::Pressed || s == InputState::Held;
+		int s = InputCreatorManager::getMouseButtonState(button);
+		return s == (int)InputState::Pressed || s == (int)InputState::Held;
 		});
 
 	tab.set_function("IsMouseButtonPressed", [](int button) -> bool {
-		InputManager& im = InputManager::getInstance();
-		InputState s = im.getMouseMap()->getInputState(button);
-		return s == InputState::Pressed;
+		return InputCreatorManager::getMouseButtonState(button) == (int)InputState::Pressed;
 		});
 
 	tab.set_function("IsMouseButtonReleased", [](int button) -> bool {
-		InputManager& im = InputManager::getInstance();
-		InputState s = im.getMouseMap()->getInputState(button);
-		return s == InputState::Released;
+		return InputCreatorManager::getMouseButtonState(button) == (int)InputState::Released;
 		});
 
 	lua->new_usertype<SceneGraph>("Game",
 		"Find", &SceneGraph::GetActorCStr, //I'd make this a lambda but const char* needs the function to be const which can't be done to lambdas
-		"UsedCamera", sol::property([&]() { return SceneGraph::getInstance().getUsedCamera(); }),
+		"FindCamera", [](SceneGraph&, const std::string& name) { return SceneGraph::getInstance().GetCameraByName(name); },
+		"GetMainCamera", [](SceneGraph&) { return SceneGraph::getInstance().GetMainCamera(); },
+		"UsedCamera", sol::property([](SceneGraph&) { return SceneGraph::getInstance().GetMainCamera(); }),
+		"SetMainCamera", [](SceneGraph&, Ref<Actor> actor) { SceneGraph::getInstance().SetMainCamera(actor); },
 		"Input", tab
 	);
 	
@@ -883,7 +879,18 @@ void ScriptService::loadLibraries()
 			});
 	}
 
-	
+	// ScreenManager tables
+	(*lua)["Screen"] = sol::new_table();
+	{
+		// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Screen.html
+
+		(*lua)["Screen"]["GetRenderWidth"].set_function([]() { return ScreenManager::getInstance().getRenderWidth(); });
+		(*lua)["Screen"]["GetRenderHeight"].set_function([]() { return ScreenManager::getInstance().getRenderHeight(); });
+		(*lua)["Screen"]["GetAspectRatio"].set_function([]() { return ScreenManager::getInstance().getRenderAspectRatio(); });
+		(*lua)["Screen"]["SetResolution"].set_function([](int w, int h) { 
+			return ScreenManager::getInstance().HandleResize(w, h, Source::Script); });
+		
+	}
 
 }
 
