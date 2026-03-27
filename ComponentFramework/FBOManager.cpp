@@ -47,9 +47,14 @@ void FBOManager::OnResize(FBO fbo_, int w, int h)
 	FBOData& data = it->second;
 	if (data.width == w && data.height == h) return;
 
+	bool isShadow = data.isShadow;
+	bool isCubeShadow = data.isCubeShadow;
+
 	// destroy the old fbo and recreate it with the new width and height
 	destroyFBO(data);
-	createFBO(data, w, h);
+	if (isShadow) createShadowFBO(data, w, h);
+	else if (isCubeShadow) createShadowCubeFBO(data, w, h);
+	else createFBO(data, w, h);
 }
 
 bool FBOManager::isCreated(FBO fbo_) const
@@ -155,6 +160,7 @@ void FBOManager::createShadowFBO(FBOData& data, int w, int h)
 	}
 	else {
 		data.isCreated = true;
+		data.isShadow = true;
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -196,6 +202,7 @@ void FBOManager::createShadowCubeFBO(FBOData& data, int w, int h)
 	}
 	else {
 		data.isCreated = true;
+		data.isCubeShadow = true;
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

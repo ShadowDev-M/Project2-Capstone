@@ -136,6 +136,41 @@ public:
         return val ? std::string(val) : "Untagged";
     }
 
+    // instead of putting all the light shadow settings into the oncreate and cluttering it, creating a seperate function that applys it
+    static void applyLightShadowSettings(const std::string& name, Ref<LightComponent> lc) {
+        if (!lc) return;
+
+        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        XMLDocument doc;
+        if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return;
+
+        XMLNode* cRoot = doc.RootElement();
+        if (!cRoot) return;
+
+        XMLElement* componentElement = cRoot->FirstChildElement("LightComponent");
+        if (!componentElement) return;
+
+        // lambda helper to get value, with a fallback incase things break
+        auto getValue = [](XMLElement* el, const char* attr, float fallback = 0.0f) -> float {
+            if (!el) return fallback;
+            const XMLAttribute* a = el->FindAttribute(attr);
+            return a ? a->FloatValue() : fallback;
+            };
+
+        XMLElement* shadowTypeEl = componentElement->FirstChildElement("shadowType");
+        XMLElement* shadowNearEl = componentElement->FirstChildElement("shadowNear");
+        XMLElement* shadowFarEl = componentElement->FirstChildElement("shadowFar");
+        XMLElement* shadowResEl = componentElement->FirstChildElement("shadowResolution");
+        XMLElement* shadowOrthoEl = componentElement->FirstChildElement("shadowOrthoSize");
+
+        // applying the values, providing default to fallback incase lights don't have the new settings
+        if (shadowTypeEl) lc->setShadowType(static_cast<ShadowType>((int)getValue(shadowTypeEl, "type", 0.0f)));
+        if (shadowNearEl) lc->setShadowNear(getValue(shadowNearEl, "value", 0.1f));
+        if (shadowFarEl) lc->setShadowFar(getValue(shadowFarEl, "value", 200.0f));
+        if (shadowResEl) lc->setShadowResolution((int)getValue(shadowResEl, "value", 1024.0f));
+        if (shadowOrthoEl) lc->setShadowOrthoSize(getValue(shadowOrthoEl, "value", 60.0f));
+    }
+
     ///Adds actors from requested cell filename into sceneGraph
     static int addActorsFromFile(SceneGraph* sceneGraph, std::string filename) {
         std::string path = "Cell Files/" + filename + ".xml";
@@ -1178,6 +1213,30 @@ public:
             }
             componentElement->InsertEndChild(typeElement);
 
+            // shadowType
+            XMLElement* shadowTypeElement = doc.NewElement("shadowType");
+            shadowTypeElement->SetAttribute("type", static_cast<int>(componentToWrite->getShadowType()));
+            componentElement->InsertEndChild(shadowTypeElement);
+
+            // shadowNear
+            XMLElement* shadowNearElement = doc.NewElement("shadowNear");
+            shadowNearElement->SetAttribute("value", componentToWrite->getShadowNear());
+            componentElement->InsertEndChild(shadowNearElement);
+
+            // shadowFar
+            XMLElement* shadowFarElement = doc.NewElement("shadowFar");
+            shadowFarElement->SetAttribute("value", componentToWrite->getShadowFar());
+            componentElement->InsertEndChild(shadowFarElement);
+
+            // shadowResolution
+            XMLElement* shadowResElement = doc.NewElement("shadowResolution");
+            shadowResElement->SetAttribute("value", componentToWrite->getShadowResolution());
+            componentElement->InsertEndChild(shadowResElement);
+
+            // shadowOrthoSize
+            XMLElement* shadowOrthoElement = doc.NewElement("shadowOrthoSize");
+            shadowOrthoElement->SetAttribute("value", componentToWrite->getShadowOrthoSize());
+            componentElement->InsertEndChild(shadowOrthoElement);
         }
         else if constexpr (std::is_same_v<ComponentTemplate, AnimatorComponent>) {
             AnimatorComponent* componentToWrite = dynamic_cast<AnimatorComponent*>(toWrite);

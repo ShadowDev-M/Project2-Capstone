@@ -92,6 +92,9 @@ void InspectorWindow::ShowAddComponentPopup(const std::unordered_map<uint32_t, R
 				for (auto& [id, actor] : selected) {
 					if (!actor->GetComponent<MeshComponent>()) {
 						RECORD actor->AddComponent<MeshComponent>(nullptr, "");
+						if (!actor->GetComponent<ShadowSettings>()) {
+							RECORD actor->AddComponent<ShadowSettings>(nullptr, true);
+						}
 					}
 				}
 			}
@@ -102,6 +105,9 @@ void InspectorWindow::ShowAddComponentPopup(const std::unordered_map<uint32_t, R
 				for (auto& [id, actor] : selected) {
 					if (!actor->GetComponent<MaterialComponent>()) {
 						RECORD actor->AddComponent<MaterialComponent>(nullptr, "", "");
+						if (!actor->GetComponent<TilingSettings>()) {
+							RECORD actor->AddComponent<TilingSettings>(nullptr, false);
+						}
 					}
 				}
 			}
@@ -518,10 +524,28 @@ void InspectorWindow::DrawMeshComponent(const std::unordered_map<uint32_t, Ref<A
 
 			ImGui::EndDragDropTarget();
 		}
-
-
-		// alternatively, a drop dowm menu that has a list of all meshes
-
+		
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Cast Shadow");
+		ImGui::SameLine(labelWidth + 20);
+		
+		bool castShadow = false;
+		for (const auto& [id, actor] : selectedActors_) {
+			if (actor->GetComponent<MeshComponent>()) {
+				if (!actor->GetComponent<ShadowSettings>()) {
+					actor->AddComponent<ShadowSettings>(actor.get(), true);
+				}
+				if (!castShadow) {
+					castShadow = actor->GetComponent<ShadowSettings>()->getCastShadow();
+				}
+			}
+		}
+		if (ImGui::Checkbox("##castShadow", &castShadow)) {
+			for (const auto& [id, actor] : selectedActors_) {
+				Ref<ShadowSettings> shadowSettings = actor->GetComponent<ShadowSettings>();
+				if (shadowSettings) shadowSettings->setCastShadow(castShadow);
+			}
+		}
 	}
 
 	ImGui::Separator();
@@ -599,6 +623,59 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 		}
 
 	}
+
+	if (materialState.Count() == 1) {
+		ImGui::Separator();
+
+		for (const auto& [id, actor] : selectedActors_) {
+			if (actor->GetComponent<MaterialComponent>() && !actor->GetComponent<TilingSettings>()) {
+				actor->AddComponent<TilingSettings>(actor.get(), false);
+			}
+		}
+
+		Ref<TilingSettings> tileSettings;
+		for (const auto& [id, actor] : selectedActors_) {
+			tileSettings = actor->GetComponent<TilingSettings>();
+			if (tileSettings) break;
+		}
+
+		if (tileSettings) {
+			bool isTiled = tileSettings->getIsTiled();
+
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Tiling");
+			ImGui::SameLine(labelWidth + 20);
+			if (ImGui::Checkbox("##isTiled", &isTiled)) {
+				tileSettings->setIsTiled(isTiled);
+			}
+
+			if (isTiled) {
+				Vec2 scale = tileSettings->getTileScale();
+				float tileScale[2] = { scale.x, scale.y };
+				Vec2 offset = tileSettings->getTileOffset();
+				float tileOffset[2] = { offset.x, offset.y };
+
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Tile Scale");
+				ImGui::SameLine(labelWidth + 20);
+				ImGui::SetNextItemWidth(-1);
+				if (ImGui::DragFloat2("##tileScale", tileScale, 0.01f)) {
+					tileSettings->setTileScale(Vec2(tileScale[0], tileScale[1]));
+				}
+				ImGui::ActiveItemLockMousePos();
+
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Tile Offset");
+				ImGui::SameLine(labelWidth + 20);
+				ImGui::SetNextItemWidth(-1);
+				if (ImGui::DragFloat2("##tileOffset", tileOffset, 0.01f)) {
+					tileSettings->setTileOffset(Vec2(tileOffset[0], tileOffset[1]));
+				}
+				ImGui::ActiveItemLockMousePos();
+			}
+		}
+	}
+
 	ImGui::Separator();
 }
 
@@ -1065,6 +1142,100 @@ void InspectorWindow::DrawLightComponent(const std::unordered_map<uint32_t, Ref<
 				component->setType(newType);
 			}
 		}
+
+		// Shadow settings for light component		
+		if (ImGui::TreeNode("Shadows")) {
+
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Shadow Type");
+			ImGui::SameLine(labelWidth + 60);
+			ImGui::SetNextItemWidth(-1);
+
+			// Shadow Type 
+			ShadowType currentShadowType = light->getShadowType();
+
+			// creating a dropdown, tracking current type name
+			const char* shadowTypeModes[] = { "None", "Hard" };
+			int shadowTypeIndex = static_cast<int>(currentShadowType);
+
+			// dropdown for types
+			if (ImGui::Combo("##ShadowTypes", &shadowTypeIndex, shadowTypeModes, 2)) {
+				ShadowType newShadowType = static_cast<ShadowType>(shadowTypeIndex);
+
+				for (auto& component : lightState.components) {
+					component->setShadowType(newShadowType);
+				}
+			}
+
+			if (light->getShadowType() != ShadowType::None) {
+				float shadowNear = light->getShadowNear();
+				float shadowFar = light->getShadowFar();
+				int shadowResolution = light->getShadowResolution();
+				float shadowOrthoSize = light->getShadowOrthoSize();
+				
+				// Resolution
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Resolution");
+				ImGui::SameLine(labelWidth + 60);
+				ImGui::SetNextItemWidth(-1);
+
+				const int   resolutionOptions[] = { 256, 512, 1024 };
+				const char* resolutionLabels[] = { "256", "512", "1024" };
+				int resolutionId = 2;
+				for (int i = 0; i < 3; i++) if (resolutionOptions[i] == shadowResolution) resolutionId = i;
+				if (ImGui::Combo("##ShadowResolution", &resolutionId, resolutionLabels, 3)) {
+					int newShadowResolution = resolutionOptions[resolutionId];
+
+					for (auto& component : lightState.components) {
+						component->setShadowResolution(newShadowResolution);
+					}
+				}
+
+				// Near
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Near Plane");
+				ImGui::SameLine(labelWidth + 60);
+				ImGui::SetNextItemWidth(-1);
+
+				if (ImGui::DragFloat("##ShadowNear", &shadowNear, 0.1f, 0.0001f, 10.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+					for (auto& component : lightState.components) {
+						component->setShadowNear(shadowNear);
+					}
+				}
+				ImGui::ActiveItemLockMousePos();
+
+				// Far
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Far Plane");
+				ImGui::SameLine(labelWidth + 60);
+				ImGui::SetNextItemWidth(-1);
+
+				if (ImGui::DragFloat("##ShadowFar", &shadowFar, 0.1f, 1.0f, 1000.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+					for (auto& component : lightState.components) {
+						component->setShadowFar(shadowFar);
+					}
+				}
+				ImGui::ActiveItemLockMousePos();
+
+				// Size
+				if (light->getType() == LightType::Sky) {
+					ImGui::AlignTextToFramePadding();
+					ImGui::Text("Shadow Size");
+					ImGui::SameLine(labelWidth + 60);
+					ImGui::SetNextItemWidth(-1);
+
+					if (ImGui::DragFloat("##ShadowSize", &shadowOrthoSize, 1.0f, 1.0f, 500.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+						for (auto& component : lightState.components) {
+							component->setShadowOrthoSize(shadowOrthoSize);
+						}
+					}
+					ImGui::ActiveItemLockMousePos();
+				}
+			}
+			
+			ImGui::TreePop();
+		}
+
 	}
 	ImGui::Separator();
 }

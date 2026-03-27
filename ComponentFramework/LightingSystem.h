@@ -35,5 +35,5 @@ public:
 
 	// Uploads all light data to a given shader program
 	// make sure to only call it once per shader that needs lighting
-	void UploadUniforms(GLuint shaderProgram) const;
+	void UploadUniforms(GLuint shaderProgram, const std::vector<int>& shadowCasters) const;
 };

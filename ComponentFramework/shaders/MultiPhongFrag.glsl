@@ -1,6 +1,7 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
-#define MAX_LIGHTS 4
+#define MAX_LIGHTS 8
+#define MAX_SHADOW_CASTERS 4 // FBO locked
 
 layout (location = 0) in mat3 TBN;
 layout (location = 3) in vec2 textureCoords;
@@ -15,13 +16,13 @@ uniform vec4 diffuse[MAX_LIGHTS];
 uniform vec4 specular[MAX_LIGHTS];
 uniform float intensity[MAX_LIGHTS];
 uniform uint lightType[MAX_LIGHTS];
+uniform int lightCastsShadow[MAX_LIGHTS];
+uniform int numPointShadow[MAX_LIGHTS];
 uniform vec4 ambient;
 uniform uint numLights;
+
 uniform bool hasSpec;
 uniform bool hasNorm;
-
-
-
 uniform bool isTiled;
 uniform vec3 uvTiling;
 uniform vec2 tileScale;
@@ -31,12 +32,13 @@ uniform sampler2D shadowMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 uniform sampler2D normalTexture;
-uniform samplerCube pointShadowMaps[MAX_LIGHTS]; // one cubemap per light
+uniform samplerCube pointShadowMaps[MAX_SHADOW_CASTERS]; // one cubemap per light
+
+uniform vec3 shadowLightDir; 
+uniform float pointShadowFarPlanes[MAX_SHADOW_CASTERS];
 
 layout (location = 0) out vec4 fragColor;
 
-
-uniform vec3 shadowLightDir; 
 vec3 sampleOffsetDirections[20] = vec3[]
 (
    vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
@@ -55,18 +57,16 @@ float PointShadowCalculation(vec3 fragPos, vec3 lightWorldPos, int index) {
     float shadow = 0.0;
     float bias   = 0.15;
     int samples  = 20;
-    float diskRadius = (1.0 + (viewDistance / 200)) / 25.0;  
+    float diskRadius = (1.0 + (viewDistance / pointShadowFarPlanes[index])) / 25.0;  
 
-    for(int i = 0; i < samples; ++i)
-    {
+    for(int i = 0; i < samples; ++i) {
         float closestDepth = texture(pointShadowMaps[index], fragToLight + sampleOffsetDirections[i] * diskRadius).r;
-        closestDepth *= 200.0;   // undo mapping [0;1]
+        closestDepth *= pointShadowFarPlanes[index];   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
 
     shadow /= float(samples);  
-
     return 1 - shadow;
 }
 
@@ -81,7 +81,7 @@ float ShadowCalculation() {
     if(vFragPosLightSpace.y > vFragPosLightSpace.w)
         return 1.0;
     if(vFragPosLightSpace.y < -vFragPosLightSpace.w)
-        return 0.0;
+        return 1.0;
 
     vec3 N = normalize(TBN[2]);
     vec3 L = normalize(-shadowLightDir);
@@ -96,11 +96,12 @@ float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
     for(int x = -2; x <= 2; ++x) {
-    for(int y = -2; y <= 2; ++y) {
-        vec2 sampleUV = clamp(shadowUV + vec2(x, y) * texelSize, 0.001, 0.999);
-        float closestDepth = texture(shadowMap, sampleUV).r;
-        shadow += (currentDepth > closestDepth + bias) ? 1.0 : 0.0;
-    }}
+        for(int y = -2; y <= 2; ++y) {
+            vec2 sampleUV = clamp(shadowUV + vec2(x, y) * texelSize, 0.001, 0.999);
+            float closestDepth = texture(shadowMap, sampleUV).r;
+            shadow += (currentDepth > closestDepth + bias) ? 1.0 : 0.0;
+        }
+    }
 
     shadow /= 25.0;
 
@@ -114,16 +115,13 @@ void main() {
     vec2 tiledTextureCoords;
 
     // Tiling
-    if (isTiled == true) {
+    if (isTiled) {
         vec3 n = abs(localNormal);
-        vec2 tiledTex;
-
 		vec2 correctedScale = -tileScale / 100;
-
         vec2 finalOffset = tileOffset * correctedScale;
-
         vec3 scaledPos = localPos * uvTiling;
 
+        vec2 tiledTex;
         if (n.y > n.x && n.y > n.z)
             tiledTex = scaledPos.xz * correctedScale; // top  
         else if (n.x > n.z)
@@ -145,28 +143,32 @@ void main() {
 	}
     
      // normal mapping in "one" line
-    vec3 normal = (hasNorm == true) ? (isTiled == true) ?
-                                        normalize(TBN * (2.0 * texture2D(normalTexture, tiledTextureCoords).xyz - 1)) :
-                                        normalize(TBN * (2.0 * texture2D(normalTexture, textureCoords).xyz - 1)) : 
-                                        normalize(TBN[2]);
+    vec3 normal; 
+    if (hasNorm) {
+        vec2 normUV = isTiled ? tiledTextureCoords : textureCoords;
+        normal = normalize(TBN * (2.0 * texture(normalTexture, normUV).xyz - 1.0));
+    }
+    else {
+        normal = normalize(TBN[2]);
+    }
 
     // ambient
     vec4 phongResult = ambient * kt;
-    float visibility = 1.0f;
 
-    int pointLightCounter = 0;
-
-    
     // light calculation
-    if (numLights > 0) {
+    if (numLights > 0u) {
         for(uint i = 0u; i < numLights; i++) {
-            if (i >= MAX_LIGHTS) break;
+            if (i >= uint(MAX_LIGHTS)) break;
             
             // single line specular map texturing
-            vec4 ks = (hasSpec == true) ? (isTiled == true) ? 
-                        texture(specularTexture, tiledTextureCoords) * specular[i] : 
-                        texture(specularTexture, textureCoords) * specular[i] : 
-                        specular[i];
+            vec4 ks;
+            if (hasSpec) {
+                vec2 specUV = isTiled ? tiledTextureCoords : textureCoords;
+                ks = texture(specularTexture, specUV) * specular[i];
+            }
+            else {
+                ks = specular[i];
+            }
 
             vec4 kd = diffuse[i];
             
@@ -188,10 +190,7 @@ void main() {
             // Specular
             vec3 reflection = reflect(-lightDir, normal);
             
-            float spec = 0.0f;
-            if (diff > 0.0f) {
-                spec = pow(max(dot(viewDir, reflection), 0.0f), 16.0f);
-            }
+            float spec = (diff > 0.0) ? pow(max(dot(viewDir, reflection), 0.0), 16.0) : 0.0;
             
             vec4 lightContrib;
             if (lightType[i] == 0u) {
@@ -205,28 +204,20 @@ void main() {
             
             float shadow = 1.0;
 
-            if (lightType[i] == 0u) {
-                shadow = ShadowCalculation() / float(MAX_LIGHTS);
-            }
-            if (lightType[i] == 1u && pointLightCounter < MAX_LIGHTS) {
-                shadow = PointShadowCalculation(worldPos, lightWorldPos, pointLightCounter);
-                pointLightCounter++;
+            if (lightCastsShadow[i] == 1) {
+                if (lightType[i] == 0u) {
+                    shadow = ShadowCalculation();
+                }
+                else if (lightType[i] == 1u) {
+                    int num = numPointShadow[i];
+                    if (num >= 0 && num < MAX_SHADOW_CASTERS) {
+                        shadow = PointShadowCalculation(worldPos, lightWorldPos, num);
+                    }
+                }
             }
 
             phongResult += lightContrib * shadow;
-
-
         }
-
-
-//        //SHADOW
-//        vec3 projCoords = vFragPosLightSpace.xyz / vFragPosLightSpace.w * 0.5 + 0.5;
-//        float closestDepth = texture(shadowMap, projCoords.xy).r;
-//        float currentDepth = projCoords.z;
-//        float bias = 0.005;
-//        shadow = (currentDepth - bias > closestDepth) ? 1.0 : 0.0;
     }
     fragColor = phongResult;
-    //fragColor = vec4(normal * 0.5 + 0.5, 1.0);
-
 }

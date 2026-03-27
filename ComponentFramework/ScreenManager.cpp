@@ -61,6 +61,7 @@ void ScreenManager::SetRenderResolution(int w, int h)
 
     // getting all fbos, and resizing them according to the new width and height
     for (auto& [fbo, data] : FBOManager::getInstance().getAllFBOs()) {
+        if (data.isShadow || data.isCubeShadow) continue;
         FBOManager::getInstance().OnResize(fbo, w, h);
     }
 

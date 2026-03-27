@@ -1,7 +1,6 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-#define MAX_LIGHTS 4
 #define MAX_BONES 100
 
 // FIXED LOCATIONS like reference (3+4 instead of 5+6)
@@ -18,14 +17,6 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 lightSpaceMatrix;
-// Your lights (UNCHANGED)
-//uniform vec3 lightPos[MAX_LIGHTS];
-//uniform vec4 diffuse[MAX_LIGHTS];
-//uniform vec4 specular[MAX_LIGHTS];
-//uniform float intensity[MAX_LIGHTS];
-//uniform uint lightType[MAX_LIGHTS];
-//uniform vec4 ambient;
-//uniform uint numLights;
 
 layout (location = 0) out mat3 TBN;
 layout (location = 3) out vec2 textureCoords;

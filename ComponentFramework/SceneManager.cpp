@@ -71,6 +71,11 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	FBOManager::getInstance().CreateFBO(FBO::Scene, width_, height_);
 	FBOManager::getInstance().CreateFBO(FBO::Game, width_, height_);
 	FBOManager::getInstance().CreateFBO(FBO::ColorPicker, width_, height_);
+	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowMap, 1024, 1024);
+	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowCubeMap, 1024, 1024, true);
+	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowCubeMap1, 1024, 1024, true);
+	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowCubeMap2, 1024, 1024, true);
+	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowCubeMap3, 1024, 1024, true);
 #endif
 
 	if (!Renderer::getInstance().OnCreate()) {
@@ -136,6 +141,8 @@ void SceneManager::Update(float deltaTime) {
 	PhysicsSystem::getInstance().Update(deltaTime);
 	CollisionSystem::getInstance().Update(deltaTime);
 #endif
+
+	// if (currentScene) currentScene->Update(deltaTime);
 }
 
 void SceneManager::Render() {
@@ -144,8 +151,11 @@ void SceneManager::Render() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
+	Renderer::getInstance().ShadowPass();
 	Renderer::getInstance().RenderSceneView();
 	Renderer::getInstance().RenderGameView();
+
+	// if (currentScene) currentScene->Render();
 }
 
 void SceneManager::HandleEvents() {

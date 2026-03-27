@@ -2,7 +2,7 @@
     <Tag value="Untagged"/>
     <TransformComponent>
         <position x="-8.9634876" y="1.2845924" z="22.113001"/>
-        <rotation w="0.91354549" x="-0.40673655" y="-0" z="0"/>
+        <rotation w="0.9953962" x="-0.095845729" y="-0" z="0"/>
         <scale x="0.60000026" y="0.59999996" z="0.59999996"/>
     </TransformComponent>
     <LightComponent>
@@ -10,6 +10,11 @@
         <specular x="0" y="0" z="0" w="1"/>
         <intensity magnitude="1"/>
         <LightType type="0"/>
+        <shadowType type="1"/>
+        <shadowNear value="0.1"/>
+        <shadowFar value="200"/>
+        <shadowResolution value="1024"/>
+        <shadowOrthoSize value="60"/>
     </LightComponent>
     <ShadowSettings>
         <castShadow state="0"/>

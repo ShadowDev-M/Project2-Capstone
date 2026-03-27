@@ -6,7 +6,6 @@ enum class FBO {
 	Game,
 	ColorPicker,
 	ShadowMap,
-	ShadowMap,
 	ShadowCubeMap, //for point lights
 	ShadowCubeMap1,
 	ShadowCubeMap2,
@@ -20,6 +19,8 @@ struct FBOData {
 	int width = 0;
 	int height = 0;
 	bool isCreated = false;
+	bool isShadow = false;
+	bool isCubeShadow = false;
 };
 
 class FBOManager
@@ -56,5 +57,5 @@ public:
 	void DestroyFBO(FBO fbo_);
 	FBOData& getFBO(FBO fbo_);
 
-	std::unordered_map<FBO, FBOData> getAllFBOs() { return fbos; }
+	const std::unordered_map<FBO, FBOData>& getAllFBOs() const { return fbos; }
 };

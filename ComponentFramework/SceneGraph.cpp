@@ -116,9 +116,22 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			Ref<MaterialComponent> materialComponent = AssetManager::getInstance().GetAsset<MaterialComponent>(materialName);
 			if (materialComponent) {
 				actor_->ReplaceComponent<MaterialComponent>(materialComponent);
+
+				if (XMLObjectFile::hasComponent<TilingSettings>(name_)) {
+					Ref<TilingSettings> TSC = Ref<TilingSettings>(std::apply([](auto&&... args) {
+						return std::make_shared<TilingSettings>(args...);
+						}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<TilingSettings>(name_))));
+
+					if (!actor_->GetComponent<TilingSettings>()) {
+						actor_->AddComponent(TSC);
+					}
+				}
 			}
 		}
-	}
+	} 
+	// make sure that every actor with material gets a tiling setting defaulted to off
+	if (actor_->GetComponent<MaterialComponent>() && !actor_->GetComponent<TilingSettings>())
+		actor_->AddComponent<TilingSettings>(actor_.get(), false);
 
 	if (XMLObjectFile::hasComponent<ShaderComponent>(name_)) {
 		std::string shaderName = XMLObjectFile::getComponent<ShaderComponent>(name_);
@@ -136,9 +149,22 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			Ref<MeshComponent> meshComponent = AssetManager::getInstance().GetAsset<MeshComponent>(meshName);
 			if (meshComponent) {
 				actor_->ReplaceComponent<MeshComponent>(meshComponent);
+
+				if (XMLObjectFile::hasComponent<ShadowSettings>(name_)) {
+					Ref<ShadowSettings> SSC = Ref<ShadowSettings>(std::apply([](auto&&... args) {
+						RECORD return std::make_shared<ShadowSettings>(args...);
+						}, std::tuple_cat(std::make_tuple(actor_.get()), XMLObjectFile::getComponent<ShadowSettings>(name_))));
+
+					if (!actor_->GetComponent<ShadowSettings>()) {
+						actor_->AddComponent(SSC);
+					}
+				}
 			}
 		}
 	}
+	// make sure that every actor with material gets a tiling setting defaulted to on
+	if (actor_->GetComponent<MeshComponent>() && !actor_->GetComponent<ShadowSettings>())
+		actor_->AddComponent<ShadowSettings>(actor_.get(), true);
 
 	if (XMLObjectFile::hasComponent<ScriptComponent>(name_)) {
 		std::string scriptName = XMLObjectFile::getComponent<ScriptComponent>(name_);
@@ -187,7 +213,7 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 			LightingSystem::getInstance().AddActor(actor_);
 		}
 
-
+		XMLObjectFile::applyLightShadowSettings(name_, actor_->GetComponent<LightComponent>());
 	}
 
 	if (XMLObjectFile::hasComponent<AnimatorComponent>(name_)) {
