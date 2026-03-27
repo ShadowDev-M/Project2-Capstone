@@ -91,7 +91,7 @@ private:
 	float m_speedPopupTimer = 0.0f;
 
 	// transform based variables
-	Vec3 m_position = Vec3(0.0f, 0.0f, 0.0f);
+	Vec3 m_position = Vec3(0.0f, 0.0f, 10.0f);
 	float m_yaw = 0.0f;
 	float m_pitch = 0.0f;
 
