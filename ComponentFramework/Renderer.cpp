@@ -65,9 +65,40 @@ void Renderer::ShadowPass()
 			Ref<TransformComponent> TC = light->GetComponent<TransformComponent>();
 			if (!TC) continue;
 
+			//Vec3 lightDir = TC->GetForward();
+			//Vec3 lightPos = -(lightDir * (LC->getShadowFar() * 0.5f));
+			//float orthoSize = LC->getShadowOrthoSize();
+
+			//Matrix4 lightProjection = MMath::orthographic(
+			//	-orthoSize, orthoSize,
+			//	-orthoSize, orthoSize,
+			//	LC->getShadowNear(), LC->getShadowFar());
+
+			//Matrix4 lightView = MMath::lookAt(lightPos, lightPos + lightDir, Vec3(0.0f, 1.0f, 0.0f));
+
+			//info.SkyMatrix = lightProjection * lightView;
+			//info.LightDir = lightDir;
+			
+			// possibly find a way to make it work for both cameras (editor and main)
+			// its not a big deal though we could just use the main camera for now, 
+			// was trying to get something working where you didn't need to pass a camera but it never looked quite right
+			Vec3 cameraWorldPos;
+			Ref<Actor> mainCam = SceneGraph::getInstance().GetMainCamera();
+			if (mainCam) {
+				cameraWorldPos = Vec3(mainCam->GetModelMatrix().getColumn(Matrix4::Colunm::three));
+			}
+			Quaternion orientation = TC->GetOrientation();
+			
 			// CalculateLightSpaceMatrix
-			Vec3 lightDir = TC->GetForward();
-			Vec3 lightPos = -(lightDir * (LC->getShadowFar() * 0.5f));
+			//Rotation for the 'sun' position in the sky
+			Matrix4 cameraWorldTransform = MMath::toMatrix4(orientation);
+			
+			//Orbit's the view like the sun around the camera (kinda similar to how a skybox works)	
+			Matrix4 lightView =
+				MMath::translate(Vec3(0.0f, 0.0f, -100.0f)) *
+				MMath::inverse(cameraWorldTransform) *
+				MMath::translate(-cameraWorldPos);
+
 			float orthoSize = LC->getShadowOrthoSize();
 
 			Matrix4 lightProjection = MMath::orthographic(
@@ -75,10 +106,11 @@ void Renderer::ShadowPass()
 				-orthoSize, orthoSize,
 				LC->getShadowNear(), LC->getShadowFar());
 
-			Matrix4 lightView = MMath::lookAt(lightPos, lightPos + lightDir, Vec3(0.0f, 1.0f, 0.0f));
+			//needs -z for some reason unless im doing this wrong ¯\_()_/¯
+			Vec3 lightDirFromMatrix = Vec3(lightView[8], lightView[9], -lightView[10]);
 
 			info.SkyMatrix = lightProjection * lightView;
-			info.LightDir = lightDir;
+			info.LightDir = lightDirFromMatrix;
 
 			// ShadowPass
 			int resolution = LC->getShadowResolution();

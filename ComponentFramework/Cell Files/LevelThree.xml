@@ -7,18 +7,18 @@
         <Tag value="PortalSurface"/>
     </Tags>
     <Actors>
+        <Mario/>
         <Board/>
         <Cube_2D/>
-        <Mario/>
         <LightP/>
-        <Cube/>
         <CamTest/>
+        <Cube/>
         <SkyLight/>
         <Board_1D/>
+        <Cube_5D/>
         <PressureSensor>
             <Pressure_Pad/>
         </PressureSensor>
-        <Cube_5D/>
         <Door1/>
         <Gear/>
         <Gear_1D/>
