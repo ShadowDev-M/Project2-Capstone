@@ -260,6 +260,9 @@
     <ClInclude Include="TilingSettings.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="SearchPath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -433,72 +436,81 @@
     <ClCompile Include="TilingSettings.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="SearchPath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\colourPickFrag.glsl">
+    <None Include="Assets\Shaders\animationVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\colourPickVert.glsl">
+    <None Include="Assets\Shaders\colliderDebugFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\defaultFrag.glsl">
+    <None Include="Assets\Shaders\colliderDebugVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\defaultVert.glsl">
+    <None Include="Assets\Shaders\colorPickingFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\flatWhite.glsl">
+    <None Include="Assets\Shaders\colorPickingVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\MultiPhongFrag.glsl">
+    <None Include="Assets\Shaders\colourPickFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\MultiPhongVert.glsl">
+    <None Include="Assets\Shaders\colourPickVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\outline.glsl">
+    <None Include="Assets\Shaders\defaultFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\phongFrag.glsl">
+    <None Include="Assets\Shaders\defaultVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\phongVert.glsl">
+    <None Include="Assets\Shaders\flatWhite.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\selectionFrag.glsl">
+    <None Include="Assets\Shaders\MultiPhongFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\selectionVert.glsl">
+    <None Include="Assets\Shaders\MultiPhongVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\texturePhongFrag.glsl">
+    <None Include="Assets\Shaders\outline.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\texturePhongVert.glsl">
+    <None Include="Assets\Shaders\phongFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\animationVert.glsl">
+    <None Include="Assets\Shaders\phongVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\colliderDebugFrag.glsl">
+    <None Include="Assets\Shaders\selectionFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\colliderDebugVert.glsl">
+    <None Include="Assets\Shaders\selectionVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\ShadowMappingFrag.glsl">
+    <None Include="Assets\Shaders\ShadowMappingFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\ShadowMappingVert.glsl">
+    <None Include="Assets\Shaders\ShadowMappingPointFrag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\ShadowMappingPointGeom.glsl">
+    <None Include="Assets\Shaders\ShadowMappingPointGeom.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\ShadowMappingPointVert.glsl">
+    <None Include="Assets\Shaders\ShadowMappingPointVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\ShadowMappingPointFrag.glsl">
+    <None Include="Assets\Shaders\ShadowMappingVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\texturePhongFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\texturePhongVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

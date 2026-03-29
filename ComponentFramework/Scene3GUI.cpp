@@ -28,13 +28,13 @@ bool Scene3GUI::OnCreate() {
 	AssetManager::getInstance().OnCreate();	
 	SceneGraph::getInstance().OnCreate();
 
-	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(SceneGraph::getInstance().cellFileName);
+	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(SceneGraph::getInstance().sceneFileName);
 	for (const auto& tag : sceneTags) {
 		SceneGraph::getInstance().addTag(tag);
 	}
 
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), "LevelThree");
-	ScreenManager::getInstance().setWindowTitle(SceneGraph::getInstance().cellFileName);
+	ScreenManager::getInstance().setWindowTitle(SceneGraph::getInstance().sceneFileName);
 
 	ColliderDebug::getInstance().OnCreate();
 

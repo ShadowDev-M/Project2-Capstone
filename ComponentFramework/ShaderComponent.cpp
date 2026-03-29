@@ -10,17 +10,10 @@ ShaderComponent::ShaderComponent(Component* parent_,const char* vertFilename_, c
 	fragFilename(fragFilename_),
 	tessCtrlFilename(tessCtrlFilename_),
 	tessEvalFilename(tessEvalFilename_),
-	geomFilename(geomFilename_) {
-	
-	if (vertFilename == "shaders/ShadowMappingPointVert.glsl") {
-		geomFilename = "shaders/ShadowMappingPointGeom.glsl";
-	}
-
-}
-
+	geomFilename(geomFilename_) 
+{}
 
 ShaderComponent::~ShaderComponent() {}
-
 
 bool ShaderComponent::OnCreate() {
 	bool status;
@@ -300,8 +293,13 @@ void ShaderComponent::SetUniformLocations(){
 /// to do this but it is all private and I did delete it! SSF
 char* ShaderComponent::ReadTextFile(const char *filename){
 	char* buffer = nullptr;
-    std::ifstream file(filename, std::ios::binary);
-    if (file.is_open()) {								/// Open the file
+	
+	// resolving path here
+	fs::path resolved = SearchPath::getInstance().Resolve(filename);
+	std::string pathToOpen = resolved.empty() ? filename : resolved.string(); 
+
+	std::ifstream file(pathToOpen, std::ios::binary);
+	if (file.is_open()) {								/// Open the file
         file.seekg(0, std::ios::end);					/// goto the end of the file
         int bufferSize = (int) file.tellg();			/// Get the length of the file
 		if(bufferSize == 0) {							/// If zero, bad file

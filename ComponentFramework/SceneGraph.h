@@ -105,5 +105,5 @@ public:
 	// map to store selected/colorpicked actors
 	std::unordered_map<uint32_t, Ref<Actor>> debugSelectedAssets;
 
-	mutable std::string cellFileName = "LevelThree";
+	mutable std::string sceneFileName = "LevelThree";
 };

@@ -161,6 +161,7 @@
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="ScreenManager.h" />
     <ClInclude Include="ScriptAbstract.h" />
+    <ClInclude Include="SearchPath.h" />
     <ClInclude Include="SettingsConfig.h" />
     <ClInclude Include="ShadowSettings.h" />
     <ClInclude Include="Skeleton.h" />
@@ -235,6 +236,7 @@
     <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="ScreenManager.cpp" />
     <ClCompile Include="ScriptAbstract.cpp" />
+    <ClCompile Include="SearchPath.cpp" />
     <ClCompile Include="ShadowSettings.cpp" />
     <ClCompile Include="TilingSettings.cpp" />
     <ClCompile Include="XMLManager.cpp" />
@@ -292,28 +294,30 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\animationVert.glsl" />
-    <None Include="shaders\colliderDebugFrag.glsl" />
-    <None Include="shaders\colliderDebugVert.glsl" />
-    <None Include="shaders\colourPickFrag.glsl" />
-    <None Include="shaders\colourPickVert.glsl" />
-    <None Include="shaders\defaultFrag.glsl" />
-    <None Include="shaders\defaultVert.glsl" />
-    <None Include="shaders\flatWhite.glsl" />
-    <None Include="shaders\MultiPhongFrag.glsl" />
-    <None Include="shaders\MultiPhongVert.glsl" />
-    <None Include="shaders\outline.glsl" />
-    <None Include="shaders\phongFrag.glsl" />
-    <None Include="shaders\phongVert.glsl" />
-    <None Include="shaders\selectionFrag.glsl" />
-    <None Include="shaders\selectionVert.glsl" />
-    <None Include="shaders\ShadowMappingFrag.glsl" />
-    <None Include="shaders\ShadowMappingPointFrag.glsl" />
-    <None Include="shaders\ShadowMappingPointGeom.glsl" />
-    <None Include="shaders\ShadowMappingPointVert.glsl" />
-    <None Include="shaders\ShadowMappingVert.glsl" />
-    <None Include="shaders\texturePhongFrag.glsl" />
-    <None Include="shaders\texturePhongVert.glsl" />
+    <None Include="Assets\Shaders\animationVert.glsl" />
+    <None Include="Assets\Shaders\colliderDebugFrag.glsl" />
+    <None Include="Assets\Shaders\colliderDebugVert.glsl" />
+    <None Include="Assets\Shaders\colorPickingFrag.glsl" />
+    <None Include="Assets\Shaders\colorPickingVert.glsl" />
+    <None Include="Assets\Shaders\colourPickFrag.glsl" />
+    <None Include="Assets\Shaders\colourPickVert.glsl" />
+    <None Include="Assets\Shaders\defaultFrag.glsl" />
+    <None Include="Assets\Shaders\defaultVert.glsl" />
+    <None Include="Assets\Shaders\flatWhite.glsl" />
+    <None Include="Assets\Shaders\MultiPhongFrag.glsl" />
+    <None Include="Assets\Shaders\MultiPhongVert.glsl" />
+    <None Include="Assets\Shaders\outline.glsl" />
+    <None Include="Assets\Shaders\phongFrag.glsl" />
+    <None Include="Assets\Shaders\phongVert.glsl" />
+    <None Include="Assets\Shaders\selectionFrag.glsl" />
+    <None Include="Assets\Shaders\selectionVert.glsl" />
+    <None Include="Assets\Shaders\ShadowMappingFrag.glsl" />
+    <None Include="Assets\Shaders\ShadowMappingPointFrag.glsl" />
+    <None Include="Assets\Shaders\ShadowMappingPointGeom.glsl" />
+    <None Include="Assets\Shaders\ShadowMappingPointVert.glsl" />
+    <None Include="Assets\Shaders\ShadowMappingVert.glsl" />
+    <None Include="Assets\Shaders\texturePhongFrag.glsl" />
+    <None Include="Assets\Shaders\texturePhongVert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

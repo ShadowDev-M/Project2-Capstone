@@ -286,9 +286,14 @@ void AnimationClip::InitializeClipLength() {
 }
 
 void Animation::LoadAnimation(const char* filename) {
+	// resolving path here
+	fs::path resolved = SearchPath::getInstance().Resolve(filename);
+	std::string pathToOpen = resolved.empty() ? filename : resolved.string();
+
+
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
-		filename,
+		pathToOpen,
 		aiProcessPreset_TargetRealtime_Fast
 	);
 

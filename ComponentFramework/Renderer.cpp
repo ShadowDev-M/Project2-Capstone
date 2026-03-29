@@ -12,13 +12,13 @@
 #include "InputManager.h"
 
 bool Renderer::OnCreate() {
-	pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
-	outlineShader = std::make_shared<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/outline.glsl");
-	animatedShader = std::make_shared<ShaderComponent>(nullptr, "shaders/animationVert.glsl", "shaders/MultiPhongFrag.glsl");
-	animatedOutlineShader = std::make_shared<ShaderComponent>(nullptr, "shaders/animationVert.glsl", "shaders/outline.glsl");
-	multiPhongShader = std::make_shared<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongFrag.glsl");
-	shadowShader = std::make_shared<ShaderComponent>(nullptr, "shaders/ShadowMappingVert.glsl", "shaders/ShadowMappingFrag.glsl");
-	shadowPointShader = std::make_shared<ShaderComponent>(nullptr, "shaders/ShadowMappingPointVert.glsl", "shaders/ShadowMappingPointFrag.glsl");
+	pickerShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/colourPickVert.glsl", "Shaders/colourPickFrag.glsl");
+	outlineShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/MultiPhongVert.glsl", "Shaders/outline.glsl");
+	animatedShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/animationVert.glsl", "Shaders/MultiPhongFrag.glsl");
+	animatedOutlineShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/animationVert.glsl", "Shaders/outline.glsl");
+	multiPhongShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/MultiPhongVert.glsl", "Shaders/MultiPhongFrag.glsl");
+	shadowShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/ShadowMappingVert.glsl", "Shaders/ShadowMappingFrag.glsl");
+	shadowPointShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/ShadowMappingPointVert.glsl", "Shaders/ShadowMappingPointFrag.glsl", nullptr, nullptr, "Shaders/ShadowMappingPointGeom.glsl");
 
 	shaders = { pickerShader, outlineShader, animatedShader, animatedOutlineShader, multiPhongShader, shadowShader, shadowPointShader };
 

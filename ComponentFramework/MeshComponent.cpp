@@ -66,8 +66,12 @@ void ReadNodeHierarchy(Skeleton* skeleton, aiNode* node, Bone* parentBone) {
 
 
 void MeshComponent::LoadModel(const char* filename) {
+    // resolving path here
+    fs::path resolved = SearchPath::getInstance().Resolve(filename);
+    std::string pathToOpen = resolved.empty() ? filename : resolved.string();
+
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Fast);
+    const aiScene* scene = importer.ReadFile(pathToOpen, aiProcessPreset_TargetRealtime_Fast);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         printf("ERROR::ASSIMP::%s\n", importer.GetErrorString());
         return;

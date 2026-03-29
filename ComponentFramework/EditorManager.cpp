@@ -168,24 +168,24 @@ void EditorManager::RenderEditorUI() {
 
 void EditorManager::SaveScene(const std::string& name)
 {
-	std::string saveName = name.empty() ? sceneGraph->cellFileName : name;
+	std::string saveName = name.empty() ? sceneGraph->sceneFileName : name;
 	if (saveName.empty()) {
 		saveLoadDialog.showSaveDialog = true;
 		return;
 	}
 
-	sceneGraph->cellFileName = saveName;
-	std::filesystem::create_directory("Game Objects/" + saveName);
+	sceneGraph->sceneFileName = saveName;
+	fs::path saveDir = SearchPath::getInstance().GetRoot() / "Game Objects" / saveName;
+	fs::create_directories(saveDir);
 	sceneGraph->SaveFile(saveName);
 	AssetManager::getInstance().SaveAssetDatabaseXML();
 	ScreenManager::getInstance().setWindowTitle(saveName);
 	Debug::Info("Saved Scene: " + saveName, __FILE__, __LINE__);
-
 }
 
 void EditorManager::LoadScene(const std::string& name)
 {
-	std::string loadName = name.empty() ? sceneGraph->cellFileName : name;
+	std::string loadName = name.empty() ? sceneGraph->sceneFileName : name;
 	if (loadName.empty()) {
 		saveLoadDialog.showLoadDialog = true;
 		return;
@@ -199,10 +199,10 @@ void EditorManager::LoadScene(const std::string& name)
 	MemoryStale();
 
 	XMLObjectFile::addActorsFromFile(sceneGraph, loadName);
-	sceneGraph->cellFileName = loadName;
+	sceneGraph->sceneFileName = loadName;
 	ScreenManager::getInstance().setWindowTitle(loadName);
 	sceneGraph->OnCreate();
-	Debug::Info("Loaded file: " + sceneGraph->cellFileName, __FILE__, __LINE__);
+	Debug::Info("Loaded file: " + sceneGraph->sceneFileName, __FILE__, __LINE__);
 }
 
 void EditorManager::Play()
@@ -226,10 +226,10 @@ void EditorManager::Stop()
 	InputManager::getInstance().setGameInputActive(false);
 	sceneGraph->Stop();
 
-	std::string cellFile = sceneGraph->cellFileName;
+	std::string sceneFile = sceneGraph->sceneFileName;
 	sceneGraph->RemoveAllActors();
 
-	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(cellFile);
+	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(sceneFile);
 	for (const auto& tag : sceneTags) sceneGraph->addTag(tag);
 
 	// removing temporary save file data
@@ -239,7 +239,7 @@ void EditorManager::Stop()
 	//Make the memory stale so we can see if its potentially a leak
 	MemoryStale();
 
-	XMLObjectFile::addActorsFromFile(sceneGraph, cellFile);
+	XMLObjectFile::addActorsFromFile(sceneGraph, sceneFile);
 	sceneGraph->OnCreate();
 
 	pendingFocusWindow = "Scene";
@@ -420,18 +420,18 @@ void EditorManager::ShowSaveDialog() {
 
 	if (ImGui::BeginPopupModal("Save File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Enter the name of the file you want to save:");
-		ImGui::InputText("##SaveFileName", &sceneGraph->cellFileName);
+		ImGui::InputText("##SaveFileName", &sceneGraph->sceneFileName);
 		ImGui::Separator();
 
-		bool canSave = !sceneGraph->cellFileName.empty();
+		bool canSave = !sceneGraph->sceneFileName.empty();
 
 		if (!canSave) {
 			ImGui::BeginDisabled();
 		}
 
 		if (ImGui::Button("Save File") && canSave) {
-			SaveScene(sceneGraph->cellFileName);
-			//sceneGraph->cellFileName.clear();
+			SaveScene(sceneGraph->sceneFileName);
+			//sceneGraph->sceneFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -442,7 +442,7 @@ void EditorManager::ShowSaveDialog() {
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel")) {
-			//SceneGraph::getInstance().cellFileName.clear();
+			//SceneGraph::getInstance().sceneFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -468,18 +468,18 @@ void EditorManager::ShowLoadDialog() {
 
 	if (ImGui::BeginPopupModal("Load File", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Enter the name of the file you want to load:");
-		ImGui::InputText("##NameOfLoadFile", &sceneGraph->cellFileName);
+		ImGui::InputText("##NameOfLoadFile", &sceneGraph->sceneFileName);
 		ImGui::Separator();
 
-		bool canLoad = !sceneGraph->cellFileName.empty();
+		bool canLoad = !sceneGraph->sceneFileName.empty();
 
 		if (!canLoad) {
 			ImGui::BeginDisabled();
 		}
 
 		if (ImGui::Button("Load File") && canLoad) {
-			LoadScene(sceneGraph->cellFileName);
-			//sceneGraph->cellFileName.clear();
+			LoadScene(sceneGraph->sceneFileName);
+			//sceneGraph->sceneFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -490,7 +490,7 @@ void EditorManager::ShowLoadDialog() {
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel")) {
-			//sceneGraph->cellFileName.clear();
+			//sceneGraph->sceneFileName.clear();
 			ImGui::CloseCurrentPopup();
 		}
 

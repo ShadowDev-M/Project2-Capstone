@@ -37,25 +37,32 @@ public:
 
         XMLNode* cRoot = doc.NewElement("Actor");
         doc.InsertFirstChild(cRoot);
+        
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml" : resolved.string();
 
-        doc.SaveFile(("Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml").c_str());
+        doc.SaveFile(path.c_str());
         return 0;
     }
 
-    static int writeCellFile(std::string name) {
+    static int writeSceneFile(std::string name) {
 
         XMLDocument doc;
 
-        XMLNode* cRoot = doc.NewElement("CellFile");
+        XMLNode* cRoot = doc.NewElement("Scene");
         doc.InsertFirstChild(cRoot);
 
-        doc.SaveFile(("Cell Files/" + name + ".xml").c_str());
+        fs::path resolved = SearchPath::getInstance().Resolve("Scenes/" + name + ".xml");
+        std::string path = resolved.empty() ? "Scenes/" + name + ".xml" : resolved.string();
+
+        doc.SaveFile(path.c_str());
         return 0;
     }
 
     static int writeSceneTags(const std::string& sceneName, const std::vector<std::string>& tags)
     {
-        std::string path = "Cell Files/" + sceneName + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Scenes/" + sceneName + ".xml");
+        std::string path = resolved.empty() ? "Scenes/" + sceneName + ".xml" : resolved.string();
         XMLDocument doc;
 
         XMLError eResult = doc.LoadFile(path.c_str());
@@ -79,7 +86,9 @@ public:
 
     static std::vector<std::string> readSceneTags(const std::string& sceneName)
     {
-        std::string path = "Cell Files/" + sceneName + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Scenes/" + sceneName + ".xml");
+        std::string path = resolved.empty() ? "Scenes/" + sceneName + ".xml" : resolved.string();
+        
         std::vector<std::string> tags;
 
         XMLDocument doc;
@@ -101,7 +110,9 @@ public:
 
     static int writeActorTag(const std::string& actorName, const std::string& tag)
     {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + actorName + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml" : resolved.string();
+        
         XMLDocument doc;
 
         XMLError eResult = doc.LoadFile(path.c_str());
@@ -121,7 +132,9 @@ public:
 
     static std::string readActorTag(const std::string& actorName)
     {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + actorName + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml" : resolved.string();
+        
         XMLDocument doc;
 
         if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return "Untagged";
@@ -140,7 +153,9 @@ public:
     static void applyLightShadowSettings(const std::string& name, Ref<LightComponent> lc) {
         if (!lc) return;
 
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml" : resolved.string();
+
         XMLDocument doc;
         if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return;
 
@@ -173,7 +188,9 @@ public:
 
     ///Adds actors from requested cell filename into sceneGraph
     static int addActorsFromFile(SceneGraph* sceneGraph, std::string filename) {
-        std::string path = "Cell Files/" + filename + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Scenes/" + filename + ".xml");
+        std::string path = resolved.empty() ? "Scenes/" + filename + ".xml" : resolved.string();
+        
         const char* id = path.c_str();
         XMLDocument doc;
 
@@ -212,7 +229,8 @@ public:
         const char* classCStr = className.c_str();
 
 
-        std::string path = "Cell Files/" + filename + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Scenes/" + filename + ".xml");
+        std::string path = resolved.empty() ? "Scenes/" + filename + ".xml" : resolved.string();
         const char* id = path.c_str();
         XMLDocument doc;
 
@@ -403,7 +421,8 @@ public:
 
 
     static int writeActorToCell(std::string filename, Ref<Actor> actor_, bool enabled) {
-        std::string path = "Cell Files/" + filename + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Scenes/" + filename + ".xml");
+        std::string path = resolved.empty() ? "Scenes/" + filename + ".xml" : resolved.string();
         const char* id = path.c_str();
         XMLDocument doc;
 
@@ -480,7 +499,8 @@ public:
 
         */
 
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml" : resolved.string();
 
         const char* id = path.c_str();
 
@@ -852,7 +872,8 @@ public:
 
 
     static inline std::vector<float> getPublicVars(std::string name, int copy = 0) {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml" : resolved.string();
 
         const char* id = path.c_str();
 
@@ -919,7 +940,8 @@ public:
 
     template<typename ComponentTemplate>
     static int writeUniqueComponent(std::string name, Component* toWrite) {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml" : resolved.string();
         const char* id = path.c_str();
         XMLDocument doc;
         
@@ -1376,7 +1398,8 @@ public:
     /// <returns>true if the component type exists within the XML file</returns>
     template<typename ComponentTemplate>
     static bool hasComponent(std::string name) {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        fs::path resolved = SearchPath::getInstance().Resolve("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml");
+        std::string path = resolved.empty() ? "Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml" : resolved.string();
         const char* id = path.c_str();
 
         XMLDocument doc;
