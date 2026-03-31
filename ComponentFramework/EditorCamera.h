@@ -82,7 +82,7 @@ private:
 	void HandleLook3D(float deltaX, float deltaY);
 	void HandleFly3D(float deltaTime);
 
-	Vec3 GetForward() const;
+	Vec3 GetForward(bool useRadian = 0) const;
 	Vec3 GetRight() const;
 	Vec3 GetUp() const;
 

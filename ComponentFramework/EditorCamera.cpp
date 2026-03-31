@@ -206,7 +206,12 @@ Matrix4 EditorCamera::GetProjectionMatrix() const {
 
 Matrix4 EditorCamera::GetViewMatrix() const
 {
-	return MMath::lookAt(m_position, m_position + GetForward(), Vec3(0.0f, 1.0f, 0.0f));
+
+	Quaternion qPitch = QMath::angleAxisRotation(m_pitch, Vec3(1, 0, 0));
+	Quaternion qYaw = QMath::angleAxisRotation(m_yaw, Vec3(0, -1, 0));
+	Quaternion rot = qPitch * qYaw;
+	
+	return MMath::toMatrix4(rot) * MMath::translate(m_position);
 }
 
 void EditorCamera::SetOrientation(float yawDeg, float pitchDeg)
@@ -267,17 +272,30 @@ void EditorCamera::Enforce2DModeConstraints()
 	m_pitch = 0.0f;
 }
 
-Vec3 EditorCamera::GetForward() const {
-	float y = m_yaw * DEGREES_TO_RADIANS;
-	float p = m_pitch * DEGREES_TO_RADIANS;
+Vec3 EditorCamera::GetForward(bool useRadian) const {
+	//float y = m_yaw * DEGREES_TO_RADIANS;
+	//float p = m_pitch * DEGREES_TO_RADIANS;
 
-	return Vec3(std::cos(p) * std::sin(y), std::sin(p), -std::cos(p) * std::cos(y));
+
+	Quaternion qPitch = QMath::angleAxisRotation(m_pitch, Vec3(-1, 0, 0));
+	Quaternion qYaw = QMath::angleAxisRotation(m_yaw, Vec3(0, 1, 0));
+	Quaternion rot =   qYaw * qPitch;
+
+
+	//Vec3 localForward = Vec3(0.0f, 0.0f, -1.0f);
+	
+	Matrix4 mmat = MMath::toMatrix4(rot) * MMath::translate(Vec3(0, 0, -1));
+	Vec3 forward = mmat.getColumn(Matrix4::Colunm::two);
+	return forward;
+
+
+	//return 	VMath::normalize(MMath::toMatrix4(rot) * MMath::translate(Vec3(0, 0, -1)) * Vec4(Vec3(), 1));
 }
 
 Vec3 EditorCamera::GetRight() const {
-	float y = m_yaw * DEGREES_TO_RADIANS;
+	//float y = m_yaw * DEGREES_TO_RADIANS;
 
-	return Vec3(std::cos(y), 0.0f, std::sin(y));
+	return VMath::normalize(VMath::cross(GetForward(), Vec3(0, 1, 0)));
 }
 
 Vec3 EditorCamera::GetUp() const {

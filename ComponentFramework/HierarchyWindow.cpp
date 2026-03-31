@@ -330,6 +330,10 @@ Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor
 
 	if (auto light = original_->GetComponent<LightComponent>()) {
 		RECORD copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
+		copy->GetComponent<LightComponent>()->setShadowType(light->getShadowType());
+		copy->GetComponent<LightComponent>()->setShadowNear(light->getShadowNear());
+		copy->GetComponent<LightComponent>()->setShadowFar(light->getShadowFar());
+		copy->GetComponent<LightComponent>()->setShadowOrthoSize(light->getShadowOrthoSize());
 		LightingSystem::getInstance().AddActor(copy);
 	}
 
