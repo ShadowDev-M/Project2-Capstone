@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "InspectorWindow.h"
 #include "InputManager.h"
-#include "EditorManager.h"
 #include "AnimatorComponent.h"
 #include "PhysicsSystem.h"
 #include <algorithm>
@@ -9,18 +8,34 @@
 #include "ColliderDebug.h"
 #include "LightingSystem.h"
 
-
 InspectorWindow::InspectorWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
 	EditorManager::getInstance().RegisterWindow("Inspector", true);
 }
 
 void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 {
+	const auto& selectedAsset = EditorManager::getInstance().GetSelectedAsset();
+
+	// dummy prefab editor
+	if (dummyActor) {
+		bool prefabStillSelected = selectedAsset.isSet && selectedAsset.absolutePath == loadedPrefabPath;
+		
+		if (!prefabStillSelected) {
+			ClosePrefabEditor(true);
+			EditorManager::getInstance().ClearSelectedAsset();
+		}
+	}
+
 	if (ImGui::Begin("Inspector", pOpen)) {
 
-		const auto& selected = sceneGraph->debugSelectedAssets;
+		if (selectedAsset.isSet) {
+			DrawAssetInspector(selectedAsset);
+			ImGui::End();
+			return;
+		}
 
 		// no actors selected
+		const auto& selected = sceneGraph->debugSelectedAssets;
 		if (selected.empty()) {
 			ImGui::Text("No Actor Selected");
 			ImGui::End();
@@ -318,7 +333,7 @@ void InspectorWindow::DrawTransformComponent(const std::unordered_map<uint32_t, 
 
 	if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		// Setting up right click popup menu, context sensitive to the header
-		RightClickContext<TransformComponent>("##TransformPopup", sceneGraph->debugSelectedAssets);
+		RightClickContext<TransformComponent>("##TransformPopup", selectedActors_);
 
 		// Position
 		bool hasMixedPos = transformState.HasMixedVec3(&TransformComponent::GetPosition);
@@ -478,7 +493,7 @@ void InspectorWindow::DrawMeshComponent(const std::unordered_map<uint32_t, Ref<A
 	if (meshState.noneHaveComponent) return;
 
 	if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
-		RightClickContext<MeshComponent>("##MeshPopup", sceneGraph->debugSelectedAssets);
+		RightClickContext<MeshComponent>("##MeshPopup", selectedActors_);
 
 
 		// one actor selected
@@ -486,8 +501,11 @@ void InspectorWindow::DrawMeshComponent(const std::unordered_map<uint32_t, Ref<A
 			Ref<MeshComponent> mesh = meshState.GetFirst();
 		
 			// displaying some basic mesh information
-			ImGui::TextWrapped("Mesh Name: %s", mesh->getMeshName());
-			ImGui::TextWrapped("Mesh Vertices: %zu", mesh->getVertices());
+			std::string assetName = AssetManager::getInstance().GetAssetName(mesh);
+			if (!assetName.empty()) ImGui::TextWrapped("Name: %s", assetName.c_str());
+			ImGui::TextWrapped("Vertices: %zu", mesh->getVertices());
+			ImGui::TextWrapped("Skeleton: %s", mesh->hasSkeleton() ? "Yes" : "No");
+			if (mesh->hasSkeleton()) ImGui::TextWrapped("Bones: %zu", mesh->getBoneCount());
 		}
 		else if (meshState.allHaveComponent) {
 			//for (auto& component : meshState.components) {
@@ -500,28 +518,17 @@ void InspectorWindow::DrawMeshComponent(const std::unordered_map<uint32_t, Ref<A
 
 		ImGui::Button("Drop New Mesh Here", ImVec2(-1, 0));
 		if (ImGui::BeginDragDropTarget()) {
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MESH_ASSET");
-
-			if (payload) {
-				// store payload data
-				const char* droppedAssetName = static_cast<const char*>(payload->Data);
-				
-				// get a reference to the asset that has been dropped
-				Ref<MeshComponent> newMesh = AssetManager::getInstance().GetAsset<MeshComponent>(droppedAssetName);
-
-				// get the actor
-				if (newMesh) {
-					for (auto& component : meshState.components) {
-						for (const auto& pair : selectedActors_) {
-							// replace the actors material
-							if (pair.second->GetComponent<MeshComponent>() == component) {
-								pair.second->ReplaceComponent<MeshComponent>(newMesh);
-							}
+			if (auto* payload = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+				auto* data = static_cast<const EditorManager::ProjectDragPayload*>(payload->Data);
+				if (std::string(data->componentType) == "MeshComponent") {
+					auto mesh = AssetManager::getInstance().GetAsset<MeshComponent>(data->assetName);
+					if (mesh) {
+						for (auto& [id, actor] : selectedActors_) {
+							actor->ReplaceComponent<MeshComponent>(mesh);
 						}
 					}
 				}
 			}
-
 			ImGui::EndDragDropTarget();
 		}
 		
@@ -558,13 +565,15 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 	if (materialState.noneHaveComponent) return;
 
 	if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
-		RightClickContext<MaterialComponent>("##MaterialPopup", sceneGraph->debugSelectedAssets);
+		RightClickContext<MaterialComponent>("##MaterialPopup", selectedActors_);
 
 		if (materialState.allHaveComponent && materialState.Count() == 1) {
 			Ref<MaterialComponent> material = materialState.GetFirst();
 
-			ImGui::TextWrapped("Diffuse ID: %u", material->getDiffuseID());
-			if (material->getSpecularID() != 0) ImGui::TextWrapped("Specular ID: %u", material->getSpecularID());
+			std::string assetName = AssetManager::getInstance().GetAssetName(material);
+			if (!assetName.empty()) ImGui::TextWrapped("Name: %s", assetName.c_str());
+			if (material->getSpecularID() != 0) ImGui::TextWrapped("Has Specular");
+			if (material->getNormalID() != 0) ImGui::TextWrapped("Has Normal");
 		}
 		else if (materialState.allHaveComponent) {
 			ImGui::TextWrapped("All Selected Actors Have a MaterialComponent");
@@ -599,22 +608,13 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 		}
 
 		if (ImGui::BeginDragDropTarget()) {
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MATERIAL_ASSET");
-			if (payload) {
-				// store payload data
-				const char* droppedAssetName = static_cast<const char*>(payload->Data);
-				
-				// get a reference to the asset that has been dropped
-				Ref<MaterialComponent> newMaterial = AssetManager::getInstance().GetAsset<MaterialComponent>(droppedAssetName);
-				
-				// get the actor
-				if (newMaterial) {
-					for (auto& component : materialState.components) {
-						for (const auto& pair : selectedActors_) {
-							// replace the actors material
-							if (pair.second->GetComponent<MaterialComponent>() == component) {
-								pair.second->ReplaceComponent<MaterialComponent>(newMaterial);
-							}
+			if (auto* payload = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+				auto* data = static_cast<const EditorManager::ProjectDragPayload*>(payload->Data);
+				if (std::string(data->componentType) == "MaterialComponent") {
+					auto newMat = AssetManager::getInstance().GetAsset<MaterialComponent>(data->assetName);
+					if (newMat) {
+						for (auto& [id, actor] : selectedActors_) {
+							actor->ReplaceComponent<MaterialComponent>(newMat);
 						}
 					}
 				}
@@ -793,26 +793,18 @@ void InspectorWindow::DrawScriptComponent(const std::unordered_map<uint32_t, Ref
 			id++;
 
 			if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen)) {
-				RightClickContext<ScriptComponent>("##ScriptPopup", sceneGraph->debugSelectedAssets, id-1);
+				RightClickContext<ScriptComponent>("##ScriptPopup", selectedActors_, id-1);
 
-				ImGui::TextWrapped("Script Name: %s", script->getName().c_str());
-
-				ImGui::TextWrapped("Script Path: %s", script->getPath().c_str());
-			
+				ImGui::TextWrapped("Script: %s", AssetManager::getInstance().GetAssetName(script->getBaseAsset()).c_str());
 
 				ImGui::Button("Drop New Script Here", ImVec2(-1, 0));
 				if (ImGui::BeginDragDropTarget()) {
-					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCRIPT_ASSET");
-					if (payload) {
-						// store the payload data
-						const char* droppedAssetName = static_cast<const char*>(payload->Data);
-
-						// get a reference to the asset that has been dropped
-						//ScriptAbstract is the asset in assetmanager that has the name, the actors have the component
-						Ref<ScriptAbstract> newScript = AssetManager::getInstance().GetAsset<ScriptAbstract>(droppedAssetName);
-
-						
-						script->setFilenameFromAbstract(newScript);
+					if (auto* payload = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+						auto* data = static_cast<const EditorManager::ProjectDragPayload*>(payload->Data);
+						if (std::string(data->componentType) == "ScriptAbstract") {
+							auto newScript = AssetManager::getInstance().GetAsset<ScriptAbstract>(data->assetName);
+							if (newScript) script->setFilenameFromAbstract(newScript);
+						}
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -871,7 +863,7 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 
 	for (auto& animator : selectedActors_.begin()->second->GetAllComponent<AnimatorComponent>()) {
 		if (ImGui::CollapsingHeader("AnimatorComponent", ImGuiTreeNodeFlags_DefaultOpen)) {
-			RightClickContext<AnimatorComponent>("##AnimatorPopup", sceneGraph->debugSelectedAssets);
+			RightClickContext<AnimatorComponent>("##AnimatorPopup", selectedActors_);
 
 			ImGuiChildFlags detailsFlags = ImGuiChildFlags_Borders;
 			if (ImGui::BeginChild("details_panel", ImVec2(0, 150), detailsFlags)) {
@@ -985,23 +977,25 @@ void InspectorWindow::DrawAnimatorComponent(const std::unordered_map<uint32_t, R
 					ImGui::Text("Name");
 					ImGui::SameLine(labelWidth + 30);
 					ImGui::SetNextItemWidth(-1);
-					if (animator->hasAnim()) 
-						ImGui::Text(animator->getAnimName().c_str());
+					if (animator->hasAnim()) {
+						std::string displayName = AssetManager::getInstance().GetAssetName(animator->getAnimationClip().getAnim());
+						if (displayName.empty()) displayName = animator->getAnimName(); // fallback
+						ImGui::Text("%s", displayName.c_str());
+					}
+					else {
+						ImGui::TextDisabled("(none)");
+					}
 
 					ImGui::Button("Drop Animation Here", ImVec2(-1, 0));
 
 
 					if (ImGui::BeginDragDropTarget()) {
-						const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ANIMATION_ASSET");
-						if (payload) {
-							// store the payload data
-							const char* droppedAssetName = static_cast<const char*>(payload->Data);
-
-							// get a reference to the asset that has been dropped
-							//ScriptAbstract is the asset in assetmanager that has the name, the actors have the component
-							Ref<Animation> newAnim = AssetManager::getInstance().GetAsset<Animation>(droppedAssetName);
-
-							animator->setAnimation(newAnim);
+						if (auto* payload = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+							auto* data = static_cast<const EditorManager::ProjectDragPayload*>(payload->Data);
+							if (std::string(data->componentType) == "Animation") {
+								auto newAnim = AssetManager::getInstance().GetAsset<Animation>(data->assetName);
+								if (newAnim) animator->setAnimation(newAnim);
+							}
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -1254,9 +1248,11 @@ void InspectorWindow::DrawShaderComponent(const std::unordered_map<uint32_t, Ref
 			Ref<ShaderComponent> shader = shaderState.GetFirst();
 
 			// displaying some basic shader information
-			ImGui::TextWrapped("Shader Program ID: %u", shader->GetProgram());
-			ImGui::TextWrapped("Shader Vert: %s", shader->GetVertName());
-			ImGui::TextWrapped("Shader Frag: %s", shader->GetFragName());
+			std::string assetName = AssetManager::getInstance().GetAssetName(shader);
+			if (!assetName.empty()) ImGui::TextWrapped("Name: %s", assetName.c_str());
+			if (shader->GetVertName() && strlen(shader->GetVertName()) > 0) ImGui::TextWrapped("Vert: %s", fs::path(shader->GetVertName()).filename().string().c_str());
+			if (shader->GetFragName() && strlen(shader->GetFragName()) > 0) ImGui::TextWrapped("Frag: %s", fs::path(shader->GetFragName()).filename().string().c_str());
+			if (shader->GetGeomName() && strlen(shader->GetGeomName()) > 0) ImGui::TextWrapped("Geom: %s", fs::path(shader->GetGeomName()).filename().string().c_str());
 		}
 		else if (shaderState.allHaveComponent) {
 			ImGui::TextWrapped("All Selected Actors Have a ShaderComponent");
@@ -1268,22 +1264,13 @@ void InspectorWindow::DrawShaderComponent(const std::unordered_map<uint32_t, Ref
 
 		ImGui::Button("Drop New Shader Here", ImVec2(-1, 0));
 		if (ImGui::BeginDragDropTarget()) {
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SHADER_ASSET");
-			if (payload) {
-				// store the payload data
-				const char* droppedAssetName = static_cast<const char*>(payload->Data);
-				
-				// get a reference to the asset that has been dropped
-				Ref<ShaderComponent> newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(droppedAssetName);
-				
-				// get the actor
-				if (newShader) {
-					for (auto& component : shaderState.components) {
-						for (const auto& pair : selectedActors_) {
-							// replace the actors shader
-							if (pair.second->GetComponent<ShaderComponent>() == component) {
-								pair.second->ReplaceComponent<ShaderComponent>(newShader);
-							}
+			if (auto* payload = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+				auto* data = static_cast<const EditorManager::ProjectDragPayload*>(payload->Data);
+				if (std::string(data->componentType) == "ShaderComponent") {
+					auto newShader = AssetManager::getInstance().GetAsset<ShaderComponent>(data->assetName);
+					if (newShader) {
+						for (auto& [id, actor] : selectedActors_) {
+							actor->ReplaceComponent<ShaderComponent>(newShader);
 						}
 					}
 				}
@@ -1302,7 +1289,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 	if (physicsState.noneHaveComponent) return;
 
 	if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen)) {
-		RightClickContext<PhysicsComponent>("##PhysicsPopup", sceneGraph->debugSelectedAssets);
+		RightClickContext<PhysicsComponent>("##PhysicsPopup", selectedActors_);
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("State");
@@ -1547,7 +1534,7 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 	if (collisionState.noneHaveComponent) return;
 
 	if (ImGui::CollapsingHeader("Collision", ImGuiTreeNodeFlags_DefaultOpen)) {
-		RightClickContext<CollisionComponent>("##CollisionPopup", sceneGraph->debugSelectedAssets);
+		RightClickContext<CollisionComponent>("##CollisionPopup", selectedActors_);
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Shape");
@@ -1834,4 +1821,313 @@ void InspectorWindow::DrawCollisionComponent(const std::unordered_map<uint32_t, 
 	}
 
 	ImGui::Separator();
+}
+
+void InspectorWindow::DrawAssetInspector(const EditorManager::SelectedAsset& asset)
+{
+	// dispatcher for asset types
+
+	ImGui::TextWrapped("Asset: %s", asset.assetName.c_str());
+	ImGui::TextWrapped("Path: %s", SearchPath::getInstance().MakeRelative(asset.absolutePath).string().c_str());
+	ImGui::Separator();
+
+	std::string ext = asset.absolutePath.extension().string();
+	std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+	if (ext == ".mat") DrawMatManifestEditor(asset);
+	else if (ext == ".shader") DrawShaderManifestEditor(asset);
+	else if (ext == ".prefab") DrawPrefabEditor(asset);
+	else if (asset.componentType == "MeshComponent") {
+		auto mesh = AssetManager::getInstance().GetAsset<MeshComponent>(asset.assetName);
+		if (mesh) {
+			ImGui::TextWrapped("Vertices: %zu", mesh->getVertices());
+			ImGui::TextWrapped("Skeleton: %s", mesh->hasSkeleton() ? "Yes" : "No");
+			if (mesh->hasSkeleton()) ImGui::TextWrapped("Bones: %zu", mesh->getBoneCount());
+		}
+	}
+	else if (asset.componentType == "Animation") {
+		auto anim = AssetManager::getInstance().GetAsset<Animation>(asset.assetName);
+		if (anim && anim->queryLoadStatus()) {
+			ImGui::TextWrapped("Duration: %.2f ticks", anim->getDuration());
+			ImGui::TextWrapped("Ticks/s: %.2f", anim->getTicksPerSecond());
+		}
+		else {
+			ImGui::TextDisabled("(loading...)");
+		}
+	}
+	else if (asset.componentType == "ScriptAbstract") {
+		if (ImGui::Button("Open in Editor")) {
+			std::string cmd = "start \"\" \"" + asset.absolutePath.string() + "\"";
+			system(cmd.c_str());
+		}
+	}
+}
+
+void InspectorWindow::DrawMatManifestEditor(const EditorManager::SelectedAsset& asset)
+{
+	static std::string diff, spec, norm;
+	static fs::path loaded;
+	static bool refresh = false;
+
+	// read the mat 
+	if (loaded != asset.absolutePath) {
+		diff.clear(); spec.clear(); norm.clear(); refresh = false;
+		XMLDocument doc;
+		if (doc.LoadFile(asset.absolutePath.string().c_str()) == XML_SUCCESS) {
+			auto* root = doc.FirstChildElement("Material");
+			if (root) {
+				// lambda to help read for values
+				auto rd = [&](const char* tag, std::string& out) {
+					auto* el = root->FirstChildElement(tag);
+					if (el && el->GetText()) out = el->GetText();
+					};
+				rd("Diffuse", diff); rd("Specular", spec); rd("Normal", norm);
+			}
+		}
+
+		loaded = asset.absolutePath;
+	}
+
+	// lambda to use for diffuse, specular, and normal,
+	// uses inputtext (can't actually inputtext) as a drop off point for assets
+	auto slot = [&](const char* label, std::string& rel, bool required) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("%-10s", label);
+		ImGui::SameLine(labelWidth + 20.0f);
+
+		std::string display = rel.empty() ? "(none)" : fs::path(rel).filename().string();
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - (required ? 0.0f : 26.0f));
+		ImGui::InputText((std::string("##") + label).c_str(), &display, ImGuiInputTextFlags_ReadOnly);
+
+		if (ImGui::BeginDragDropTarget()) {
+			if (auto* p = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+				auto* d = static_cast<const EditorManager::ProjectDragPayload*>(p->Data);
+				std::string dropExt = fs::path(d->absolutePath).extension().string();
+				std::transform(dropExt.begin(), dropExt.end(), dropExt.begin(), ::tolower);
+				if (dropExt == ".png" || dropExt == ".jpg" || dropExt == ".jpeg") {
+					rel = SearchPath::getInstance().MakeRelative(fs::path(d->absolutePath)).string();
+					std::replace(rel.begin(), rel.end(), '\\', '/');
+					refresh = true;
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		if (!required) {
+			ImGui::SameLine();
+			if (ImGui::SmallButton((std::string("x##") + label).c_str())) {
+				rel.clear();
+				refresh = true;
+			}
+		}
+		};
+
+	slot("Diffuse", diff, true);
+	slot("Specular", spec, false);
+	slot("Normal", norm, false);
+
+	if (!diff.empty()) {
+		fs::path abs = SearchPath::getInstance().Resolve(diff);
+		if (!abs.empty() && AssetManager::getInstance().HasAsset<MaterialComponent>(abs.stem().string())) {
+			auto mat = AssetManager::getInstance().GetAsset<MaterialComponent>(abs.stem().string());
+			if (mat && mat->getDiffuseID() != 0) {
+				ImGui::Image((ImTextureID)(intptr_t)mat->getDiffuseID(), ImVec2(48, 48), ImVec2(0, 0), ImVec2(1, 1));
+			}
+		}
+	}
+
+	ImGui::Separator();
+
+	ImGui::BeginDisabled(!refresh);
+	if (ImGui::Button("Apply")) {
+		XMLObjectFile::WriteMatManifest(asset.absolutePath, diff, spec, norm);
+		AssetManager::getInstance().RefreshSingle(asset.absolutePath);
+		refresh = false;
+	}
+	ImGui::EndDisabled();
+
+	ImGui::SameLine();
+	if (ImGui::Button("Revert")) { loaded.clear(); refresh = false; }
+
+	if (ImGui::Button("Open File")) {
+		std::string cmd = "start \"\" \"" + asset.absolutePath.string() + "\"";
+		system(cmd.c_str());
+	}
+}
+
+void InspectorWindow::DrawShaderManifestEditor(const EditorManager::SelectedAsset& asset)
+{
+	static std::string vert, frag, tc, te, geom;
+	static fs::path loaded;
+	static bool refresh = false;
+	static bool compiled = false;
+
+	// read the shader
+	if (loaded != asset.absolutePath) {
+		vert.clear(); frag.clear(); tc.clear(); te.clear(); geom.clear();
+		refresh = false;
+		XMLDocument doc;
+		if (doc.LoadFile(asset.absolutePath.string().c_str()) == XML_SUCCESS) {
+			auto* root = doc.FirstChildElement("Shader");
+			if (root) {
+				// lambda to help read for values
+				auto rd = [&](const char* tag, std::string& out) {
+					auto* el = root->FirstChildElement(tag);
+					if (el && el->GetText()) out = el->GetText();
+					};
+				rd("Vertex", vert); rd("Fragment", frag);
+				rd("TessControl", tc); rd("TessEval", te); rd("Geometry", geom);
+			}
+		}
+
+		compiled = AssetManager::getInstance().HasAsset<ShaderComponent>(asset.assetName);
+		loaded = asset.absolutePath;
+	}
+
+	// lambda for the different shader values
+	auto slot = [&](const char* label, std::string& rel, bool required) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("%-12s", label);
+		ImGui::SameLine(labelWidth + 20.0f);
+
+		std::string display = rel.empty() ? "(none)" : fs::path(rel).filename().string();
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - (required ? 0.0f : 26.0f));
+		ImGui::InputText((std::string("##") + label).c_str(), &display, ImGuiInputTextFlags_ReadOnly);
+
+		if (ImGui::BeginDragDropTarget()) {
+			if (auto* p = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+				auto* d = static_cast<const EditorManager::ProjectDragPayload*>(p->Data);
+				std::string ext = fs::path(d->absolutePath).extension().string();
+				std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+				if (ext == ".glsl") {
+					rel = SearchPath::getInstance().MakeRelative(fs::path(d->absolutePath)).string();
+					std::replace(rel.begin(), rel.end(), '\\', '/');
+					refresh = true;
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		if (!required) {
+			ImGui::SameLine();
+			if (ImGui::SmallButton((std::string("x##") + label).c_str())) {
+				rel.clear(); 
+				refresh = true;
+			}
+		}
+		};
+
+	slot("Vertex", vert, true);
+	slot("Fragment", frag, true);
+	slot("Tess Ctrl", tc, false);
+	slot("Tess Eval", te, false);
+	slot("Geometry", geom, false);
+
+	ImGui::Separator();
+
+	bool canCompile = !vert.empty() && !frag.empty();
+	ImVec4 statusColor = compiled ? ImVec4(0.2f, 0.9f, 0.2f, 1.0f) : ImVec4(0.9f, 0.4f, 0.4f, 1.0f);
+	ImGui::TextColored(statusColor, "Status: %s", compiled ? "Compiled" : "Not compiled");
+	if (!canCompile) ImGui::TextColored(ImVec4(1, 0.6f, 0, 1), "Vertex and Fragment required.");
+
+	ImGui::BeginDisabled(!refresh || !canCompile);
+	if (ImGui::Button("Apply")) {
+		XMLObjectFile::WriteShaderManifest(asset.absolutePath, vert, frag, tc, te, geom);
+		AssetManager::getInstance().RefreshSingle(asset.absolutePath);
+		compiled = AssetManager::getInstance().HasAsset<ShaderComponent>(asset.assetName);
+		refresh = false;
+	}
+	ImGui::EndDisabled();
+
+	ImGui::SameLine();
+	if (ImGui::Button("Revert")) { loaded.clear(); refresh = false; }
+
+	if (ImGui::Button("Open File")) {
+		std::string cmd = "start \"\" \"" + asset.absolutePath.string() + "\"";
+		system(cmd.c_str());
+	}
+}
+
+void InspectorWindow::DrawPrefabEditor(const EditorManager::SelectedAsset& asset)
+{
+	// instanties the prefab as a dummy actor in order to edit it
+
+	if (loadedPrefabPath != asset.absolutePath) {
+		if (dummyActor) {
+			SceneGraph::getInstance().RemoveActor(dummyActor->getActorName());
+			dummyActor = nullptr;
+		}
+		dummyActor = SceneGraph::getInstance().InstantiatePrefab(asset.absolutePath);
+		loadedPrefabPath = asset.absolutePath;
+		refresh = false;
+	}
+
+	if (!dummyActor) {
+		ImGui::Text("Failed to load prefab.");
+		return;
+	}
+
+	ImGui::Text("Prefab: %s", asset.assetName.c_str());
+	ImGui::Separator();
+
+	std::unordered_map<uint32_t, Ref<Actor>> fakeSelected;
+	fakeSelected[dummyActor->getId()] = dummyActor;
+
+	Vec3 posBefore = dummyActor->GetComponent<TransformComponent>() ? dummyActor->GetComponent<TransformComponent>()->GetPosition() : Vec3();
+
+	DrawTransformComponent(fakeSelected);
+	DrawMeshComponent(fakeSelected);
+	DrawMaterialComponent(fakeSelected);
+	DrawShaderComponent(fakeSelected);
+	DrawLightComponent(fakeSelected);
+	DrawCameraComponent(fakeSelected);
+	DrawPhysicsComponent(fakeSelected);
+	DrawCollisionComponent(fakeSelected);
+	DrawAnimatorComponent(fakeSelected);
+	DrawScriptComponent(fakeSelected);
+
+	Vec3 posAfter = dummyActor->GetComponent<TransformComponent>() ? dummyActor->GetComponent<TransformComponent>()->GetPosition() : Vec3();
+	if (fabs(posBefore.x - posAfter.x) > VERY_SMALL ||
+		fabs(posBefore.y - posAfter.y) > VERY_SMALL ||
+		fabs(posBefore.z - posAfter.z) > VERY_SMALL)
+		refresh = true;
+
+	if (ImGui::IsAnyItemActive()) refresh = true;
+
+	ImGui::Separator();
+
+	if (refresh && !ImGui::IsAnyItemActive()) {
+		XMLObjectFile::WritePrefab(dummyActor->getActorName(), asset.absolutePath);
+		AssetManager::getInstance().RefreshSingle(asset.absolutePath);
+		refresh = false;
+	}
+
+	ImGui::Separator();
+	if (ImGui::Button("Instantiate in Scene")) {
+		SceneGraph::getInstance().InstantiatePrefab(asset.absolutePath);
+	}
+
+	if (ImGui::Button("Done (save and close)")) {
+		ClosePrefabEditor(true);
+		EditorManager::getInstance().ClearSelectedAsset();
+	}
+}
+
+void InspectorWindow::ClosePrefabEditor(bool save)
+{
+	if (!dummyActor) return;
+
+	if (save) {
+		XMLObjectFile::WritePrefab(dummyActor->getActorName(), loadedPrefabPath);
+		AssetManager::getInstance().RefreshSingle(loadedPrefabPath);
+	}
+
+	SceneGraph::getInstance().RemoveActor(dummyActor->getActorName());
+	dummyActor = nullptr;
+	loadedPrefabPath.clear();
+	refresh = false;
 }

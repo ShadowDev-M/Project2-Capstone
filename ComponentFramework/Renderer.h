@@ -67,6 +67,10 @@ class Renderer
 	Ref<ShaderComponent> shadowPointShader;
 	std::vector<Ref<ShaderComponent>> shaders;
 
+	// fallback components
+	Ref<MaterialComponent> fallbackMaterial;
+	Ref<ShaderComponent> fallbackShader;
+
 public:
 	// Meyers Singleton
 	static Renderer& getInstance() {
@@ -86,6 +90,9 @@ public:
 	// for drawmode
 	GLenum GetDrawMode() const { return drawMode; }
 	void SetDrawMode(GLenum drawMode_) { drawMode = drawMode_; }
+
+	Ref<MaterialComponent> GetFallBackMaterial() const { return fallbackMaterial; }
+	Ref<ShaderComponent> GetFallBackShader() const { return fallbackShader; }
 
 	bool showSceneGizmos = true;
 	bool showGameGizmos = false;

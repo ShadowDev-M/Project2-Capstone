@@ -2,19 +2,13 @@
 #include "XMLManager.h"
 
 #include "SceneGraph.h"
-#include "HierarchyWindow.h"
-#include "InspectorWindow.h"
-#include "AssetManagerWindow.h"
-#include "SceneWindow.h" 
-#include "GameWindow.h" 
-#include "MemoryWindow.h"
 #include "EditorCamera.h"
 
 // pass all the windows + scenegraph
 class SceneGraph;
 class HierarchyWindow;
 class InspectorWindow;
-class AssetManagerWindow;
+class ProjectWindow;
 class SceneWindow;
 class MemoryManagerWindow;
 class GameWindow;
@@ -49,7 +43,7 @@ private:
 	// editor manager handles all the windows
 	std::unique_ptr<HierarchyWindow> hierarchyWindow;
 	std::unique_ptr<InspectorWindow> inspectorWindow;
-	std::unique_ptr<AssetManagerWindow> assetManagerWindow;
+	std::unique_ptr<ProjectWindow> projectWindow;
 	std::unique_ptr<SceneWindow> sceneWindow;
 	std::unique_ptr<GameWindow> gameWindow;
 	std::unique_ptr<MemoryManagerWindow> memoryWindow;
@@ -94,12 +88,23 @@ private:
 	bool* GetWindowStatePtr(const std::string& windowName_) { return &windowStates[windowName_]; }
 
 	struct EditorIcons {
-		Ref<MaterialComponent> playIcon = std::make_shared<MaterialComponent>(nullptr, "icons/play.png");
-		Ref<MaterialComponent> pauseIcon = std::make_shared<MaterialComponent>(nullptr, "icons/pause.png");
-		Ref<MaterialComponent> stopIcon = std::make_shared<MaterialComponent>(nullptr, "icons/stop.png");
-		Ref<MaterialComponent> stepIcon = std::make_shared<MaterialComponent>(nullptr, "icons/step.png");
-		Ref<MaterialComponent> meshIcon = std::make_shared<MaterialComponent>(nullptr, "icons/meshIcon.png");
-		Ref<MaterialComponent> shaderIcon = std::make_shared<MaterialComponent>(nullptr, "icons/shader.png");
+		Ref<MaterialComponent> playIcon;
+		Ref<MaterialComponent> pauseIcon;
+		Ref<MaterialComponent> stopIcon;
+		Ref<MaterialComponent> stepIcon;
+
+		// ProjectWindow
+		Ref<MaterialComponent> folderIcon;
+		Ref<MaterialComponent> meshIcon;
+		Ref<MaterialComponent> textureIcon;
+		Ref<MaterialComponent> materialIcon;
+		Ref<MaterialComponent> shaderIcon;
+		Ref<MaterialComponent> scriptIcon;
+		Ref<MaterialComponent> animationIcon;
+		Ref<MaterialComponent> sceneIcon;
+		Ref<MaterialComponent> prefabIcon;
+		Ref<MaterialComponent> glslIcon;
+		Ref<MaterialComponent> unknownIcon;
 	};
 
 	EditorIcons editorIcons;
@@ -111,15 +116,13 @@ private:
 
 public:
 	// Meyers Singleton (from JPs class)
-	static EditorManager& getInstance() {
-		static EditorManager instance;
-		return instance;
-	}
+	static EditorManager& getInstance();
+	~EditorManager();
 
 	// Editor lifetime
 	bool Initialize(SDL_Window* window_, SDL_GLContext context_, SceneGraph* sceneGraph_);
 	void Shutdown();
-	void HandleEvents(const SDL_Event& event);
+	void HandleEvents(const SDL_Event& event) const;
 	void RenderEditorUI();
 	bool IsInitialized() const { return imguiInit; }
 	
@@ -156,7 +159,32 @@ public:
 	const EditorCamera& getEditorCamera() const { return editorCamera; }
 
 	uint32_t GetLastSelected() const { return lastSelectedActorID; }
-	void SetLastSelected(uint32_t id) { lastSelectedActorID = id; }
+	void SetLastSelected(uint32_t id) { lastSelectedActorID = id; ClearSelectedAsset(); }
 
-	void UpdateActorHierarchy() { if (hierarchyWindow) hierarchyWindow->UpdateHierarchyNextFrame(); }
+	void UpdateActorHierarchy();
+
+	// struct that contains the data for an asset payload
+	struct ProjectDragPayload {
+		char absolutePath[512];
+		char assetName[128];
+		char componentType[64];
+	};
+
+	struct SelectedAsset {
+		fs::path absolutePath;
+		std::string assetName;
+		std::string componentType;
+		bool isSet = false;
+	};
+
+	void SetSelectedAsset(const SelectedAsset& asset) { 
+		selectedAsset = asset; 
+		SceneGraph::getInstance().debugSelectedAssets.clear();
+	}
+	void ClearSelectedAsset();
+	const SelectedAsset& GetSelectedAsset() const{ return selectedAsset; }
+	void UpdateProjectWindow();
+
+private:
+	SelectedAsset selectedAsset;
 };

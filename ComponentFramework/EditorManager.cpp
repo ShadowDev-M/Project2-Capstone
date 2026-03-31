@@ -4,15 +4,49 @@
 #include "AnimationSystem.h"
 #include "InputManager.h"
 
+#include "HierarchyWindow.h"
+#include "InspectorWindow.h"
+#include "ProjectWindow.h"
+#include "SceneWindow.h" 
+#include "GameWindow.h" 
+#include "MemoryWindow.h"
+
+EditorManager& EditorManager::getInstance() {
+	static EditorManager instance;
+	return instance;
+}
+
 void EditorManager::CreateEditorIcons()
 {
-	editorIcons.playIcon->OnCreate();
-	editorIcons.pauseIcon->OnCreate();
-	editorIcons.stopIcon->OnCreate();
-	editorIcons.stepIcon->OnCreate();
-	editorIcons.meshIcon->OnCreate();
-	editorIcons.shaderIcon->OnCreate();
+	// helper lambda that handles shared ptr and oncreate
+	auto load = [](const char* rel) -> Ref<MaterialComponent> {
+		fs::path abs = SearchPath::getInstance().Resolve(rel);
+		if (abs.empty()) return nullptr;
+
+		auto mat = std::make_shared<MaterialComponent>(
+			nullptr, abs.string().c_str(), "", "");
+		if (mat->OnCreate()) return mat;
+		return nullptr;
+		};
+
+	editorIcons.playIcon = load("Icons/play.png");
+	editorIcons.pauseIcon = load("Icons/pause.png");
+	editorIcons.stopIcon = load("Icons/stop.png");
+	editorIcons.stepIcon = load("Icons/step.png");
+	editorIcons.folderIcon = load("Icons/folder.png");
+	editorIcons.meshIcon = load("Icons/document.png");
+	editorIcons.textureIcon = load("Icons/document.png");
+	editorIcons.materialIcon = load("Icons/document.png");
+	editorIcons.shaderIcon = load("Icons/document.png");
+	editorIcons.scriptIcon = load("Icons/document.png");
+	editorIcons.animationIcon = load("Icons/document.png");
+	editorIcons.sceneIcon = load("Icons/document.png");
+	editorIcons.prefabIcon = load("Icons/document.png");
+	editorIcons.glslIcon = load("Icons/document.png");
+	editorIcons.unknownIcon = load("Icons/document.png");
 }
+
+EditorManager::~EditorManager() = default;
 
 bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, SceneGraph* sceneGraph_) {
 	if (imguiInit) {
@@ -45,7 +79,7 @@ bool EditorManager::Initialize(SDL_Window* window_, SDL_GLContext context_, Scen
 		hierarchyWindow = std::make_unique<HierarchyWindow>(sceneGraph);
 		UpdateActorHierarchy();
 		inspectorWindow = std::make_unique<InspectorWindow>(sceneGraph);
-		assetManagerWindow = std::make_unique<AssetManagerWindow>(sceneGraph);
+		projectWindow = std::make_unique<ProjectWindow>();
 		sceneWindow = std::make_unique<SceneWindow>(sceneGraph);
 		gameWindow = std::make_unique<GameWindow>();
 		memoryWindow = std::make_unique<MemoryManagerWindow>(sceneGraph);
@@ -68,7 +102,7 @@ void EditorManager::Shutdown() {
 	// set unqiue pointer to nullptr
 	hierarchyWindow.reset();
 	inspectorWindow.reset();
-	assetManagerWindow.reset();
+	projectWindow.reset();
 	sceneWindow.reset();
 	gameWindow.reset();
 	memoryWindow.reset();
@@ -85,7 +119,7 @@ void EditorManager::Shutdown() {
 	Debug::Info("EditorManager shut down succesfully", __FILE__, __LINE__);
 }
 
-void EditorManager::HandleEvents(const SDL_Event& event) {
+void EditorManager::HandleEvents(const SDL_Event& event) const {
 	if (!imguiInit) {
 		return;
 	}
@@ -142,8 +176,8 @@ void EditorManager::RenderEditorUI() {
 	if (IsWindowOpen("Inspector") && inspectorWindow) {
 		inspectorWindow->ShowInspectorWindow(GetWindowStatePtr("Inspector"));
 	}
-	if (IsWindowOpen("AssetManager") && assetManagerWindow) {
-		assetManagerWindow->ShowAssetManagerWindow(GetWindowStatePtr("AssetManager"));
+	if (IsWindowOpen("Project") && projectWindow) {
+		projectWindow->ShowProjectWindowWindow(GetWindowStatePtr("Project"));
 	}
 	if (IsWindowOpen("Game") && gameWindow) {
 		gameWindow->ShowGameWindow(GetWindowStatePtr("Game"));
@@ -178,7 +212,6 @@ void EditorManager::SaveScene(const std::string& name)
 	fs::path saveDir = SearchPath::getInstance().GetRoot() / "Game Objects" / saveName;
 	fs::create_directories(saveDir);
 	sceneGraph->SaveFile(saveName);
-	AssetManager::getInstance().SaveAssetDatabaseXML();
 	ScreenManager::getInstance().setWindowTitle(saveName);
 	Debug::Info("Saved Scene: " + saveName, __FILE__, __LINE__);
 }
@@ -524,7 +557,7 @@ void EditorManager::RenderMainMenuBar() {
 		if (ImGui::BeginMenu("Window")) {
 			ImGui::MenuItem("Hierarchy", nullptr, GetWindowStatePtr("Hierarchy"));
 			ImGui::MenuItem("Inspector", nullptr, GetWindowStatePtr("Inspector"));
-			ImGui::MenuItem("Asset Manager", nullptr, GetWindowStatePtr("AssetManager"));
+			ImGui::MenuItem("Project", nullptr, GetWindowStatePtr("Project"));
 			ImGui::MenuItem("Scene", nullptr, GetWindowStatePtr("Scene"));
 			ImGui::MenuItem("Game", nullptr, GetWindowStatePtr("Game"));
 			ImGui::MenuItem("Memory Manager", nullptr, GetWindowStatePtr("Memory"));
@@ -548,4 +581,19 @@ std::pair<std::string, std::string> EditorManager::ConsumePendingRename() {
 	pendingRename.oldName.clear();
 	pendingRename.newName.clear();
 	return result;
+}
+
+void EditorManager::UpdateActorHierarchy()
+{
+	if (hierarchyWindow) hierarchyWindow->UpdateHierarchyNextFrame();
+}
+
+void EditorManager::ClearSelectedAsset()
+{
+	selectedAsset.isSet = false; if (projectWindow) projectWindow->ClearSelectedFile();
+}
+
+void EditorManager::UpdateProjectWindow()
+{
+	if (projectWindow) projectWindow->NeedsRefresh();
 }

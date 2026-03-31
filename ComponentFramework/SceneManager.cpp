@@ -91,6 +91,8 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 
 	AnimationSystem::getInstance().StartMeshLoadingWorker();
 
+	AssetManager::getInstance().Initialize();
+
 	/********************************   Default first scene   ***********************/
 	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
 	/********************************************************************************/

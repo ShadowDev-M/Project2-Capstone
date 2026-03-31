@@ -41,8 +41,6 @@ private:
 
 	// rename, duplicate, and re-parenting functions
 	void DuplicateActor(Ref<Actor> original_);
-	Ref<Actor> DeepCopyActor(const std::string& newName_, Ref<Actor> original_);
-	std::string GenerateDuplicateName(const std::string& originalName_);
 	void HandleDragDrop(const std::string& actorName_, Ref<Actor> actor_);
 	void UpdateHierarchyGraph();
 

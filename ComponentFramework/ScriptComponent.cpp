@@ -35,6 +35,8 @@ ScriptComponent::ScriptComponent(Component* parent_, Ref<ScriptAbstract> baseScr
 
 ScriptComponent::~ScriptComponent() {
 
+	if (!baseAsset) return;
+
 	std::vector<ScriptComponent*>::iterator it = std::find(scriptsInUse.begin(), scriptsInUse.end(), this);
 
 	if (it != scriptsInUse.end()) {
@@ -716,7 +718,41 @@ void ScriptService::loadLibraries()
 		"GetMainCamera", [](SceneGraph&) { return SceneGraph::getInstance().GetMainCamera(); },
 		"UsedCamera", sol::property([](SceneGraph&) { return SceneGraph::getInstance().GetMainCamera(); }),
 		"SetMainCamera", [](SceneGraph&, Ref<Actor> actor) { SceneGraph::getInstance().SetMainCamera(actor); },
-		"Input", tab
+		"Input", tab,
+		"Instantiate", [](SceneGraph&, const std::string& prefabName, sol::optional<Vec3> posOpt, sol::optional<Quaternion> rotOpt, sol::optional<Actor*> parentOpt) -> Actor* {
+			// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Object.Instantiate.html
+			
+			// search prefab paths for a match by stem or full filename
+			fs::path prefabPath;
+			for (auto& p : AssetManager::getInstance().GetPrefabPaths()) {
+				if (p.stem().string() == prefabName ||
+					p.filename().string() == prefabName) {
+					prefabPath = p; break;
+				}
+			}
+			// fallback
+			if (prefabPath.empty()) prefabPath = SearchPath::getInstance().Resolve("Prefabs/" + prefabName + ".prefab");
+
+			if (prefabPath.empty() || !fs::exists(prefabPath)) {
+				std::cerr << "Prefab: '" << prefabName << "' not found.\n";
+				return nullptr;
+			}
+
+			// like unity can give optional position and parent
+			Vec3 pos = posOpt.value_or(Vec3(0, 0, 0));
+			Quaternion rot = rotOpt.value_or(Quaternion(1, Vec3(0, 0, 0)));
+			Actor* parent = parentOpt.value_or(nullptr);
+
+			Ref<Actor> spawned = SceneGraph::getInstance().InstantiatePrefab(prefabPath, pos, rot, parent);
+			if (spawned) ScriptService::startActorScripts(spawned);
+
+			return spawned ? spawned.get() : nullptr;
+		},
+
+		"Destroy", [](SceneGraph&, Actor* actor) {
+			// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Object.Destroy.html
+			if (actor) SceneGraph::getInstance().RemoveActor(actor->getActorName());
+		}
 	);
 	
 

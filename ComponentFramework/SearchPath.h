@@ -22,7 +22,8 @@ public:
 
 	void Initialize(const fs::path& assetsRoot);
 
-	// takes a relative path like "meshes/Mario.obj" and converts it to an absolute path "C:\Users...\meshes\Mario.obj"
+	// takes a relative path like "meshes/Mario.obj" and converts it to an absolute path "C:\Users...\meshes\Mario.obj" 
+	// do NOT use this for writing files, build from root instead
 	fs::path Resolve(const fs::path& relative) const;
 
 	// converts an absolute path to a relative path, used for things that need a relative path, like assets or manifests

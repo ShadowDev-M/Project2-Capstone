@@ -97,7 +97,6 @@ private:
 	static void preloadScript(ScriptComponent* script_);
 	static void ClearLuaState();
 	static void startActorScripts(Ref<Actor> target);
-	static void stopActorScripts(Ref<Actor> target);
 
 	static void preloadActorScripts(Ref<Actor> target);
 
@@ -114,7 +113,7 @@ public:
 	static void loadLibraries();
 	static void registerCollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionDetectionState type);
 
-
+	static void stopActorScripts(Ref<Actor> target);
 
 };
 

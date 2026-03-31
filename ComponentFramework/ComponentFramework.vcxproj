@@ -136,7 +136,6 @@
     <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="AssetManagerWindow.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColliderDebug.h" />
@@ -155,6 +154,7 @@
     <ClInclude Include="MemoryWindow.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PhysicsSystem.h" />
+    <ClInclude Include="ProjectWindow.h" />
     <ClInclude Include="QuadraticSolver.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SceneWindow.h" />
@@ -203,7 +203,6 @@
     <ClCompile Include="AnimationSystem.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="AssetManager.cpp" />
-    <ClCompile Include="AssetManagerWindow.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColliderDebug.cpp" />
@@ -230,6 +229,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="PhysicsSystem.cpp" />
+    <ClCompile Include="ProjectWindow.cpp" />
     <ClCompile Include="QuadraticSolver.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneWindow.cpp" />
@@ -303,6 +303,8 @@
     <None Include="Assets\Shaders\colourPickVert.glsl" />
     <None Include="Assets\Shaders\defaultFrag.glsl" />
     <None Include="Assets\Shaders\defaultVert.glsl" />
+    <None Include="Assets\Shaders\fallbackFrag.glsl" />
+    <None Include="Assets\Shaders\fallbackVert.glsl" />
     <None Include="Assets\Shaders\flatWhite.glsl" />
     <None Include="Assets\Shaders\MultiPhongFrag.glsl" />
     <None Include="Assets\Shaders\MultiPhongVert.glsl" />

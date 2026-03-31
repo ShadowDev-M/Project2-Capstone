@@ -43,6 +43,10 @@ public:
 	///
 	bool LoadImage(const char* filename, TexType type);
 
+	// for manual material creation
+	void InjectDiffuseID(GLuint id) { diffuseID = id; }
+	void ForceCreated() { isCreated = true; }
+
 	virtual bool OnCreate();
 	virtual void OnDestroy();
 	virtual void Update(const float deltaTime_);

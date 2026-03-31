@@ -72,6 +72,11 @@ public:
 	bool RenameActor(const std::string& oldName_, const std::string& newName_);
 	void LoadActor(const char* name_, Ref<Actor> parent = Ref<Actor>());
 
+	// actor helpers
+	std::string GenerateUniqueActorName(const std::string& originalName) const;
+	Ref<Actor> DeepCopyActor(const std::string& newName_, Ref<Actor> original_, Actor* newParent = nullptr);
+	Ref<Actor> InstantiatePrefab(const fs::path& prefabPath, Vec3 position = Vec3(0, 0, 0), Quaternion rotation = Quaternion(1, Vec3(0, 0, 0)), Actor* parent = nullptr);
+
 	std::vector<std::string>& getAllTags() { return allTags; }
 
 	void addTag(const std::string& tag) {

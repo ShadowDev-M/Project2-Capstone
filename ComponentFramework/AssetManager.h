@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ScriptAbstract.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
@@ -10,8 +9,7 @@
 
 using namespace tinyxml2;
 
-struct AssetKey
-{
+struct AssetKey {
 	std::string name;
 	std::string componentType;
 
@@ -23,40 +21,48 @@ struct AssetKey
 struct AssetKeyHasher {
 	std::size_t operator()(const AssetKey& key) const {
 		std::hash<std::string> hasherStr;
-		
-
 		return hasherStr(key.name) ^
 			(hasherStr(key.componentType) << 1);
 	}
 };
 
-
 class AssetManager
 {
-private:
-	AssetManager() {}
-	
-	// delete copy and move constructers
+	AssetManager() = default;
 	AssetManager(const AssetManager&) = delete;
 	AssetManager(AssetManager&&) = delete;
 	AssetManager& operator = (const AssetManager&) = delete;
 	AssetManager& operator = (AssetManager&&) = delete;
 	
-	// unordered map that stores all the assets names, component types, and filepaths
-	std::unordered_map<AssetKey, Ref<Component>, AssetKeyHasher> assetManager;
+	// unordered map that stores all the assets names and component types, 
+	std::unordered_map<AssetKey, Ref<Component>, AssetKeyHasher> assetMap;
+	// unordered map that stores the assets filepaths
+	std::unordered_map<AssetKey, fs::path, AssetKeyHasher> assetPaths;
 
-	// TODO: XML is only temporary, its set up just to have a persistent database that can add and remove assets from the asset manager for basic engine functionality, 
-	// but in the long run it would be better to have a fully functional file browser similar to Unity
+	// giving each asset type its own loading function, its just easier to manage all the different assets
+	void LoadMesh(const fs::path& path);
+	void LoadTexture(const fs::path& path);
+	void LoadMatManifest(const fs::path& path);
+	void LoadShaderManifest(const fs::path& path);
+	void LoadScript(const fs::path& path);
+	void LoadAnimation(const fs::path& path);
+	void LoadScene(const fs::path& path);
+	void LoadPrefab(const fs::path& path);
+
+	// if an actor is using an asset thats been deleted
+	// need to notify that actor and get rid of that asset
+	void NotifyActors(const std::string& name, const std::string& componentType, const Ref<Component>& deletedComponent);
 	
-	// asset database XML file name
-	std::string assetDatabasePath = "AssetDatabase";
+	// used for RefreshSingle so that when a manifest is edited and the ptr is updated,
+	// the actors recieve the new ptr
+	void ReplaceComponent(const Ref<Component>& oldComponent, const Ref<Component>& newComponent, const std::string& componentType);
 
-	// helper method that reads the asset database XML file for a specific type of asset (used in LoadAssetDatabaseXML to actually load the assets)
-	template<typename AssetTemplate>
-	bool LoadAssetTypeXML(XMLElement* assetElement_, const std::string& assetName_);
+	// non-component files
+	std::vector<fs::path> rawGLSLPaths;
+	std::vector<fs::path> scenePaths;
+	std::vector<fs::path> prefabPaths;
 
 public:
-
 	// Meyers Singleton (from JPs class)
 	static AssetManager& getInstance() {
 		static AssetManager instance;
@@ -65,24 +71,31 @@ public:
 
 	~AssetManager() { RemoveAllAssets(); }
 
+	bool Initialize() { Refresh(); return true; }
+	void RemoveAllAssets() { assetMap.clear(); assetPaths.clear(); }
+
+	// debated on having a filewatcher, or just doing manual refreshes wherever needed,
+	// settled on manual refreshes, in the editor whenever something changes it'll refresh automatically, 
+	// it just means we have to manually do a refresh whenever we add files via the file explorer/outside the engine
+	void Refresh();
+
+	// if a single file needs changes its cheaper to just refresh that single file then doing the entire map
+	void RefreshSingle(const fs::path& absolutePath);
+
 	template<typename AssetTemplate, typename ... Args>
 	bool AddAsset(const std::string& name_, Args&& ... args_) { 
 		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
 		AssetKey key = { name_, componentType };
 
-		RECORD Ref<AssetTemplate> asset = std::make_shared<AssetTemplate>(std::forward<Args>(args_)...);
-
-	
-
 		// check to see if theres already an asset in the assetmanager with the same name
-		auto it = assetManager.find(key);
-		if (it != assetManager.end()) {
+		if (assetMap.count(key)) {
 			Debug::Warning("Asset: " + name_ + " already exists.", __FILE__, __LINE__);
 			return false;
 		}
 
 		// add asset to assetmanager
-		assetManager[key] = asset;
+		RECORD Ref<AssetTemplate> asset = std::make_shared<AssetTemplate>(std::forward<Args>(args_)...);
+		assetMap[key] = asset;
 		return true;
 	}
 
@@ -90,120 +103,55 @@ public:
 	Ref<AssetTemplate> GetAsset(const std::string& assetName_) {
 		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
 		AssetKey key = { assetName_, componentType };
-		auto it = assetManager.find(key);
 
 		// if asset is found return it
-		if (it != assetManager.end()) {
+		auto it = assetMap.find(key);
+		if (it != assetMap.end()) {
 			return std::dynamic_pointer_cast<AssetTemplate>(it->second);
 		}
 
 		// if asset isnt found, throw error
 		else {
 			Debug::Error("Can't find requested asset: ", __FILE__, __LINE__);
-			return Ref<AssetTemplate>(nullptr);
+			return nullptr;
 		}
 	}
 
-	std::vector<Ref<Component>> GetAllAssets() const {
-		std::vector<Ref<Component>> allAssets;
-
-		for (auto& pair : assetManager) {
-			allAssets.push_back(pair.second);
-		}
-		return allAssets;
-	}
-	
-	std::vector<std::string> GetAllAssetNames() const {
-		std::vector<std::string> allAssetNames;
-
-		for (auto& pair : assetManager) {
-			allAssetNames.push_back(pair.first.name);
-		}
-		return allAssetNames;
+	template<typename T>
+	bool HasAsset(const std::string& name) const {
+		std::string type = std::string(typeid(T).name()).substr(6);
+		return assetMap.count(AssetKey{ name, type }) > 0;
 	}
 
-	std::vector<std::pair<std::string, std::string>> GetAllAssetKeyPair() const {
-		std::vector<std::pair<std::string, std::string>> allAssetNames;
-
-		for (auto& pair : assetManager) {
-			allAssetNames.push_back(std::make_pair(pair.first.name, pair.first.componentType));
-		}
-		return allAssetNames;
-	}
-
-	/// returns name of component
-	std::string getAssetName(const Ref<Component>& component_) {
-    for (auto& [key, value] : assetManager) {
-        if (value == component_) {
-            return key.name;
-        }
-    }
-
-    // Not found, handle better to not explode via nothing being returned :/
-    return {};
-}
-
-	// lists assets
-	void ListAllAssets() const {
-		std::cout << "Asset Manager Currently Holds These Assets: " << std::endl;
-		for (auto it = assetManager.begin(); it != assetManager.end(); it++) {
-			std::cout << it->first.name << std::endl;
-		}
-	}
-
-	// removes assets
-	void RemoveAllAssets() {
-		std::cout << "Deleting All Assets In Asset Manager" << std::endl;
-		assetManager.clear();
-	}
-
-	bool OnCreate();
-
-	//
-	std::string GetAssetDatabasePath() { return assetDatabasePath; }
-
-	// save all assets to the asset database
-	bool SaveAssetDatabaseXML() const;
-
-	// removes an asset by name
 	template<typename AssetTemplate>
-	bool RemoveAsset(const std::string& assetName_);
-
-	// loads the asset database xml file
-	bool LoadAssetDatabaseXML();
-
-	// reloads all the assets
-	bool ReloadAssetsXML();
-
-	// adds, gets, and calls the oncreate of a specific asset used when creating an asset in scene
-	template<typename AssetTemplate, typename ... Args>
-	bool LoadAsset(const std::string& assetName_, Args&& ... args_) {
-		// get the typeID for a compontent and return its name
-		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
-
-		// add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-		bool result = AddAsset<AssetTemplate>(assetName_, std::forward<Args>(args_)...);
-		if (!result) {
-			Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
-			return false;
-		}
-		auto asset = GetAsset<AssetTemplate>(assetName_);
-		if (!asset) {
-			Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__);
-			RemoveAsset<AssetTemplate>(assetName_);
-			return false;
-		}
-		if (!asset->OnCreate()) {
-			RemoveAsset<AssetTemplate>(assetName_);
-			Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
-			return false;
+	std::vector<std::pair<std::string, Ref<AssetTemplate>>> GetAllOfType() const {
+		std::string type = std::string(typeid(AssetTemplate).name()).substr(6);
+		std::vector<std::pair<std::string, Ref<AssetTemplate>>> results;
+		for (auto& [key, val] : assetMap) {
+			if (key.componentType == type) {
+				auto typed = std::dynamic_pointer_cast<AssetTemplate>(val);
+				if (typed) results.emplace_back(key.name, typed);
+			}
 		}
 
-		// TODO change this because it saves the entire database
-		SaveAssetDatabaseXML();
-
-		// if the asset manages to pass everything, then display an info debug message
-		Debug::Info("Succesfully loaded " + componentType + ": " + assetName_, __FILE__, __LINE__);
-		return true;
+		return results;
 	}
+
+	// ProjectWindow functions
+	bool RenameAsset(const std::string& oldName, const std::string& newName, const std::string& componentType);
+	bool DuplicateAsset(const std::string& name, const std::string& componentType);
+	bool DeleteAsset(const std::string& name, const std::string& componentType);
+	bool MoveAsset(const std::string& name, const std::string& componentType, const fs::path& destination);
+	std::string GenerateUniqueFileName(const fs::path& dir, const std::string& stem, const std::string& ext);
+
+	fs::path GetAssetPath(const std::string& name, const std::string& componentType) const;
+	std::string GetAssetName(const Ref<Component>& component) const;
+	std::vector<Ref<Component>> GetAllAssets() const;
+	std::vector<std::pair<std::string, std::string>> GetAllAssetKeyPair() const;
+
+	// there are certain file types that are no component related, and will not be loaded in
+	// so these have to be created separately
+	const std::vector<fs::path>& GetRawGLSLPaths() const { return rawGLSLPaths; }
+	const std::vector<fs::path>& GetScenePaths() const { return scenePaths; }
+	const std::vector<fs::path>& GetPrefabPaths() const { return prefabPaths; }
 };

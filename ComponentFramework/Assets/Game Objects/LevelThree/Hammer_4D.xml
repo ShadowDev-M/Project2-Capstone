@@ -1,0 +1,65 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="-3.2027886" y="-3.7202101" z="-4.6555529"/>
+        <rotation w="0.70210534" x="0.357748" y="-0.54856825" z="0.27953058"/>
+        <scale x="2.9000249" y="2.9000058" z="2.900018"/>
+    </TransformComponent>
+    <PhysicsComponent>
+        <PhysicsState state="0"/>
+        <Constraints freezePosX="0" freezePosY="0" freezePosZ="0" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
+        <mass value="1"/>
+        <UsingGravity isUsing="1"/>
+        <drag value="0"/>
+        <angularDrag value="0.050000001"/>
+        <friction value="0.5"/>
+        <restitution value="0"/>
+    </PhysicsComponent>
+    <CollisionComponent>
+        <CollisionState state="0"/>
+        <CollisionType type="0"/>
+        <isTrigger trigger="0"/>
+        <radius value="1"/>
+        <centre x="0" y="0" z="0"/>
+        <centrePosA x="0" y="1" z="0"/>
+        <centrePosB x="0" y="-1" z="0"/>
+        <halfExtents x="1" y="1" z="1"/>
+        <orientation w="1" x="0" y="0" z="0"/>
+    </CollisionComponent>
+    <CameraComponent>
+        <type value="0"/>
+        <fov value="60"/>
+        <near value="0.029999999"/>
+        <far value="1000"/>
+        <orthoSize value="5"/>
+    </CameraComponent>
+    <LightComponent>
+        <diffuse x="0.5" y="0.5" z="0.5" w="1"/>
+        <specular x="1" y="1" z="1" w="1"/>
+        <intensity magnitude="1"/>
+        <LightType type="1"/>
+        <shadowType type="0"/>
+        <shadowNear value="0.1"/>
+        <shadowFar value="200"/>
+        <shadowResolution value="1024"/>
+        <shadowOrthoSize value="60"/>
+    </LightComponent>
+    <AnimatorComponent>
+        <startTime time="0"/>
+        <speedMult mult="0"/>
+        <looping state="false"/>
+        <animName name=""/>
+    </AnimatorComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
+    <MeshComponent name="Hammer"/>
+    <MaterialComponent name="Hammer"/>
+    <ShaderComponent name="MultiPhong"/>
+    <ScriptComponent name="PlayerController"/>
+</Actor>

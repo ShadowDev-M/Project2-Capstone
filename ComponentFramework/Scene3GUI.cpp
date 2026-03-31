@@ -25,7 +25,6 @@ Scene3GUI::~Scene3GUI() {
 bool Scene3GUI::OnCreate() {
 	Debug::Info("Loading assets Scene3GUI: ", __FILE__, __LINE__);
 
-	AssetManager::getInstance().OnCreate();	
 	SceneGraph::getInstance().OnCreate();
 
 	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(SceneGraph::getInstance().sceneFileName);
@@ -46,10 +45,6 @@ bool Scene3GUI::OnCreate() {
 
 void Scene3GUI::OnDestroy() {
 	Debug::Info("Deleting assets Scene3GUI: ", __FILE__, __LINE__);
-
-	// save all the assets in the assetmanager to the xml file then remove them all locally
-	AssetManager::getInstance().SaveAssetDatabaseXML();
-	AssetManager::getInstance().RemoveAllAssets();
 
 	ColliderDebug::getInstance().OnDestroy();
 

@@ -107,9 +107,6 @@
     <ClInclude Include="Scene3GUI.h">
       <Filter>Header Files\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="AssetManagerWindow.h">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="HierarchyWindow.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
@@ -263,12 +260,12 @@
     <ClInclude Include="SearchPath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ProjectWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window.cpp">
@@ -305,9 +302,6 @@
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="HierarchyWindow.cpp">
-      <Filter>Source Files\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="AssetManagerWindow.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="CollisionSystem.cpp">
@@ -427,17 +421,23 @@
     <ClCompile Include="GameWindow.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="TilingSettings.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="ProjectWindow.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="SearchPath.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowSettings.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Source Files\Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -511,6 +511,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Assets\Shaders\texturePhongVert.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\fallbackFrag.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\fallbackVert.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
