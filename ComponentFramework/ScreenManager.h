@@ -44,34 +44,6 @@ public:
 	const SettingsConfig& getConfig() const { return cfg; }
 	SDL_Window* getWindow() const { return window; }
 
-	// Event Dispatcher/Callback System 
-	// using in cameracomponent so that the camera projection gets updated on resize, 
-	// use this anywhere else something similar to this is also needed
-	// basically makes it so theres no need to constantly check if something is resized and then to call the specific function
-	using ResizeDispatcher = std::function<void(int w, int h)>;
-	int OnRenderResize(ResizeDispatcher dispatch) {
-		int id = nextDispatchId++;
-		renderResizeCallbacks.emplace_back(id, std::move(dispatch));
-		return id;
-	}
-	void RemoveRenderResizeCallback(int id) {
-		renderResizeCallbacks.erase(
-			std::remove_if(renderResizeCallbacks.begin(), renderResizeCallbacks.end(), 
-				[id](const auto& pair) {return pair.first == id; }), 
-			renderResizeCallbacks.end());
-	}
-	int OnDisplayResize(ResizeDispatcher dispatch) {
-		int id = nextDispatchId++;
-		displayResizeCallbacks.emplace_back(id, std::move(dispatch));
-		return id;
-	}
-	void RemoveDisplayResizeCallback(int id) {
-		displayResizeCallbacks.erase(
-			std::remove_if(displayResizeCallbacks.begin(), displayResizeCallbacks.end(),
-				[id](const auto& pair) {return pair.first == id; }),
-			displayResizeCallbacks.end());
-	}
-
 private:
 	// deleting copy and move constructers, setting up singleton
 	ScreenManager() = default;
@@ -79,9 +51,6 @@ private:
 	ScreenManager(ScreenManager&&) = delete;
 	ScreenManager& operator=(const ScreenManager&) = delete;
 	ScreenManager& operator=(ScreenManager&&) = delete;
-
-	void renderResolutionNotifier(int w, int h) { for (auto& [id, dispatch] : renderResizeCallbacks) dispatch(w, h); }
-	void displayResolutionNotifier(int w, int h) { for (auto& [id, dispatch] : displayResizeCallbacks) dispatch(w, h); }
 
 	void SetRenderResolution(int w, int h);
 	void SetDisplayResolution(int w, int h);
@@ -96,7 +65,4 @@ private:
 
 	SDL_Window* window = nullptr;
 	SettingsConfig cfg;
-	std::vector<std::pair<int, ResizeDispatcher>> renderResizeCallbacks;
-	std::vector<std::pair<int, ResizeDispatcher>> displayResizeCallbacks;
-	int nextDispatchId = 0;
 };

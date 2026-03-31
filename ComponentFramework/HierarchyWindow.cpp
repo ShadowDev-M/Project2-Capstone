@@ -61,7 +61,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 			
 			if (ImGui::MenuItem("Create Empty Actor")) {
 				std::string actorName = "EmptyActor";
-				std::string newActorName = GenerateDuplicateName(actorName);
+				std::string newActorName = sceneGraph->GenerateUniqueActorName(actorName);
 
 				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
 				RECORD newActor->AddComponent<TransformComponent>(newActor.get(), Vec3(0.0f, 0.0f, 0.0f),
@@ -105,7 +105,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 		// prepare the actor drag and drop
 		if (const ImGuiPayload* payload = ImGui::GetDragDropPayload()) {
 			
-			if (payload->IsDataType("ACTOR_NODE") && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
+			if ((payload->IsDataType("ACTOR_NODE") || payload->IsDataType("PROJECT_ASSET")) && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
 
 				if (!ImGui::IsAnyItemHovered()) {
 					// creating padding for invis button
@@ -131,6 +131,15 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 							UpdateHierarchyNextFrame();
 						}
 
+						const ImGuiPayload* acceptedPrefab = ImGui::AcceptDragDropPayload("PROJECT_ASSET");
+						if (acceptedPrefab) {
+							auto* data = static_cast<const EditorManager::ProjectDragPayload*>(acceptedPrefab->Data);
+							fs::path abs(data->absolutePath);
+							if (abs.extension() == ".prefab") {
+								sceneGraph->InstantiatePrefab(abs);
+							}
+						}
+
 						ImGui::EndDragDropTarget();
 					}
 				}
@@ -141,6 +150,7 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup)) {
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && !ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
 				sceneGraph->debugSelectedAssets.clear();
+				EditorManager::getInstance().ClearSelectedAsset();
 			}
 		}
 
@@ -213,7 +223,6 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 		}
 	}
 
-
 	HandleDragDrop(actorName_, actor_);
 
 	if (ImGui::BeginPopupContextItem("##ActorContext")) {
@@ -221,6 +230,18 @@ void HierarchyWindow::DrawActorNode(const std::string& actorName_, HierarchyNode
 			DuplicateActor(actor_);
 		}
 		ImGui::Separator();
+		
+		if (ImGui::MenuItem("Create Prefab")) {
+			fs::path prefabDir = SearchPath::getInstance().EnsureSubfolder("Prefabs");
+			std::string stem = AssetManager::getInstance().GenerateUniqueFileName(prefabDir, actorName_, ".prefab");
+			fs::path prefabPath = prefabDir / (stem + ".prefab");
+
+			if (XMLObjectFile::WritePrefab(actorName_, prefabPath)) {
+				AssetManager::getInstance().RefreshSingle(prefabPath);
+				EditorManager::getInstance().UpdateProjectWindow();
+			}
+		}
+
 		if (ImGui::MenuItem("Delete")) {
 			sceneGraph->RemoveActor(actorName_);
 		}
@@ -266,136 +287,13 @@ void HierarchyWindow::UpdateHierarchyGraph()
 
 }
 
-
-
 void HierarchyWindow::DuplicateActor(Ref<Actor> original_) {
 	if (!original_) return;
 
-	if (original_->getParentActor() == nullptr) {
-		std::string newName = GenerateDuplicateName(original_->getActorName());
-
-		Ref<Actor> parentActor = DeepCopyActor(newName, original_);
-		parentActor->OnCreate();
-		sceneGraph->AddActor(parentActor);
-
-		if (hierarchyGraph[original_->getActorName()].children.size() != 0) {
-			for (const auto& child : hierarchyGraph[original_->getActorName()].children) {
-				newName = GenerateDuplicateName(child.first);
-				
-				Ref<Actor> childActor = DeepCopyActor(newName, child.second.nodeActor);
-				childActor->setParentActor(parentActor.get());
-				childActor->OnCreate();
-				sceneGraph->AddActor(childActor);
-			}
-		}
-	}
-	else if (original_->getParentActor() != nullptr) {
-		std::string newName = GenerateDuplicateName(original_->getActorName());
-
-		Ref<Actor> parentActor = DeepCopyActor(newName, original_);
-		parentActor->OnCreate();
-		sceneGraph->AddActor(parentActor);
-	}
+	std::string newName = sceneGraph->GenerateUniqueActorName(original_->getActorName());
+	sceneGraph->DeepCopyActor(newName, original_, original_->getParentActor());
 
 	UpdateHierarchyNextFrame();
-}
-
-Ref<Actor> HierarchyWindow::DeepCopyActor(const std::string& newName_, Ref<Actor> original_) {
-	if (!original_) return nullptr;
-
-	RECORD Ref<Actor> copy = std::make_shared<Actor>(original_->getParentActor(), newName_);
-
-	if (auto transform = original_->GetComponent<TransformComponent>()) {
-		RECORD copy->AddComponent<TransformComponent>(copy.get(),
-			transform->GetPosition(),
-			transform->GetOrientation(),
-			transform->GetScale());
-	}
-
-	if (auto mesh = original_->GetComponent<MeshComponent>()) {
-		copy->AddComponent<MeshComponent>(mesh);
-	}
-
-	if (auto material = original_->GetComponent<MaterialComponent>()) {
-		copy->AddComponent<MaterialComponent>(material);
-	}
-
-	if (auto shader = original_->GetComponent<ShaderComponent>()) {
-		copy->AddComponent<ShaderComponent>(shader);
-	}
-
-	if (auto camera = original_->GetComponent<CameraComponent>()) {
-		RECORD copy->AddComponent<CameraComponent>(copy.get(), camera->getType(), camera->getFOV(), camera->getNearClipPlane(), camera->getFarClipPlane(), camera->getOrthoSize());
-	}
-
-	if (auto light = original_->GetComponent<LightComponent>()) {
-		RECORD copy->AddComponent<LightComponent>(nullptr, light->getType(), light->getSpec(), light->getDiff(), light->getIntensity());
-		copy->GetComponent<LightComponent>()->setShadowType(light->getShadowType());
-		copy->GetComponent<LightComponent>()->setShadowNear(light->getShadowNear());
-		copy->GetComponent<LightComponent>()->setShadowFar(light->getShadowFar());
-		copy->GetComponent<LightComponent>()->setShadowOrthoSize(light->getShadowOrthoSize());
-		LightingSystem::getInstance().AddActor(copy);
-	}
-
-	if (auto physics = original_->GetComponent<PhysicsComponent>()) {
-		RECORD copy->AddComponent<PhysicsComponent>(copy.get(), physics->getState(), physics->getConstraints(), physics->getMass(), physics->getUseGravity(), physics->getDrag(), physics->getAngularDrag(), physics->getFriction(), physics->getRestitution());
-		PhysicsSystem::getInstance().AddActor(copy);
-	}
-
-	if (auto col = original_->GetComponent<CollisionComponent>()) {
-		RECORD copy->AddComponent<CollisionComponent>(copy.get());
-		if (auto newCol = copy->GetComponent<CollisionComponent>()) {
-			newCol->setType(col->getType());
-			newCol->setState(col->getState());
-			newCol->setIsTrigger(col->getIsTrigger());
-			newCol->setRadius(col->getRadius());
-			newCol->setCentre(col->getCentre());
-			newCol->setCentrePosA(col->getCentrePosA());
-			newCol->setCentrePosB(col->getCentrePosB());
-			newCol->setHalfExtents(col->getHalfExtents());
-			newCol->setOrientation(col->getOrientation());
-		}
-		CollisionSystem::getInstance().AddActor(copy);
-	}
-
-	for (auto& script : original_->GetAllComponent<ScriptComponent>()) {
-		RECORD copy->AddComponent<ScriptComponent>(copy.get(), script->getBaseAsset());
-	}
-
-	if (auto anim = original_->GetComponent<AnimatorComponent>()) {
-		RECORD copy->AddComponent<AnimatorComponent>(copy.get());
-	}
-
-	return copy;
-}
-
-std::string HierarchyWindow::GenerateDuplicateName(const std::string& originalName) {
-	std::string baseName = originalName;
-	int counter = 1;
-
-	// this whole thing just makes it so that if you are duplicating an actor like Cube_3D, it wont do Cube_3D_1D and it'll make sure its Cube_4D
-	
-	// find the start of the duplicated name
-	size_t start = originalName.find_last_of('_');
-	
-	// make sure that its not the end of the string
-	if (start != std::string::npos) {
-
-		// find the end of the duplicated name
-		size_t end = originalName.find_last_of('D');
-		
-		// get whats inbetween
-		if (end == originalName.length() - 1) {
-			baseName = originalName.substr(0, start);
-		}
-	}
-
-	std::string newName;
-	do {
-		newName = baseName + "_" + std::to_string(counter++) + "D"; // can't end or start with a special character, XML breaks so no ( )
-	} while (sceneGraph->GetActor(newName) != nullptr);
-
-	return newName;
 }
 
 void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> actor_) {
@@ -443,7 +341,6 @@ void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> a
 					}
 					checkParent = checkParent->getParentActor();
 				}
-			
 
 				// wont create cycle, so its okay to parent
 				if (!wouldCreateCycle && draggedActor) {
@@ -463,6 +360,14 @@ void HierarchyWindow::HandleDragDrop(const std::string& actorName_, Ref<Actor> a
 			}
 	
 			UpdateHierarchyNextFrame();
+		}
+
+		if (auto* payload = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+			auto* data = static_cast<const EditorManager::ProjectDragPayload*>(payload->Data);
+			fs::path abs(data->absolutePath);
+			if (abs.extension() == ".prefab") {
+				sceneGraph->InstantiatePrefab(abs, Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), actor_.get());
+			}
 		}
 
 		ImGui::EndDragDropTarget();

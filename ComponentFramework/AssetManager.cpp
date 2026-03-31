@@ -1,441 +1,443 @@
 #include "pch.h"
 #include "AssetManager.h"
 #include "ScriptAbstract.h"
+#include "AnimationSystem.h"
+#include "Renderer.h"
+#include "SceneGraph.h"
+#include "ShadowSettings.h"
+#include "TilingSettings.h"
 
-bool AssetManager::OnCreate() {
+void AssetManager::Refresh() {
+    // snapshot of current maps, not a reference a full copy
+    auto oldMap = assetMap;
+    auto oldPaths = assetPaths;
 
-    int* p = new int[3];
+    assetMap.clear();
+    assetPaths.clear();
+    rawGLSLPaths.clear();
+    scenePaths.clear();
+    prefabPaths.clear();
 
-    delete[] p;
-	std::cout << "Initialzing all assets: " << std::endl;
+    SearchPath& sp = SearchPath::getInstance();
 
-    /*if*/ (std::filesystem::create_directory("Asset Manager")) ;
+    // basically this means that for a specific file to be loaded as a specific component, it must be in a specific folder
+    // this was the easiest way I could think of so that different file types get loaded in properly as their respective components
+    // because if I just search through one big open directory for all file types, things like .fbx meshes but turn into .fbx animations
+    // it is recursive though, so we could do like Scripts/Player, or Animations/Player, it just needs that subfolder
+    for (auto& a : sp.FindByExtension("Meshes", { ".obj", ".fbx" })) LoadMesh(a);
+    for (auto& a : sp.FindByExtension("Textures", { ".png", ".jpg", ".jpeg" })) LoadTexture(a);
+    for (auto& a : sp.FindByExtension("Materials", { ".mat" })) LoadMatManifest(a);
+    for (auto& a : sp.FindByExtension("Shaders", { ".glsl" })) rawGLSLPaths.push_back(a); // .shader manifests are the actual shader components, these are purely just to create them
+    for (auto& a : sp.FindByExtension("Shaders", { ".shader" })) LoadShaderManifest(a);   // could always do a rename thing though where its no longer .glsl, and split into .frag, .vert, etc, and it detects via same names
+                                                                                          // would still face the same issues though when creating shaders, how can you tell apart a shader that has different naming schemes i.e outline.vert and phong.frag
+    for (auto& a : sp.FindByExtension("Scripts", { ".lua" })) LoadScript(a);
+    for (auto& a : sp.FindByExtension("Animations", { ".gltf", ".fbx" })) LoadAnimation(a);
+    for (auto& a : sp.FindByExtension("Scenes", { ".scene" })) LoadScene(a);
+    for (auto& a : sp.FindByExtension("Prefabs", { ".prefab" })) LoadPrefab(a);
 
-    // load all the assets from the asset database
-    LoadAssetDatabaseXML();
+    // checks the old and current map to find any actors that might have been deleted or edited externally
+    for (auto& [key, oldComponent] : oldMap) {
+        auto newIt = assetMap.find(key);
 
-    // when loading the assets from the database, all the assets' OnCreate are called, this is just extra insurance to call any of the assets already in the assetmanagers oncreate
-    /*for (auto& asset : assetManager) {
-        if (!asset.second->OnCreate()) {
-            Debug::Error("Asset failed to initialize: " + asset.first.name, __FILE__, __LINE__);
-            return false;
+        if (newIt == assetMap.end()) {
+            // asset got deleted
+            NotifyActors(key.name, key.componentType, oldComponent);
         }
-    }*/
+        else if (newIt->second.get() != oldComponent.get()) {
+            // incase of an external hotswap
+            ReplaceComponent(oldComponent, newIt->second, key.componentType);
+        }
+    }
+
+    // TODO: for testing, delete when window is setup
+    Debug::Info("AssetManager: Refresh complete. " + std::to_string(assetMap.size()) + " assets." + " GLSL: " + std::to_string(rawGLSLPaths.size()), __FILE__, __LINE__);
+}
+
+void AssetManager::RefreshSingle(const fs::path& absolutePath) {
+    std::string ext = absolutePath.extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower); // convert to lowercase for extension check
+    std::string stem = absolutePath.stem().string();
+
+    // finding the component type by file extension
+    std::string type;
+    if (ext == ".obj" || ext == ".fbx") type = "MeshComponent";
+    else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".mat") type = "MaterialComponent";
+    else if (ext == ".shader") type = "ShaderComponent";
+    else if (ext == ".lua") type = "ScriptAbstract";
+    else if (ext == ".gltf") type = "Animation";
+
+    // saves the oldcomponent as a reference
+    Ref<Component> oldComponent;
+    if (!type.empty()) {
+        AssetKey key{ stem, type };
+        auto it = assetMap.find(key);
+        if (it != assetMap.end()) {
+            oldComponent = it->second;
+            assetMap.erase(it);
+            assetPaths.erase(key);
+        }
+    }
+    else if (ext == ".glsl") rawGLSLPaths.erase(std::remove(rawGLSLPaths.begin(), rawGLSLPaths.end(), absolutePath), rawGLSLPaths.end());
+    else if (ext == ".scene") scenePaths.erase(std::remove(scenePaths.begin(), scenePaths.end(), absolutePath), scenePaths.end());
+    else if (ext == ".prefab") prefabPaths.erase(std::remove(prefabPaths.begin(), prefabPaths.end(), absolutePath), prefabPaths.end());
+
+    // if the file still exists/wasn't deleted
+    if (!fs::exists(absolutePath)) return;
+    if (ext == ".obj" || ext == ".fbx") {
+        std::string folder = absolutePath.parent_path().filename().string();
+        if (folder == "Animations") LoadAnimation(absolutePath);
+        else LoadMesh(absolutePath);
+    }
+    else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") LoadTexture(absolutePath);
+    else if (ext == ".mat") LoadMatManifest(absolutePath);
+    else if (ext == ".shader") LoadShaderManifest(absolutePath);
+    else if (ext == ".lua") LoadScript(absolutePath);
+    else if (ext == ".gltf") LoadAnimation(absolutePath);
+    else if (ext == ".glsl") rawGLSLPaths.push_back(absolutePath);
+    else if (ext == ".scene") LoadScene(absolutePath);
+    else if (ext == ".prefab") LoadPrefab(absolutePath);
+
+    // hotswap ptr
+    if (oldComponent && !type.empty()) {
+        AssetKey newKey{ stem,type };
+        auto newIt = assetMap.find(newKey);
+        if (newIt != assetMap.end() && newIt->second.get() != oldComponent.get()) {
+            ReplaceComponent(oldComponent, newIt->second, type);
+        }
+    }
+}
+
+bool AssetManager::RenameAsset(const std::string& oldName, const std::string& newName, const std::string& componentType) {
+    AssetKey oldKey{ oldName, componentType };
+    auto pathIt = assetPaths.find(oldKey);
+    if (pathIt == assetPaths.end()) return false;
+
+    fs::path oldPath = pathIt->second;
+    fs::path newPath = oldPath.parent_path() / (newName + oldPath.extension().string());
+
+    std::error_code ec;
+    fs::rename(oldPath, newPath, ec);
+    if (ec) return false;
+
+    auto assetIt = assetMap.find(oldKey);
+    if (assetIt != assetMap.end()) {
+        AssetKey newKey{ newName, componentType };
+        assetMap[newKey] = assetIt->second;
+        assetPaths[newKey] = newPath;
+        assetMap.erase(oldKey);
+        assetPaths.erase(oldKey);
+    }
 
     return true;
 }
 
-bool AssetManager::SaveAssetDatabaseXML() const
+bool AssetManager::DuplicateAsset(const std::string& name, const std::string& componentType)
 {
-    // create variable to xml doc
+    AssetKey key{ name, componentType };
+    auto pathIt = assetPaths.find(key);
+    if (pathIt == assetPaths.end()) return false;
+
+    fs::path src = pathIt->second;
+    std::string newStem = GenerateUniqueFileName(src.parent_path(), name, src.extension().string());
+    fs::path dst = src.parent_path() / (newStem + src.extension().string());
+
+    std::error_code ec;
+    fs::copy_file(src, dst, ec);
+    if (ec) return false;
+
+    RefreshSingle(dst);
+
+    return true;
+}
+
+bool AssetManager::DeleteAsset(const std::string& name, const std::string& componentType)
+{
+    AssetKey key{ name, componentType };
+    auto pathIt = assetPaths.find(key);
+    if (pathIt == assetPaths.end()) return false;
+
+    // save the deleted component and notify actors
+    Ref<Component> delComp = assetMap.count(key) ? assetMap.at(key) : nullptr;
+    if (delComp) NotifyActors(name, componentType, delComp);
+
+    std::error_code ec;
+    fs::remove(pathIt->second, ec);
+    if (ec) return false;
+
+    assetMap.erase(key);
+    assetPaths.erase(key);
+
+    return true;
+}
+
+bool AssetManager::MoveAsset(const std::string& name, const std::string& componentType, const fs::path& destination)
+{
+    AssetKey key{ name, componentType };
+    auto pathIt = assetPaths.find(key);
+    if (pathIt == assetPaths.end()) return false;
+    
+    fs::path src = pathIt->second;
+    fs::path dst = destination / src.filename();
+    if (src == dst) return true;
+
+    std::error_code ec;
+    fs::rename(src, dst, ec);
+    if (ec) return false;
+
+    assetPaths[key] = dst;
+    return true;
+}
+
+std::string AssetManager::GenerateUniqueFileName(const fs::path& dir, const std::string& stem, const std::string& ext)
+{
+    // based on generateuniquename for actors but this time for files
+    std::string baseStem = stem;
+    size_t underscore = stem.find_last_of('_');
+    if (underscore != std::string::npos) {
+        size_t d = stem.find_last_of('D');
+        if (d == stem.length() - 1 && d > underscore)
+            baseStem = stem.substr(0, underscore);
+    }
+
+    if (!fs::exists(dir / (baseStem + ext))) return baseStem;
+
+    int counter = 1;
+    std::string uniqueStem;
+    do {
+        uniqueStem = baseStem + "_" + std::to_string(counter++) + "D";
+    } while (fs::exists(dir / (uniqueStem + ext)));
+
+    return uniqueStem;
+}
+
+void AssetManager::NotifyActors(const std::string& name, const std::string& componentType, const Ref<Component>& deletedComponent) {
+    if (!deletedComponent) return;
+
+    Ref<MaterialComponent> fallbackMat = Renderer::getInstance().GetFallBackMaterial();
+    Ref<ShaderComponent> fallbackShader = Renderer::getInstance().GetFallBackShader();
+
+    // goes through all actors in scenegraphs and either replaces or deltes the component
+    // its either create a fallback component for each component type and replace, or just delete the component
+    // I think its fine to just delete the component if it was using a deleted asset, but could create something later that resets them
+    for (auto& [id, actor] : SceneGraph::getInstance().getAllActors()) {
+        if (componentType == "MaterialComponent") {
+            auto c = actor->GetComponent<MaterialComponent>();
+            if (c && c.get() == deletedComponent.get()) {
+                if (fallbackMat) actor->ReplaceComponent<MaterialComponent>(fallbackMat);
+                else {
+                    actor->RemoveComponent<MaterialComponent>();
+                    if (actor->GetComponent<TilingSettings>()) actor->DeleteComponent<TilingSettings>();
+                }
+            }
+        }
+        else if (componentType == "ShaderComponent") {
+            auto c = actor->GetComponent<ShaderComponent>();
+            if (c && c.get() == deletedComponent.get()) {
+                if (fallbackShader) actor->ReplaceComponent<ShaderComponent>(fallbackShader);
+                else actor->RemoveComponent<ShaderComponent>();
+            }
+        }
+        else if (componentType == "MeshComponent") {
+            auto c = actor->GetComponent<MeshComponent>();
+            if (c && c.get() == deletedComponent.get()) {
+                actor->RemoveComponent<MeshComponent>();
+                if (actor->GetComponent<ShadowSettings>()) actor->DeleteComponent<ShadowSettings>();
+                if (actor->GetComponent<AnimatorComponent>()) actor->DeleteComponent<AnimatorComponent>();
+            }
+        }
+        else if (componentType == "ScriptAbstract") {
+            auto scripts = actor->GetAllComponent<ScriptComponent>();
+            for (int i = (int)scripts.size() - 1; i >= 0; i--) {
+                if (scripts[i]->getBaseAsset().get() == deletedComponent.get()) {
+                    ScriptService::stopActorScripts(actor);
+                    actor->DeleteComponent<ScriptComponent>(i);
+                }
+            }
+        }
+        else if (componentType == "Animation") {
+            auto ac = actor->GetComponent<AnimatorComponent>();
+            if (ac) {
+                AnimationClip clip = ac->getAnimationClip();
+                if (clip.getAnim() && clip.getAnim().get() == deletedComponent.get()) {
+                    ac->StopClip();
+                    ac->setAnimationClip(AnimationClip{});
+                }
+            }
+        }
+    }
+}
+
+void AssetManager::ReplaceComponent(const Ref<Component>& oldComponent, const Ref<Component>& newComponent, const std::string& componentType) {
+    if (!oldComponent || !newComponent) return;
+
+    // basically just a dispatcher that repalces old component with new
+    for (auto& [id, actor] : SceneGraph::getInstance().getAllActors()) {
+        if (componentType == "MaterialComponent") {
+            auto c = actor->GetComponent<MaterialComponent>();
+            if (c && c.get() == oldComponent.get()) actor->ReplaceComponent<MaterialComponent>(std::dynamic_pointer_cast<MaterialComponent>(newComponent));
+        }
+        else if (componentType == "ShaderComponent") {
+            auto c = actor->GetComponent<ShaderComponent>();
+            if (c && c.get() == oldComponent.get()) actor->ReplaceComponent<ShaderComponent>(std::dynamic_pointer_cast<ShaderComponent>(newComponent));
+        }
+        else if (componentType == "MeshComponent") {
+            auto c = actor->GetComponent<MeshComponent>();
+            if (c && c.get() == oldComponent.get()) actor->ReplaceComponent<MeshComponent>(std::dynamic_pointer_cast<MeshComponent>(newComponent));
+        }
+    }
+}
+
+fs::path AssetManager::GetAssetPath(const std::string& name, const std::string& componentType) const
+{
+    auto it = assetPaths.find({ name, componentType });
+    return (it != assetPaths.end()) ? it->second : fs::path{};
+}
+
+std::string AssetManager::GetAssetName(const Ref<Component>& component) const {
+    for (auto& [key, val] : assetMap) if (val == component) return key.name;
+    return {};
+}
+
+std::vector<Ref<Component>> AssetManager::GetAllAssets() const
+{
+    std::vector<Ref<Component>> all;
+    all.reserve(assetMap.size());
+    for (auto& [key, val] : assetMap) all.push_back(val);
+    return all;
+}
+
+std::vector<std::pair<std::string, std::string>> AssetManager::GetAllAssetKeyPair() const
+{
+    std::vector<std::pair<std::string, std::string>> pairs;
+    for (auto& [key, val] : assetMap) pairs.emplace_back(key.name, key.componentType);
+    return pairs;
+}
+
+void AssetManager::LoadMesh(const fs::path& path) {
+    std::string stem = path.stem().string();
+    AssetKey key{ stem, "MeshComponent" };
+    if (assetMap.count(key)) return;
+
+    auto mesh = std::make_shared<MeshComponent>(nullptr, path.string().c_str(), true);
+    if (mesh->OnCreate()) {
+        assetMap[key] = mesh;
+        assetPaths[key] = path;
+        AnimationSystem::getInstance().PushMeshToWorker(mesh);
+    }
+}
+
+void AssetManager::LoadTexture(const fs::path& path) {
+    std::string stem = path.stem().string();
+    AssetKey key{ stem, "MaterialComponent" };
+    if (assetMap.count(key)) return;
+
+    auto mat = std::make_shared<MaterialComponent>(nullptr, path.string().c_str(), "", "");
+    if (mat->OnCreate()) {
+        assetMap[key] = mat;
+        assetPaths[key] = path;
+    }
+}
+
+void AssetManager::LoadMatManifest(const fs::path& path) {
     XMLDocument doc;
+    if (doc.LoadFile(path.string().c_str()) != XML_SUCCESS) return;
 
-    // create the root element for the xml file and insert it
-    XMLNode* adbRoot = doc.NewElement("AssetDatabase");
-    doc.InsertFirstChild(adbRoot);
+    auto* root = doc.FirstChildElement("Material");
+    if (!root) return;
 
-    // using an std::map for better sorting of assets by their component type
-    std::map<std::string, std::vector<std::pair<std::string, Ref<Component>>>> allAssetsByType;
+    // lambda helper to get value from an absolute path
+    auto getPath = [&](const char* tag) -> std::string {
+        auto* el = root->FirstChildElement(tag);
+        if (!el || !el->GetText()) return "";
+        fs::path abs = SearchPath::getInstance().Resolve(el->GetText());
+        return abs.empty() ? "" : abs.string();
+        };
 
-    // [key.first/second] accesses the vector for the given key, if it doesn't exist it creates it
-    for (const auto& asset : assetManager) {
-        allAssetsByType[asset.first.componentType].push_back(std::make_pair(asset.first.name, asset.second));
+    std::string diff = getPath("Diffuse");
+    std::string spec = getPath("Specular");
+    std::string norm = getPath("Normal");
+
+    if (diff.empty()) return;
+
+    auto mat = std::make_shared<MaterialComponent>(nullptr, diff.c_str(), spec.c_str(), norm.c_str());
+
+    if (mat->OnCreate()) {
+        std::string name = path.stem().string();
+        AssetKey key{ name, "MaterialComponent" };
+        assetMap[key] = mat;
+        assetPaths[key] = path;
     }
-
-    // for each component type create a new component type element
-    for (const auto& componentType : allAssetsByType) {
-        XMLElement* componentTypeElement = doc.NewElement(componentType.first.c_str());
-
-        // gets each asset's component type and creates a new element for it
-        for (const auto& asset : componentType.second) {
-            XMLElement* assetElement = doc.NewElement("Asset");
-            // sets the name attribute to the name of the asset (i.e SM_Mario)
-            assetElement->SetAttribute("name", asset.first.c_str());
-
-            //TODO: if there are more components that need to go into the assetmanager later add them here
-
-            // if statements to check for a specific component type
-            // it checks to see if the component type from the asset matches the "", if yes, it gets its name and sets the filepath to it 
-            if (componentType.first == "MeshComponent") {
-                auto meshComponent = std::dynamic_pointer_cast<MeshComponent>(asset.second);
-                if (meshComponent && meshComponent->getMeshName()) {
-                    assetElement->SetAttribute("filepath", meshComponent->getMeshName());
-
-
-
-                }
-            }
-            else if (componentType.first == "MaterialComponent") {
-                auto materialComponent = std::dynamic_pointer_cast<MaterialComponent>(asset.second);
-                if (materialComponent) {
-                    if (materialComponent->getDiffuseName()) {
-                        assetElement->SetAttribute("diffuseMap", materialComponent->getDiffuseName());
-                    }
-                    if (materialComponent->getSpecularName()) {
-                        assetElement->SetAttribute("specularMap", materialComponent->getSpecularName());
-                    }
-                    if (materialComponent->getNormalName()) {
-                        assetElement->SetAttribute("normalMap", materialComponent->getNormalName());
-                    }
-                }
-            }
-            else if (componentType.first == "ShaderComponent") {
-                auto shaderComponent = std::dynamic_pointer_cast<ShaderComponent>(asset.second);
-                if (shaderComponent) {
-                    if (shaderComponent->GetVertName()) {
-                        assetElement->SetAttribute("vertShader", shaderComponent->GetVertName());
-                    }
-                    if (shaderComponent->GetFragName()) {
-                        assetElement->SetAttribute("fragShader", shaderComponent->GetFragName());
-                    }
-                    // TODO: rest of the shader file types
-                }
-            }
-            else if (componentType.first == "ScriptAbstract") {
-                auto scriptAbstractComponent = std::dynamic_pointer_cast<ScriptAbstract>(asset.second);
-                if (scriptAbstractComponent) {
-                    if (scriptAbstractComponent->getName()) {
-                        assetElement->SetAttribute("scriptName", scriptAbstractComponent->getName());
-                    }
-                   
-                    // TODO: rest of the shader file types
-                }
-            }
-            else if (componentType.first == "Animation") {
-                auto animation = std::dynamic_pointer_cast<Animation>(asset.second);
-                if (animation) {
-                    if (animation->getName()) {
-                        assetElement->SetAttribute("animationName", animation->getFilename());
-                    }
-
-                }
-            }
-
-            // insert all the assets to its own component type
-            componentTypeElement->InsertEndChild(assetElement);
-        }
-        // insert all the component types to the root
-        adbRoot->InsertEndChild(componentTypeElement);
-    }
-
-    // save all the assets to the database
-    XMLError result = doc.SaveFile(("Asset Manager/" + assetDatabasePath + ".xml").c_str());
-    if (result != XML_SUCCESS) {
-        Debug::Error("Failed to save assets to database: " + assetDatabasePath, __FILE__, __LINE__);
-        return false;
-    }
-
-    // debug info that prints to console showing that the saving of assets was succesful
-    Debug::Info("Successfully saved " + std::to_string(assetManager.size()) + " assets to: " + assetDatabasePath + ".xml", __FILE__, __LINE__);
-    return true;
 }
 
-bool AssetManager::LoadAssetDatabaseXML()
+void AssetManager::LoadShaderManifest(const fs::path& path)
 {
     XMLDocument doc;
-    std::string fullAssetDBPath = "Asset Manager/" + assetDatabasePath + ".xml"; // possibly make into private variable instead of local
+    if (doc.LoadFile(path.string().c_str()) != XML_SUCCESS) return;
 
-    // try to load the asset database xml file
-    XMLError result = doc.LoadFile(fullAssetDBPath.c_str());
-    if (result != XML_SUCCESS) {
-        Debug::Error("Failed to load asset database: " + fullAssetDBPath, __FILE__, __LINE__);
-        return false;
-    }
+    auto* root = doc.FirstChildElement("Shader");
+    if (!root) return;
 
-    // get the root node for the xml file
-    XMLNode* adbRoot = doc.RootElement();
-    if (!adbRoot) {
-        Debug::Error("No root element found in asset database: " + fullAssetDBPath, __FILE__, __LINE__);
-        return false;
-    }
+    // lambda helper to get value from an absolute path
+    auto getPath = [&](const char* tag) -> std::string {
+        auto* el = root->FirstChildElement(tag);
+        if (!el || !el->GetText()) return "";
+        fs::path abs = SearchPath::getInstance().Resolve(el->GetText());
+        return abs.empty() ? "" : abs.string();
+        };
 
-    // some variables for debugging to keep track of how many assets get loaded and/or skipped
-    int assetsLoaded = 0;
-    int assetsSkipped = 0;
+    std::string vert = getPath("Vertex");
+    std::string frag = getPath("Fragment");
+    std::string tessCtrl = getPath("TessControl");
+    std::string tessEval = getPath("TessEval");
+    std::string geom = getPath("Geometry");
 
-    // loop through each component type by accessing child elements
-    for (XMLElement* componentTypeElement = adbRoot->FirstChildElement(); componentTypeElement != nullptr; componentTypeElement = componentTypeElement->NextSiblingElement()) {
-        
-        // get the name for the component type
-        std::string componentType = componentTypeElement->Name();
+    if (vert.empty() || frag.empty()) return;
 
-        // loop through each asset of the current component type
-        for (XMLElement* assetElement = componentTypeElement->FirstChildElement("Asset"); assetElement != nullptr; assetElement = assetElement->NextSiblingElement("Asset")) {
-            
-            // using const char* because checking for nullptr
-            const char* assetName = assetElement->Attribute("name");
-            if (!assetName) {
-                Debug::Warning("Asset is missing name attribute.", __FILE__, __LINE__);
-                continue;
-            }
+    auto shader = std::make_shared<ShaderComponent>(nullptr,
+        vert.c_str(), frag.c_str(),
+        tessCtrl.empty() ? nullptr : tessCtrl.c_str(),
+        tessEval.empty() ? nullptr : tessEval.c_str(),
+        geom.empty() ? nullptr : geom.c_str());
 
-            // check to see if asset already exists
-            AssetKey key = { std::string(assetName), componentType };
-            if (assetManager.find(key) != assetManager.end()) {
-                Debug::Info("Asset already exists, skipped: " + std::string(assetName) + ". Type:" + componentType, __FILE__, __LINE__);
-                assetsSkipped++;
-                continue;
-            }
-
-            // load the asset based on the component type
-            bool success = false;
-            if (componentType == "MeshComponent") {
-                success = LoadAssetTypeXML<MeshComponent>(assetElement, assetName);
-            }
-            else if (componentType == "MaterialComponent") {
-                success = LoadAssetTypeXML<MaterialComponent>(assetElement, assetName);
-            }
-            else if (componentType == "ShaderComponent") {
-                success = LoadAssetTypeXML<ShaderComponent>(assetElement, assetName);
-            }
-            else if (componentType == "ScriptAbstract") {
-                success = LoadAssetTypeXML<ScriptAbstract>(assetElement, assetName);
-            }
-            else if (componentType == "Animation") {
-                success = LoadAssetTypeXML<Animation>(assetElement, assetName);
-            }
-            
-            //TODO: if there are more components that need to go into the assetmanager later add them here
-
-            else {
-                Debug::Error("Unrecognized component type: " + componentType, __FILE__, __LINE__);
-                continue;
-            }
-
-            // debug info
-            if (success) {
-                assetsLoaded++;
-            }
-        }
-    }
-
-    // debug info
-    Debug::Info("Loaded " + std::to_string(assetsLoaded) + " assets, skipped " + std::to_string(assetsSkipped) + " existing assets", __FILE__, __LINE__);
-    return true;
-}
-
-template<typename AssetTemplate>
-bool AssetManager::LoadAssetTypeXML(XMLElement* assetElement_, const std::string& assetName_)
-{
-    // get the typeID for a compontent and return its name
-    std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6); //TODO: substr removes the 'class ' that gets added when getting the name from a typeid, 
-                                                                                                  // this is compiler dependent, maybe figure out a way to improve this later
-
-    // if constexpr allows for compile time branching, basically only branches that are true get compiled ##https://en.cppreference.com/w/cpp/language/if.html#Constexpr_if
-    if constexpr (std::is_same_v<AssetTemplate, MeshComponent>) {
-        // attribute assumes that "filepath" exists and returns its name(const char*) 
-        const char* filepath = assetElement_->Attribute("filepath");
-        if (!filepath) {
-            Debug::Error(componentType + " missing filepath attribute: " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-        bool result = AddAsset<MeshComponent>(assetName_, nullptr, filepath);
-        if (!result) {
-            Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // get the specific asset and call its oncreate + error handling
-        auto asset = GetAsset<MeshComponent>(assetName_);
-        if (!asset) {
-            Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__); // GetAsset has an error message for when an asset can't be found when trying to get it, 
-            return false;                                                                                            // this is just extra insurance incase something else messes up
-        }
-        if (!asset->OnCreate()) {
-            Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
-            RemoveAsset<MeshComponent>(assetName_);
-            return false;
-        }
-
-        // if the asset manages to pass everything, then display an info debug message
-        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " from: " + filepath, __FILE__, __LINE__);
-        return true;
-    }
-
-    // same thing, this time for materials
-    else if constexpr (std::is_same_v<AssetTemplate, MaterialComponent>) {
-        // attribute assumes that "filepath" exists and returns its name(const char*) 
-        const char* diffusePath = assetElement_->Attribute("diffuseMap");
-        if (!diffusePath) {
-            Debug::Error(componentType + " missing filepath attribute: " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-        const char* specularPath = assetElement_->Attribute("specularMap");
-        if (!specularPath) {
-            specularPath = "";
-        }
-        const char* normalPath = assetElement_->Attribute("normalMap");
-        if (!normalPath) {
-            normalPath = "";
-        }
-
-        // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-        bool result = AddAsset<MaterialComponent>(assetName_, nullptr, diffusePath, specularPath, normalPath);
-        if (!result) {
-            Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // get the specific asset and call its oncreate + error handling
-        auto asset = GetAsset<MaterialComponent>(assetName_);
-        if (!asset) {
-            Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__); // GetAsset has an error message for when an asset can't be found when trying to get it, 
-            return false;                                                                                            // this is just extra insurance incase something else messes up
-        }
-        if (!asset->OnCreate()) {
-            Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
-            RemoveAsset<MaterialComponent>(assetName_);
-            return false;
-        }
-
-        // if the asset manages to pass everything, then display an info debug message
-        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " from: " + diffusePath, __FILE__, __LINE__);
-        return true;
-    }
-
-    else if constexpr (std::is_same_v<AssetTemplate, ShaderComponent>) {
-        // attribute assumes that the path for shaders exists and returns its name(const char*) 
-        const char* vertShader = assetElement_->Attribute("vertShader");
-        const char* fragShader = assetElement_->Attribute("fragShader");
-
-        // checks to see if any shaders are null
-        if (!vertShader || !fragShader) {
-            Debug::Error(componentType + " missing shader path attribute(s): " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-        bool result = AddAsset<ShaderComponent>(assetName_, nullptr, vertShader, fragShader);
-        if (!result) {
-            Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // get the specific asset and call its oncreate + error handling
-        auto asset = GetAsset<ShaderComponent>(assetName_);
-        if (!asset) {
-            Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__); // GetAsset has an error message for when an asset can't be found when trying to get it, 
-            return false;                                                                                            // this is just extra insurance incase something else messes up
-        }
-        if (!asset->OnCreate()) {
-            Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
-            RemoveAsset<ShaderComponent>(assetName_);
-            return false;
-        }
-
-        //TODO: rest of the shader types
-
-        // if the asset manages to pass everything, then display an info debug message
-        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " (vert: " + vertShader + ", frag: " + fragShader + ")", __FILE__, __LINE__);
-        return true;
-    }
-    else if constexpr (std::is_same_v<AssetTemplate, ScriptAbstract>) {
-        // attribute assumes that the path for shaders exists and returns its name(const char*) 
-        const char* scriptName = assetElement_->Attribute("scriptName");
-
-        // checks to see if any shaders are null
-        if (!scriptName) {
-            Debug::Error(componentType + " missing name attribute(s): " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-        bool result = AddAsset<ScriptAbstract>(assetName_, nullptr, scriptName);
-        if (!result) {
-            Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // get the specific asset and call its oncreate + error handling
-        auto asset = GetAsset<ScriptAbstract>(assetName_);
-        if (!asset) {
-            Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__); // GetAsset has an error message for when an asset can't be found when trying to get it, 
-            return false;                                                                                            // this is just extra insurance incase something else messes up
-        }
-        if (!asset->OnCreate()) {
-            Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
-            RemoveAsset<ScriptAbstract>(assetName_);
-            return false;
-        }
-
-        //TODO: rest of the shader types
-
-        // if the asset manages to pass everything, then display an info debug message
-        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " (abstract script: " + scriptName + ")", __FILE__, __LINE__);
-        return true;
-        }
-    else if constexpr (std::is_same_v<AssetTemplate, Animation>) {
-        // attribute assumes that the path for shaders exists and returns its name(const char*) 
-        const char* animationName = assetElement_->Attribute("animationName");
-
-        // checks to see if any shaders are null
-        if (!animationName) {
-            Debug::Error(componentType + " missing name attribute(s): " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // add the specific asset to the assetmanager + error handling (AddAsset already handles if there is a duplicate asset trying to be added)
-        bool result = AddAsset<Animation>(assetName_, nullptr, animationName);
-        if (!result) {
-            Debug::Error("Failed to add " + componentType + " to the Asset Manager: " + assetName_, __FILE__, __LINE__);
-            return false;
-        }
-
-        // get the specific asset and call its oncreate + error handling
-        auto asset = GetAsset<Animation>(assetName_);
-        if (!asset) {
-            Debug::Error("Failed to retrieve " + componentType + "after adding: " + assetName_, __FILE__, __LINE__); // GetAsset has an error message for when an asset can't be found when trying to get it, 
-            return false;                                                                                            // this is just extra insurance incase something else messes up
-        }
-        asset->SendAssetname(getAssetName(asset));
-        if (!asset->OnCreate()) {
-            Debug::Error("Failed to initialize " + componentType + ". This asset's OnCreate failed: " + assetName_, __FILE__, __LINE__);
-            RemoveAsset<Animation>(assetName_);
-            return false;
-        }
-
-        //TODO: rest of the shader types
-
-        // if the asset manages to pass everything, then display an info debug message
-        Debug::Info("Succesfully loaded " + componentType + ": " + assetName_ + " (Animation: " + animationName + ")", __FILE__, __LINE__);
-        return true;
-        }
-    //TODO: if there are more components that need to go into the assetmanager later add them here
-
-    else {
-        // throw an error if the asset is unrecognized
-        Debug::Error("Unrecognized component type: " + componentType, __FILE__, __LINE__);
-        return false;
+    if (shader->OnCreate()) {
+        std::string name = path.stem().string();
+        AssetKey key{ name, "ShaderComponent" };
+        assetMap[key] = shader;
+        assetPaths[key] = path;
     }
 }
 
-bool AssetManager::ReloadAssetsXML()
-{
-    // if for some reason the xml file has assets that the local assetmanager doesnt
-    RemoveAllAssets();
-    return LoadAssetDatabaseXML();
+void AssetManager::LoadScript(const fs::path& path) {
+    std::string name = path.stem().string();
+    AssetKey key{ name, "ScriptAbstract" };
+    if (assetMap.count(key)) return;
+
+    auto script = std::make_shared<ScriptAbstract>(nullptr, path.filename().string().c_str());
+    script->OnCreate();
+    assetMap[key] = script;
+    assetPaths[key] = path;
 }
 
-template<typename AssetTemplate>
-bool AssetManager::RemoveAsset(const std::string& assetName_)
-{
+void AssetManager::LoadAnimation(const fs::path& path) {
+    std::string name = path.stem().string();
+    AssetKey key{ name, "Animation" };
+    if (assetMap.count(key)) return;
 
-    std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
-    AssetKey key = { assetName_, componentType };
-
-    // finds the specific key and removes it
-    auto it = assetManager.find(key);
-    if (it != assetManager.end()) {
-        it->second->OnDestroy();
-        assetManager.erase(it);
-        Debug::Info("Removed asset: " + assetName_ + " (" + componentType + ")", __FILE__, __LINE__);
-        return true;
+    auto anim = std::make_shared<Animation>(nullptr, path.string().c_str());
+    anim->SendAssetname(name);
+    if (anim->OnCreate()) {
+        assetMap[key] = anim;
+        assetPaths[key] = path;
+        AnimationSystem::getInstance().PushAnimationToWorker(anim);
     }
-
-    Debug::Warning("Attempted to remove non-existent asset: " + assetName_ + " (" + componentType + ")", __FILE__, __LINE__);
-    return false;
 }
 
+void AssetManager::LoadScene(const fs::path& path) {
+    auto it = std::find(scenePaths.begin(), scenePaths.end(), path);
+    if (it == scenePaths.end()) scenePaths.push_back(path);
+}
 
+void AssetManager::LoadPrefab(const fs::path& path) {
+    auto it = std::find(prefabPaths.begin(), prefabPaths.end(), path);
+    if (it == prefabPaths.end()) prefabPaths.push_back(path);
+}

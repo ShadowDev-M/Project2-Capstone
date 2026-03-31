@@ -267,6 +267,142 @@ void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {
 	}
 }
 
+std::string SceneGraph::GenerateUniqueActorName(const std::string& originalName) const
+{
+	std::string baseName = originalName;
+	int counter = 1;
+
+	// this whole thing just makes it so that if you are duplicating an actor like Cube_3D, it wont do Cube_3D_1D and it'll make sure its Cube_4D
+
+	// find the start of the duplicated name
+	size_t start = originalName.find_last_of('_');
+
+	// make sure that its not the end of the string
+	if (start != std::string::npos) {
+
+		// find the end of the duplicated name
+		size_t end = originalName.find_last_of('D');
+
+		// get whats inbetween
+		if (end == originalName.length() - 1) {
+			baseName = originalName.substr(0, start);
+		}
+	}
+
+	std::string newName;
+	do {
+		newName = baseName + "_" + std::to_string(counter++) + "D"; // can't end or start with a special character, XML breaks so no ( )
+	} while (GetActor(newName) != nullptr);
+
+	return newName;
+}
+
+Ref<Actor> SceneGraph::DeepCopyActor(const std::string& newName_, Ref<Actor> original_, Actor* newParent)
+{
+	auto copy = std::make_shared<Actor>(newParent, newName_);
+	copy->setTag(original_->getTag());
+
+	if (auto tc = original_->GetComponent<TransformComponent>()) {
+		copy->AddComponent<TransformComponent>(std::make_shared<TransformComponent>(copy.get(), 
+			tc->GetPosition(), 
+			tc->GetOrientation(), 
+			tc->GetScale()));
+	}
+
+	if (auto c = original_->GetComponent<MeshComponent>()) copy->ReplaceComponent<MeshComponent>(c);
+	if (auto c = original_->GetComponent<MaterialComponent>()) copy->ReplaceComponent<MaterialComponent>(c);
+	if (auto c = original_->GetComponent<ShaderComponent>()) copy->ReplaceComponent<ShaderComponent>(c);
+	if (auto c = original_->GetComponent<ShadowSettings>()) {
+		copy->AddComponent<ShadowSettings>(std::make_shared<ShadowSettings>(copy.get(), c->getCastShadow()));
+	}
+	if (auto ts = original_->GetComponent<TilingSettings>()) {
+		copy->AddComponent<TilingSettings>(std::make_shared<TilingSettings>(copy.get(), ts->getIsTiled(), ts->getTileScale(), ts->getTileOffset()));
+	}
+
+	if (auto lc = original_->GetComponent<LightComponent>()) {
+		auto newLc = std::make_shared<LightComponent>(copy.get(),
+			lc->getType(), lc->getSpec(), lc->getDiff(), lc->getIntensity());
+		newLc->setShadowType(lc->getShadowType());
+		newLc->setShadowNear(lc->getShadowNear());
+		newLc->setShadowFar(lc->getShadowFar());
+		newLc->setShadowResolution(lc->getShadowResolution());
+		newLc->setShadowOrthoSize(lc->getShadowOrthoSize());
+		copy->AddComponent(newLc);
+		LightingSystem::getInstance().AddActor(copy);
+	}
+
+	if (auto cam = original_->GetComponent<CameraComponent>()) {
+		auto newCam = std::make_shared<CameraComponent>(copy.get(),
+			cam->getType(), cam->getFOV(),
+			cam->getNearClipPlane(), cam->getFarClipPlane(),
+			cam->getOrthoSize());
+		copy->AddComponent(newCam);
+	}
+
+	if (auto pc = original_->GetComponent<PhysicsComponent>()) {
+		auto newPc = std::make_shared<PhysicsComponent>(copy.get(),
+			pc->getState(), pc->getConstraints(),
+			pc->getMass(), pc->getUseGravity(),
+			pc->getDrag(), pc->getAngularDrag(),
+			pc->getFriction(), pc->getRestitution());
+		copy->AddComponent(newPc);
+		PhysicsSystem::getInstance().AddActor(copy);
+	}
+
+	if (auto cc = original_->GetComponent<CollisionComponent>()) {
+		auto newCc = std::make_shared<CollisionComponent>(copy.get(),
+			cc->getState(), cc->getType(), cc->getIsTrigger(),
+			cc->getRadius(), cc->getCentre(),
+			cc->getCentrePosA(), cc->getCentrePosB(),
+			cc->getHalfExtents(), cc->getOrientation());
+		copy->AddComponent(newCc);
+		CollisionSystem::getInstance().AddActor(copy);
+	}
+
+	if (auto ac = original_->GetComponent<AnimatorComponent>()) {
+		copy->AddComponent<AnimatorComponent>(std::make_shared<AnimatorComponent>(copy.get(),
+			ac->getStartTime(), ac->getSpeedMult(), 
+			ac->getLoopingState(), ac->getAnimName()));
+	}
+
+	for (auto& sc : original_->GetAllComponent<ScriptComponent>()) {
+		copy->AddComponent<ScriptComponent>(std::make_shared<ScriptComponent>(copy.get(), sc->getBaseAsset()));
+	}
+
+	copy->OnCreate();
+	AddActor(copy);
+
+	for (auto& [id, child] : getAllActors()) {
+		if (child->getParentActor() == original_.get()) {
+			std::string childNewName = GenerateUniqueActorName(child->getActorName());
+			DeepCopyActor(childNewName, child, copy.get());
+		}
+	}
+
+	return copy;
+}
+
+Ref<Actor> SceneGraph::InstantiatePrefab(const fs::path& prefabPath, Vec3 position, Quaternion rotation, Actor* parent)
+{
+
+	Ref<Actor> root = XMLObjectFile::ReadPrefab(prefabPath);
+	if (!root) return nullptr;
+
+	if (auto tc = root->GetComponent<TransformComponent>()) {
+		tc->SetTransform(position, rotation, tc->GetScale());
+	}
+
+	if (parent) root->setParentActor(parent);
+
+	AddActor(root);
+
+	for (auto& sc : root->GetAllComponent<ScriptComponent>()) {
+		Preload(sc.get());
+	}
+
+	return root;
+}
+
 Ref<Actor> SceneGraph::GetActorCStr(const char* actorName) const {
 	return GetActor(actorName);
 }

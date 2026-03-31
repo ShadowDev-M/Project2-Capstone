@@ -52,7 +52,11 @@ bool MaterialComponent::LoadImage(const char* filename, TexType type) {
 		glBindTexture(GL_TEXTURE_2D, normalID);
 	}
 
-	SDL_Surface* textureSurface = IMG_Load(filename);
+	// resolving path here
+	fs::path resolved = SearchPath::getInstance().Resolve(filename);
+	std::string pathToOpen = resolved.empty() ? filename : resolved.string();
+
+	SDL_Surface* textureSurface = IMG_Load(pathToOpen.c_str());
 	if (textureSurface == nullptr) {
 		return false;
 	}

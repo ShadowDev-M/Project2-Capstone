@@ -64,8 +64,6 @@ void ScreenManager::SetRenderResolution(int w, int h)
         if (data.isShadow || data.isCubeShadow) continue;
         FBOManager::getInstance().OnResize(fbo, w, h);
     }
-
-    renderResolutionNotifier(w, h);
 }
 
 void ScreenManager::SetDisplayResolution(int w, int h)
@@ -77,8 +75,6 @@ void ScreenManager::SetDisplayResolution(int w, int h)
     cfg.displayHeight = h;
 
     SDL_SetWindowSize(window, w, h);
-
-    displayResolutionNotifier(w, h);
 }
 
 void ScreenManager::setTargetFPS(int fps_)

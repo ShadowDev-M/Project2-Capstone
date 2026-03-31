@@ -19,7 +19,6 @@ class ScriptComponent : public Component {
 	ScriptComponent& operator = (const ScriptComponent&) = delete;
 	ScriptComponent& operator = (ScriptComponent&&) = delete;
 
-	const std::string SCRIPTSPATH = "scripts/";
 	std::string filename;
 	
 	std::string code;
@@ -75,7 +74,7 @@ public:
 	ScriptComponent(Component* parent, Ref<ScriptAbstract> baseScriptAsset = 0, std::vector<float> pubVars_ = {});
 	virtual ~ScriptComponent();
 	
-	const std::string getPath() { return SCRIPTSPATH + filename; }
+	const std::string getPath() { return SearchPath::getInstance().Resolve("Scripts/" + filename).string(); }
 
 	std::string getName() { return filename; }
 
@@ -98,7 +97,6 @@ private:
 	static void preloadScript(ScriptComponent* script_);
 	static void ClearLuaState();
 	static void startActorScripts(Ref<Actor> target);
-	static void stopActorScripts(Ref<Actor> target);
 
 	static void preloadActorScripts(Ref<Actor> target);
 
@@ -115,7 +113,7 @@ public:
 	static void loadLibraries();
 	static void registerCollisionDetection(Ref<Actor> actor1_, Ref<Actor> actor2_, CollisionDetectionState type);
 
-
+	static void stopActorScripts(Ref<Actor> target);
 
 };
 

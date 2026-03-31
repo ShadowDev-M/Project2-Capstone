@@ -52,6 +52,7 @@ bool InputManager::debugClearDebugSelected(std::pair<KeyBinding, std::tuple<bool
 
 	if (keyboard.isPressed(input.first[0])) {
 		SceneGraph::getInstance().debugSelectedAssets.clear();
+		EditorManager::getInstance().ClearSelectedAsset();
 		return true;
 	}
 	return false;
@@ -301,7 +302,10 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 					}
 				}
 				//no object was clicked, and left control isn't pressed (making sure the user didn't accidentally misclicked during multi object selection before clearing selection)
-				else if (!keys[SDL_SCANCODE_LCTRL])sceneGraph->debugSelectedAssets.clear();
+				else if (!keys[SDL_SCANCODE_LCTRL]) {
+					sceneGraph->debugSelectedAssets.clear();
+					EditorManager::getInstance().ClearSelectedAsset();
+				}
 			}
 #endif
 			mouseHeld = false;

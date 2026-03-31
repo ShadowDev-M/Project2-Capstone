@@ -66,8 +66,12 @@ void ReadNodeHierarchy(Skeleton* skeleton, aiNode* node, Bone* parentBone) {
 
 
 void MeshComponent::LoadModel(const char* filename) {
+    // resolving path here
+    fs::path resolved = SearchPath::getInstance().Resolve(filename);
+    std::string pathToOpen = resolved.empty() ? filename : resolved.string();
+
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Fast);
+    const aiScene* scene = importer.ReadFile(pathToOpen, aiProcessPreset_TargetRealtime_Fast);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         printf("ERROR::ASSIMP::%s\n", importer.GetErrorString());
         return;
@@ -87,7 +91,13 @@ void MeshComponent::LoadModel(const char* filename) {
             vertices.push_back({ mesh->mVertices[uniqueIdx].x, mesh->mVertices[uniqueIdx].y, mesh->mVertices[uniqueIdx].z });
             normals.push_back({ mesh->mNormals[uniqueIdx].x, mesh->mNormals[uniqueIdx].y, mesh->mNormals[uniqueIdx].z });
             
-            tangents.push_back({ mesh->mTangents[uniqueIdx].x, mesh->mTangents[uniqueIdx].y, mesh->mTangents[uniqueIdx].z });
+            // some meshes might not have tangent data, so need a guard against that
+            if (mesh->HasTangentsAndBitangents()) {
+                tangents.push_back({ mesh->mTangents[uniqueIdx].x, mesh->mTangents[uniqueIdx].y, mesh->mTangents[uniqueIdx].z });
+            }
+            else {
+                tangents.push_back({ 0.0f, 0.0f, 0.0f });
+            }
 
             if (mesh->HasTextureCoords(0))
                 uvCoords.push_back({ mesh->mTextureCoords[0][uniqueIdx].x, mesh->mTextureCoords[0][uniqueIdx].y });

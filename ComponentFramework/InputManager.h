@@ -170,7 +170,7 @@ public:
 	gamepadInputMap() {
 		controller = findController();
 		if (!controller) {
-			std::cout << "No controller found." << std::endl;
+			//std::cout << "No controller found." << std::endl;
 		}
 	}
 	

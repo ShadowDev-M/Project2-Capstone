@@ -226,12 +226,20 @@ void SceneWindow::ShowSceneWindow(bool* pOpen)
             dropAssetOnScene<MaterialComponent>();
             dropAssetOnScene<ShaderComponent>();
             dropAssetOnScene<MeshComponent>();
+
+            if (auto* payload = ImGui::AcceptDragDropPayload("PROJECT_ASSET")) {
+                auto* data = static_cast<const EditorManager::ProjectDragPayload*>(payload->Data);
+                fs::path abs(data->absolutePath);
+                if (abs.extension() == ".prefab") {
+                    SceneGraph::getInstance().InstantiatePrefab(abs);
+                }
+            }
             ImGui::EndDragDropTarget();
         }
 
         DrawGizmos(availSize, imagePos);
 
-        if (!editorCam.isRMBHeld()) {
+        if (!editorCam.isRMBHeld() && ImGui::IsWindowFocused()) {
             if (ImGui::IsKeyPressed(ImGuiKey_W)) currentGizmoOperation = ImGuizmo::TRANSLATE;
             if (ImGui::IsKeyPressed(ImGuiKey_E)) currentGizmoOperation = ImGuizmo::ROTATE;
             if (ImGui::IsKeyPressed(ImGuiKey_R)) currentGizmoOperation = ImGuizmo::SCALE;
@@ -402,88 +410,82 @@ template<typename ComponentTemplate>
 void SceneWindow::dropAssetOnScene() {
 
     std::string dataType;
-    if (std::is_same_v<ComponentTemplate, MaterialComponent>) dataType = "MATERIAL_ASSET";  
-    else if (std::is_same_v<ComponentTemplate, ShaderComponent>) dataType = "SHADER_ASSET";
-    else if (std::is_same_v<ComponentTemplate, MeshComponent>) dataType = "MESH_ASSET";
+    if (std::is_same_v<ComponentTemplate, MaterialComponent>) dataType = "MaterialComponent";  
+    else if (std::is_same_v<ComponentTemplate, ShaderComponent>) dataType = "ShaderComponent";
+    else if (std::is_same_v<ComponentTemplate, MeshComponent>) dataType = "MeshComponent";
 
-    const char* dataTypeC_Str = dataType.c_str();
+    const ImGuiPayload* currentPayload = ImGui::GetDragDropPayload();
 
-    if (ImGui::GetDragDropPayload()->IsDataType(dataTypeC_Str)) {
-        int mx, my;
-        SDL_GetMouseState(&mx, &my);
+    if (!currentPayload);
 
-        Ref<Actor> payloadActor = Renderer::getInstance().PickActor(mx, my);
+    bool isProjectPayload = currentPayload->IsDataType("PROJECT_ASSET");
 
-        
-        const char* droppedAssetName = static_cast<const char*>(ImGui::GetDragDropPayload()->Data);
+    if (!isProjectPayload) return;
 
-        static Ref<Component> originalComponent;
-        static Ref<Actor> originalActor;
-       
-        //If its a MESH, make sure to colour picked based on the ORIGINAL, so restore it and redo the picking
-        if (std::is_same_v<ComponentTemplate, MeshComponent> && originalActor) {
-            originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
-            originalActor = 0;
-            originalComponent = 0;
-            payloadActor = Renderer::getInstance().PickActor(mx, my);
+    std::string droppedAssetName;
+    if (isProjectPayload) {
+        // getting payload data and checking component type
+        auto* data = static_cast<const EditorManager::ProjectDragPayload*>(currentPayload->Data);
+        if (std::string(data->componentType) != dataType) return;
+        droppedAssetName = data->assetName;
+    }
+    else {
+        // fallback
+        droppedAssetName = static_cast<const char*>(currentPayload->Data);
+    }
+    
+    int mx, my;
+    SDL_GetMouseState(&mx, &my);
+    Ref<Actor> payloadActor = Renderer::getInstance().PickActor(mx, my);
 
-        }
+    static Ref<Component> originalComponent;
+    static Ref<Actor> originalActor;
 
-        //There's a picked object but its NOT the original actor, so restore the original to prepare for the new one
-        if (payloadActor && originalActor && payloadActor != originalActor) {
-            originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
-            originalActor = 0;
-            originalComponent = 0;
+    //If its a MESH, make sure to colour picked based on the ORIGINAL, so restore it and redo the picking
+    if (std::is_same_v<ComponentTemplate, MeshComponent> && originalActor) {
+        originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
+        originalActor = nullptr;
+        originalComponent = nullptr;
+        payloadActor = Renderer::getInstance().PickActor(mx, my);
+    }
 
-            
+    //There's a picked object but its NOT the original actor, so restore the original to prepare for the new one
+    if (payloadActor && originalActor && payloadActor != originalActor) {
+        originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
+        originalActor = nullptr;
+        originalComponent = nullptr;
+    }
 
-        }
+    //Picked actor but no original, so you're good to save a new original 
+    if (payloadActor && !originalActor) {
+        originalActor = payloadActor;
+        originalComponent = originalActor->GetComponent<ComponentTemplate>();
+    }
+    
+    // get a reference to the asset that has been dropped
+    Ref<ComponentTemplate> newAsset = AssetManager::getInstance().GetAsset<ComponentTemplate>(droppedAssetName);
 
+    // get the actor
+    if (newAsset && payloadActor && payloadActor->GetComponent<ComponentTemplate>()) {
+        //get the mouse and see if the mouse can pick an object when it drops the material
+        payloadActor->ReplaceComponent<ComponentTemplate>(newAsset);
+    }
 
-        //Picked actor but no original, so you're good to save a new original 
-        if (payloadActor && !originalActor) {
-            originalActor = payloadActor;
-            originalComponent = originalActor->GetComponent<ComponentTemplate>();
-
-
-
-
-        }
-        // get a reference to the asset that has been dropped
-        Ref<ComponentTemplate> newAsset = AssetManager::getInstance().GetAsset<ComponentTemplate>(droppedAssetName);
-
-        // get the actor
-        if (newAsset) {
-            //get the mouse and see if the mouse can pick an object when it drops the material
-
-
-            if (payloadActor) {
-                if (payloadActor->GetComponent<ComponentTemplate>()) {
-                    payloadActor->ReplaceComponent<ComponentTemplate>(newAsset);
-                }
-
-            }
-        }
-
-        
-        //dropped
-        const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(dataTypeC_Str);
-
-        if (payload) {
-            
-            //wipe the original as we want the temp component to be permanent
-            originalActor = 0;
-            originalComponent = 0;
-            
-        }
-
-        //If no picked actor but originalActor is saving its hovered component, restore it
-        if (!payloadActor && originalActor) { 
-            originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
-            originalActor = 0;
-            originalComponent = 0;
-
-        }
-
+    //dropped
+    const ImGuiPayload* accepted = nullptr; 
+    if (isProjectPayload) accepted = ImGui::AcceptDragDropPayload("PROJECT_ASSET");
+    else accepted = ImGui::AcceptDragDropPayload(dataType.c_str());
+    
+    if (accepted) {
+        //wipe the original as we want the temp component to be permanent
+        originalActor = nullptr;
+        originalComponent = nullptr;
+    }
+    
+    //If no picked actor but originalActor is saving its hovered component, restore it
+    if (!payloadActor && originalActor) { 
+        originalActor->ReplaceComponent<ComponentTemplate>(std::dynamic_pointer_cast<ComponentTemplate>(originalComponent));
+        originalActor = nullptr;
+        originalComponent = nullptr;
     }
 }

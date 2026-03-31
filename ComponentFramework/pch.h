@@ -66,7 +66,8 @@
 
 // Windows (same goes for windows as components)
 
-// Extra
+// Tools
 #include "Debug.h"
+#include "SearchPath.h"
 
 

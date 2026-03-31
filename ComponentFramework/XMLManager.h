@@ -27,8 +27,26 @@ class XMLObjectFile {
 
     static void runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XMLElement* actorElement, XMLElement* rootElement = nullptr);
 
+    static fs::path BuildPath(const std::string& relative) {
+        fs::path path = SearchPath::getInstance().GetRoot() / relative;
+        fs::create_directories(path.parent_path());
+        return path;
+    }
+
+    // prefab helpers
+    static void WritePrefabNode(XMLDocument& doc, XMLElement* parentEl,
+        const std::string& actorName);
+    static Ref<Actor> ReadPrefabNode(XMLElement* nodeEl, Actor* parent);
 
 public:
+    // manifest file creation
+    // these manifests are basically just xmls but with different extension names
+    static void WriteMatManifest(const fs::path& outputPath, const std::string& diffuseRelative, const std::string& specularRelative = "", const std::string& normalRelative = "");
+    static void WriteShaderManifest(const fs::path& outputPath, const std::string& vertRel, const std::string& fragRel, const std::string& tessCtrlRel = "", const std::string& tessEvalRel = "", const std::string& geomRel = "");
+
+    // prefab read and write
+    static bool WritePrefab(const std::string& actorName, const fs::path& outputPath);
+    static Ref<Actor> ReadPrefab(const fs::path& prefabPath);
 
     /// Creates an object file for the actor
     static int writeActor(std::string name) {
@@ -37,25 +55,28 @@ public:
 
         XMLNode* cRoot = doc.NewElement("Actor");
         doc.InsertFirstChild(cRoot);
+        
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
 
-        doc.SaveFile(("Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml").c_str());
+        doc.SaveFile(path.c_str());
         return 0;
     }
 
-    static int writeCellFile(std::string name) {
+    static int writeSceneFile(std::string name) {
 
         XMLDocument doc;
 
-        XMLNode* cRoot = doc.NewElement("CellFile");
+        XMLNode* cRoot = doc.NewElement("Scene");
         doc.InsertFirstChild(cRoot);
 
-        doc.SaveFile(("Cell Files/" + name + ".xml").c_str());
+        std::string path = BuildPath("Scenes/" + name + ".scene").string();
+        doc.SaveFile(path.c_str());
         return 0;
     }
 
     static int writeSceneTags(const std::string& sceneName, const std::vector<std::string>& tags)
     {
-        std::string path = "Cell Files/" + sceneName + ".xml";
+        std::string path = BuildPath("Scenes/" + sceneName + ".scene").string();
         XMLDocument doc;
 
         XMLError eResult = doc.LoadFile(path.c_str());
@@ -79,7 +100,8 @@ public:
 
     static std::vector<std::string> readSceneTags(const std::string& sceneName)
     {
-        std::string path = "Cell Files/" + sceneName + ".xml";
+        std::string path = BuildPath("Scenes/" + sceneName + ".scene").string();
+        
         std::vector<std::string> tags;
 
         XMLDocument doc;
@@ -101,7 +123,8 @@ public:
 
     static int writeActorTag(const std::string& actorName, const std::string& tag)
     {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + actorName + ".xml";
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml").string();
+
         XMLDocument doc;
 
         XMLError eResult = doc.LoadFile(path.c_str());
@@ -121,7 +144,8 @@ public:
 
     static std::string readActorTag(const std::string& actorName)
     {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + actorName + ".xml";
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml").string();
+
         XMLDocument doc;
 
         if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return "Untagged";
@@ -140,7 +164,8 @@ public:
     static void applyLightShadowSettings(const std::string& name, Ref<LightComponent> lc) {
         if (!lc) return;
 
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
+
         XMLDocument doc;
         if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return;
 
@@ -173,7 +198,8 @@ public:
 
     ///Adds actors from requested cell filename into sceneGraph
     static int addActorsFromFile(SceneGraph* sceneGraph, std::string filename) {
-        std::string path = "Cell Files/" + filename + ".xml";
+        std::string path = BuildPath("Scenes/" + filename + ".scene").string();
+
         const char* id = path.c_str();
         XMLDocument doc;
 
@@ -197,213 +223,10 @@ public:
         runCreateActorsOfElementChildren(sceneGraph, actorList);
 
         return 1;
-
-
-
-
-
     }
-
-    static int writeComponentToCell(std::string filename, std::string name, std::string className, bool enabled) {
-
-        AssetManager& assetMgr = AssetManager::getInstance();
-
-        const char* nameCStr = name.c_str();
-        const char* classCStr = className.c_str();
-
-
-        std::string path = "Cell Files/" + filename + ".xml";
-        const char* id = path.c_str();
-        XMLDocument doc;
-
-
-
-        //try loading the file into doc
-        XMLError eResult = doc.LoadFile(id);
-        if (eResult != XML_SUCCESS) {
-#ifdef _DEBUG
-            std::cerr << "Error loading file " << id << ": " << eResult << std::endl;
-#endif
-            return eResult;
-        }
-
-
-        std::cout << "Found file to write: " << filename << std::endl;
-
-        XMLNode* cRoot = doc.RootElement();
-        //just calling actors so it doesn't get wiped, xml is weird
-        XMLElement* actors = cRoot->FirstChildElement("Actors");
-        if (actors == nullptr) {
-#ifdef _DEBUG
-            std::cerr << "Root element not found!" << std::endl;
-#endif
-            return 1;
-        }
-
-        cRoot->InsertEndChild(actors);
-
-
-
-        XMLElement* componentList;
-
-        // Component Element 
-        componentList = cRoot->FirstChildElement("Components");
-
-        if (!componentList) {
-            componentList = doc.NewElement("Components");
-
-            std::cout << "Creating Element: Components" << std::endl;
-
-        }
-        {
-            // Create the second element
-
-
-
-            //std::cout << actorList->Name() << std::endl; 
-        }
-
-        {
-            //Target Class
-            XMLElement* targetComponentType;
-
-            targetComponentType = componentList->FirstChildElement(classCStr);
-
-            if (!targetComponentType) {
-                targetComponentType = doc.NewElement(classCStr);
-
-                std::cout << "Creating Element of Class: " << classCStr << std::endl;
-            }
-
-            {
-
-                //Target Component Object
-                XMLElement* targetComponent;
-
-                targetComponent = componentList->FirstChildElement(nameCStr);
-
-                if (!targetComponent) {
-                    targetComponent = doc.NewElement(nameCStr);
-
-                    std::cout << "Creating Element of Component Object: " << nameCStr << std::endl;
-                }
-
-
-                {
-
-                    if (className == "MaterialComponent") {
-
-                        // Create a new element for the Component Object
-                        XMLElement* componentObjElement = doc.NewElement("Texture");
-
-                        // Set the info as attributes
-                        if (Ref<MaterialComponent> componentRef = assetMgr.GetAsset<MaterialComponent>(nameCStr)) {
-
-                            if (componentRef->getDiffuseName()) componentObjElement->SetAttribute("diff", componentRef->getDiffuseName());
-                            if (componentRef->getSpecularName()) componentObjElement->SetAttribute("spec", componentRef->getSpecularName());
-                            if (componentRef->getNormalName()) componentObjElement->SetAttribute("norm", componentRef->getNormalName());
-
-                        }
-                        else {
-                            // No object is found
-                            componentObjElement->SetAttribute("error", "NULL OBJECT");
-                        }
-                        // Attach the texture element to the MaterialComponent
-                        targetComponent->InsertEndChild(componentObjElement);
-
-                    }
-
-                    if (className == "MeshComponent") {
-
-                        // Create a new element for the Component Object
-                        XMLElement* componentObjElement = doc.NewElement("Mesh");
-
-                        // Set the info as attributes
-                        if (Ref<MeshComponent> componentRef = assetMgr.GetAsset<MeshComponent>(nameCStr)) {
-
-                            if (componentRef->getMeshName()) componentObjElement->SetAttribute("path", componentRef->getMeshName());
-
-                        }
-                        else {
-                            // No object is found
-                            componentObjElement->SetAttribute("error", "NULL OBJECT");
-                        }
-
-                        // Attach the texture element to the MaterialComponent
-                        targetComponent->InsertEndChild(componentObjElement);
-
-                    }
-                    if (className == "ShaderComponent") {
-
-                        // Create a new element for the Component Object
-                        XMLElement* componentObjElement = doc.NewElement("Shader");
-
-                        // Set the info as attributes
-                        if (Ref<ShaderComponent> componentRef = assetMgr.GetAsset<ShaderComponent>(nameCStr)) {
-
-                            if (componentRef->GetFragName()) {
-
-                                componentObjElement->SetAttribute("frag", componentRef->GetFragName());
-                                componentObjElement->SetAttribute("vert", componentRef->GetVertName());
-
-                            }
-
-                        }
-                        else {
-                            // No object is found
-                            componentObjElement->SetAttribute("error", "NULL OBJECT");
-                        }
-
-                        // Attach the texture element to the MaterialComponent
-                        targetComponent->InsertEndChild(componentObjElement);
-
-                    }
-
-
-
-
-                };
-
-                //Component Object end
-                targetComponentType->InsertEndChild(targetComponent);
-
-
-            };
-
-            //Class end
-            componentList->InsertEndChild(targetComponentType);
-        };
-
-
-
-
-        /* if (enabled) componentList->SetAttribute(nameCStr, nameCStr);
-         else componentList->DeleteAttribute(nameCStr);*/
-
-
-         //Component End
-        cRoot->InsertEndChild(componentList);
-
-        doc.Print();
-
-        XMLError eResultSave = doc.SaveFile(id);
-
-        if (eResultSave != XML_SUCCESS) {
-#ifdef _DEBUG
-            std::cerr << "Error saving file: " << eResultSave << std::endl;
-#endif
-            return -1;
-        }
-
-        std::cout << nameCStr << "obj Save game written to '" << filename << ".xml'\n";
-
-        return 0;
-
-    }
-
 
     static int writeActorToCell(std::string filename, Ref<Actor> actor_, bool enabled) {
-        std::string path = "Cell Files/" + filename + ".xml";
+        std::string path = BuildPath("Scenes/" + filename + ".scene").string();
         const char* id = path.c_str();
         XMLDocument doc;
 
@@ -480,8 +303,7 @@ public:
 
         */
 
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
-
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
 
         XMLDocument doc;
@@ -849,11 +671,8 @@ public:
 
     }
 
-
-
     static inline std::vector<float> getPublicVars(std::string name, int copy = 0) {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
-
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
 
         XMLDocument doc;
@@ -887,8 +706,6 @@ public:
             }
         }
 
-
-
         std::vector<float> pubVars;
 
         int index = 0;
@@ -909,9 +726,6 @@ public:
         return pubVars;
     }
 
-
-
-
     ///Simplify FindAttribute() implimentation for coding convenience
     static inline float GetAttrF(XMLElement* element, const char* name) {
         return element->FindAttribute(name)->FloatValue();
@@ -919,7 +733,7 @@ public:
 
     template<typename ComponentTemplate>
     static int writeUniqueComponent(std::string name, Component* toWrite) {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
         XMLDocument doc;
         
@@ -1354,9 +1168,6 @@ public:
         return 0;
     }
 
-
-
-
     /// <summary>
     /// Used to write the specific asset's name/key as an actor's used component in XML file. 
     /// NOT USED FOR TRANSFORM COMPONENT OR PHYSICS COMPONENT, YOU ARE LOOKING FOR writeUniqueComponent()
@@ -1376,7 +1187,7 @@ public:
     /// <returns>true if the component type exists within the XML file</returns>
     template<typename ComponentTemplate>
     static bool hasComponent(std::string name) {
-        std::string path = "Game Objects/" + SceneGraph::getInstance().cellFileName + "/" + name + ".xml";
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
 
         XMLDocument doc;
@@ -1399,47 +1210,6 @@ public:
 
         return (component != nullptr);
     }
-
-    //int readDoc() {
-    //    XMLDocument doc;
-
-    //    // Root element
-    //    XMLNode* pRoot = doc.NewElement("SaveGame");
-    //    doc.InsertFirstChild(pRoot);
-
-    //    // Player element with attributes
-    //    XMLElement* pPlayer = doc.NewElement("Player");
-    //    pPlayer->SetAttribute("name", "Hero");
-    //    pPlayer->SetAttribute("level", 5);
-    //    pPlayer->SetAttribute("health", 87.5);
-    //    pRoot->InsertEndChild(pPlayer);
-
-    //    // Inventory
-    //    XMLElement* pInventory = doc.NewElement("Inventory");
-
-    //    XMLElement* pItem1 = doc.NewElement("Item");
-    //    pItem1->SetAttribute("name", "Sword");
-    //    pItem1->SetAttribute("quantity", 1);
-    //    pInventory->InsertEndChild(pItem1);
-
-    //    XMLElement* pItem2 = doc.NewElement("Item");
-    //    pItem2->SetAttribute("name", "Potion");
-    //    pItem2->SetAttribute("quantity", 3);
-    //    pInventory->InsertEndChild(pItem2);
-
-    //    pPlayer->InsertEndChild(pInventory);
-
-    //    // Save to file
-    //    XMLError eResult = doc.SaveFile("Game Objects/savegame.xml");
-    //    if (eResult != XML_SUCCESS) {
-    //        std::cerr << "Error saving file: " << eResult << std::endl;
-    //        return -1;
-    //    }
-
-    //    std::cout << "Save game written to 'savegame.xml'\n";
-    //    return 0;
-    //}
 };
 
 //Requires XMLManager to exist
-

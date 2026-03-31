@@ -5,6 +5,8 @@
 #include "TilingSettings.h"
 #include "CollisionComponent.h"
 #include "ShadowSettings.h"
+#include "EditorManager.h"
+
 class InspectorWindow
 {
 	// delete the move and copy constructers
@@ -225,6 +227,18 @@ private:
 	void DrawPhysicsComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawCollisionComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
 	void DrawAnimatorComponent(const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_);
+
+	// asset to inspector interface
+	void DrawAssetInspector(const EditorManager::SelectedAsset& asset);
+	void DrawMatManifestEditor(const EditorManager::SelectedAsset& asset);
+	void DrawShaderManifestEditor(const EditorManager::SelectedAsset& asset);
+	void DrawPrefabEditor(const EditorManager::SelectedAsset& asset);
+
+	// dummy prefab variables
+	fs::path loadedPrefabPath;
+	Ref<Actor> dummyActor;
+	bool refresh = false;
+	void ClosePrefabEditor(bool save);
 
 	// right click popup menu
 	template <typename ComponentTemplate>

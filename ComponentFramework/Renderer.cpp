@@ -12,15 +12,33 @@
 #include "InputManager.h"
 
 bool Renderer::OnCreate() {
-	pickerShader = std::make_shared<ShaderComponent>(nullptr, "shaders/colourPickVert.glsl", "shaders/colourPickFrag.glsl");
-	outlineShader = std::make_shared<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/outline.glsl");
-	animatedShader = std::make_shared<ShaderComponent>(nullptr, "shaders/animationVert.glsl", "shaders/MultiPhongFrag.glsl");
-	animatedOutlineShader = std::make_shared<ShaderComponent>(nullptr, "shaders/animationVert.glsl", "shaders/outline.glsl");
-	multiPhongShader = std::make_shared<ShaderComponent>(nullptr, "shaders/MultiPhongVert.glsl", "shaders/MultiPhongFrag.glsl");
-	shadowShader = std::make_shared<ShaderComponent>(nullptr, "shaders/ShadowMappingVert.glsl", "shaders/ShadowMappingFrag.glsl");
-	shadowPointShader = std::make_shared<ShaderComponent>(nullptr, "shaders/ShadowMappingPointVert.glsl", "shaders/ShadowMappingPointFrag.glsl");
+	// fallback components
+	fallbackMaterial = std::make_shared<MaterialComponent>(nullptr, "", "", "");
+	{
+		// manually creating a texture
+		GLuint texID = 0;
+		glGenTextures(1, &texID);
+		glBindTexture(GL_TEXTURE_2D, texID);
+		unsigned char magenta[4] = { 255, 0, 255, 255 }; // RGBA
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, magenta);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
-	shaders = { pickerShader, outlineShader, animatedShader, animatedOutlineShader, multiPhongShader, shadowShader, shadowPointShader };
+		fallbackMaterial->InjectDiffuseID(texID);
+		fallbackMaterial->ForceCreated();
+	}
+	fallbackShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/fallbackVert.glsl", "Shaders/fallbackFrag.glsl");
+
+	pickerShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/colourPickVert.glsl", "Shaders/colourPickFrag.glsl");
+	outlineShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/MultiPhongVert.glsl", "Shaders/outline.glsl");
+	animatedShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/animationVert.glsl", "Shaders/MultiPhongFrag.glsl");
+	animatedOutlineShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/animationVert.glsl", "Shaders/outline.glsl");
+	multiPhongShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/MultiPhongVert.glsl", "Shaders/MultiPhongFrag.glsl");
+	shadowShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/ShadowMappingVert.glsl", "Shaders/ShadowMappingFrag.glsl");
+	shadowPointShader = std::make_shared<ShaderComponent>(nullptr, "Shaders/ShadowMappingPointVert.glsl", "Shaders/ShadowMappingPointFrag.glsl", nullptr, nullptr, "Shaders/ShadowMappingPointGeom.glsl");
+
+	shaders = { pickerShader, outlineShader, animatedShader, animatedOutlineShader, multiPhongShader, shadowShader, shadowPointShader, fallbackShader };
 
 	for (auto& shader : shaders) {
 		if (!shader->OnCreate()) {
