@@ -219,6 +219,8 @@ void EditorManager::SaveScene(const std::string& name)
 
 void EditorManager::LoadScene(const std::string& name)
 {
+	sceneGraph->sceneFileName = name;
+
 	std::string loadName = name.empty() ? sceneGraph->sceneFileName : name;
 	if (loadName.empty()) {
 		saveLoadDialog.showLoadDialog = true;
