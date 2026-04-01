@@ -156,9 +156,9 @@ public:
 
 		if (!(animation && animation->queryLoadStatus())) return;
 
-		if (clipLength >= 0.0f && time_ <= clipLength) { 
+		if (getClipLength() >= 0.0f && time_ <= getClipLength()) {
 			startTime = time_; 
-			if (!(time_ >= startTime && time_ <= clipLength)) { currentTime = startTime; }
+			if (!(currentTime >= startTime && currentTime <= getClipLength())) { currentTime = startTime; }
 		}
 	
 	}
@@ -172,7 +172,7 @@ public:
 	void setCurrentTime(float time_) {
 		if (!(animation && animation->queryLoadStatus())) return;
 
-		if (time_ >= startTime && time_ <= clipLength) { currentTime = time_; }
+		if (time_ >= startTime && time_ <= getClipLength()) { currentTime = time_; }
 	}
 
 	Ref<Animation> getAnim() { return animation; }

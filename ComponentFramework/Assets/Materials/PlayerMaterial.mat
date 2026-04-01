@@ -1,0 +1,4 @@
+<Material>
+    <Diffuse>Textures/1001-BaseColor.png</Diffuse>
+    <Normal>Textures/1001-Normal.png</Normal>
+</Material>

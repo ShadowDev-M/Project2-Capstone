@@ -1,7 +1,7 @@
 <Actor>
     <Tag value="Player"/>
     <TransformComponent>
-        <position x="3.8" y="1.2187831" z="-16.975952"/>
+        <position x="3.8" y="-5.6810002" z="-16.975952"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="1.5" y="1.5" z="1.5"/>
     </TransformComponent>
@@ -41,7 +41,7 @@
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="robot-rig"/>
-    <MaterialComponent name="PurpleTexture"/>
+    <MaterialComponent name="PlayerMaterial"/>
     <ShaderComponent name="MultiPhong"/>
     <ScriptComponent name="FixCamera"/>
     <ScriptComponent name="PlayerController"/>

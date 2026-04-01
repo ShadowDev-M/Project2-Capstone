@@ -9,8 +9,6 @@ actionclip = AnimationClip.new()
 actionclip.Loop = false
 
 
-local printtest = animclip:GetAnimationName()
-
 function Preload()
 	--animclip:PreloadAnimation("dancing")
   --  print("Preload called")
@@ -21,69 +19,72 @@ end
 
 function Start()
 
-
-
-	animclip:SetAnimation("RobotIdle")
-	--local printtest = animclip:GetAnimationName()
-	print(printtest)
+	--default idle
+	PlayClip("RobotIdle", GameObject.Animator.SpeedMult)
 
 	
 
-	GameObject.Animator.Clip = animclip
+end
 
+
+function PlayClip(name, spd)
+	aClip = AnimationClip.new()
+	aClip:SetAnimation(name)
+	aClip.SpeedMult = spd
+	GameObject.Animator.Clip = aClip
 	GameObject.Animator:Play()
-
-
-	print(Game:Find("Cube").Transform.GameObject.Transform.Position)
 
 end
 
---Rigidbody is the Physics Component of the script's user actor. Set and get the properties with Rigidbody.YOURVARIABLE 
-
---Game Handler Script 
 
 function Update(deltaTime) 
 	
 	
 	if GameObject.Animator.Clip:GetAnimationName() == "RobotJumping" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
-		animclip:SetAnimation("RobotFalling")
-		animclip.SpeedMult = 0.2
-		GameObject.Animator.Clip = animclip
-		GameObject.Animator:Play()
+		--activate falling after jump animation ends
+		PlayClip("RobotFalling", 0.2)
+		
 	end
 	
 	if GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" then
+		--In case movement or other actions increase anim speed for falling instead of their own intended animation, change it back
 		if GameObject.Animator.SpeedMult > 0.2 then
 			GameObject.Animator.SpeedMult = 0.2
 		end
 	end
 
 	if GameObject.Animator.Clip:GetAnimationName() == "RobotLanding" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
-		animclip:SetAnimation("RobotIdle")
-		GameObject.Animator.Clip = animclip
-		GameObject.Animator:Play()
+		PlayClip("RobotIdle", GameObject.Animator.SpeedMult)
 	end
 
 
-	if math.abs(GameObject.Rigidbody.Vel.x) > 0.01 and (GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" or GameObject.Animator.Clip:GetAnimationName() == "RobotIdle") then 
-		GameObject.Animator.SpeedMult = (math.abs(GameObject.Rigidbody.Vel.x) / 5) + 0.3
-		
-		if GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
-			print(GameObject.Animator.Clip:GetAnimationName())
-		end
-		if GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
-			animclip:SetAnimation("RobotWalking")
-			GameObject.Animator.Clip = animclip
-			GameObject.Animator:Play()
+	if math.abs(GameObject.Rigidbody.Vel.x) > 0.7 and (GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" or GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" or GameObject.Animator.Clip:GetAnimationName() == "RobotLanding") then 
 
+		if GameObject.Animator.Clip:GetAnimationName() == "RobotLanding" then
+			--fast forward the landing animation when wanting to walk so we don't slide
+			GameObject.Animator.SpeedMult = 2.0
+		else
+			--base speed of anim on movement speed (walking)
+			GameObject.Animator.SpeedMult = (math.abs(GameObject.Rigidbody.Vel.x) / 5) + 0.3
+
+			if GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
+				PlayClip("RobotWalking", GameObject.Animator.SpeedMult)
+			end
 		end
+
 	else
-		
-		if GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" and ((GameObject.Animator.CurrentTime < 0.3 or GameObject.Animator.CurrentTime > (GameObject.Animator.Length - 0.3)) or (GameObject.Animator.CurrentTime > 0.5 and GameObject.Animator.CurrentTime < 0.6)) then
-			animclip:SetAnimation("RobotIdle")
-			GameObject.Animator.Clip = animclip
-			GameObject.Animator:Play()
+		--Movement Stop Condition
+		if GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" then
+			--Condition to make it a bit more of a smooth transition
+			if ((GameObject.Animator.CurrentTime < 0.3 or GameObject.Animator.CurrentTime > (GameObject.Animator.Length - 0.3)) or (GameObject.Animator.CurrentTime > 0.5 and GameObject.Animator.CurrentTime < 0.6)) then
+				PlayClip("RobotIdle", GameObject.Animator.SpeedMult)
+			else
+				--speed up mult so it gets to the smoother transition faster
+				GameObject.Animator.SpeedMult = 2.0
+			end
+			
 		end
+
 	end
 
 end
