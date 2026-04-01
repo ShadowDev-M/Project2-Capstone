@@ -6,8 +6,8 @@
         <Tag value="Ground"/>
     </Tags>
     <Actors>
-        <Floor/>
         <Wall/>
+        <Floor/>
         <Skylight/>
         <Player/>
         <Camera/>

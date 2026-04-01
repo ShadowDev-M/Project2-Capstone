@@ -77,10 +77,11 @@ function OnCollisionStay(other)
 		jumpclip:SetAnimation("RobotJumping")
 		jumpclip.Loop = false
 		jumpclip.SpeedMult = 1.2
+		jumpclip.StartTime = 0.3
 
 		GameObject.Animator.Clip = jumpclip
-		GameObject.Animator:Play()
 
+		GameObject.Animator:Play()
 		newVel = GameObject.Rigidbody.Vel
 		
 		newVel.y = 10
