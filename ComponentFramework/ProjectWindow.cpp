@@ -367,8 +367,10 @@ void ProjectWindow::DrawContextMenuFolder(const fs::path& dir)
 
 void ProjectWindow::DrawContextMenuFile(const FileEntry& entry)
 {
-	if (entry.iconType == AssetIcon::Scene) {
-		if (ImGui::MenuItem("Load Scene")) EditorManager::getInstance().LoadScene(entry.absolutePath.stem().string());
+	if (entry.iconType == AssetIcon::Scene) { 
+		if (ImGui::MenuItem("Load Scene")) {
+			EditorManager::getInstance().LoadScene(entry.absolutePath.stem().string());
+		}
 	}
 
 	if (entry.iconType == AssetIcon::Texture) {
@@ -502,9 +504,33 @@ void ProjectWindow::Rename(const fs::path& path, const std::string& newName)
 	else if (ext == ".shader") type = "ShaderComponent";
 	else if (ext == ".lua") type = "ScriptAbstract";
 	else if (ext == ".gltf") type = "Animation";
+	else if (ext == ".scene") type = "Scene";
 
 	if (!type.empty()) {
-		AssetManager::getInstance().RenameAsset(path.stem().string(), newName, type);
+		if (ext == ".scene") {
+			std::string newStem = newName;
+			fs::path dst = path.parent_path() / (newStem + ext);
+
+			std::error_code ec;
+			fs::rename(path, path.parent_path() / (newName + ext), ec);
+			if (!ec) {
+				fs::path srcGO = path.parent_path().parent_path() / "Game Objects" / path.stem().string();
+				fs::path dstGO = path.parent_path().parent_path() / "Game Objects" / newStem;
+				if (fs::exists(srcGO)) {
+					fs::copy(srcGO, dstGO, fs::copy_options::recursive, ec);
+					fs::remove_all(srcGO);
+					if (ec) {
+						fs::remove(dst);
+						NeedsRefresh();
+						return;
+					}
+				}
+				AssetManager::getInstance().RefreshSingle(dst);
+			}
+		}
+		else {
+			AssetManager::getInstance().RenameAsset(path.stem().string(), newName, type);
+		}
 	}
 	else {
 		std::error_code ec;
