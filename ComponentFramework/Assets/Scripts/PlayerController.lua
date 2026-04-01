@@ -8,9 +8,9 @@ canInteract2 = 1
 
 --public testvar = 1.0
 jumpclip = AnimationClip.new()
-jumpclip:PreloadAnimation("falling")
-jumpclip:PreloadAnimation("jump")
-jumpclip:PreloadAnimation("land")
+jumpclip:PreloadAnimation("RobotFalling")
+jumpclip:PreloadAnimation("RobotJumping")
+jumpclip:PreloadAnimation("RobotLanding")
 
 
 function Preload()
@@ -71,12 +71,13 @@ end
 
  -- applied bandaid fix for jump spamming and velocity stacking
 function OnCollisionStay(other)
-	if Game.Input.GetInputState("SPACE") == 1 and canJump == 1 then
+	if Game.Input.GetInputState("Space") == 1 and canJump == 1 then
 		canJump = 0
 
-		jumpclip:SetAnimation("jump")
+		jumpclip:SetAnimation("RobotJumping")
 		jumpclip.Loop = false
-		 
+		jumpclip.SpeedMult = 1.2
+
 		GameObject.Animator.Clip = jumpclip
 		GameObject.Animator:Play()
 

@@ -1,0 +1,49 @@
+<Prefab name="Player">
+    <Tag value="Player"/>
+    <TransformComponent>
+        <position x="3.8" y="1.2187831" z="-16.975952"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1.5" y="1.5" z="1.5"/>
+    </TransformComponent>
+    <PhysicsComponent>
+        <PhysicsState state="0"/>
+        <Constraints freezePosX="false" freezePosY="false" freezePosZ="false" freezeRotX="false" freezeRotY="false" freezeRotZ="false"/>
+        <mass value="1"/>
+        <UsingGravity isUsing="1"/>
+        <drag value="0"/>
+        <angularDrag value="0.050000001"/>
+        <friction value="0.5"/>
+        <restitution value="0"/>
+    </PhysicsComponent>
+    <CollisionComponent>
+        <CollisionState state="0"/>
+        <CollisionType type="1"/>
+        <isTrigger trigger="0"/>
+        <radius value="1.8"/>
+        <centre x="0" y="0" z="0"/>
+        <centrePosA x="0" y="4.6999998" z="0"/>
+        <centrePosB x="0" y="1.9" z="0"/>
+        <halfExtents x="1" y="1" z="1"/>
+        <orientation w="1" x="0" y="0" z="0"/>
+    </CollisionComponent>
+    <AnimatorComponent>
+        <startTime time="0"/>
+        <speedMult mult="0"/>
+        <looping state="false"/>
+        <animName name="LOADING..."/>
+    </AnimatorComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
+    <MeshComponent name="robot-rig"/>
+    <MaterialComponent name="PurpleTexture"/>
+    <ShaderComponent name="MultiPhong"/>
+    <ScriptComponent name="FixCamera"/>
+    <ScriptComponent name="PlayerController"/>
+    <ScriptComponent name="animateTestScript"/>
+</Prefab>

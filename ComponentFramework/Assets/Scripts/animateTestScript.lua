@@ -1,8 +1,8 @@
 
 
 animclip = AnimationClip.new()
-animclip:PreloadAnimation("walking")
-animclip:PreloadAnimation("idle2")
+animclip:PreloadAnimation("RobotWalking")
+animclip:PreloadAnimation("RobotIdle")
 
 
 actionclip = AnimationClip.new()
@@ -23,7 +23,7 @@ function Start()
 
 
 
-	animclip:SetAnimation("idle2")
+	animclip:SetAnimation("RobotIdle")
 	--local printtest = animclip:GetAnimationName()
 	print(printtest)
 
@@ -45,42 +45,42 @@ end
 function Update(deltaTime) 
 	
 	
-	if GameObject.Animator.Clip:GetAnimationName() == "jump" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
-		animclip:SetAnimation("falling")
+	if GameObject.Animator.Clip:GetAnimationName() == "RobotJumping" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
+		animclip:SetAnimation("RobotFalling")
 		animclip.SpeedMult = 0.2
 		GameObject.Animator.Clip = animclip
 		GameObject.Animator:Play()
 	end
 	
-	if GameObject.Animator.Clip:GetAnimationName() == "falling" then
+	if GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" then
 		if GameObject.Animator.SpeedMult > 0.2 then
 			GameObject.Animator.SpeedMult = 0.2
 		end
 	end
 
-	if GameObject.Animator.Clip:GetAnimationName() == "land" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
-		animclip:SetAnimation("idle2")
+	if GameObject.Animator.Clip:GetAnimationName() == "RobotLanding" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
+		animclip:SetAnimation("RobotIdle")
 		GameObject.Animator.Clip = animclip
 		GameObject.Animator:Play()
 	end
 
 
-	if math.abs(GameObject.Rigidbody.Vel.x) > 0.01 and (GameObject.Animator.Clip:GetAnimationName() == "walking" or GameObject.Animator.Clip:GetAnimationName() == "idle2") then 
+	if math.abs(GameObject.Rigidbody.Vel.x) > 0.01 and (GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" or GameObject.Animator.Clip:GetAnimationName() == "RobotIdle") then 
 		GameObject.Animator.SpeedMult = (math.abs(GameObject.Rigidbody.Vel.x) / 5) + 0.3
 		
-		if GameObject.Animator.Clip:GetAnimationName() == "idle2" then
+		if GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
 			print(GameObject.Animator.Clip:GetAnimationName())
 		end
-		if GameObject.Animator.Clip:GetAnimationName() == "idle2" then
-			animclip:SetAnimation("walking")
+		if GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
+			animclip:SetAnimation("RobotWalking")
 			GameObject.Animator.Clip = animclip
 			GameObject.Animator:Play()
 
 		end
 	else
 		
-		if GameObject.Animator.Clip:GetAnimationName() == "walking" and ((GameObject.Animator.CurrentTime < 0.3 or GameObject.Animator.CurrentTime > (GameObject.Animator.Length - 0.3)) or (GameObject.Animator.CurrentTime > 0.5 and GameObject.Animator.CurrentTime < 0.6)) then
-			animclip:SetAnimation("idle2")
+		if GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" and ((GameObject.Animator.CurrentTime < 0.3 or GameObject.Animator.CurrentTime > (GameObject.Animator.Length - 0.3)) or (GameObject.Animator.CurrentTime > 0.5 and GameObject.Animator.CurrentTime < 0.6)) then
+			animclip:SetAnimation("RobotIdle")
 			GameObject.Animator.Clip = animclip
 			GameObject.Animator:Play()
 		end
@@ -89,8 +89,8 @@ function Update(deltaTime)
 end
 
 function OnCollisionEnter(other) 
-	if GameObject.Animator.Clip:GetAnimationName() == "falling" then
-		actionclip:SetAnimation("land")
+	if GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" then
+		actionclip:SetAnimation("RobotLanding")
 		GameObject.Animator.Clip = actionclip
 		GameObject.Animator:Play()
 	end
