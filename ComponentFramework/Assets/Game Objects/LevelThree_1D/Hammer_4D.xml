@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0.44172665" y="5.0384283" z="0"/>
-        <rotation w="0.70213181" x="0.35774356" y="-0.54854649" z="0.27951255"/>
-        <scale x="2.9000185" y="2.9000082" z="2.9000194"/>
+        <position x="-3.2027886" y="-3.7202101" z="-4.6555529"/>
+        <rotation w="0.70210534" x="0.357748" y="-0.54856825" z="0.27953058"/>
+        <scale x="2.9000249" y="2.9000058" z="2.900018"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
@@ -16,7 +16,7 @@
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>
-        <CollisionState state="1"/>
+        <CollisionState state="0"/>
         <CollisionType type="0"/>
         <isTrigger trigger="0"/>
         <radius value="1"/>
@@ -26,6 +26,30 @@
         <halfExtents x="1" y="1" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
+    <CameraComponent>
+        <type value="0"/>
+        <fov value="60"/>
+        <near value="0.029999999"/>
+        <far value="1000"/>
+        <orthoSize value="5"/>
+    </CameraComponent>
+    <LightComponent>
+        <diffuse x="0.5" y="0.5" z="0.5" w="1"/>
+        <specular x="1" y="1" z="1" w="1"/>
+        <intensity magnitude="1"/>
+        <LightType type="1"/>
+        <shadowType type="0"/>
+        <shadowNear value="0.1"/>
+        <shadowFar value="200"/>
+        <shadowResolution value="1024"/>
+        <shadowOrthoSize value="60"/>
+    </LightComponent>
+    <AnimatorComponent>
+        <startTime time="0"/>
+        <speedMult mult="0"/>
+        <looping state="false"/>
+        <animName name=""/>
+    </AnimatorComponent>
     <ShadowSettings>
         <castShadow state="1"/>
     </ShadowSettings>
@@ -37,7 +61,5 @@
     <MeshComponent name="Hammer"/>
     <MaterialComponent name="Hammer"/>
     <ShaderComponent name="MultiPhong"/>
-    <ScriptComponent name="FixCamera"/>
-    <ScriptComponent name="GearTurn"/>
-    <ScriptComponent name="Lever"/>
+    <ScriptComponent name="PlayerController"/>
 </Actor>

@@ -384,20 +384,23 @@ Ref<Actor> SceneGraph::DeepCopyActor(const std::string& newName_, Ref<Actor> ori
 
 Ref<Actor> SceneGraph::InstantiatePrefab(const fs::path& prefabPath, Vec3 position, Quaternion rotation, Actor* parent)
 {
+	std::vector<Ref<Actor>> allActors;
+	Ref<Actor> root = XMLObjectFile::ReadPrefab(prefabPath, allActors);
+	if (!root || allActors.empty()) return nullptr;
 
-	Ref<Actor> root = XMLObjectFile::ReadPrefab(prefabPath);
-	if (!root) return nullptr;
-
-	if (auto tc = root->GetComponent<TransformComponent>()) {
-		tc->SetTransform(position, rotation, tc->GetScale());
-	}
-
+	if (auto tc = root->GetComponent<TransformComponent>()) tc->SetTransform(position, rotation, tc->GetScale());
 	if (parent) root->setParentActor(parent);
 
-	AddActor(root);
+	for (auto& actor : allActors) {
+		std::string uniqueName = GenerateUniqueActorName(actor->getActorName());
+		actor->setActorName(uniqueName);
+		AddActor(actor);
+	}
 
-	for (auto& sc : root->GetAllComponent<ScriptComponent>()) {
-		Preload(sc.get());
+	for (auto& actor : allActors) {
+		for (auto& sc : actor->GetAllComponent<ScriptComponent>()) {
+			Preload(sc.get());
+		}
 	}
 
 	return root;

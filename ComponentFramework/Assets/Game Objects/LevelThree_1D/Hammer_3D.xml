@@ -1,13 +1,13 @@
-<Prefab name="Hammer">
+<Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="1.6495514" y="-1.4140015" z="0"/>
-        <rotation w="0.7021296" x="0.3577472" y="-0.54854995" z="0.27950656"/>
-        <scale x="2.900007" y="2.9000037" z="2.9000075"/>
+        <position x="4.2467189" y="-1.4140015" z="0"/>
+        <rotation w="0.70213485" x="0.35774106" y="-0.54854262" z="0.2795161"/>
+        <scale x="2.9000254" y="2.9000123" z="2.9000268"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
-        <Constraints freezePosX="false" freezePosY="false" freezePosZ="false" freezeRotX="false" freezeRotY="false" freezeRotZ="false"/>
+        <Constraints freezePosX="0" freezePosY="0" freezePosZ="0" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
         <mass value="1"/>
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
@@ -26,20 +26,13 @@
         <halfExtents x="1" y="1" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
-    <AnimatorComponent>
-        <startTime time="0"/>
-        <speedMult mult="0"/>
-        <looping state="false"/>
-        <animName name="LOADING..."/>
-    </AnimatorComponent>
-    <ShadowSettings>
-        <castShadow state="1"/>
-    </ShadowSettings>
-    <TilingSettings>
-        <isTiled state="0"/>
-        <tileScale x="1" y="1"/>
-        <tileOffset x="0" y="0"/>
-    </TilingSettings>
+    <CameraComponent>
+        <type value="0"/>
+        <fov value="60"/>
+        <near value="0.029999999"/>
+        <far value="1000"/>
+        <orthoSize value="5"/>
+    </CameraComponent>
     <LightComponent>
         <diffuse x="0.5" y="0.5" z="0.5" w="1"/>
         <specular x="1" y="1" z="1" w="1"/>
@@ -51,15 +44,22 @@
         <shadowResolution value="1024"/>
         <shadowOrthoSize value="60"/>
     </LightComponent>
-    <CameraComponent>
-        <type value="0"/>
-        <fov value="60"/>
-        <near value="0.029999999"/>
-        <far value="1000"/>
-        <orthoSize value="5"/>
-    </CameraComponent>
+    <AnimatorComponent>
+        <startTime time="0"/>
+        <speedMult mult="0"/>
+        <looping state="false"/>
+        <animName name=""/>
+    </AnimatorComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
     <MeshComponent name="Hammer"/>
     <MaterialComponent name="Hammer"/>
     <ShaderComponent name="MultiPhong"/>
     <ScriptComponent name="PlayerController"/>
-</Prefab>
+</Actor>

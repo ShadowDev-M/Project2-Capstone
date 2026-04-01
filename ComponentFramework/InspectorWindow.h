@@ -236,7 +236,7 @@ private:
 
 	// dummy prefab variables
 	fs::path loadedPrefabPath;
-	Ref<Actor> dummyActor;
+	std::vector<Ref<Actor>> dummyActors;
 	bool refresh = false;
 	void ClosePrefabEditor(bool save);
 
@@ -309,7 +309,6 @@ inline void InspectorWindow::RightClickContext(const char* popupName_, const std
 					auto scripts = pair.second->GetAllComponent<ScriptComponent>();
 					if (!scripts.empty()) {
 						pair.second->DeleteComponent<ScriptComponent>(copy); 
-						// TODO: should the script be deleted or just removed? does the ondestroy delete the script itself
 					}
 				}
 				if constexpr (std::is_same_v<ComponentTemplate, LightComponent>) {

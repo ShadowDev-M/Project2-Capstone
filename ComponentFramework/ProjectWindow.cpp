@@ -229,6 +229,13 @@ void ProjectWindow::DrawFileGrid()
 			EditorManager::getInstance().SetSelectedAsset(selectedAsset);
 		}
 
+		// extra visability for selected assets
+		if (selected) {
+			ImVec2 rMin = ImGui::GetItemRectMin();
+			ImVec2 rMax = ImGui::GetItemRectMax();
+			ImGui::GetWindowDrawList()->AddRect(rMin, rMax, IM_COL32(100, 170, 255, 230), 4.0f, ImDrawFlags_RoundCornersAll, 2.5f);
+		}
+
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 			if (entry.isDir) {
 				selectedDir = entry.absolutePath;
@@ -517,9 +524,32 @@ void ProjectWindow::Duplicate(const fs::path& path)
 	else if (ext == ".shader") type = "ShaderComponent";
 	else if (ext == ".lua") type = "ScriptAbstract";
 	else if (ext == ".gltf") type = "Animation";
+	else if (ext == ".scene") type = "Scene";
 	
 	if (!type.empty()) {
-		AssetManager::getInstance().DuplicateAsset(name, type);
+		if (ext == ".scene") {
+			std::string newStem = AssetManager::getInstance().GenerateUniqueFileName(path.parent_path(), name, ext);
+			fs::path dst = path.parent_path() / (newStem + ext);
+
+			std::error_code ec;
+			fs::copy_file(path, dst, ec);
+			if (!ec) {
+				fs::path srcGO = path.parent_path().parent_path() / "Game Objects" / name;
+				fs::path dstGO = path.parent_path().parent_path() / "Game Objects" / newStem;
+				if (fs::exists(srcGO)) {
+					fs::copy(srcGO, dstGO, fs::copy_options::recursive, ec);
+					if (ec) {
+						fs::remove(dst);
+						NeedsRefresh();
+						return;
+					}
+				}
+				AssetManager::getInstance().RefreshSingle(dst);
+			}
+		}
+		else {
+			AssetManager::getInstance().DuplicateAsset(name, type);
+		}
 	}
 	else {
 		std::string newStem = AssetManager::getInstance().GenerateUniqueFileName(path.parent_path(), name, ext);

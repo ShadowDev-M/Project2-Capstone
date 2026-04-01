@@ -71,7 +71,7 @@ public:
 
 	template<typename ComponentTemplate>
 	void AddComponent(Ref<ComponentTemplate> component_) {
-		if (GetComponent<ComponentTemplate>().get() != nullptr) {
+		if (GetComponent<ComponentTemplate>().get() && static_cast<std::string>(typeid(ComponentTemplate).name()).substr(6) != "ScriptComponent") {
 #ifdef _DEBUG
 			std::cerr << "WARNING: Trying to add a component type that is already added - ignored\n";
 #endif
