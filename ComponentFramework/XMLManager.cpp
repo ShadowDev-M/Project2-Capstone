@@ -107,13 +107,13 @@ bool XMLObjectFile::WritePrefab(const std::string& actorName, const fs::path& ou
     return doc.SaveFile(outputPath.string().c_str()) == XML_SUCCESS;
 }
 
-Ref<Actor> XMLObjectFile::ReadPrefab(const fs::path& prefabPath)
+Ref<Actor> XMLObjectFile::ReadPrefab(const fs::path& prefabPath, std::vector<Ref<Actor>>& outActors)
 {
     XMLDocument doc;
     if (doc.LoadFile(prefabPath.string().c_str()) != XML_SUCCESS) return nullptr;
     auto* root = doc.FirstChildElement("Prefab");
     if (!root) return nullptr;
-    return ReadPrefabNode(root, nullptr);
+    return ReadPrefabNode(root, nullptr, outActors);
 }
 
 void XMLObjectFile::WritePrefabNode(XMLDocument& doc, XMLElement* parentEl, const std::string& actorName)
@@ -317,16 +317,12 @@ void XMLObjectFile::WritePrefabNode(XMLDocument& doc, XMLElement* parentEl, cons
     }
 }
 
-Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
+Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent, std::vector<Ref<Actor>>& outActors)
 {
-    // similar to loading an actor, it reads through all the components,
-    // sets the values that need to be set, adds them to their respective systems
-    // add it recursivly does it for children too
-
     const char* nameAttr = nodeEl->Attribute("name");
     if (!nameAttr) return nullptr;
 
-    std::string name = SceneGraph::getInstance().GenerateUniqueActorName(nameAttr);
+    std::string name = nameAttr;
     auto actor = std::make_shared<Actor>(parent, name);
     AssetManager& am = AssetManager::getInstance();
 
@@ -341,14 +337,18 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
         Vec3 pos(0, 0, 0), sc(1, 1, 1);
         Quaternion ori(1, Vec3(0, 0, 0));
         if (auto* e = tcEl->FirstChildElement("position")) {
-            e->QueryFloatAttribute("x", &pos.x); e->QueryFloatAttribute("y", &pos.y); e->QueryFloatAttribute("z", &pos.z);
+            e->QueryFloatAttribute("x", &pos.x); 
+            e->QueryFloatAttribute("y", &pos.y);
+            e->QueryFloatAttribute("z", &pos.z);
         }
         if (auto* e = tcEl->FirstChildElement("rotation")) {
             e->QueryFloatAttribute("w", &ori.w); e->QueryFloatAttribute("x", &ori.ijk.x);
             e->QueryFloatAttribute("y", &ori.ijk.y); e->QueryFloatAttribute("z", &ori.ijk.z);
         }
         if (auto* e = tcEl->FirstChildElement("scale")) {
-            e->QueryFloatAttribute("x", &sc.x); e->QueryFloatAttribute("y", &sc.y); e->QueryFloatAttribute("z", &sc.z);
+            e->QueryFloatAttribute("x", &sc.x); 
+            e->QueryFloatAttribute("y", &sc.y);
+            e->QueryFloatAttribute("z", &sc.z);
         }
         actor->AddComponent<TransformComponent>(std::make_shared<TransformComponent>(actor.get(), pos, ori, sc));
     }
@@ -359,44 +359,54 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
         if (n) {
             if (auto m = am.GetAsset<MeshComponent>(n)) {
                 actor->ReplaceComponent(m);
-                if (!actor->GetComponent<ShadowSettings>())
-                    actor->AddComponent<ShadowSettings>(std::make_shared<ShadowSettings>(actor.get(), true));
             }
         }
     }
-    // mat
+
+    // material
     if (auto* el = nodeEl->FirstChildElement("MaterialComponent")) {
         const char* n = el->Attribute("name");
         if (n) {
             if (auto m = am.GetAsset<MaterialComponent>(n)) {
                 actor->ReplaceComponent(m);
-                if (!actor->GetComponent<TilingSettings>())
-                    actor->AddComponent<TilingSettings>(std::make_shared<TilingSettings>(actor.get(), false));
             }
         }
     }
+
     // shader
     if (auto* el = nodeEl->FirstChildElement("ShaderComponent")) {
         const char* n = el->Attribute("name");
         if (n) if (auto s = am.GetAsset<ShaderComponent>(n)) actor->ReplaceComponent(s);
     }
 
-    // ShadowSettings
+    // shadow settings
     if (auto* el = nodeEl->FirstChildElement("ShadowSettings")) {
         int cast = 1;
         if (auto* cs = el->FirstChildElement("castShadow")) cs->QueryIntAttribute("state", &cast);
-        actor->AddComponent<ShadowSettings>(std::make_shared<ShadowSettings>(actor.get(), cast != 0));
+        if (!actor->GetComponent<ShadowSettings>()) {
+            actor->AddComponent<ShadowSettings>(std::make_shared<ShadowSettings>(actor.get(), cast != 0));
+        }
+    }
+    if (actor->GetComponent<MeshComponent>() && !actor->GetComponent<ShadowSettings>()) {
+        actor->AddComponent<ShadowSettings>(std::make_shared<ShadowSettings>(actor.get(), true));
     }
 
-    // TilingSettings
+    // tilingSettings
     if (auto* el = nodeEl->FirstChildElement("TilingSettings")) {
+        int tiled = 0; float sx = 1, sy = 1, ox = 0, oy = 0;
+        if (auto* e = el->FirstChildElement("isTiled")) e->QueryIntAttribute("state", &tiled);
+        if (auto* e = el->FirstChildElement("tileScale")) {
+            e->QueryFloatAttribute("x", &sx); e->QueryFloatAttribute("y", &sy);
+        }
+        if (auto* e = el->FirstChildElement("tileOffset")) {
+            e->QueryFloatAttribute("x", &ox); e->QueryFloatAttribute("y", &oy);
+        }
         if (!actor->GetComponent<TilingSettings>()) {
-            int tiled = 0; float sx = 1, sy = 1, ox = 0, oy = 0;
-            if (auto* e = el->FirstChildElement("isTiled")) e->QueryIntAttribute("state", &tiled);
-            if (auto* e = el->FirstChildElement("tileScale")) { e->QueryFloatAttribute("x", &sx); e->QueryFloatAttribute("y", &sy); }
-            if (auto* e = el->FirstChildElement("tileOffset")) { e->QueryFloatAttribute("x", &ox); e->QueryFloatAttribute("y", &oy); }
             actor->AddComponent<TilingSettings>(std::make_shared<TilingSettings>(actor.get(), tiled != 0, Vec2(sx, sy), Vec2(ox, oy)));
         }
+    }
+    if (actor->GetComponent<MaterialComponent>() && !actor->GetComponent<TilingSettings>()) {
+        actor->AddComponent<TilingSettings>(std::make_shared<TilingSettings>(actor.get(), false));
     }
 
     // physics
@@ -411,9 +421,12 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
         if (auto* e = el->FirstChildElement("friction")) e->QueryFloatAttribute("value", &friction);
         if (auto* e = el->FirstChildElement("restitution")) e->QueryFloatAttribute("value", &rest);
         if (auto* e = el->FirstChildElement("Constraints")) {
-            e->QueryBoolAttribute("freezePosX", &con.freezePosX); e->QueryBoolAttribute("freezePosY", &con.freezePosY);
-            e->QueryBoolAttribute("freezePosZ", &con.freezePosZ); e->QueryBoolAttribute("freezeRotX", &con.freezeRotX);
-            e->QueryBoolAttribute("freezeRotY", &con.freezeRotY); e->QueryBoolAttribute("freezeRotZ", &con.freezeRotZ);
+            e->QueryBoolAttribute("freezePosX", &con.freezePosX);
+            e->QueryBoolAttribute("freezePosY", &con.freezePosY);
+            e->QueryBoolAttribute("freezePosZ", &con.freezePosZ);
+            e->QueryBoolAttribute("freezeRotX", &con.freezeRotX);
+            e->QueryBoolAttribute("freezeRotY", &con.freezeRotY);
+            e->QueryBoolAttribute("freezeRotZ", &con.freezeRotZ);
         }
         auto pc = std::make_shared<PhysicsComponent>(actor.get(), (PhysicsState)state, con, mass, useGrav != 0, drag, angDrag, friction, rest);
         actor->AddComponent(pc);
@@ -429,14 +442,16 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
         if (auto* e = el->FirstChildElement("CollisionType")) e->QueryIntAttribute("type", &type);
         if (auto* e = el->FirstChildElement("isTrigger")) e->QueryIntAttribute("trigger", &trig);
         if (auto* e = el->FirstChildElement("radius")) e->QueryFloatAttribute("value", &r);
-        auto readVec = [](XMLElement* e, Vec3& v) {
+        auto rv = [](XMLElement* e, Vec3& v) {
             if (!e) return;
-            e->QueryFloatAttribute("x", &v.x); e->QueryFloatAttribute("y", &v.y); e->QueryFloatAttribute("z", &v.z);
+            e->QueryFloatAttribute("x", &v.x); 
+            e->QueryFloatAttribute("y", &v.y);
+            e->QueryFloatAttribute("z", &v.z);
             };
-        readVec(el->FirstChildElement("centre"), ctr);
-        readVec(el->FirstChildElement("centrePosA"), capA);
-        readVec(el->FirstChildElement("centrePosB"), capB);
-        readVec(el->FirstChildElement("halfExtents"), half);
+        rv(el->FirstChildElement("centre"), ctr);
+        rv(el->FirstChildElement("centrePosA"), capA);
+        rv(el->FirstChildElement("centrePosB"), capB);
+        rv(el->FirstChildElement("halfExtents"), half);
         if (auto* e = el->FirstChildElement("orientation")) {
             e->QueryFloatAttribute("w", &ori.w); e->QueryFloatAttribute("x", &ori.ijk.x);
             e->QueryFloatAttribute("y", &ori.ijk.y); e->QueryFloatAttribute("z", &ori.ijk.z);
@@ -446,15 +461,17 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
         CollisionSystem::getInstance().AddActor(actor);
     }
 
-    // anim
+    // animation
     if (auto* el = nodeEl->FirstChildElement("AnimatorComponent")) {
-        float start = 0, speed = 1; bool loop = false;
-        const char* anim = nullptr;
+        float start = 0, speed = 1; bool loop = false; const char* anim = nullptr;
         if (auto* e = el->FirstChildElement("startTime")) e->QueryFloatAttribute("time", &start);
         if (auto* e = el->FirstChildElement("speedMult")) e->QueryFloatAttribute("mult", &speed);
-        if (auto* e = el->FirstChildElement("looping")) { int b = 0; e->QueryIntAttribute("state", &b); loop = b != 0; }
-        if (auto* e = el->FirstChildElement("animName")) anim = e->Attribute("name");
-        actor->AddComponent<AnimatorComponent>(std::make_shared<AnimatorComponent>(actor.get(), start, speed, loop, anim ? std::string(anim) : ""));
+        if (auto* e = el->FirstChildElement("looping")) {
+            int b = 0; e->QueryIntAttribute("state", &b); loop = b != 0;
+        }
+        if (auto* e = el->FirstChildElement("animName")) anim = e->Attribute("name"); {
+            actor->AddComponent<AnimatorComponent>(std::make_shared<AnimatorComponent>(actor.get(), start, speed, loop, anim ? std::string(anim) : ""));
+        }
     }
 
     // light
@@ -479,15 +496,13 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
         if (auto* e = el->FirstChildElement("shadowOrthoSize")) e->QueryFloatAttribute("value", &shadowOrtho);
         auto lc = std::make_shared<LightComponent>(actor.get(), (LightType)lightType, spec, diff, intensity);
         lc->setShadowType((ShadowType)shadowType);
-        lc->setShadowNear(shadowNear);
-        lc->setShadowFar(shadowFar);
-        lc->setShadowResolution(shadowRes);
-        lc->setShadowOrthoSize(shadowOrtho);
+        lc->setShadowNear(shadowNear); lc->setShadowFar(shadowFar);
+        lc->setShadowResolution(shadowRes); lc->setShadowOrthoSize(shadowOrtho);
         actor->AddComponent(lc);
         LightingSystem::getInstance().AddActor(actor);
     }
 
-    // cam
+    // camera
     if (auto* el = nodeEl->FirstChildElement("CameraComponent")) {
         int type = 0; float fov = 60, near = 0.03f, far = 1000, ortho = 5;
         if (auto* e = el->FirstChildElement("type")) e->QueryIntAttribute("value", &type);
@@ -497,6 +512,7 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
         if (auto* e = el->FirstChildElement("orthoSize")) e->QueryFloatAttribute("value", &ortho);
         auto cam = std::make_shared<CameraComponent>(actor.get(), (ProjectionType)type, fov, near, far, ortho);
         actor->AddComponent(cam);
+        if (actor->getTag() == "MainCamera") SceneGraph::getInstance().SetMainCamera(actor);
     }
 
     // scripts
@@ -512,17 +528,11 @@ Ref<Actor> XMLObjectFile::ReadPrefabNode(XMLElement* nodeEl, Actor* parent)
 
     actor->OnCreate();
 
-    // main camera tag check
-    if (actor->getTag() == "MainCamera" && actor->GetComponent<CameraComponent>()) SceneGraph::getInstance().SetMainCamera(actor);
+    outActors.push_back(actor);
 
-    // recursive children lookup
     if (auto* childrenEl = nodeEl->FirstChildElement("Children")) {
-        for (auto* childEl = childrenEl->FirstChildElement("Child");
-            childEl; childEl = childEl->NextSiblingElement("Child")) {
-            const char* childName = childEl->Attribute("name");
-            if (!childName) continue;
-            Ref<Actor> child = ReadPrefabNode(childEl, actor.get());
-            if (child) SceneGraph::getInstance().AddActor(child);
+        for (auto* childEl = childrenEl->FirstChildElement("Child"); childEl; childEl = childEl->NextSiblingElement("Child")) {
+            ReadPrefabNode(childEl, actor.get(), outActors);
         }
     }
 

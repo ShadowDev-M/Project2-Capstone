@@ -33,17 +33,18 @@ void EditorManager::CreateEditorIcons()
 	editorIcons.pauseIcon = load("Icons/pause.png");
 	editorIcons.stopIcon = load("Icons/stop.png");
 	editorIcons.stepIcon = load("Icons/step.png");
+	
 	editorIcons.folderIcon = load("Icons/folder.png");
-	editorIcons.meshIcon = load("Icons/document.png");
+	editorIcons.meshIcon = load("Icons/mesh.png");
 	editorIcons.textureIcon = load("Icons/document.png");
 	editorIcons.materialIcon = load("Icons/document.png");
-	editorIcons.shaderIcon = load("Icons/document.png");
-	editorIcons.scriptIcon = load("Icons/document.png");
-	editorIcons.animationIcon = load("Icons/document.png");
-	editorIcons.sceneIcon = load("Icons/document.png");
-	editorIcons.prefabIcon = load("Icons/document.png");
-	editorIcons.glslIcon = load("Icons/document.png");
-	editorIcons.unknownIcon = load("Icons/document.png");
+	editorIcons.shaderIcon = load("Icons/shader.png");
+	editorIcons.scriptIcon = load("Icons/lua.png");
+	editorIcons.animationIcon = load("Icons/anim.png");
+	editorIcons.sceneIcon = load("Icons/scene.png");
+	editorIcons.prefabIcon = load("Icons/prefab.png");
+	editorIcons.glslIcon = load("Icons/glsl.png");
+	editorIcons.unknownIcon = load("Icons/unknown.png");
 }
 
 EditorManager::~EditorManager() = default;

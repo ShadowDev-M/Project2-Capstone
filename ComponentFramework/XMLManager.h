@@ -36,7 +36,7 @@ class XMLObjectFile {
     // prefab helpers
     static void WritePrefabNode(XMLDocument& doc, XMLElement* parentEl,
         const std::string& actorName);
-    static Ref<Actor> ReadPrefabNode(XMLElement* nodeEl, Actor* parent);
+    static Ref<Actor> ReadPrefabNode(XMLElement* nodeEl, Actor* parent, std::vector<Ref<Actor>>& outActors);
 
 public:
     // manifest file creation
@@ -46,7 +46,7 @@ public:
 
     // prefab read and write
     static bool WritePrefab(const std::string& actorName, const fs::path& outputPath);
-    static Ref<Actor> ReadPrefab(const fs::path& prefabPath);
+    static Ref<Actor> ReadPrefab(const fs::path& prefabPath, std::vector<Ref<Actor>>& outActors);
 
     /// Creates an object file for the actor
     static int writeActor(std::string name) {

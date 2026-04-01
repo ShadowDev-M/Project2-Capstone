@@ -1,9 +1,9 @@
-<Prefab name="Hammer_1D">
+<Prefab name="Hammer_4D">
     <Tag value="Untagged"/>
     <TransformComponent>
         <position x="0" y="0" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="43.299999" y="1.7" z="1.7"/>
+        <scale x="2.9000185" y="2.9000082" z="2.9000194"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
@@ -16,7 +16,7 @@
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>
-        <CollisionState state="0"/>
+        <CollisionState state="1"/>
         <CollisionType type="0"/>
         <isTrigger trigger="0"/>
         <radius value="1"/>
@@ -26,12 +26,6 @@
         <halfExtents x="1" y="1" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
-    <AnimatorComponent>
-        <startTime time="0"/>
-        <speedMult mult="0"/>
-        <looping state="false"/>
-        <animName name="LOADING..."/>
-    </AnimatorComponent>
     <ShadowSettings>
         <castShadow state="1"/>
     </ShadowSettings>
@@ -43,5 +37,52 @@
     <MeshComponent name="Hammer"/>
     <MaterialComponent name="Hammer"/>
     <ShaderComponent name="MultiPhong"/>
-    <ScriptComponent name="PlayerController"/>
+    <ScriptComponent name="FixCamera"/>
+    <ScriptComponent name="GearTurn"/>
+    <ScriptComponent name="Lever"/>
+    <Children>
+        <Child name="Hammer_5D">
+            <Tag value="Untagged"/>
+            <TransformComponent>
+                <position x="0.44172665" y="5.0384283" z="0"/>
+                <rotation w="0.70213181" x="0.35774356" y="-0.54854649" z="0.27951255"/>
+                <scale x="2.9000185" y="2.9000082" z="2.9000194"/>
+            </TransformComponent>
+            <PhysicsComponent>
+                <PhysicsState state="0"/>
+                <Constraints freezePosX="false" freezePosY="false" freezePosZ="false" freezeRotX="false" freezeRotY="false" freezeRotZ="false"/>
+                <mass value="1"/>
+                <UsingGravity isUsing="1"/>
+                <drag value="0"/>
+                <angularDrag value="0.050000001"/>
+                <friction value="0.5"/>
+                <restitution value="0"/>
+            </PhysicsComponent>
+            <CollisionComponent>
+                <CollisionState state="1"/>
+                <CollisionType type="0"/>
+                <isTrigger trigger="0"/>
+                <radius value="1"/>
+                <centre x="0" y="0" z="0"/>
+                <centrePosA x="0" y="1" z="0"/>
+                <centrePosB x="0" y="-1" z="0"/>
+                <halfExtents x="1" y="1" z="1"/>
+                <orientation w="1" x="0" y="0" z="0"/>
+            </CollisionComponent>
+            <ShadowSettings>
+                <castShadow state="1"/>
+            </ShadowSettings>
+            <TilingSettings>
+                <isTiled state="0"/>
+                <tileScale x="1" y="1"/>
+                <tileOffset x="0" y="0"/>
+            </TilingSettings>
+            <MeshComponent name="Hammer"/>
+            <MaterialComponent name="Hammer"/>
+            <ShaderComponent name="MultiPhong"/>
+            <ScriptComponent name="FixCamera"/>
+            <ScriptComponent name="GearTurn"/>
+            <ScriptComponent name="Lever"/>
+        </Child>
+    </Children>
 </Prefab>
