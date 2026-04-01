@@ -6,6 +6,5 @@
         <Tag value="Ground"/>
     </Tags>
     <Actors>
-        <Light/>
     </Actors>
 </Scene>
