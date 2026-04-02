@@ -37,4 +37,5 @@
     <MeshComponent name="SM_Crate_01"/>
     <MaterialComponent name="PurpleTexture"/>
     <ShaderComponent name="MultiPhong"/>
+    <ScriptComponent name="AngTest"/>
 </Actor>
