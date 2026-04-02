@@ -1,0 +1,8 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="-29.379" y="-0.67416739" z="-4"/>
+        <rotation w="0.70724446" x="0" y="0.70696908" z="0"/>
+        <scale x="1.0000111" y="1.0000118" z="1.0000137"/>
+    </TransformComponent>
+</Actor>

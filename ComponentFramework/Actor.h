@@ -198,6 +198,10 @@ public:
 		}
 	}
 
+	Ref<Actor> getParentActorRef() const;
+
+	Ref<Actor> findFirstChildContaining(const std::string& actorName) const;
+
 	void setParentActor(Actor* parent_) {
 		parent = parent_;
 	}

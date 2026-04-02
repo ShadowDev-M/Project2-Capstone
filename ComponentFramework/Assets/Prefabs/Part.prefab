@@ -1,0 +1,19 @@
+<Prefab name="Part_1D">
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="0" y="0" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </TransformComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
+    <MeshComponent name="Sphere"/>
+    <MaterialComponent name="NewMaterial"/>
+    <ShaderComponent name="MultiPhong"/>
+</Prefab>

@@ -94,6 +94,32 @@ Matrix4 Actor::GetModelMatrix() {
 
 	return modelMatrix;
 }
+
+Ref<Actor> Actor::getParentActorRef() const
+{
+	// if actor is not a root actor return parent
+	if (!isRootActor()) {
+		return SceneGraph::getInstance().GetActor(dynamic_cast<Actor*>(parent)->actorName);
+	}
+	else {
+		return nullptr;
+	}
+}
+
+Ref<Actor> Actor::findFirstChildContaining(const std::string& actorName) const
+{
+
+	for (auto& pair : SceneGraph::getInstance().getAllActors()) {
+		if (pair.second->parent) {
+			if (pair.second->actorName.find(actorName) != std::string::npos) {
+				if (pair.second->getParentActor() == this)
+					return pair.second;
+			}
+		}
+	}
+
+	return nullptr;
+}
 	
 #ifdef _DEBUG
 #define DEBUG_NEW new(__FILE__, __LINE__)

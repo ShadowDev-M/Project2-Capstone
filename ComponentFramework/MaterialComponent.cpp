@@ -42,6 +42,7 @@ bool MaterialComponent::LoadImage(const char* filename, TexType type) {
 	if (type == DIFFUSE) {
 		glGenTextures(1, &diffuseID);
 		glBindTexture(GL_TEXTURE_2D, diffuseID);
+		
 	}
 	else if (type == SPECULAR) {
 		glGenTextures(1, &specularID);
@@ -52,15 +53,35 @@ bool MaterialComponent::LoadImage(const char* filename, TexType type) {
 		glBindTexture(GL_TEXTURE_2D, normalID);
 	}
 
+	
+
 	// resolving path here
 	fs::path resolved = SearchPath::getInstance().Resolve(filename);
 	std::string pathToOpen = resolved.empty() ? filename : resolved.string();
 
 	SDL_Surface* textureSurface = IMG_Load(pathToOpen.c_str());
-	if (textureSurface == nullptr) {
+	if (!textureSurface || !textureSurface->pixels) {
 		return false;
 	}
-	int mode = (textureSurface->format->BytesPerPixel == 4) ? GL_RGBA : GL_RGB;
+
+	int mode = SDL_PIXELFORMAT_RGBA8888;
+	switch (textureSurface->format->BytesPerPixel) {
+	case 4: 
+		mode = GL_RGBA;
+		break;
+	case 3:
+		mode = GL_RGB;
+		break;
+	case 1:
+		mode = GL_LUMINANCE;
+		break;
+	default:
+		break;
+	}
+
+
+	
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, mode, textureSurface->w, textureSurface->h, 0, mode, GL_UNSIGNED_BYTE, textureSurface->pixels);
 	SDL_FreeSurface(textureSurface);
 

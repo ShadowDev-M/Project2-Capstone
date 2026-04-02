@@ -90,19 +90,3 @@ function OnCollisionStay(other)
 
 end
 
-function OnTriggerStay(other)
-	if Game:Find("Lever") == other then
-		if Game.Input.GetInputState("E") == 1 and canInteract == 1 then
-			leverRot = QMath.AngleAxisRotation(-45, Vec3.new(0, 0, 1))
-			Game:Find("Lever").Transform.Rotation = leverRot
-			canInteract = 0
-		end
-	end
-	if Game:Find("Lever2") == other then
-		if Game.Input.GetInputState("E") == 1 and canInteract2 == 1 then
-			leverRot = QMath.AngleAxisRotation(-45, Vec3.new(0, 0, 1))
-			Game:Find("Lever2").Transform.Rotation = leverRot
-			canInteract2 = 0
-		end
-	end
-end

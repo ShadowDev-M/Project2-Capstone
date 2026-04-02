@@ -661,7 +661,10 @@ void ScriptService::loadLibraries()
 		"Rigidbody", sol::property(& Actor::GetComponent<PhysicsComponent>),
 		"Name", sol::property(&Actor::getActorName),
 		"Tag", sol::property(&Actor::getTag, &Actor::setTag),
-		"CompareTag", &Actor::compareTag
+		"CompareTag", &Actor::compareTag,
+		"FindFirstChild", &Actor::findFirstChildContaining,
+		"Parent", sol::property(&Actor::getParentActorRef)
+
 	);
 
 	// Input Manager Lua

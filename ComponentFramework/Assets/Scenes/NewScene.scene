@@ -6,10 +6,19 @@
         <Tag value="Ground"/>
     </Tags>
     <Actors>
-        <Wall/>
+        <BackGroundScaler>
+            <Wall/>
+        </BackGroundScaler>
         <Floor/>
         <Skylight/>
         <Player/>
+        <MechanicalDoor>
+            <FramePart/>
+            <Pressure_Pad/>
+            <DoorEndRot/>
+            <DoorPart/>
+        </MechanicalDoor>
+        <Cube/>
         <Camera/>
         <PointLight/>
         <PointLight_1D/>
