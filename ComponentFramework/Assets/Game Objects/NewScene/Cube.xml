@@ -1,7 +1,7 @@
 <Actor>
     <Tag value="Player"/>
     <TransformComponent>
-        <position x="34.730999" y="-5.1999998" z="0"/>
+        <position x="33.633495" y="-5.1999998" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="0.80000001" y="0.80000001" z="0.80000001"/>
     </TransformComponent>
@@ -12,7 +12,7 @@
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="0.5"/>
+        <friction value="1"/>
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>

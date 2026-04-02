@@ -11,16 +11,19 @@
         </BackGroundScaler>
         <Floor/>
         <Skylight/>
-        <Player/>
         <MechanicalDoor>
-            <FramePart/>
             <Pressure_Pad/>
+            <FramePart/>
             <DoorEndRot/>
             <DoorPart/>
         </MechanicalDoor>
         <Cube/>
+        <Player/>
         <Camera/>
         <PointLight/>
         <PointLight_1D/>
+        <Part_1D/>
+        <Part_2D/>
+        <Part_3D/>
     </Actors>
 </Scene>
