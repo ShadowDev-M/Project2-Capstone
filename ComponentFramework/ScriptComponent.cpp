@@ -751,7 +751,6 @@ void ScriptService::loadLibraries()
 
 			return spawned ? spawned.get() : nullptr;
 		},
-
 		"Destroy", [](SceneGraph&, Actor* actor) {
 			// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Object.Destroy.html
 			if (actor) SceneGraph::getInstance().RemoveActor(actor->getActorName());

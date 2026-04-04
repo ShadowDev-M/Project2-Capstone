@@ -163,11 +163,11 @@ void EditorCamera::HandleLook3D(float deltaX, float deltaY)
 {
 	// scaling the look by the fov and max pitch degrees,
 	// that way if zoomed in or out, it stays constitent
-	float fovScale = m_fov / 90.0f;
-	float sens = m_lookSens * fovScale;
+	//float fovScale = m_fov / 90.0f;
+	//float sens = m_lookSens * fovScale;
 
-	m_yaw += deltaX * sens;
-	m_pitch -= deltaY * sens;
+	m_yaw += deltaX * m_lookSens;
+	m_pitch -= deltaY * m_lookSens;
 	m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
 	if (m_yaw >= 360.0f) m_yaw -= 360.0f;
 	if (m_yaw < 0.0f) m_yaw += 360.0f;
@@ -206,12 +206,10 @@ Matrix4 EditorCamera::GetProjectionMatrix() const {
 
 Matrix4 EditorCamera::GetViewMatrix() const
 {
-
-	Quaternion qPitch = QMath::angleAxisRotation(m_pitch, Vec3(1, 0, 0));
-	Quaternion qYaw = QMath::angleAxisRotation(m_yaw, Vec3(0, -1, 0));
-	Quaternion rot = qPitch * qYaw;
-	
-	return MMath::toMatrix4(rot) * MMath::translate(m_position);
+	Quaternion rot = BuildRotationQuat();
+	Matrix4 R = MMath::toMatrix4(rot);	
+	Matrix4 RT = MMath::transpose(R);
+	return RT * MMath::translate(-m_position);
 }
 
 void EditorCamera::SetOrientation(float yawDeg, float pitchDeg)
@@ -272,30 +270,14 @@ void EditorCamera::Enforce2DModeConstraints()
 	m_pitch = 0.0f;
 }
 
-Vec3 EditorCamera::GetForward(bool useRadian) const {
-	//float y = m_yaw * DEGREES_TO_RADIANS;
-	//float p = m_pitch * DEGREES_TO_RADIANS;
-
-
-	Quaternion qPitch = QMath::angleAxisRotation(m_pitch, Vec3(-1, 0, 0));
-	Quaternion qYaw = QMath::angleAxisRotation(m_yaw, Vec3(0, 1, 0));
-	Quaternion rot =   qYaw * qPitch;
-
-
-	//Vec3 localForward = Vec3(0.0f, 0.0f, -1.0f);
-	
-	Matrix4 mmat = MMath::toMatrix4(rot) * MMath::translate(Vec3(0, 0, -1));
-	Vec3 forward = mmat.getColumn(Matrix4::Colunm::two);
-	return forward;
-
-
-	//return 	VMath::normalize(MMath::toMatrix4(rot) * MMath::translate(Vec3(0, 0, -1)) * Vec4(Vec3(), 1));
+Vec3 EditorCamera::GetForward() const {
+	Quaternion rot = BuildRotationQuat();
+	return VMath::normalize(QMath::rotate(Vec3(0.0f, 0.0f, -1.0f), rot));
 }
 
 Vec3 EditorCamera::GetRight() const {
-	//float y = m_yaw * DEGREES_TO_RADIANS;
-
-	return VMath::normalize(VMath::cross(GetForward(), Vec3(0, 1, 0)));
+	Quaternion rot = BuildRotationQuat();
+	return VMath::normalize(QMath::rotate(Vec3(1.0f, 0.0f, 0.0f), rot));
 }
 
 Vec3 EditorCamera::GetUp() const {
@@ -320,4 +302,11 @@ void EditorCamera::ResetSettings()
 	m_speedMax = 100.0f;
 	m_orthoSize = 5.0f;
 	m_mode = Mode::Mode3D;
+}
+
+Quaternion EditorCamera::BuildRotationQuat() const
+{
+	Quaternion qYaw = QMath::angleAxisRotation(m_yaw, Vec3(0.0f, -1.0f, 0.0f));
+	Quaternion qPitch = QMath::angleAxisRotation(m_pitch, Vec3(1.0f, 0.0f, 0.0f));
+	return qYaw * qPitch;
 }

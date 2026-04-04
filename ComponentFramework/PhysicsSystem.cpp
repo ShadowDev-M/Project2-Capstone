@@ -62,8 +62,9 @@ void PhysicsSystem::Update(float deltaTime)
 		Vec3 linearAccel = PC->forceAccumulator * PC->getInverseMass();
 		PC->setAccel(linearAccel);
 
-		// TODO: angular motion
+		// angular motion
 		
+
 		Vec3 newVel = PC->vel + linearAccel * deltaTime;
 		PC->setVel(newVel);
 
