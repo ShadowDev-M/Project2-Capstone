@@ -53,6 +53,8 @@ void PhysicsSystem::Update(float deltaTime)
 		// applying gravity
 		if (PC->useGravity == true) {
 			PC->AddForce(Vec3(0.0f, gravity * PC->mass, 0.0f));
+
+			
 		}
 
 		// adding drag 
@@ -62,8 +64,10 @@ void PhysicsSystem::Update(float deltaTime)
 		Vec3 linearAccel = PC->forceAccumulator * PC->getInverseMass();
 		PC->setAccel(linearAccel);
 
-		//SWAP INVERSEMASS WITH INERTIA TENSOR
-		Vec3 angularAccel = PC->inertiaTensorBody(actor, PC->torqueAccumulator);
+
+		PC->inertiaTensorBody(actor);
+	//SWAP INVERSEMASS WITH INERTIA TENSOR
+		Vec3 angularAccel = PC->rotationalInertia * PC->torqueAccumulator;
 		PC->setAngularAccel(angularAccel);
 
 

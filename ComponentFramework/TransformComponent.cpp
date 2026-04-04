@@ -64,6 +64,6 @@ Vec3 TransformComponent::GetWorldPosition() const
 	if (!parent) return pos;
 	Actor* owner = dynamic_cast<Actor*>(parent);
 	if (!owner) return pos;
-	Matrix4 world = owner->GetModelMatrix();
-	return world.getColumn(Matrix4::Colunm::three);
+	return owner->GetModelMatrix() * Vec4(Vec3(), 1);
+	//return world.getColumn(Matrix4::Colunm::three);
 }

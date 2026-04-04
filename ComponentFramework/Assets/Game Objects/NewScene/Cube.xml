@@ -7,11 +7,11 @@
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
-        <Constraints freezePosX="0" freezePosY="0" freezePosZ="1" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
+        <Constraints freezePosX="0" freezePosY="0" freezePosZ="1" freezeRotX="1" freezeRotY="1" freezeRotZ="0"/>
         <mass value="1"/>
         <UsingGravity isUsing="1"/>
-        <drag value="0"/>
-        <angularDrag value="0.050000001"/>
+        <drag value="0.2"/>
+        <angularDrag value="1"/>
         <friction value="1"/>
         <restitution value="0"/>
     </PhysicsComponent>
@@ -37,5 +37,4 @@
     <MeshComponent name="SM_Crate_01"/>
     <MaterialComponent name="PurpleTexture"/>
     <ShaderComponent name="MultiPhong"/>
-    <ScriptComponent name="AngTest"/>
 </Actor>

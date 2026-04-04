@@ -7,7 +7,7 @@
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
-        <Constraints freezePosX="0" freezePosY="0" freezePosZ="1" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
+        <Constraints freezePosX="0" freezePosY="0" freezePosZ="1" freezeRotX="1" freezeRotY="1" freezeRotZ="1"/>
         <mass value="1"/>
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
@@ -20,10 +20,10 @@
         <CollisionType type="1"/>
         <isTrigger trigger="0"/>
         <radius value="1.4"/>
-        <centre x="0" y="0" z="0"/>
+        <centre x="0" y="3.2" z="0"/>
         <centrePosA x="0" y="4.6999998" z="0"/>
         <centrePosB x="0" y="1.5" z="0"/>
-        <halfExtents x="1" y="1" z="1"/>
+        <halfExtents x="1" y="3" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
     <AnimatorComponent>

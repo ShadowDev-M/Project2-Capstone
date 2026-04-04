@@ -1439,7 +1439,7 @@ void InspectorWindow::DrawPhysicsComponent(const std::unordered_map<uint32_t, Re
 			ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.0f, 1.0f, "---", ImGuiSliderFlags_AlwaysClamp);
 		}
 		else { // no delta (might add later)
-			if (ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.1f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
+			if (ImGui::DragFloat("##Restitution", &restitution, 0.01f, 0.0f, 1.0f, nullptr, ImGuiSliderFlags_AlwaysClamp)) {
 				for (auto& component : physicsState.components) {
 					component->setRestitution(restitution);
 				}

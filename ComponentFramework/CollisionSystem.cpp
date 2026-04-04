@@ -233,48 +233,36 @@ void CollisionSystem::ResolvePenetration(Ref<Actor> actor1_, Ref<Actor> actor2_,
 		TC2->SetPos(newPos.x, newPos.y, newPos.z);
 	}
 }
-
 void CollisionSystem::ResolveImpulse(Ref<Actor> actor1_, Ref<Actor> actor2_, const CollisionData& data)
 {
-	// 14.4.4 Resolving Velocity
-
 	Ref<PhysicsComponent> PC1 = actor1_->GetComponent<PhysicsComponent>();
 	Ref<PhysicsComponent> PC2 = actor2_->GetComponent<PhysicsComponent>();
-
 	PhysicsState state1 = PC1->getState();
 	PhysicsState state2 = PC2->getState();
 
-	// only dynamic objects have impulses applied to them
 	if (state1 != PhysicsState::Dynamic && state2 != PhysicsState::Dynamic) return;
 
 	Vec3 vel1 = PC1->getVel();
 	Vec3 vel2 = PC2->getVel();
 	Vec3 relVel = vel1 - vel2;
-
-	// how fast the actors are moving towards or away from each other
 	float velAlongNormal = VMath::dot(relVel, data.contactNormal);
 
-	// if the actors are already seperated then theres no need to apply impulses
 	if (velAlongNormal > 0.0f) return;
 
-	float restitution1 = PC1->getRestitution();
-	float restitution2 = PC2->getRestitution();
-
-	// restitution 0-1, 0 no bounce, 1 full bounce
-	// getting the min makes it so if one of them is inelsatic, then they both will be
-	float restitution = std::min(restitution1, restitution2);
-
-	// calculating impulse magnitude 
-	// Coefficient of Restitution e=|ua-ub| / |vb-va|
+	float restitution = std::min(PC1->getRestitution(), PC2->getRestitution());
 	float inverseMass1 = (state1 == PhysicsState::Dynamic) ? 1.0f / PC1->getMass() : 0.0f;
 	float inverseMass2 = (state2 == PhysicsState::Dynamic) ? 1.0f / PC2->getMass() : 0.0f;
 
 	float impulseMagnitude = -(1.0f + restitution) * velAlongNormal;
 	impulseMagnitude /= (inverseMass1 + inverseMass2);
-
 	Vec3 impulse = data.contactNormal * impulseMagnitude;
 
-	// applying the impulse
+	// FIX: compute r BEFORE modifying velocities
+	Vec3 r1 = data.contactPoint - actor1_->GetComponent<TransformComponent>()->GetWorldPosition();
+	Vec3 r2 = data.contactPoint - actor2_->GetComponent<TransformComponent>()->GetWorldPosition();
+
+
+
 	if (state1 == PhysicsState::Dynamic) {
 		Vec3 newVel = vel1 + impulse * inverseMass1;
 		newVel = PC1->ApplyPositionConstraints(newVel);
@@ -283,11 +271,36 @@ void CollisionSystem::ResolveImpulse(Ref<Actor> actor1_, Ref<Actor> actor2_, con
 	if (state2 == PhysicsState::Dynamic) {
 		Vec3 newVel = vel2 - impulse * inverseMass2;
 		newVel = PC2->ApplyPositionConstraints(newVel);
-
 		PC2->setVel(newVel);
 	}
 
-	// applying friction
+	//Rotate Experimental
+	if (state1 == PhysicsState::Dynamic) {
+		//TO DO: make the velocity only matter if its in the direction of the normal so the player doesn't randomly 'treadmill' the box
+		PC1->AddTorque(VMath::cross(r1, (impulse + PC2->getVel())));
+		Vec3 rollingVel1 = VMath::cross(PC1->getAngularVel(), r1);
+
+		Vec3 rotated = r1 + VMath::cross(PC1->getAngularVel(), r1) * deltaTime;
+
+		Vec3 newPoint = actor1_->GetComponent<TransformComponent>()->GetWorldPosition() + rotated;
+		Vec3 posDelta = rotated - r1;
+
+		actor1_->GetComponent<TransformComponent>()->SetPos(actor1_->GetComponent<TransformComponent>()->GetPosition() + PC1->ApplyPositionConstraints(posDelta));
+
+	}
+	if (state2 == PhysicsState::Dynamic) {
+
+		//TO DO: make the velocity only matter if its in the direction of the normal so the player doesn't randomly 'treadmill' the box
+		PC2->AddTorque(VMath::cross(r2, -(impulse + PC1->getVel())));
+		Vec3 rollingVel2 = VMath::cross(PC2->getAngularVel(), r2);
+		Vec3 rotated = r2 + VMath::cross(PC2->getAngularVel(), r2) * deltaTime;
+
+		Vec3 newPoint = actor2_->GetComponent<TransformComponent>()->GetWorldPosition() + rotated;
+		Vec3 posDelta = rotated - r2;
+
+		
+		actor2_->GetComponent<TransformComponent>()->SetPos(actor2_->GetComponent<TransformComponent>()->GetPosition() - PC2->ApplyPositionConstraints(posDelta));
+	}
 	ApplyFriction(actor1_, actor2_, data, impulseMagnitude);
 }
 
@@ -740,96 +753,135 @@ bool CollisionSystem::AABBAABBDiscrete(Ref<Actor> aabb1, Ref<Actor> aabb2, Colli
 	return true;
 }
 
+
 bool CollisionSystem::OBBOBBDiscrete(Ref<Actor> s1, Ref<Actor> s2, CollisionData& data)
 {
-	// 4.4.1 OBB-OBB Intersection Real-Time Collision Detection Ericson
+    Ref<TransformComponent> TC1 = s1->GetComponent<TransformComponent>();
+    Ref<TransformComponent> TC2 = s2->GetComponent<TransformComponent>();
+    Ref<CollisionComponent> CC1 = s1->GetComponent<CollisionComponent>();
+    Ref<CollisionComponent> CC2 = s2->GetComponent<CollisionComponent>();
 
-	Ref<TransformComponent> TC1 = s1->GetComponent<TransformComponent>();
-	Ref<TransformComponent> TC2 = s2->GetComponent<TransformComponent>();
+    Vec3 centre1 = CC1->getWorldCentre(TC1);
+    Vec3 halfExtents1 = CC1->getWorldHalfExtents(TC1);
+    Vec3 axes1[3];
+    CC1->getWorldAxes(TC1, axes1);
 
-	Ref<CollisionComponent> CC1 = s1->GetComponent<CollisionComponent>();
-	Ref<CollisionComponent> CC2 = s2->GetComponent<CollisionComponent>();
-	
-	// setting up variables
-	Vec3 centre1 = CC1->getWorldCentre(TC1);
-	Vec3 halfExtents1 = CC1->getWorldHalfExtents(TC1);
-	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 axes1[3]; 
-	CC1->getWorldAxes(TC1, axes1);
+    Vec3 centre2 = CC2->getWorldCentre(TC2);
+    Vec3 halfExtents2 = CC2->getWorldHalfExtents(TC2);
+    Vec3 axes2[3];
+    CC2->getWorldAxes(TC2, axes2);
 
-	Vec3 centre2 = CC2->getWorldCentre(TC2);
-	Vec3 halfExtents2 = CC2->getWorldHalfExtents(TC2);
-	// rotating the orienation around x,y,z axis in order to get local coords
-	Vec3 axes2[3];
-	CC2->getWorldAxes(TC2, axes2);
+    Vec3 t = centre2 - centre1;
 
-	// Compute translation vector t
-	Vec3 t = centre2 - centre1;
-	
-	float minPen = FLT_MAX;
-	Vec3 seperationAxis;
+    float minPen = FLT_MAX;
+    Vec3 separationAxis;
+    int bestAxisIndex = -1;  // FIX: track which of the 15 axes won
 
-	// lambda function to help with seperating axis tests
-	// was originally going to make this into a function, something similar to the IntersectRayAABB function
-	// but unlike that function, this is only used like twice, while the other one is used like 4-5 times, for both collision detection and raycasting
-	// while this function is only used once here for obb-obb detection and once for aabb-obb detection, 
-	// so no point in refactoring, might as well copy and paste, however if I ever need a test axis function for anything else then I'll convert it
-	auto testAxis = [&](const Vec3& axis) -> bool {
-		// Bring translation into a’s coordinate frame
-		float axisLengthSqr = VMath::dot(axis, axis);
-		// Compute common subexpressions. Add in an epsilon term to
-		// counteract arithmetic errors when two edges are parallel and
-		// their cross product is (near) null (see text for details)
-		if (axisLengthSqr < VERY_SMALL) return true;
-		Vec3 normAxis = axis / sqrt(axisLengthSqr);
+    auto testAxis = [&](const Vec3& axis, int axisIndex) -> bool {
+        float axisLengthSqr = VMath::dot(axis, axis);
+        if (axisLengthSqr < VERY_SMALL) return true; // degenerate, skip
+        Vec3 normAxis = axis / sqrt(axisLengthSqr);
 
-		// checking for any intersections by projecting the obbs onto the axis
-		float t1 = halfExtents1.x * fabs(VMath::dot(axes1[0], normAxis)) +
-			halfExtents1.y * fabs(VMath::dot(axes1[1], normAxis)) +
-			halfExtents1.z * fabs(VMath::dot(axes1[2], normAxis));
+        float r1 = halfExtents1.x * fabs(VMath::dot(axes1[0], normAxis))
+                 + halfExtents1.y * fabs(VMath::dot(axes1[1], normAxis))
+                 + halfExtents1.z * fabs(VMath::dot(axes1[2], normAxis));
+        float r2 = halfExtents2.x * fabs(VMath::dot(axes2[0], normAxis))
+                 + halfExtents2.y * fabs(VMath::dot(axes2[1], normAxis))
+                 + halfExtents2.z * fabs(VMath::dot(axes2[2], normAxis));
 
-		float t2 = halfExtents2.x * fabs(VMath::dot(axes2[0], normAxis)) +
-			halfExtents2.y * fabs(VMath::dot(axes2[1], normAxis)) +
-			halfExtents2.z * fabs(VMath::dot(axes2[2], normAxis));
+        float projCentre = fabs(VMath::dot(t, normAxis));
+        if (projCentre > r1 + r2) return false; // separating axis found
 
-		float proCentre = fabs(VMath::dot(t, normAxis));
+        float penetration = (r1 + r2) - projCentre;
+        if (penetration < minPen) {
+            minPen = penetration;
+            separationAxis = normAxis;
+            bestAxisIndex = axisIndex;  // FIX: record index
+            // Ensure normal always points from s1 toward s2
+            if (VMath::dot(t, separationAxis) > 0.0f)
+                separationAxis = separationAxis * -1.0f;
+        }
+        return true;
+    };
 
-		if (proCentre > t1 + t2) return false;
+    int axisIndex = 0;
+    for (int i = 0; i < 3; i++) {
+        if (!testAxis(axes1[i], axisIndex++)) return false;
+        if (!testAxis(axes2[i], axisIndex++)) return false;
+    }
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (!testAxis(VMath::cross(axes1[i], axes2[j]), axisIndex++)) return false;
 
-		float penetration = (t1 + t2) - proCentre;
-		if (penetration < minPen) {
-			minPen = penetration;
-			seperationAxis = normAxis;
-			if (VMath::dot(t, seperationAxis) > 0) {
-				// fliping the sign
-				seperationAxis = seperationAxis * -1.0f;
-			}
-		}
+    // --- FIX: proper contact point based on axis type ---
+    Vec3 contactPoint;
 
-		return true;
-	};
+    // Helper: support point of an OBB in a given direction
+    auto supportPoint = [](const Vec3& centre, const Vec3 axes[3],
+                           const Vec3& halfExtents, const Vec3& dir) -> Vec3 {
+        Vec3 result = centre;
+        result = result + axes[0] * (VMath::dot(axes[0], dir) >= 0.0f ?  halfExtents.x : -halfExtents.x);
+        result = result + axes[1] * (VMath::dot(axes[1], dir) >= 0.0f ?  halfExtents.y : -halfExtents.y);
+        result = result + axes[2] * (VMath::dot(axes[2], dir) >= 0.0f ?  halfExtents.z : -halfExtents.z);
+        return result;
+    };
 
-	// 15 separating axis tests needed to determine OBB-OBB intersection
-	
-	for (int i = 0; i < 3; i++) {
-		if (!testAxis(axes1[i])) return false;
-		if (!testAxis(axes2[i])) return false;
-	}
+    // Helper: closest point between two lines (for edge-edge)
+    auto closestPointBetweenLines = [](
+        const Vec3& pA, const Vec3& dA,
+        const Vec3& pB, const Vec3& dB) -> Vec3
+    {
+        Vec3 r  = pA - pB;
+        float a = VMath::dot(dA, dA);
+        float e = VMath::dot(dB, dB);
+        float f = VMath::dot(dB, r);
+        float c = VMath::dot(dA, r);
+        float b = VMath::dot(dA, dB);
+        float denom = a * e - b * b;
+        float s = (fabs(denom) > VERY_SMALL) ? (b * f - c * e) / denom : 0.0f;
+        float tVal = (b * s + f) / e;
+        Vec3 closestA = pA + dA * s;
+        Vec3 closestB = pB + dB * tVal;
+        return (closestA + closestB) * 0.5f;
+    };
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (!testAxis(VMath::cross(axes1[i], axes2[j]))) return false;
-		}
-	}
+    // bestAxisIndex layout:
+    //  0-2  → face axes of OBB1  (axes1[0..2])
+    //  3-5  → face axes of OBB2  (axes2[0..2])
+    //  6-14 → edge-edge cross products (axes1[i] x axes2[j])
+    if (bestAxisIndex < 6) {
+        // Face contact: contact point is the support point of the
+        // penetrating OBB pushed back by half the penetration depth.
+        if (bestAxisIndex < 3) {
+            // Face of OBB1, vertex/edge of OBB2 is deepest feature
+            contactPoint = supportPoint(centre2, axes2, halfExtents2, separationAxis)
+                         - separationAxis * (minPen * 0.5f);
+        } else {
+            // Face of OBB2, vertex/edge of OBB1 is deepest feature
+            contactPoint = supportPoint(centre1, axes1, halfExtents1, -separationAxis)
+                         - separationAxis * (minPen * 0.5f);  // FIX was: wrong formula
+        }
+    } else {
+        // Edge-edge contact: find the two colliding edges and get
+        // the closest point between them
+        int edgeIdx  = bestAxisIndex - 6;
+        int edgeAxisA = edgeIdx / 3;  // which axis of OBB1 (0,1,2)
+        int edgeAxisB = edgeIdx % 3;  // which axis of OBB2 (0,1,2)
 
-	// Game Physics Engine Development Ian Millington 13.4.2 Colliding Two Boxes
-	data.isColliding = true;
-	data.contactNormal = seperationAxis;
-	data.contactPoint = centre1 + seperationAxis * (minPen * 0.5f);
-	data.penetration = minPen;
+        // Support points on each OBB along the contact direction
+        Vec3 ptOnA = supportPoint(centre1, axes1, halfExtents1, -separationAxis);
+        Vec3 ptOnB = supportPoint(centre2, axes2, halfExtents2,  separationAxis);
 
-	// Since no separating axis is found, the OBBs must be intersecting
-	return true;
+        contactPoint = closestPointBetweenLines(
+            ptOnA, axes1[edgeAxisA],
+            ptOnB, axes2[edgeAxisB]);
+    }
+
+    data.isColliding    = true;
+    data.contactNormal  = separationAxis;
+    data.contactPoint   = contactPoint;
+    data.penetration    = minPen;
+    return true;
 }
 
 bool CollisionSystem::SphereCapsuleDiscrete(Ref<Actor> s, Ref<Actor> c, CollisionData& data)

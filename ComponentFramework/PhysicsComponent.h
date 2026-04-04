@@ -52,7 +52,9 @@ private:
 	Vec3 forceAccumulator;
 	Vec3 torqueAccumulator;
 
-	//Matrix3 rotationalInertia;
+	Matrix3 rotationalInertia;
+	Matrix3 inverseRotationalInertia;
+
 	
 	PhysicsConstraints constraints;
 
@@ -117,7 +119,10 @@ public:
 
 	//float getInertiaTensor() const { return (state == PhysicsState::Dynamic && mass > VERY_SMALL) ? 1.0f / mass : 0.0f; } // getter for inverse mass
 	
-	Vec3 inertiaTensorBody(Ref<Actor> user, Vec3& torqueAccumulator);
+	void inertiaTensorBody(Ref<Actor> user);
+
+	Matrix3 getInverseInertiaWorld() { return inverseRotationalInertia; }
+	Matrix3 getInertiaWorld() { return rotationalInertia; }
 
 
 	bool getUseGravity() const { return useGravity; }
