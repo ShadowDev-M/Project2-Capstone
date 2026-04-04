@@ -76,13 +76,16 @@ public:
 	bool isMMBHeld() const { return m_mmbActive; }
 
 private:
+	// no longer using lookAt, now building the rotation quaternion
+	Quaternion BuildRotationQuat() const;
+
 	// very heavily based off unitys editor/scene camera
 	void HandlePan2D(float deltaX, float deltaY);
 	void HandlePan3D(float deltaX, float deltaY);
 	void HandleLook3D(float deltaX, float deltaY);
 	void HandleFly3D(float deltaTime);
 
-	Vec3 GetForward(bool useRadian = 0) const;
+	Vec3 GetForward() const;
 	Vec3 GetRight() const;
 	Vec3 GetUp() const;
 
@@ -109,7 +112,7 @@ private:
 	Mode m_mode = Mode::Mode3D;
 
 	// TODO: sort of placeholders so theres no magic/floating numbers in the calculations, could make getters and setters for them after
-	float m_lookSens = 0.2f;
+	float m_lookSens = 0.15f;
 	float m_panSens = 0.003f;
 
 	// rmb state

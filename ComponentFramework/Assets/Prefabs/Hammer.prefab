@@ -1,4 +1,4 @@
-<Prefab name="Hammer_4D">
+<Prefab name="Hammer_1D">
     <Tag value="Untagged"/>
     <TransformComponent>
         <position x="0" y="0" z="0"/>
@@ -41,7 +41,7 @@
     <ScriptComponent name="GearTurn"/>
     <ScriptComponent name="Lever"/>
     <Children>
-        <Child name="Hammer_5D">
+        <Child name="Hammer_2D">
             <Tag value="Untagged"/>
             <TransformComponent>
                 <position x="0.44172665" y="5.0384283" z="0"/>

@@ -2069,8 +2069,7 @@ void InspectorWindow::DrawPrefabEditor(const EditorManager::SelectedAsset& asset
 		}
 
 		if (auto tc = root->GetComponent<TransformComponent>()) {
-			tc->SetTransform(Vec3(0, 0, 0),
-				Quaternion(1, Vec3(0, 0, 0)), tc->GetScale());
+			tc->SetTransform(Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), tc->GetScale());
 		}
 
 		for (auto& a : built) {
