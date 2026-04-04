@@ -57,25 +57,15 @@ void PhysicsSystem::Update(float deltaTime)
 
 		// adding drag 
 		PC->AddForce(PC->vel * (-PC->drag));
-		PC->AddTorque(PC->angularVel * (-PC->angularDrag));
+
 		// linear motion
 		Vec3 linearAccel = PC->forceAccumulator * PC->getInverseMass();
 		PC->setAccel(linearAccel);
-
-		//SWAP INVERSEMASS WITH INERTIA TENSOR
-		Vec3 angularAccel = PC->inertiaTensorBody(actor, PC->torqueAccumulator);
-		PC->setAngularAccel(angularAccel);
-
 
 		// TODO: angular motion
 		
 		Vec3 newVel = PC->vel + linearAccel * deltaTime;
 		PC->setVel(newVel);
-
-
-		Vec3 newAngVel = PC->angularVel + angularAccel * deltaTime;
-		PC->setAngularVel(newAngVel);
-
 
 		UpdatePos(actor, deltaTime);
 		UpdateOrientation(actor, deltaTime);

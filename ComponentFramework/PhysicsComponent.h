@@ -114,12 +114,6 @@ public:
 	PhysicsState getState() const { return state; }
 	float getMass() const { return (state == PhysicsState::Static) ? FLT_MAX : mass; } // if static, return infinite mass
 	float getInverseMass() const { return (state == PhysicsState::Dynamic && mass > VERY_SMALL) ? 1.0f / mass : 0.0f; } // getter for inverse mass
-
-	//float getInertiaTensor() const { return (state == PhysicsState::Dynamic && mass > VERY_SMALL) ? 1.0f / mass : 0.0f; } // getter for inverse mass
-	
-	Vec3 inertiaTensorBody(Ref<Actor> user, Vec3& torqueAccumulator);
-
-
 	bool getUseGravity() const { return useGravity; }
 
 	float getDrag() const { return drag; }
