@@ -1,7 +1,7 @@
-<Prefab name="Player">
+<Prefab name="Player_1D">
     <Tag value="Player"/>
     <TransformComponent>
-        <position x="17.487968" y="-5.6810002" z="0"/>
+        <position x="0" y="0" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
         <scale x="1.5" y="1.5" z="1.5"/>
     </TransformComponent>

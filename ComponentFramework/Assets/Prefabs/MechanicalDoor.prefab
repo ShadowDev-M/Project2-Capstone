@@ -1,31 +1,12 @@
-<Prefab name="MechanicalDoor">
+<Prefab name="MechanicalDoor_1D">
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="-29.379" y="-0.67416739" z="-4"/>
-        <rotation w="0.70724446" x="0" y="0.70696908" z="0"/>
-        <scale x="1.0000111" y="1.0000118" z="1.0000137"/>
+        <position x="0" y="0" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1.0000315" y="1.0000075" z="1.000035"/>
     </TransformComponent>
     <Children>
-        <Child name="FramePart">
-            <Tag value="Untagged"/>
-            <TransformComponent>
-                <position x="0" y="0" z="0"/>
-                <rotation w="0.70710689" x="-0.70710665" y="-0" z="0"/>
-                <scale x="0.029999999" y="0.029999999" z="0.029999999"/>
-            </TransformComponent>
-            <ShadowSettings>
-                <castShadow state="1"/>
-            </ShadowSettings>
-            <TilingSettings>
-                <isTiled state="0"/>
-                <tileScale x="1" y="1"/>
-                <tileOffset x="0" y="0"/>
-            </TilingSettings>
-            <MeshComponent name="MechDoorFrame"/>
-            <MaterialComponent name="SteampunkDoorMat"/>
-            <ShaderComponent name="MultiPhong"/>
-        </Child>
-        <Child name="Pressure_Pad">
+        <Child name="Pressure_Pad_1D">
             <Tag value="Untagged"/>
             <TransformComponent>
                 <position x="-5.0017567" y="-5.5499997" z="20.496769"/>
@@ -56,17 +37,30 @@
             <ShadowSettings>
                 <castShadow state="1"/>
             </ShadowSettings>
+            <MeshComponent name="Cube"/>
+            <ShaderComponent name="MultiPhong"/>
+            <ScriptComponent name="Pressure_Pad_Mechanic"/>
+        </Child>
+        <Child name="FramePart_1D">
+            <Tag value="Untagged"/>
+            <TransformComponent>
+                <position x="0" y="0" z="0"/>
+                <rotation w="0.70710689" x="-0.70710665" y="-0" z="0"/>
+                <scale x="0.029999999" y="0.029999999" z="0.029999999"/>
+            </TransformComponent>
+            <ShadowSettings>
+                <castShadow state="1"/>
+            </ShadowSettings>
             <TilingSettings>
                 <isTiled state="0"/>
                 <tileScale x="1" y="1"/>
                 <tileOffset x="0" y="0"/>
             </TilingSettings>
-            <MeshComponent name="Cube"/>
-            <MaterialComponent name="NewMaterial"/>
+            <MeshComponent name="MechDoorFrame"/>
+            <MaterialComponent name="SteampunkDoorMat"/>
             <ShaderComponent name="MultiPhong"/>
-            <ScriptComponent name="Pressure_Pad_Mechanic"/>
         </Child>
-        <Child name="DoorEndRot">
+        <Child name="DoorEndRot_1D">
             <Tag value="Untagged"/>
             <TransformComponent>
                 <position x="0" y="0" z="8.3507825e-07"/>
@@ -74,7 +68,7 @@
                 <scale x="0.029999999" y="0.029999867" z="0.029999867"/>
             </TransformComponent>
         </Child>
-        <Child name="DoorPart">
+        <Child name="DoorPart_1D">
             <Tag value="Untagged"/>
             <TransformComponent>
                 <position x="0" y="0" z="8.3507825e-07"/>

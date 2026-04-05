@@ -257,11 +257,11 @@
     <ClInclude Include="TilingSettings.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="SearchPath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ProjectWindow.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SearchPath.h">
+      <Filter>Header Files\Tools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

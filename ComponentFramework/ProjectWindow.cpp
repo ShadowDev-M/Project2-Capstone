@@ -397,6 +397,23 @@ void ProjectWindow::DrawContextMenuFile(const FileEntry& entry)
 	if (ImGui::MenuItem("Duplicate")) Duplicate(entry.absolutePath);
 	if (ImGui::MenuItem("Delete")) Delete(entry.absolutePath);
 
+	if (entry.absolutePath.extension() == ".prefab") {
+		ImGui::Separator();
+
+		if (ImGui::MenuItem("Spawn at Camera")) {
+			const EditorCamera& cam = EditorManager::getInstance().getEditorCamera();
+			Vec3 spawnPos = cam.GetPosition() + cam.GetForward() * 5.0f;
+			Quaternion spawnRot(1.0f, Vec3(0.0f, 0.0f, 0.0f));
+
+			Ref<Actor> spawned = SceneGraph::getInstance().InstantiatePrefab(entry.absolutePath, spawnPos, spawnRot);
+
+			if (spawned) {
+				EditorManager::getInstance().SetLastSelected(spawned->getId());
+				EditorManager::getInstance().UpdateActorHierarchy();
+			}
+		}
+	}
+
 	ImGui::Separator();
 	if (ImGui::MenuItem("Refresh")) {
 		AssetManager::getInstance().Refresh();

@@ -101,7 +101,6 @@ void SceneGraph::Stop()
 
 	// Stop physics engine 
 	PhysicsSystem::getInstance().ResetPhysics();
-
 }
 
 void SceneGraph::LoadActor(const char* name_, Ref<Actor> parent) {

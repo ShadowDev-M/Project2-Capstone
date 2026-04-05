@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SceneGraph.h"
+#include "EditorManager.h"
 
 class SceneWindow
 {
@@ -26,7 +27,17 @@ private:
 	// pointer to scenegraph
 	SceneGraph* sceneGraph;
 
-	template<typename ComponentTemplate>
+	struct PreviewState {
+		Ref<Actor>      actor;
+		Ref<Component>  originalComponent;
+		std::string     componentType;
+		bool            active = false;
+		ImVec2          appliedAt = { 0.0f, 0.0f };
+	};
+	PreviewState previewState;
+	void ApplyPreview(Ref<Actor> actor, const EditorManager::ProjectDragPayload* data);
+	void RevertPreview();
+	void CommitDrop(Ref<Actor> actor, const EditorManager::ProjectDragPayload* data);
 	void dropAssetOnScene();
 
 public:

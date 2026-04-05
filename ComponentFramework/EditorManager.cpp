@@ -20,7 +20,7 @@ void EditorManager::CreateEditorIcons()
 {
 	// helper lambda that handles shared ptr and oncreate
 	auto load = [](const char* rel) -> Ref<MaterialComponent> {
-		fs::path abs = SearchPath::getInstance().Resolve(rel);
+		fs::path abs = SearchPath::getInstance().ResolveEngine(rel);
 		if (abs.empty()) return nullptr;
 
 		auto mat = std::make_shared<MaterialComponent>(

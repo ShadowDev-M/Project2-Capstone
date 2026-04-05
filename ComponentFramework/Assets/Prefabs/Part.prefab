@@ -1,9 +1,9 @@
 <Prefab name="Part_1D">
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0" y="0" z="0"/>
+        <position x="8.2045813" y="0.83566892" z="-15.140232"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="1" y="1" z="1"/>
+        <scale x="0.69999999" y="0.69999999" z="0.69999999"/>
     </TransformComponent>
     <ShadowSettings>
         <castShadow state="1"/>
@@ -13,7 +13,8 @@
         <tileScale x="1" y="1"/>
         <tileOffset x="0" y="0"/>
     </TilingSettings>
-    <MeshComponent name="Sphere"/>
-    <MaterialComponent name="NewMaterial"/>
+    <MeshComponent name="SM_Gear_Large"/>
+    <MaterialComponent name="hammer_BaseColor"/>
     <ShaderComponent name="MultiPhong"/>
+    <ScriptComponent name="GearTurn"/>
 </Prefab>

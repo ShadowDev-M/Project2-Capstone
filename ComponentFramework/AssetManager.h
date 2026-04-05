@@ -39,6 +39,14 @@ class AssetManager
 	// unordered map that stores the assets filepaths
 	std::unordered_map<AssetKey, fs::path, AssetKeyHasher> assetPaths;
 
+	// for engine assets
+	std::unordered_map<AssetKey, Ref<Component>, AssetKeyHasher> engineAssetMap;
+
+	// timestamp based refresh, only will refresh new or modified files
+	std::unordered_map<std::string, fs::file_time_type> fileTimes;
+	bool HasFileChanged(const fs::path& path) const;
+	void RecordFileTime(const fs::path& path);
+	
 	// giving each asset type its own loading function, its just easier to manage all the different assets
 	void LoadMesh(const fs::path& path);
 	void LoadTexture(const fs::path& path);
@@ -74,6 +82,9 @@ public:
 	bool Initialize() { Refresh(); return true; }
 	void RemoveAllAssets() { assetMap.clear(); assetPaths.clear(); }
 
+	// engine initialize
+	void LoadEngineAssets();
+
 	// debated on having a filewatcher, or just doing manual refreshes wherever needed,
 	// settled on manual refreshes, in the editor whenever something changes it'll refresh automatically, 
 	// it just means we have to manually do a refresh whenever we add files via the file explorer/outside the engine
@@ -107,6 +118,24 @@ public:
 		// if asset is found return it
 		auto it = assetMap.find(key);
 		if (it != assetMap.end()) {
+			return std::dynamic_pointer_cast<AssetTemplate>(it->second);
+		}
+
+		// if asset isnt found, throw error
+		else {
+			Debug::Error("Can't find requested asset: ", __FILE__, __LINE__);
+			return nullptr;
+		}
+	}
+
+	template<typename AssetTemplate>
+	Ref<AssetTemplate> GetEngineAsset(const std::string& assetName_) {
+		std::string componentType = static_cast<std::string>(typeid(AssetTemplate).name()).substr(6);
+		AssetKey key = { "__engine__" + assetName_, componentType};
+
+		// if asset is found return it
+		auto it = engineAssetMap.find(key);
+		if (it != engineAssetMap.end()) {
 			return std::dynamic_pointer_cast<AssetTemplate>(it->second);
 		}
 

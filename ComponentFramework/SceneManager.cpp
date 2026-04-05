@@ -51,6 +51,8 @@ SceneManager::~SceneManager() {
 
 bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	SearchPath::getInstance().Initialize(fs::current_path() / "Assets");
+	SearchPath::getInstance().InitializeEngineAssets(fs::current_path() / "EngineAssets");
+	AssetManager::getInstance().LoadEngineAssets();
 
 	window = new Window();
 	if (!window->OnCreate(name_, width_, height_)) {
