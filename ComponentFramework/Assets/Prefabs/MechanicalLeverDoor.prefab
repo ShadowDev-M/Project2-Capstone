@@ -1,0 +1,147 @@
+<Prefab name="MechanicalLeverDoor_1D">
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="0" y="0" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1.0000304" y="1.0000088" z="1.0000358"/>
+    </TransformComponent>
+    <Children>
+        <Child name="FramePart_1D">
+            <Tag value="Untagged"/>
+            <TransformComponent>
+                <position x="0" y="0" z="0"/>
+                <rotation w="0.70710689" x="-0.70710665" y="-0" z="0"/>
+                <scale x="0.029999999" y="0.029999999" z="0.029999999"/>
+            </TransformComponent>
+            <ShadowSettings>
+                <castShadow state="1"/>
+            </ShadowSettings>
+            <TilingSettings>
+                <isTiled state="0"/>
+                <tileScale x="1" y="1"/>
+                <tileOffset x="0" y="0"/>
+            </TilingSettings>
+            <MeshComponent name="MechDoorFrame"/>
+            <MaterialComponent name="SteampunkDoorMat"/>
+            <ShaderComponent name="MultiPhong"/>
+        </Child>
+        <Child name="DoorEndRot_1D">
+            <Tag value="Untagged"/>
+            <TransformComponent>
+                <position x="0" y="0" z="8.3507825e-07"/>
+                <rotation w="0.43533859" x="-0.43533844" y="0.55720776" z="0.55720758"/>
+                <scale x="0.029999999" y="0.029999867" z="0.029999867"/>
+            </TransformComponent>
+        </Child>
+        <Child name="DoorPart_1D">
+            <Tag value="Untagged"/>
+            <TransformComponent>
+                <position x="0" y="0" z="8.3507825e-07"/>
+                <rotation w="0.70710689" x="-0.70710665" y="-0" z="0"/>
+                <scale x="0.029999999" y="0.029999867" z="0.029999867"/>
+            </TransformComponent>
+            <PhysicsComponent>
+                <PhysicsState state="2"/>
+                <Constraints freezePosX="false" freezePosY="false" freezePosZ="false" freezeRotX="false" freezeRotY="false" freezeRotZ="false"/>
+                <mass value="3.4028235e+38"/>
+                <UsingGravity isUsing="1"/>
+                <drag value="0"/>
+                <angularDrag value="0.050000001"/>
+                <friction value="0.5"/>
+                <restitution value="0"/>
+            </PhysicsComponent>
+            <CollisionComponent>
+                <CollisionState state="0"/>
+                <CollisionType type="3"/>
+                <isTrigger trigger="0"/>
+                <radius value="1"/>
+                <centre x="-162.5" y="0" z="90"/>
+                <centrePosA x="0" y="1" z="0"/>
+                <centrePosB x="0" y="-1" z="0"/>
+                <halfExtents x="162.5" y="9.8000002" z="285"/>
+                <orientation w="1" x="0" y="0" z="0"/>
+            </CollisionComponent>
+            <ShadowSettings>
+                <castShadow state="1"/>
+            </ShadowSettings>
+            <TilingSettings>
+                <isTiled state="0"/>
+                <tileScale x="1" y="1"/>
+                <tileOffset x="0" y="0"/>
+            </TilingSettings>
+            <MeshComponent name="MechDoor"/>
+            <MaterialComponent name="SteampunkDoorMat"/>
+            <ShaderComponent name="MultiPhong"/>
+        </Child>
+        <Child name="Lever_1D">
+            <Tag value="Untagged"/>
+            <TransformComponent>
+                <position x="-5.0009785" y="-4.8130126" z="17.587015"/>
+                <rotation w="1" x="-2.8188467e-07" y="-5.3256459e-05" z="-3.0403413e-07"/>
+                <scale x="0.99998742" y="1" z="0.99998742"/>
+            </TransformComponent>
+            <PhysicsComponent>
+                <PhysicsState state="2"/>
+                <Constraints freezePosX="false" freezePosY="false" freezePosZ="false" freezeRotX="false" freezeRotY="false" freezeRotZ="false"/>
+                <mass value="3.4028235e+38"/>
+                <UsingGravity isUsing="1"/>
+                <drag value="0"/>
+                <angularDrag value="0.050000001"/>
+                <friction value="0.5"/>
+                <restitution value="0"/>
+            </PhysicsComponent>
+            <CollisionComponent>
+                <CollisionState state="0"/>
+                <CollisionType type="3"/>
+                <isTrigger trigger="1"/>
+                <radius value="1"/>
+                <centre x="0" y="0" z="0"/>
+                <centrePosA x="0" y="1" z="0"/>
+                <centrePosB x="0" y="-1" z="0"/>
+                <halfExtents x="2" y="2" z="2"/>
+                <orientation w="1" x="0" y="0" z="0"/>
+            </CollisionComponent>
+            <ShadowSettings>
+                <castShadow state="1"/>
+            </ShadowSettings>
+            <TilingSettings>
+                <isTiled state="0"/>
+                <tileScale x="1" y="1"/>
+                <tileOffset x="0" y="0"/>
+            </TilingSettings>
+            <MeshComponent name="Cube"/>
+            <MaterialComponent name="White Chess Base Colour"/>
+            <ShaderComponent name="MultiPhong"/>
+            <ScriptComponent name="LeverMechanicalDoor"/>
+            <Children>
+                <Child name="LeverPart_1D">
+                    <Tag value="Untagged"/>
+                    <TransformComponent>
+                        <position x="0" y="1" z="-1"/>
+                        <rotation w="0.90630782" x="-0.42261818" y="-7.6873799e-13" z="1.6485643e-12"/>
+                        <scale x="0.80000001" y="1.5" z="0.30000001"/>
+                    </TransformComponent>
+                    <ShadowSettings>
+                        <castShadow state="1"/>
+                    </ShadowSettings>
+                    <TilingSettings>
+                        <isTiled state="0"/>
+                        <tileScale x="1" y="1"/>
+                        <tileOffset x="0" y="0"/>
+                    </TilingSettings>
+                    <MeshComponent name="Cube"/>
+                    <MaterialComponent name="White Chess Base Colour"/>
+                    <ShaderComponent name="MultiPhong"/>
+                </Child>
+                <Child name="LeverEnd_1D">
+                    <Tag value="Untagged"/>
+                    <TransformComponent>
+                        <position x="0" y="1" z="1"/>
+                        <rotation w="0.90630782" x="0.42261818" y="7.6873799e-13" z="1.6485643e-12"/>
+                        <scale x="0.80000001" y="1.5" z="0.30000001"/>
+                    </TransformComponent>
+                </Child>
+            </Children>
+        </Child>
+    </Children>
+</Prefab>

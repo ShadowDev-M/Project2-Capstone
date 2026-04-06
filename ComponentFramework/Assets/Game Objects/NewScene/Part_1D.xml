@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="8.2045813" y="0.83566892" z="-15.140232"/>
-        <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="0.69999999" y="0.69999999" z="0.69999999"/>
+        <position x="8.2045813" y="0.83566892" z="-38.680641"/>
+        <rotation w="0.99999994" x="4.0344908e-06" y="1.6987321e-06" z="-6.7930682e-06"/>
+        <scale x="0.69999945" y="0.70000076" z="0.70000035"/>
     </TransformComponent>
     <ShadowSettings>
         <castShadow state="1"/>

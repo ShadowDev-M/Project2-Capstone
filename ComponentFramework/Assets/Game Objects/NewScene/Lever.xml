@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0" y="-106.446" z="-43.040092"/>
-        <rotation w="1" x="4.0344644e-06" y="1.6987215e-06" z="-6.7930259e-06"/>
-        <scale x="99.999863" y="100" z="68.200043"/>
+        <position x="-5" y="3" z="73"/>
+        <rotation w="1" x="0" y="0" z="1.8189894e-12"/>
+        <scale x="1" y="1" z="1"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -12,29 +12,30 @@
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="1"/>
-        <restitution value="0.18000001"/>
+        <friction value="0.5"/>
+        <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
-        <CollisionType type="2"/>
-        <isTrigger trigger="0"/>
+        <CollisionType type="3"/>
+        <isTrigger trigger="1"/>
         <radius value="1"/>
         <centre x="0" y="0" z="0"/>
         <centrePosA x="0" y="1" z="0"/>
         <centrePosB x="0" y="-1" z="0"/>
-        <halfExtents x="1" y="1" z="1"/>
+        <halfExtents x="2" y="2" z="2"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
     <ShadowSettings>
         <castShadow state="1"/>
     </ShadowSettings>
     <TilingSettings>
-        <isTiled state="1"/>
-        <tileScale x="175" y="175"/>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="Cube"/>
-    <MaterialComponent name="drill-marked-granite-drystone-1118-mm-architextures"/>
+    <MaterialComponent name="polished-concrete-3000-mm-architextures"/>
     <ShaderComponent name="MultiPhong"/>
+    <ScriptComponent name="LeverMechanicalDoor"/>
 </Actor>

@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0" y="0" z="-7.8996964"/>
-        <rotation w="0.85660654" x="-0.34779003" y="-0.035248179" z="0.37950641"/>
-        <scale x="1.000003" y="1.0000117" z="1.0000054"/>
+        <position x="0" y="0" z="-31.440105"/>
+        <rotation w="0.85661048" x="-0.34778711" y="-0.035247546" z="0.37949997"/>
+        <scale x="1.0000019" y="1.000013" z="1.0000061"/>
     </TransformComponent>
     <LightComponent>
         <diffuse x="0.5" y="0.5" z="0.5" w="1"/>

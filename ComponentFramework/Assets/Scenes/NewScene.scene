@@ -12,10 +12,13 @@
         <Floor/>
         <Skylight/>
         <MechanicalDoor>
-            <Pressure_Pad/>
             <FramePart/>
             <DoorEndRot/>
             <DoorPart/>
+            <Lever>
+                <LeverPart/>
+                <LeverEnd/>
+            </Lever>
         </MechanicalDoor>
         <Cube/>
         <Player/>
@@ -25,5 +28,6 @@
         <Part_1D/>
         <Part_2D/>
         <Part_3D/>
+        <Floor_1D/>
     </Actors>
 </Scene>

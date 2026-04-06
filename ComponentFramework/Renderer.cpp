@@ -119,6 +119,10 @@ void Renderer::ShadowPass()
 
 			float orthoSize = LC->getShadowOrthoSize();
 
+			if (SceneGraph::getInstance().GetMainCamera()->GetComponent<CameraComponent>()->getType() == ProjectionType::Orthographic) {
+				orthoSize += SceneGraph::getInstance().GetMainCamera()->GetComponent<CameraComponent>()->getOrthoSize();
+			}
+
 			Matrix4 lightProjection = MMath::orthographic(
 				-orthoSize, orthoSize,
 				-orthoSize, orthoSize,

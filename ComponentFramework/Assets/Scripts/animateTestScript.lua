@@ -4,6 +4,8 @@ animclip = AnimationClip.new()
 animclip:PreloadAnimation("RobotWalking")
 animclip:PreloadAnimation("RobotIdle")
 
+pressedUsers = {}
+
 
 actionclip = AnimationClip.new()
 actionclip.Loop = false
@@ -39,6 +41,7 @@ end
 
 function Update(deltaTime) 
 	
+
 	
 	if GameObject.Animator.Clip:GetAnimationName() == "RobotJumping" and GameObject.Animator.CurrentTime == GameObject.Animator.Length then
 		--activate falling after jump animation ends
@@ -87,9 +90,18 @@ function Update(deltaTime)
 
 	end
 
+	if #(pressedUsers) == 0 then
+		if GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" or GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
+			PlayClip("RobotFalling", 0.2)
+		end
+	end
+
 end
 
 function OnCollisionEnter(other) 
+	table.insert(pressedUsers, other)
+
+
 	if GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" then
 		actionclip:SetAnimation("RobotLanding")
 		GameObject.Animator.Clip = actionclip
@@ -98,3 +110,14 @@ function OnCollisionEnter(other)
 end
 
 
+
+
+function OnCollisionExit(other)
+    for i = #pressedUsers, 1, -1 do  -- iterate backwards so removal doesn't shift indices
+        if pressedUsers[i] == other then  -- compare by reference, not name
+            table.remove(pressedUsers, i)
+            break  -- assuming one entry per actor
+        end
+    end
+
+end

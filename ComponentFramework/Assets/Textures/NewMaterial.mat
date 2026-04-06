@@ -1,1 +1,4 @@
-<Material/>
+<Material>
+    <Diffuse>Textures/drill-marked-granite-drystone-1118-mm-architextures.jpg</Diffuse>
+    <Normal>Textures/Glass_Stained_Panel_001_normal.png</Normal>
+</Material>

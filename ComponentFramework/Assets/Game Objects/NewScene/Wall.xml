@@ -10,10 +10,10 @@
     </ShadowSettings>
     <TilingSettings>
         <isTiled state="1"/>
-        <tileScale x="34.740002" y="14.66"/>
-        <tileOffset x="-9.2799997" y="4.6300001"/>
+        <tileScale x="400" y="330"/>
+        <tileOffset x="-9.2799997" y="4.2199998"/>
     </TilingSettings>
     <MeshComponent name="Plane"/>
-    <MaterialComponent name="StarSkyboxNegY"/>
+    <MaterialComponent name="seamsky"/>
     <ShaderComponent name="MultiPhong"/>
 </Actor>

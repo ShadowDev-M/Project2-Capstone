@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0" y="-106.446" z="-43.040092"/>
-        <rotation w="1" x="4.0344644e-06" y="1.6987215e-06" z="-6.7930259e-06"/>
-        <scale x="99.999863" y="100" z="68.200043"/>
+        <position x="52.19315" y="-18.579561" z="-43.040092"/>
+        <rotation w="1" x="4.0342425e-06" y="1.6986148e-06" z="-6.7925985e-06"/>
+        <scale x="20" y="20" z="68.200043"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -31,7 +31,7 @@
     </ShadowSettings>
     <TilingSettings>
         <isTiled state="1"/>
-        <tileScale x="175" y="175"/>
+        <tileScale x="25" y="25"/>
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="Cube"/>
