@@ -1,0 +1,17 @@
+<ProjectSettings>
+    <windowTitle value="NewScene_1D"/>
+    <renderWidth value="1280"/>
+    <renderHeight value="720"/>
+    <displayWidth value="1280"/>
+    <displayHeight value="720"/>
+    <targetFPS value="60"/>
+    <vsync value="0"/>
+    <startupScene value=""/>
+    <Tags>
+        <Tag value="Untagged"/>
+        <Tag value="MainCamera"/>
+        <Tag value="Player"/>
+        <Tag value="Ground"/>
+    </Tags>
+    <SceneList/>
+</ProjectSettings>

@@ -37,7 +37,6 @@ bool SceneGraph::OnCreate()
 }
 
 void SceneGraph::OnDestroy() {
-	// TODO: instead of just calling stop straight up to stop scripts, stop scripts directly
 	Stop();
 	
 	RemoveAllActors();
@@ -517,12 +516,6 @@ bool SceneGraph::RemoveActor(const std::string& actorName)
 
 void SceneGraph::RemoveAllActors()
 {
-	std::cout << "Deleting All Actors In The Scene" << std::endl;
-
-	LightingSystem::getInstance().ClearActors();
-	PhysicsSystem::getInstance().ClearActors();
-	CollisionSystem::getInstance().ClearActors();
-
 	// call the OnDestroy for each actor 
 	for (auto& pair : Actors) {
 		if (pair.second) {
@@ -533,10 +526,14 @@ void SceneGraph::RemoveAllActors()
 	// clear the maps
 	m_mainCamera = nullptr;
 	Actors.clear();
-	EditorManager::getInstance().UpdateActorHierarchy();
-
 	ActorNameToId.clear();
 	debugSelectedAssets.clear();
+	
+#ifdef ENGINE_EDITOR
+	if (EditorManager::getInstance().IsInitialized()) {
+		EditorManager::getInstance().UpdateActorHierarchy();
+	}
+#endif
 }
 
 void SceneGraph::Update(const float deltaTime)

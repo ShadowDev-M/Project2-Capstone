@@ -15,6 +15,8 @@ static std::atomic<std::thread::id> main_thread_id{ std::this_thread::get_id() }
 //For RECORD 
 static std::pair<const char*, int> nextPtrData;
 
+bool allocMapDestroyed = false;
+
 void RecordNextUndefinedNew(const char* file, int line) {
     nextPtrData = { file, line };
 }
@@ -57,19 +59,17 @@ void* operator new(std::size_t numBytes, const char* FILE, int LINE) {
 }
 
 void operator delete(void* memoryLocation, std::size_t numBytes) noexcept {
-    auto& map = GetAllocMap();  // SINGLE call
-    if (map.erase(memoryLocation)) {  // No count() needed - erase safe on missing keys
-        MEMORY_NUMUSEDBYTES -= numBytes;
+    if (!allocMapDestroyed) { // SINGLE call
+        if (GetAllocMap().erase(memoryLocation)) { // No count() needed - erase safe on missing keys
+            MEMORY_NUMUSEDBYTES -= numBytes;
+        }
     }
     std::free(memoryLocation);
 }
 
 void operator delete(void* memoryLocation) noexcept {
     //  std::cout << "freeing " << numBytes << " bytes of memory\n";
-    GetAllocMap().erase(memoryLocation);
-
-
-  
+    if (!allocMapDestroyed) GetAllocMap().erase(memoryLocation);
     std::free(memoryLocation);
 }
 
@@ -77,10 +77,7 @@ void operator delete(void* memoryLocation) noexcept {
 void operator delete(void* memoryLocation, const char* file, int line) noexcept
 {
     //  std::cout << "freeing " << numBytes << " bytes of memory\n";
-    GetAllocMap().erase(memoryLocation);
-
-
-    
+    if (!allocMapDestroyed) GetAllocMap().erase(memoryLocation);
     std::free(memoryLocation);
 }
 
@@ -130,25 +127,20 @@ void* operator new[](std::size_t numBytes, const char* FILE, int LINE) {
 void operator delete[](void* memoryLocation) noexcept {
     if (memoryLocation == NULL) return;
     ArraySize* array = reinterpret_cast<ArraySize*>(memoryLocation) - 1;
-
-    if (GetAllocMap().erase(array)) {
-
-
-        MEMORY_NUMUSEDBYTES -= array->numBytes;
+    if (!allocMapDestroyed) {
+        if (GetAllocMap().erase(array))
+            MEMORY_NUMUSEDBYTES -= array->numBytes;
     }
-
     free(array);
 }
 
 void operator delete[](void* memoryLocation, const char* file, int line) noexcept
 {
     if (memoryLocation == NULL) return;
-
     ArraySize* array = reinterpret_cast<ArraySize*>(memoryLocation) - 1;
-
-    GetAllocMap().erase(array);
-
-    MEMORY_NUMUSEDBYTES -= array->numBytes;
-
+    if (!allocMapDestroyed) {
+        GetAllocMap().erase(array);
+        MEMORY_NUMUSEDBYTES -= array->numBytes;
+    }
     std::free(array);
 }

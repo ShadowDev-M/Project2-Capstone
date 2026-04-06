@@ -33,7 +33,7 @@ void ProjectWindow::ShowProjectWindowWindow(bool* pOpen)
 		ImGui::Separator();
 
 		// building out the rest of the window
-		ImGui::Columns(2, "ProjectCols", true);
+		ImGui::Columns(2, "ProjectCols", false);
 		ImGui::SetColumnWidth(0, PANEL_WIDTH);
 		DrawLeftPanel();
 		ImGui::NextColumn();
@@ -200,6 +200,8 @@ void ProjectWindow::DrawFolderNode(const fs::path& dir)
 void ProjectWindow::DrawFileGrid()
 {
 	float panelW = ImGui::GetContentRegionAvail().x;
+	panelW -= ImGui::GetStyle().ScrollbarSize + ImGui::GetStyle().ItemSpacing.x;
+
 	float cellW = TILE_SIZE + 12.0f;
 	int cols = std::max(1, (int)(panelW / cellW));
 	int col = 0;
@@ -461,9 +463,7 @@ void ProjectWindow::CreateScene(const std::string& name)
 
 	XMLDocument doc;
 	auto* root = doc.NewElement("Scene");
-	auto* tags = doc.NewElement("Tags");
 	auto* actors = doc.NewElement("Actors");
-	root->InsertEndChild(tags);
 	root->InsertEndChild(actors);
 	doc.InsertFirstChild(root);
 	doc.SaveFile(out.string().c_str());
@@ -504,7 +504,10 @@ void ProjectWindow::CreateScript(const std::string& name)
 
 void ProjectWindow::CreateMatFromTexture(const FileEntry& entry)
 {
-	fs::path out = entry.absolutePath.parent_path() / (entry.assetName + ".mat");
+	fs::path dir = entry.absolutePath.parent_path();
+	std::string stem = AssetManager::getInstance().GenerateUniqueFileName(dir, entry.assetName, ".mat");
+	fs::path out = dir / (stem + ".mat");
+
 	std::string rel = SearchPath::getInstance().MakeRelative(entry.absolutePath).string();
 	std::replace(rel.begin(), rel.end(), '\\', '/');
 	XMLObjectFile::WriteMatManifest(out, rel);
@@ -531,8 +534,8 @@ void ProjectWindow::Rename(const fs::path& path, const std::string& newName)
 			std::error_code ec;
 			fs::rename(path, path.parent_path() / (newName + ext), ec);
 			if (!ec) {
-				fs::path srcGO = path.parent_path().parent_path() / "Game Objects" / path.stem().string();
-				fs::path dstGO = path.parent_path().parent_path() / "Game Objects" / newStem;
+				fs::path srcGO = SearchPath::getInstance().GetEngineRoot() / "Game Objects" / path.stem().string();
+				fs::path dstGO = SearchPath::getInstance().GetEngineRoot() / "Game Objects" / newStem;
 				if (fs::exists(srcGO)) {
 					fs::copy(srcGO, dstGO, fs::copy_options::recursive, ec);
 					fs::remove_all(srcGO);
@@ -577,8 +580,8 @@ void ProjectWindow::Duplicate(const fs::path& path)
 			std::error_code ec;
 			fs::copy_file(path, dst, ec);
 			if (!ec) {
-				fs::path srcGO = path.parent_path().parent_path() / "Game Objects" / name;
-				fs::path dstGO = path.parent_path().parent_path() / "Game Objects" / newStem;
+				fs::path srcGO = SearchPath::getInstance().GetEngineRoot() / "Game Objects" / name;
+				fs::path dstGO = SearchPath::getInstance().GetEngineRoot() / "Game Objects" / newStem;
 				if (fs::exists(srcGO)) {
 					fs::copy(srcGO, dstGO, fs::copy_options::recursive, ec);
 					if (ec) {

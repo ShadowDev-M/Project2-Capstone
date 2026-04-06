@@ -261,7 +261,7 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 
 	// add or remove tag 
 	if (ImGui::BeginPopup("##TagManager")) {
-		ImGui::Text("Scene Tags");
+		ImGui::Text("Tags");
 		ImGui::Separator();
 
 		int removeTagIndex = -1;

@@ -27,6 +27,8 @@ struct ArraySize {
     std::size_t numBytes;
 };
 
+extern bool allocMapDestroyed;
+
 void* operator new[](std::size_t numBytes);
 
 void* operator new[](std::size_t numBytes, const char* FILE, int LINE);
