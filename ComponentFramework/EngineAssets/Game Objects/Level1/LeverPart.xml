@@ -14,6 +14,6 @@
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="Cube"/>
-    <MaterialComponent name="corrugated-dark-matte-powder-coated-metal-1845-mm-architextures"/>
+    <MaterialComponent name="rusted-iron-800-mm-architextures"/>
     <ShaderComponent name="MultiPhong"/>
 </Actor>

@@ -1,23 +1,23 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="0" y="10.581" z="-39"/>
-        <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="19.900999" y="16.380129" z="4.5029998"/>
+        <position x="67.58606" y="13.275541" z="-43.040092"/>
+        <rotation w="1" x="4.0339755e-06" y="1.6985048e-06" z="-6.7921583e-06"/>
+        <scale x="20" y="39.900002" z="68.200043"/>
     </TransformComponent>
     <PhysicsComponent>
-        <PhysicsState state="0"/>
+        <PhysicsState state="2"/>
         <Constraints freezePosX="0" freezePosY="0" freezePosZ="0" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
-        <mass value="1"/>
+        <mass value="3.4028235e+38"/>
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="0.5"/>
-        <restitution value="0"/>
+        <friction value="1"/>
+        <restitution value="0.18000001"/>
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
-        <CollisionType type="3"/>
+        <CollisionType type="2"/>
         <isTrigger trigger="0"/>
         <radius value="1"/>
         <centre x="0" y="0" z="0"/>
@@ -26,22 +26,15 @@
         <halfExtents x="1" y="1" z="1"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
-    <AnimatorComponent>
-        <startTime time="0"/>
-        <speedMult mult="0"/>
-        <looping state="false"/>
-        <animName name=""/>
-    </AnimatorComponent>
     <ShadowSettings>
         <castShadow state="1"/>
     </ShadowSettings>
     <TilingSettings>
-        <isTiled state="0"/>
-        <tileScale x="1" y="1"/>
+        <isTiled state="1"/>
+        <tileScale x="150" y="150"/>
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="Cube"/>
-    <MaterialComponent name="Hammer"/>
+    <MaterialComponent name="corrugated-dark-matte-powder-coated-metal-1845-mm-architextures"/>
     <ShaderComponent name="MultiPhong"/>
-    <ScriptComponent name="PlayerController"/>
 </Actor>

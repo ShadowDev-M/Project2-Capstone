@@ -16,14 +16,20 @@
         <Cube/>
         <Player/>
         <Camera/>
+        <LightBlockingWalls>
+            <LIGHTBLOCKWALL_1D/>
+            <LIGHTBLOCKWALL_2D/>
+            <LIGHTBLOCKWALL/>
+        </LightBlockingWalls>
+        <Part_1D/>
         <Lights_1D>
             <PointLight_1D/>
             <PointLight_2D/>
             <PointLight_3D/>
         </Lights_1D>
-        <Part_1D/>
         <Part_2D/>
         <Part_3D/>
         <Floor_1D/>
+        <Floor_2D/>
     </Actors>
 </Scene>
