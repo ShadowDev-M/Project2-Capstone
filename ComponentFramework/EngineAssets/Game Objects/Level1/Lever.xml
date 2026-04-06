@@ -1,9 +1,9 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="-5" y="3" z="73"/>
-        <rotation w="1" x="0" y="0" z="1.8189894e-12"/>
-        <scale x="1" y="1" z="1"/>
+        <position x="-5.5450001" y="10.000223" z="79.647003"/>
+        <rotation w="0.70710689" x="-0.70710665" y="0" z="0"/>
+        <scale x="1.0000567" y="1.0000062" z="0.99992365"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="2"/>
@@ -35,7 +35,7 @@
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="Cube"/>
-    <MaterialComponent name="polished-concrete-3000-mm-architextures"/>
+    <MaterialComponent name="166dc70ac7d78bbbe01c55d25edd0405"/>
     <ShaderComponent name="MultiPhong"/>
     <ScriptComponent name="LeverMechanicalDoor"/>
 </Actor>

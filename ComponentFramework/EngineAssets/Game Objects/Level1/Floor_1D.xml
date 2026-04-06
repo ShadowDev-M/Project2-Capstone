@@ -31,10 +31,10 @@
     </ShadowSettings>
     <TilingSettings>
         <isTiled state="1"/>
-        <tileScale x="25" y="25"/>
+        <tileScale x="150" y="150"/>
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="Cube"/>
-    <MaterialComponent name="drill-marked-granite-drystone-1118-mm-architextures"/>
+    <MaterialComponent name="corrugated-dark-matte-powder-coated-metal-1845-mm-architextures"/>
     <ShaderComponent name="MultiPhong"/>
 </Actor>

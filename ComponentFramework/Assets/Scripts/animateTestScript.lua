@@ -4,6 +4,9 @@ animclip = AnimationClip.new()
 animclip:PreloadAnimation("RobotWalking")
 animclip:PreloadAnimation("RobotIdle")
 
+jumpclip = AnimationClip.new()
+
+
 pressedUsers = {}
 
 
@@ -68,7 +71,7 @@ function Update(deltaTime)
 			GameObject.Animator.SpeedMult = 2.0
 		else
 			--base speed of anim on movement speed (walking)
-			GameObject.Animator.SpeedMult = (math.abs(GameObject.Rigidbody.Vel.x) / 5) + 0.3
+			GameObject.Animator.SpeedMult = (math.abs(GameObject.Rigidbody.Vel.x) / 5) - 0.3
 
 			if GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
 				PlayClip("RobotWalking", GameObject.Animator.SpeedMult)
@@ -91,8 +94,18 @@ function Update(deltaTime)
 	end
 
 	if #(pressedUsers) == 0 then
-		if GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" or GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" then
-			PlayClip("RobotFalling", 0.2)
+		if GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" or GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" or GameObject.Animator.Clip:GetAnimationName() == "RobotLanding" then
+
+			jumpclip:SetAnimation("RobotJumping")
+			jumpclip.Loop = false
+			jumpclip.SpeedMult = 1.2
+			jumpclip.StartTime = 0.3
+
+			GameObject.Animator.Clip = jumpclip
+
+			GameObject.Animator:Play()
+
+
 		end
 	end
 
@@ -102,7 +115,7 @@ function OnCollisionEnter(other)
 	table.insert(pressedUsers, other)
 
 
-	if GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" then
+	if GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" or GameObject.Animator.Clip:GetAnimationName() == "RobotJumping" then
 		actionclip:SetAnimation("RobotLanding")
 		GameObject.Animator.Clip = actionclip
 		GameObject.Animator:Play()
