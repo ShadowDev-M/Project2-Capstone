@@ -1,16 +1,9 @@
 <Scene>
-    <Tags>
-        <Tag value="Untagged"/>
-        <Tag value="MainCamera"/>
-        <Tag value="Player"/>
-        <Tag value="Ground"/>
-    </Tags>
     <Actors>
         <BackGroundScaler>
             <Wall/>
         </BackGroundScaler>
         <Floor/>
-        <Skylight/>
         <MechanicalDoor>
             <FramePart/>
             <DoorEndRot/>
@@ -23,8 +16,11 @@
         <Cube/>
         <Player/>
         <Camera/>
-        <PointLight/>
-        <PointLight_1D/>
+        <Lights_1D>
+            <PointLight_1D/>
+            <PointLight_2D/>
+            <PointLight_3D/>
+        </Lights_1D>
         <Part_1D/>
         <Part_2D/>
         <Part_3D/>
