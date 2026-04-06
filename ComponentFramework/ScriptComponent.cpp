@@ -6,8 +6,7 @@
 #include "InputManager.h"
 #include "CollisionSystem.h"
 #include "ScreenManager.h"
-
-
+#include "SceneLoader.h"
 
 static std::vector<ScriptComponent*> scriptsInUse;
 
@@ -930,6 +929,18 @@ void ScriptService::loadLibraries()
 		
 	}
 
+	// Scene table 
+	(*lua)["Scene"] = sol::new_table();
+	{
+		// https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SceneManagement.Scene.html
+
+		(*lua)["Scene"]["Load"] = [](const std::string& name) { SceneLoader::getInstance().LoadScene(name); };
+		(*lua)["Scene"]["LoadById"] = [](int id) { SceneLoader::getInstance().LoadScene(id); };
+		(*lua)["Scene"]["LoadNext"] = []() { SceneLoader::getInstance().LoadNextScene(); };
+		(*lua)["Scene"]["GetActiveSceneId"] = []() -> int { return SceneLoader::GetActiveSceneId(); };
+		(*lua)["Scene"]["GetActiveSceneName"] = []() -> std::string { return SceneLoader::GetActiveSceneName(); };
+		(*lua)["Scene"]["IsLoaded"] = []() -> bool { return SceneLoader::IsSceneLoaded(); };
+	}
 }
 
 void ScriptService::callScriptCollision(Ref<ScriptComponent> script, Ref<Actor> other, CollisionDetectionState type) {

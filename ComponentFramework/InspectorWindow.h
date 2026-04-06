@@ -234,12 +234,6 @@ private:
 	void DrawShaderManifestEditor(const EditorManager::SelectedAsset& asset);
 	void DrawPrefabEditor(const EditorManager::SelectedAsset& asset);
 
-	// dummy prefab variables
-	fs::path loadedPrefabPath;
-	std::vector<Ref<Actor>> dummyActors;
-	bool refresh = false;
-	void ClosePrefabEditor(bool save);
-
 	// right click popup menu
 	template <typename ComponentTemplate>
 	void RightClickContext(const char* popupName_, const std::unordered_map<uint32_t, Ref<Actor>>& selectedActors_, int copy = 0);

@@ -16,16 +16,6 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 {
 	const auto& selectedAsset = EditorManager::getInstance().GetSelectedAsset();
 
-	// dummy prefab editor
-	if (!dummyActors.empty()) {
-		bool prefabStillSelected = selectedAsset.isSet && selectedAsset.absolutePath == loadedPrefabPath;
-
-		if (!prefabStillSelected) {
-			ClosePrefabEditor(true);
-			EditorManager::getInstance().ClearSelectedAsset();
-		}
-	}
-
 	if (ImGui::Begin("Inspector", pOpen)) {
 
 		if (selectedAsset.isSet) {
@@ -271,7 +261,7 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 
 	// add or remove tag 
 	if (ImGui::BeginPopup("##TagManager")) {
-		ImGui::Text("Scene Tags");
+		ImGui::Text("Tags");
 		ImGui::Separator();
 
 		int removeTagIndex = -1;
@@ -2054,93 +2044,19 @@ void InspectorWindow::DrawShaderManifestEditor(const EditorManager::SelectedAsse
 
 void InspectorWindow::DrawPrefabEditor(const EditorManager::SelectedAsset& asset)
 {
-	// creates dummy actors from the prefab
-
-	if (loadedPrefabPath != asset.absolutePath) {
-		if (!dummyActors.empty()) {
-			ClosePrefabEditor(true);
-		}
-
-		std::vector<Ref<Actor>> built;
-		Ref<Actor> root = XMLObjectFile::ReadPrefab(asset.absolutePath, built);
-		if (!root) {
-			ImGui::Text("Failed to load prefab.");
-			return;
-		}
-
-		if (auto tc = root->GetComponent<TransformComponent>()) {
-			tc->SetTransform(Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), tc->GetScale());
-		}
-
-		for (auto& a : built) {
-			std::string uniqueName = SceneGraph::getInstance().GenerateUniqueActorName(a->getActorName());
-			a->setActorName(uniqueName);
-			SceneGraph::getInstance().AddActor(a);
-			dummyActors.push_back(a);
-		}
-
-		loadedPrefabPath = asset.absolutePath;
-		refresh = false;
-	}
-
-	if (dummyActors.empty()) {
-		ImGui::Text("Failed to load prefab.");
-		return;
-	}
-
-	Ref<Actor> root = dummyActors[0];
-
-	ImGui::Text("Prefab: %s", asset.assetName.c_str());
+	ImGui::TextDisabled("Prefab");
 	ImGui::Separator();
 
-	std::unordered_map<uint32_t, Ref<Actor>> fakeSelected;
-	fakeSelected[root->getId()] = root;
+	if (ImGui::Button("Instantiate at Camera", ImVec2(-1, 0))) {
+		const EditorCamera& cam = EditorManager::getInstance().getEditorCamera();
+		Vec3 spawnPos = cam.GetPosition() + cam.GetForward() * 5.0f;
+		Quaternion spawnRot(1.0f, Vec3(0.0f, 0.0f, 0.0f));
 
-	DrawTransformComponent(fakeSelected);
-	DrawMeshComponent(fakeSelected);
-	DrawMaterialComponent(fakeSelected);
-	DrawShaderComponent(fakeSelected);
-	DrawLightComponent(fakeSelected);
-	DrawCameraComponent(fakeSelected);
-	DrawPhysicsComponent(fakeSelected);
-	DrawCollisionComponent(fakeSelected);
-	DrawAnimatorComponent(fakeSelected);
-	DrawScriptComponent(fakeSelected);
+		Ref<Actor> spawned = SceneGraph::getInstance().InstantiatePrefab(asset.absolutePath, spawnPos, spawnRot);
 
-	if (ImGui::IsAnyItemActive()) refresh = true;
-
-	ImGui::Separator();
-
-	if (refresh && !ImGui::IsAnyItemActive()) {
-		XMLObjectFile::WritePrefab(root->getActorName(), asset.absolutePath);
-		AssetManager::getInstance().RefreshSingle(asset.absolutePath);
-		refresh = false;
+		if (spawned) {
+			EditorManager::getInstance().SetLastSelected(spawned->getId());
+			EditorManager::getInstance().UpdateActorHierarchy();
+		}
 	}
-
-	ImGui::Separator();
-	if (ImGui::Button("Instantiate in Scene")) {
-		SceneGraph::getInstance().InstantiatePrefab(asset.absolutePath);
-	}
-
-	if (ImGui::Button("Done (save and close)")) {
-		ClosePrefabEditor(true);
-		EditorManager::getInstance().ClearSelectedAsset();
-	}
-}
-
-void InspectorWindow::ClosePrefabEditor(bool save)
-{
-	if (dummyActors.empty()) return;
-
-	if (save && !loadedPrefabPath.empty()) {
-		XMLObjectFile::WritePrefab(dummyActors[0]->getActorName(), loadedPrefabPath);
-		AssetManager::getInstance().RefreshSingle(loadedPrefabPath);
-	}
-
-	for (int i = (int)dummyActors.size() - 1; i >= 0; i--) {
-		SceneGraph::getInstance().RemoveActor(dummyActors[i]->getActorName());
-	}
-	dummyActors.clear();
-	loadedPrefabPath.clear();
-	refresh = false;
 }

@@ -691,8 +691,6 @@ bool SceneGraph::RenameActor(const std::string& oldName_, const std::string& new
 void SceneGraph::SaveFile(std::string name) const {
     XMLObjectFile::writeSceneFile(name);
 
-    XMLObjectFile::writeSceneTags(name, allTags);
-
     for (auto& obj : ActorNameToId) {
 
         XMLObjectFile::writeActor(obj.first);
@@ -750,7 +748,7 @@ void SceneGraph::SaveFile(std::string name) const {
 template<typename ComponentTemplate>
 inline int XMLObjectFile::writeReferenceComponent(std::string name, Ref<Component> toWrite)
 {
-    std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
+    std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
     const char* id = path.c_str();
 
 

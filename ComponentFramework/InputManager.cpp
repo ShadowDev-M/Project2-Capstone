@@ -231,8 +231,10 @@ void keyboardInputMap::update(const float deltaTime)
 	}
 }
 
-void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph)
+void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent)
 {
+	SceneGraph& sg = SceneGraph::getInstance();
+
 	bool activeWindowHovered;
 
 #ifdef ENGINE_EDITOR
@@ -292,18 +294,18 @@ void mouseInputMap::HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGra
 
 				//an object was clicked
 				if (raycastedActor) {
-					if (!keys[SDL_SCANCODE_LCTRL] && !(sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end())) { sceneGraph->debugSelectedAssets.clear(); }
+					if (!keys[SDL_SCANCODE_LCTRL] && !(sg.debugSelectedAssets.find(raycastedActor->getId()) != sg.debugSelectedAssets.end())) { sg.debugSelectedAssets.clear(); }
 
-					if (sceneGraph->debugSelectedAssets.find(raycastedActor->getId()) != sceneGraph->debugSelectedAssets.end() && keys[SDL_SCANCODE_LCTRL]) { sceneGraph->debugSelectedAssets.erase(raycastedActor->getId()); }
+					if (sg.debugSelectedAssets.find(raycastedActor->getId()) != sg.debugSelectedAssets.end() && keys[SDL_SCANCODE_LCTRL]) { sg.debugSelectedAssets.erase(raycastedActor->getId()); }
 
 					else {
-						sceneGraph->debugSelectedAssets.emplace(raycastedActor->getId(), raycastedActor);
+						sg.debugSelectedAssets.emplace(raycastedActor->getId(), raycastedActor);
 						EditorManager::getInstance().SetLastSelected(raycastedActor->getId());
 					}
 				}
 				//no object was clicked, and left control isn't pressed (making sure the user didn't accidentally misclicked during multi object selection before clearing selection)
 				else if (!keys[SDL_SCANCODE_LCTRL]) {
-					sceneGraph->debugSelectedAssets.clear();
+					sg.debugSelectedAssets.clear();
 					EditorManager::getInstance().ClearSelectedAsset();
 				}
 			}
