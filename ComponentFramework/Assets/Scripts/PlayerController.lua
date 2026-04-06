@@ -26,14 +26,14 @@ end
 
 function Update(deltaTime) 
 	
-	-- bandaid fix for jump spamming
-	if canJump == 0 then
-		jumpCooldown = jumpCooldown - deltaTime
-		if jumpCooldown <= 0 then
-			canJump = 1
-			jumpCooldown = 2
-		end
+	if GameObject.Animator.Clip:GetAnimationName() == "RobotJumping" and canJump then
+		canJump = 0
+
+
 	end
+
+
+	
 
 	-- added sprint key
 	if Game.Input.GetInputState("Left Shift") == 2 then
@@ -52,7 +52,7 @@ function Update(deltaTime)
 
 	if Game.Input.GetInputState("A") == 2 then
 		if math.abs(GameObject.Rigidbody.Vel.x) < speed then	
-		GameObject.Rigidbody:AddAccel(Vec3.new(-accelSpeed, 0, 0))
+			GameObject.Rigidbody:AddAccel(Vec3.new(-accelSpeed, 0, 0))
 		end
 	end
 	
@@ -61,7 +61,7 @@ function Update(deltaTime)
 		Transform.Rotation = QMath.LookAt(-VMath.Normalize(uniDirection), Vec3.new(0,1,0))
 	end
 	
-	
+
 	if (GameObject.Rigidbody.Vel.y) < 5 and canJump == 0 then
 		GameObject.Rigidbody:AddAccel( Vec3.new(0, -accelSpeed, 0))
 	end
@@ -71,7 +71,11 @@ end
 
  -- applied bandaid fix for jump spamming and velocity stacking
 function OnCollisionStay(other)
-	if Game.Input.GetInputState("Space") == 1 and canJump == 1 then
+
+
+	--print(other.Name)
+
+	if Game.Input.GetInputState("Space") == 1 and Physics.Raycast(GameObject.Transform.Position, Vec3.new(0,-1,0), 20).GameObject == other then
 		canJump = 0
 
 		jumpclip:SetAnimation("RobotJumping")
@@ -84,8 +88,12 @@ function OnCollisionStay(other)
 		GameObject.Animator:Play()
 		newVel = GameObject.Rigidbody.Vel
 		
-		newVel.y = 10
+		newVel.y = 15
 		GameObject.Rigidbody.Vel = newVel
+	end
+
+	if canJump == 0 and Physics.Raycast(GameObject.Transform.Position, Vec3.new(0,-1,0), 20).GameObject == other then
+		canJump = 1
 	end
 
 end

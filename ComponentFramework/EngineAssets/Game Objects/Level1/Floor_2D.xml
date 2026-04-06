@@ -12,7 +12,7 @@
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="1"/>
+        <friction value="0.1"/>
         <restitution value="0.18000001"/>
     </PhysicsComponent>
     <CollisionComponent>

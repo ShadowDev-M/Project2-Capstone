@@ -63,12 +63,12 @@ function Update(deltaTime)
 		PlayClip("RobotIdle", GameObject.Animator.SpeedMult)
 	end
 
-
+	 
 	if math.abs(GameObject.Rigidbody.Vel.x) > 0.7 and (GameObject.Animator.Clip:GetAnimationName() == "RobotWalking" or GameObject.Animator.Clip:GetAnimationName() == "RobotIdle" or GameObject.Animator.Clip:GetAnimationName() == "RobotLanding") then 
 
 		if GameObject.Animator.Clip:GetAnimationName() == "RobotLanding" then
 			--fast forward the landing animation when wanting to walk so we don't slide
-			GameObject.Animator.SpeedMult = 2.0
+			GameObject.Animator.SpeedMult = 2.4
 		else
 			--base speed of anim on movement speed (walking)
 			GameObject.Animator.SpeedMult = (math.abs(GameObject.Rigidbody.Vel.x) / 5) - 0.3
@@ -115,13 +115,26 @@ function OnCollisionEnter(other)
 	table.insert(pressedUsers, other)
 
 
-	if GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" or GameObject.Animator.Clip:GetAnimationName() == "RobotJumping" then
+	if (GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" or GameObject.Animator.Clip:GetAnimationName() == "RobotJumping") and Physics.Raycast(GameObject.Transform.Position, Vec3.new(0,-1,0), 20).GameObject == other then
+		GameObject.Rigidbody.Vel = Vec3.new(0,GameObject.Rigidbody.Vel.y,0)
 		actionclip:SetAnimation("RobotLanding")
 		GameObject.Animator.Clip = actionclip
 		GameObject.Animator:Play()
 	end
 end
 
+function OnCollisionStay(other) 
+
+	if (GameObject.Animator.Clip:GetAnimationName() == "RobotFalling" ) and Physics.Raycast(GameObject.Transform.Position, Vec3.new(0,-1,0), 20).GameObject == other then
+		
+		GameObject.Rigidbody.Vel = Vec3.new(0,GameObject.Rigidbody.Vel.y,0)
+		actionclip:SetAnimation("RobotLanding")
+		GameObject.Animator.Clip = actionclip
+		GameObject.Animator:Play()
+	end
+
+
+end
 
 
 
