@@ -1,0 +1,41 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="-5.0010138" y="-5.2937098" z="38.352844"/>
+        <rotation w="1" x="0" y="-6.0111055e-05" z="0"/>
+        <scale x="3.2009227" y="0.40099999" z="3.2009323"/>
+    </TransformComponent>
+    <PhysicsComponent>
+        <PhysicsState state="2"/>
+        <Constraints freezePosX="0" freezePosY="0" freezePosZ="0" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
+        <mass value="3.4028235e+38"/>
+        <UsingGravity isUsing="1"/>
+        <drag value="0"/>
+        <angularDrag value="0.050000001"/>
+        <friction value="0.5"/>
+        <restitution value="0"/>
+    </PhysicsComponent>
+    <CollisionComponent>
+        <CollisionState state="0"/>
+        <CollisionType type="3"/>
+        <isTrigger trigger="1"/>
+        <radius value="1"/>
+        <centre x="0" y="0" z="0"/>
+        <centrePosA x="0" y="1" z="0"/>
+        <centrePosB x="0" y="-1" z="0"/>
+        <halfExtents x="1" y="5" z="1"/>
+        <orientation w="1" x="0" y="0" z="0"/>
+    </CollisionComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
+    <MeshComponent name="Cube"/>
+    <MaterialComponent name="8x8_checkered_board"/>
+    <ShaderComponent name="MultiPhong"/>
+    <ScriptComponent name="Pressure_Pad_Mechanic"/>
+</Actor>

@@ -1,17 +1,20 @@
 <ProjectSettings>
-    <windowTitle value="NewScene_1D"/>
+    <windowTitle value="Level4Test"/>
     <renderWidth value="1280"/>
     <renderHeight value="720"/>
     <displayWidth value="1280"/>
     <displayHeight value="720"/>
     <targetFPS value="60"/>
     <vsync value="0"/>
-    <startupScene value=""/>
+    <startupScene value="Level3Test"/>
     <Tags>
         <Tag value="Untagged"/>
         <Tag value="MainCamera"/>
         <Tag value="Player"/>
         <Tag value="Ground"/>
     </Tags>
-    <SceneList/>
+    <SceneList>
+        <Scene id="0" name="Level3Test" path="Scenes\Level3Test.scene"/>
+        <Scene id="1" name="Level4Test" path="Scenes\Level4Test.scene"/>
+    </SceneList>
 </ProjectSettings>

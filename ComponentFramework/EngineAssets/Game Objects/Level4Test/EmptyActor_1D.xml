@@ -1,0 +1,15 @@
+<Actor>
+    <Tag value="MainCamera"/>
+    <TransformComponent>
+        <position x="0" y="6.9000001" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </TransformComponent>
+    <CameraComponent>
+        <type value="0"/>
+        <fov value="60"/>
+        <near value="0.029999999"/>
+        <far value="1000"/>
+        <orthoSize value="5"/>
+    </CameraComponent>
+</Actor>

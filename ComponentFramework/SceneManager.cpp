@@ -198,18 +198,34 @@ void SceneManager::ProcessPendingLoad()
 	SceneLoader::Request request = SceneLoader::getInstance().ConsumePending();
 	using Type = SceneLoader::RequestType;
 
-	if (request.type == Type::ByName) LoadSceneFile(request.name);
+	std::string targetScene;
+	if (request.type == Type::ByName) {
+		targetScene = request.name;
+	}
 	else if (request.type == Type::ById) {
 		const auto* s = ProjectSettingsManager::getInstance().Get().GetSceneById(request.id);
-		if (s) LoadSceneFile(s->name);
-		else return;
+		if (!s) return;
+		targetScene = s->name;
 	}
 	else if (request.type == Type::Next) {
 		int nextId = SceneLoader::GetActiveSceneId() + 1;
 		const auto* s = ProjectSettingsManager::getInstance().Get().GetSceneById(nextId);
-		if (s) LoadSceneFile(s->name);
-		else return;
+		if (!s) return;
+		targetScene = s->name;
 	}
+
+	if (targetScene.empty()) return;
+
+	LoadSceneFile(targetScene);
+
+#ifdef ENGINE_EDITOR
+	if (EditorManager::getInstance().isPlayMode()) {
+		SceneGraph::getInstance().Start();
+		InputManager::getInstance().setGameInputActive(true);
+	}
+#else
+	SceneGraph::getInstance().Start();
+#endif
 }
 
 void SceneManager::LoadSceneFile(const std::string& sceneName)

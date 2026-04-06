@@ -1,0 +1,23 @@
+<Scene>
+    <Actors>
+        <BackGroundScaler>
+            <Wall/>
+        </BackGroundScaler>
+        <Player/>
+        <NextLevelTrigger/>
+        <Floor/>
+        <Skylight/>
+        <Camera/>
+        <DeathFloor/>
+        <MechanicalDoor_1D>
+            <Pressure_Pad_1D/>
+            <FramePart_1D/>
+            <DoorEndRot_1D/>
+            <DoorPart_1D/>
+        </MechanicalDoor_1D>
+        <Cube_1D/>
+        <Floor_3D/>
+        <Pressure_Pad_2D/>
+        <Floor_1D/>
+    </Actors>
+</Scene>
