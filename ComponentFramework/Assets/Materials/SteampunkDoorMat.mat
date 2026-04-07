@@ -1,4 +1,6 @@
 <Material>
     <Diffuse>Textures/T_SteampunkDoor_BC.png</Diffuse>
     <Normal>Textures/T_Steampunkdoor_NO.png</Normal>
+    <Roughness>Textures/T_SteampunkDoor_R.png</Roughness>
+    <Metallic>Textures/T_SteampunkDoor_M.png</Metallic>
 </Material>

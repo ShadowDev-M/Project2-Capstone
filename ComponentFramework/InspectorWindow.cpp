@@ -16,6 +16,16 @@ void InspectorWindow::ShowInspectorWindow(bool* pOpen)
 {
 	const auto& selectedAsset = EditorManager::getInstance().GetSelectedAsset();
 
+	// dummy prefab editor
+	if (!dummyActors.empty()) {
+		bool prefabStillSelected = selectedAsset.isSet && selectedAsset.absolutePath == loadedPrefabPath;
+
+		if (!prefabStillSelected) {
+			ClosePrefabEditor(true);
+			EditorManager::getInstance().ClearSelectedAsset();
+		}
+	}
+
 	if (ImGui::Begin("Inspector", pOpen)) {
 
 		if (selectedAsset.isSet) {
@@ -109,7 +119,7 @@ void InspectorWindow::ShowAddComponentPopup(const std::unordered_map<uint32_t, R
 			if (ImGui::Selectable("Material Component")) {
 				for (auto& [id, actor] : selected) {
 					if (!actor->GetComponent<MaterialComponent>()) {
-						RECORD actor->AddComponent<MaterialComponent>(nullptr, "", "");
+						RECORD actor->AddComponent<MaterialComponent>(nullptr, "", "", "", "", "");
 						if (!actor->GetComponent<TilingSettings>()) {
 							RECORD actor->AddComponent<TilingSettings>(nullptr, false);
 						}
@@ -261,7 +271,7 @@ void InspectorWindow::DrawActorHeader(Ref<Actor> actor_)
 
 	// add or remove tag 
 	if (ImGui::BeginPopup("##TagManager")) {
-		ImGui::Text("Tags");
+		ImGui::Text("Scene Tags");
 		ImGui::Separator();
 
 		int removeTagIndex = -1;
@@ -560,10 +570,18 @@ void InspectorWindow::DrawMaterialComponent(const std::unordered_map<uint32_t, R
 		if (materialState.allHaveComponent && materialState.Count() == 1) {
 			Ref<MaterialComponent> material = materialState.GetFirst();
 
-			std::string assetName = AssetManager::getInstance().GetAssetName(material);
+			std::string assetName = AssetManager::getInstance().GetAssetName(material); 
 			if (!assetName.empty()) ImGui::TextWrapped("Name: %s", assetName.c_str());
-			if (material->getSpecularID() != 0) ImGui::TextWrapped("Has Specular");
-			if (material->getNormalID() != 0) ImGui::TextWrapped("Has Normal");
+			if (material->getIsPBR() != 0) {
+				ImGui::TextWrapped("PBR Material: ");
+				if (material->getSpecularID() != 0) ImGui::TextWrapped("Has Specular Map");
+			}
+			else {
+				ImGui::TextWrapped("Non-PBR Material: ");
+				if (material->getRoughnessID() != 0) ImGui::TextWrapped("Has Roughness Map");
+				if (material->getMetallicID() != 0) ImGui::TextWrapped("Has Metallic Map");
+			}
+			if (material->getNormalID() != 0) ImGui::TextWrapped("Has Normal Map");
 		}
 		else if (materialState.allHaveComponent) {
 			ImGui::TextWrapped("All Selected Actors Have a MaterialComponent");
@@ -1855,13 +1873,13 @@ void InspectorWindow::DrawAssetInspector(const EditorManager::SelectedAsset& ass
 
 void InspectorWindow::DrawMatManifestEditor(const EditorManager::SelectedAsset& asset)
 {
-	static std::string diff, spec, norm;
+	static std::string diff, spec, norm, rough, metal;
 	static fs::path loaded;
 	static bool refresh = false;
 
 	// read the mat 
 	if (loaded != asset.absolutePath) {
-		diff.clear(); spec.clear(); norm.clear(); refresh = false;
+		diff.clear(); spec.clear(); norm.clear(); rough.clear(); metal.clear(); refresh = false;
 		XMLDocument doc;
 		if (doc.LoadFile(asset.absolutePath.string().c_str()) == XML_SUCCESS) {
 			auto* root = doc.FirstChildElement("Material");
@@ -1871,7 +1889,7 @@ void InspectorWindow::DrawMatManifestEditor(const EditorManager::SelectedAsset& 
 					auto* el = root->FirstChildElement(tag);
 					if (el && el->GetText()) out = el->GetText();
 					};
-				rd("Diffuse", diff); rd("Specular", spec); rd("Normal", norm);
+				rd("Diffuse", diff); rd("Specular", spec); rd("Normal", norm); rd("Roughness", rough); rd("Metallic", metal);
 			}
 		}
 
@@ -1917,6 +1935,8 @@ void InspectorWindow::DrawMatManifestEditor(const EditorManager::SelectedAsset& 
 	slot("Diffuse", diff, true);
 	slot("Specular", spec, false);
 	slot("Normal", norm, false);
+	slot("Roughness", rough, false);
+	slot("Metallic", metal, false);
 
 	if (!diff.empty()) {
 		fs::path abs = SearchPath::getInstance().Resolve(diff);
@@ -1932,7 +1952,7 @@ void InspectorWindow::DrawMatManifestEditor(const EditorManager::SelectedAsset& 
 
 	ImGui::BeginDisabled(!refresh);
 	if (ImGui::Button("Apply")) {
-		XMLObjectFile::WriteMatManifest(asset.absolutePath, diff, spec, norm);
+		XMLObjectFile::WriteMatManifest(asset.absolutePath, diff, spec, norm, rough, metal);
 		AssetManager::getInstance().RefreshSingle(asset.absolutePath);
 		refresh = false;
 	}
@@ -2044,19 +2064,93 @@ void InspectorWindow::DrawShaderManifestEditor(const EditorManager::SelectedAsse
 
 void InspectorWindow::DrawPrefabEditor(const EditorManager::SelectedAsset& asset)
 {
-	ImGui::TextDisabled("Prefab");
+	// creates dummy actors from the prefab
+
+	if (loadedPrefabPath != asset.absolutePath) {
+		if (!dummyActors.empty()) {
+			ClosePrefabEditor(true);
+		}
+
+		std::vector<Ref<Actor>> built;
+		Ref<Actor> root = XMLObjectFile::ReadPrefab(asset.absolutePath, built);
+		if (!root) {
+			ImGui::Text("Failed to load prefab.");
+			return;
+		}
+
+		if (auto tc = root->GetComponent<TransformComponent>()) {
+			tc->SetTransform(Vec3(0, 0, 0), Quaternion(1, Vec3(0, 0, 0)), tc->GetScale());
+		}
+
+		for (auto& a : built) {
+			std::string uniqueName = SceneGraph::getInstance().GenerateUniqueActorName(a->getActorName());
+			a->setActorName(uniqueName);
+			SceneGraph::getInstance().AddActor(a);
+			dummyActors.push_back(a);
+		}
+
+		loadedPrefabPath = asset.absolutePath;
+		refresh = false;
+	}
+
+	if (dummyActors.empty()) {
+		ImGui::Text("Failed to load prefab.");
+		return;
+	}
+
+	Ref<Actor> root = dummyActors[0];
+
+	ImGui::Text("Prefab: %s", asset.assetName.c_str());
 	ImGui::Separator();
 
-	if (ImGui::Button("Instantiate at Camera", ImVec2(-1, 0))) {
-		const EditorCamera& cam = EditorManager::getInstance().getEditorCamera();
-		Vec3 spawnPos = cam.GetPosition() + cam.GetForward() * 5.0f;
-		Quaternion spawnRot(1.0f, Vec3(0.0f, 0.0f, 0.0f));
+	std::unordered_map<uint32_t, Ref<Actor>> fakeSelected;
+	fakeSelected[root->getId()] = root;
 
-		Ref<Actor> spawned = SceneGraph::getInstance().InstantiatePrefab(asset.absolutePath, spawnPos, spawnRot);
+	DrawTransformComponent(fakeSelected);
+	DrawMeshComponent(fakeSelected);
+	DrawMaterialComponent(fakeSelected);
+	DrawShaderComponent(fakeSelected);
+	DrawLightComponent(fakeSelected);
+	DrawCameraComponent(fakeSelected);
+	DrawPhysicsComponent(fakeSelected);
+	DrawCollisionComponent(fakeSelected);
+	DrawAnimatorComponent(fakeSelected);
+	DrawScriptComponent(fakeSelected);
 
-		if (spawned) {
-			EditorManager::getInstance().SetLastSelected(spawned->getId());
-			EditorManager::getInstance().UpdateActorHierarchy();
-		}
+	if (ImGui::IsAnyItemActive()) refresh = true;
+
+	ImGui::Separator();
+
+	if (refresh && !ImGui::IsAnyItemActive()) {
+		XMLObjectFile::WritePrefab(root->getActorName(), asset.absolutePath);
+		AssetManager::getInstance().RefreshSingle(asset.absolutePath);
+		refresh = false;
 	}
+
+	ImGui::Separator();
+	if (ImGui::Button("Instantiate in Scene")) {
+		SceneGraph::getInstance().InstantiatePrefab(asset.absolutePath);
+	}
+
+	if (ImGui::Button("Done (save and close)")) {
+		ClosePrefabEditor(true);
+		EditorManager::getInstance().ClearSelectedAsset();
+	}
+}
+
+void InspectorWindow::ClosePrefabEditor(bool save)
+{
+	if (dummyActors.empty()) return;
+
+	if (save && !loadedPrefabPath.empty()) {
+		XMLObjectFile::WritePrefab(dummyActors[0]->getActorName(), loadedPrefabPath);
+		AssetManager::getInstance().RefreshSingle(loadedPrefabPath);
+	}
+
+	for (int i = (int)dummyActors.size() - 1; i >= 0; i--) {
+		SceneGraph::getInstance().RemoveActor(dummyActors[i]->getActorName());
+	}
+	dummyActors.clear();
+	loadedPrefabPath.clear();
+	refresh = false;
 }

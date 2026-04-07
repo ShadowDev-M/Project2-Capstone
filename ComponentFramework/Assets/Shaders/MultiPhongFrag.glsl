@@ -2,6 +2,7 @@
 #extension GL_ARB_separate_shader_objects : enable
 #define MAX_LIGHTS 8
 #define MAX_SHADOW_CASTERS 4 // FBO locked
+#define PI 3.14159265358979323846
 
 layout (location = 0) in mat3 TBN;
 layout (location = 3) in vec2 textureCoords;
@@ -15,7 +16,7 @@ uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec4 diffuse[MAX_LIGHTS];
 uniform vec4 specular[MAX_LIGHTS];
 uniform float intensity[MAX_LIGHTS];
-uniform uint lightType[MAX_LIGHTS];
+uniform bool lightType[MAX_LIGHTS];
 uniform int lightCastsShadow[MAX_LIGHTS];
 uniform int numPointShadow[MAX_LIGHTS];
 uniform vec4 ambient;
@@ -23,6 +24,9 @@ uniform uint numLights;
 
 uniform bool hasSpec;
 uniform bool hasNorm;
+uniform bool hasRough;
+uniform bool hasMetal;
+uniform bool isPBR;
 uniform bool isTiled;
 uniform vec3 uvTiling;
 uniform vec2 tileScale;
@@ -32,6 +36,8 @@ uniform sampler2D shadowMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 uniform sampler2D normalTexture;
+uniform sampler2D roughnessTexture;
+uniform sampler2D metallicTexture;
 uniform samplerCube pointShadowMaps[MAX_SHADOW_CASTERS]; // one cubemap per light
 
 uniform vec3 shadowLightDir; 
@@ -109,8 +115,93 @@ float shadow = 0.0;
     return 1.0 - (shadow * sunAngleFade);
 }
 
+vec4 CalcNonPBRLighting(vec3 PosDir, vec3 normal, vec4 tex, vec4 diff, vec4 spec, float str, bool type) {
+    vec4 result;
+
+    // light Pos/Dir vector l + Attenuation Calc
+    float LightIntensity = str;
+
+    vec3 l;
+    if (type == false) {    // if the light is a directional light
+        l = -PosDir;
+    } else {                // else point light
+        l = PosDir - worldPos;
+        float dist = length(l);
+        l = normalize(l);
+        LightIntensity /= dist * dist;
+    }
+    
+    // Light Diffuse segment
+    float LightDiffuse = max(dot(normal, l), 0.0f);
+
+    // Light Specular segment
+    vec3 reflection = reflect(-l, normal);
+    vec3 v = normalize(cameraPos - worldPos);
+    float LightSpecular = (LightDiffuse > 0.0) ? pow(max(dot(v, reflection), 0.0), 16.0) : 0.0;
+
+
+    result = ((LightDiffuse * diff) + (LightSpecular * spec)) * tex * LightIntensity;
+    return result;
+}
+
+vec4 CalcPBRLighting(vec3 PosDir, vec3 normal, vec4 tex, float roughness, float metallic, vec4 diff, float str, bool type){
+vec4 result;
+
+    // light Pos/Dir vector l + Attenuation Calc
+    vec3 lightIntensity = (diff * str).xyz;
+    //vec3 specIntensity = (spec * str).xyz;
+
+    vec3 l;
+    if (type == false) {    // if the light is a directional light
+        l = normalize(-PosDir);
+    } else {                // else point light
+        l = PosDir - worldPos;
+        float dist = length(l);
+        l = normalize(l);
+        lightIntensity /= dist * dist;
+        //specIntensity /= dist * dist;
+    }
+
+    vec3 n = normal;
+    vec3 v = normalize(cameraPos - worldPos);
+    vec3 h = normalize(v + l);
+
+    float NDotH = max(dot(n, h), 0.0);
+    float VDotH = max(dot(v, h), 0.0);
+    float NDotL = max(dot(n, l), 0.0);
+    float NDotV = max(dot(n, v), 0.0);
+
+    // SpecularBRDF = D*G*F / 4*dot(normal, light) * dot(normal, view)
+
+    // building the D term (GGX Distribution)
+    float alpha2 = roughness * roughness * roughness * roughness;
+    float denom = (NDotH * NDotH * (alpha2 - 1.0) + 1.0);
+    float D = alpha2 / (PI * denom * denom);
+
+    // building the G term (Schlick GGX)
+    float k = (roughness + 1.0) * (roughness + 1.0) / 8.0;
+    float GL = NDotL / max(NDotL * (1.0 - k) + k, 0.001);
+    float GV = NDotV / max(NDotV * (1.0 - k) + k, 0.001);
+    float G  = GL * GV;
+
+    // building the F term (Schlick Approximation)
+    vec3 albedo = pow(tex.rgb, vec3(2.2));
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
+    vec3 F = F0 + (1.0 - F0) * pow(clamp(1.0 - VDotH, 0.0, 1.0), 5);
+
+    // Assemble SpecularBRDF
+    vec3 SpecularBRDF = D * F * G / (4 * NDotL * NDotV + 0.001);
+
+    // Get kd and Assemble DiffuseBRDF
+    vec3 kd = (1.0 - F) * (1.0 - metallic);
+    vec3 DiffuseBRDF = kd * albedo / PI;
+
+    result = vec4((DiffuseBRDF + SpecularBRDF) * lightIntensity * NDotL, tex.a);
+
+    return result;
+}
+
 void main() {
-    vec3 viewDir = normalize(cameraPos - worldPos);
     vec4 kt;
     vec2 tiledTextureCoords;
 
@@ -142,7 +233,7 @@ void main() {
 		kt = texture(diffuseTexture, textureCoords); 
 	}
     
-     // normal mapping in "one" line
+     // normal mapping
     vec3 normal; 
     if (hasNorm) {
         vec2 normUV = isTiled ? tiledTextureCoords : textureCoords;
@@ -153,71 +244,47 @@ void main() {
     }
 
     // ambient
-    vec4 phongResult = ambient * kt;
+    vec4 result = ambient * kt;
 
     // light calculation
     if (numLights > 0u) {
         for(uint i = 0u; i < numLights; i++) {
             if (i >= uint(MAX_LIGHTS)) break;
-            
-            // single line specular map texturing
-            vec4 ks;
-            if (hasSpec) {
-                vec2 specUV = isTiled ? tiledTextureCoords : textureCoords;
-                ks = texture(specularTexture, specUV) * specular[i];
-            }
-            else {
-                ks = specular[i];
-            }
 
             vec4 kd = diffuse[i];
-            
-            vec3 lightWorldPos = lightPos[i]; 
-            vec3 lightDir;
-            
-            if (lightType[i] == 0u) {  
 
-                // this is directional
-                lightDir = -lightWorldPos; // when a sky light is passed lightPos[i] becomes lightDir
-            } else {  
-                // point light
-                lightDir = normalize(lightWorldPos - worldPos);
+            vec4 light;
+            if (isPBR == true) {
+                vec2 pbrUV = isTiled ? tiledTextureCoords : textureCoords;
+                float roughness = hasRough ? texture(roughnessTexture, pbrUV).r : 0.5;
+                float metallic = hasMetal ? texture(metallicTexture, pbrUV).r : 0.0;
+                light = CalcPBRLighting(lightPos[i], normal, kt, roughness, metallic, kd, intensity[i], lightType[i]);
             }
-            
-            // Diffuse
-            float diff = max(dot(normal, lightDir), 0.0f);
-            
-            // Specular
-            vec3 reflection = reflect(-lightDir, normal);
-            
-            float spec = (diff > 0.0) ? pow(max(dot(viewDir, reflection), 0.0), 16.0) : 0.0;
-            
-            vec4 lightContrib;
-            if (lightType[i] == 0u) {
-                lightContrib = ((diff * kd) + (spec * ks)) * kt * intensity[i];
-            } else {
-                float dist = length(lightWorldPos - worldPos);
-                float attenuation = intensity[i] / (1.0f + 0.09f * dist + 0.032f * dist * dist);
-                lightContrib = ((diff * kd) + (spec * ks)) * kt * attenuation;
+            else {
+                vec2 specUV = isTiled ? tiledTextureCoords : textureCoords;
+                vec4 ks = hasSpec ? texture(specularTexture, specUV) * specular[i] : specular[i];
+                light = CalcNonPBRLighting(lightPos[i], normal, kt, kd, ks, intensity[i], lightType[i]);
             }
-            
-            
+
             float shadow = 1.0;
 
             if (lightCastsShadow[i] == 1) {
-                if (lightType[i] == 0u) {
+                if (lightType[i] == false) {
                     shadow = ShadowCalculation();
                 }
-                else if (lightType[i] == 1u) {
+                else if (lightType[i] == true) {
                     int num = numPointShadow[i];
                     if (num >= 0 && num < MAX_SHADOW_CASTERS) {
-                        shadow = PointShadowCalculation(worldPos, lightWorldPos, num);
+                        shadow = PointShadowCalculation(worldPos, lightPos[i], num);
                     }
                 }
             }
-
-            phongResult += lightContrib * shadow;
+            
+            result += light * shadow;
         }
     }
-    fragColor = phongResult;
+
+    float exposure = 1.5f;
+    vec3 toneMapped = vec3(1.0f) - exp(-result.xyz * exposure);
+    fragColor = vec4(pow(toneMapped, vec3(1.0/2.2)), result.a);
 }

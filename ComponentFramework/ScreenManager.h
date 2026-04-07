@@ -1,6 +1,5 @@
 #pragma once
-#include "ProjectSettings.h"
-#include "ProjectSettingsManager.h"
+#include "SettingsConfig.h"
 
 enum class Source {
 	EditorUI,
@@ -17,7 +16,7 @@ public:
 		return instance;
 	}
 
-	void Initialize(SDL_Window* window_);
+	void Initialize(SDL_Window* window_, const SettingsConfig& cfg_ = {});
 
 	/// <summary>
 	/// Call anywhere where a window resize might happen, 
@@ -42,7 +41,7 @@ public:
 	int getTargetFPS() const { return cfg.targetFPS; }
 	float getRenderAspectRatio() const { return static_cast<float>(cfg.renderWidth) / static_cast<float>(cfg.renderHeight); }
 	float getDisplayAspectRatio() const { return static_cast<float>(cfg.displayWidth) / static_cast<float>(cfg.displayHeight); }
-	const ProjectSettings& getConfig() const { return cfg; }
+	const SettingsConfig& getConfig() const { return cfg; }
 	SDL_Window* getWindow() const { return window; }
 
 private:
@@ -65,5 +64,5 @@ private:
 	}
 
 	SDL_Window* window = nullptr;
-	ProjectSettings& cfg = ProjectSettingsManager::getInstance().Get();
+	SettingsConfig cfg;
 };

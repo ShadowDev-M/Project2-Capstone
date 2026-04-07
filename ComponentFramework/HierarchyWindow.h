@@ -44,14 +44,6 @@ private:
 	void HandleDragDrop(const std::string& actorName_, Ref<Actor> actor_);
 	void UpdateHierarchyGraph();
 
-	// for templated actors
-	void SpawnTemplatePopup();
-	void CreateEmptyActor();
-	void CreateMeshActor(const std::string& actorName, const std::string& engineMeshRelPath);
-	void CreateLightActor(LightType type);
-	void CreateCameraActor();
-	Vec3 GetSpawnPosition() const;
-
 public:
 	void UpdateHierarchyNextFrame() {
 		changeMade = true;

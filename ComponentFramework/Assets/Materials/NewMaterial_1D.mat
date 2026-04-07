@@ -1,0 +1,6 @@
+<Material>
+    <Diffuse>Textures/1001-BaseColor.png</Diffuse>
+    <Normal>Textures/1001-Normal.png</Normal>
+    <Roughness>Textures/1001-Roughness.png</Roughness>
+    <Metallic>Textures/T_SteampunkDoor_M.png</Metallic>
+</Material>

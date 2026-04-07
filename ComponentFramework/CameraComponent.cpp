@@ -30,9 +30,7 @@ Matrix4 CameraComponent::GetProjectionMatrix() const {
 	if (m_projectionType == ProjectionType::Orthographic) {
 		float h = m_orthoSize;
 		float w = h * aspectRatio;
-		//instead of near clip, farclip like perspective, orthographic needs -farclip, farclip because instead of starting from the camera, it starts at a certain 'slice' of space
-		// then it needs to render things both in front of the slice (-farclip), and behind the slice (farclip), otherwise you will have weird rendering cuts when rotating or moving
-		return MMath::orthographic(-w, w, -h, h, -m_farClip, m_farClip);
+		return MMath::orthographic(-w, w, -h, h, m_nearClip, m_farClip);
 	}
 	else {
 		return MMath::perspective(m_fov, aspectRatio, m_nearClip, m_farClip);

@@ -1,0 +1,20 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="16.871725" y="0" z="-16.900007"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </TransformComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
+    </TilingSettings>
+    <MeshComponent name="SM_Gear_Large"/>
+    <MaterialComponent name="hammer_BaseColor"/>
+    <ShaderComponent name="MultiPhong"/>
+    <ScriptComponent name="GearTurn" e0="10" e1="9"/>
+</Actor>

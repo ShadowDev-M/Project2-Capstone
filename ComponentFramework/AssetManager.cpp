@@ -7,123 +7,50 @@
 #include "ShadowSettings.h"
 #include "TilingSettings.h"
 
-void AssetManager::LoadEngineAssets()
-{
-    SearchPath& sp = SearchPath::getInstance();
-    const fs::path& engineRoot = sp.GetEngineRoot();
-    if (engineRoot.empty() || !fs::exists(engineRoot)) return;
-
-    // helper lambdas for interal loading of component types
-    auto loadEngineMesh = [&](const fs::path& path) {
-        std::string stem = path.stem().string();
-        AssetKey key{ "__engine__" + stem, "MeshComponent" };
-        if (engineAssetMap.count(key)) return;
-        Ref<MeshComponent> mesh = std::make_shared<MeshComponent>(nullptr, path.string().c_str());
-        AnimationSystem::getInstance().PushMeshToWorker(mesh);
-        engineAssetMap[key] = mesh;
-        };
-    auto loadEngineTexture = [&](const fs::path& path) {
-        std::string stem = path.stem().string();
-        AssetKey key{ "__engine__" + stem, "MaterialComponent" };
-        if (engineAssetMap.count(key)) return;
-        Ref<MaterialComponent> mat = std::make_shared<MaterialComponent>(nullptr, path.string().c_str());
-        mat->OnCreate();
-        engineAssetMap[key] = mat;
-        };
-
-    for (auto& a : sp.FindByExtension(sp.GetEngineRoot(), "Meshes", { ".obj", ".fbx" })) loadEngineMesh(a);
-    for (auto& a : sp.FindByExtension(sp.GetEngineRoot(), "Textures", { ".png", ".jpg", ".jpeg" })) loadEngineTexture(a);
-    for (auto& a : sp.FindByExtension(sp.GetEngineRoot(), "Icons", { ".png", ".jpg", ".jpeg" })) loadEngineTexture(a);
-}
-
 void AssetManager::Refresh() {
     // snapshot of current maps, not a reference a full copy
     auto oldMap = assetMap;
     auto oldPaths = assetPaths;
 
+    assetMap.clear();
+    assetPaths.clear();
+    rawGLSLPaths.clear();
+    scenePaths.clear();
+    prefabPaths.clear();
+
     SearchPath& sp = SearchPath::getInstance();
-    
-    // for assets with component types
-    struct FileLoad { fs::path path; std::string folder; };
-    std::vector<FileLoad> allFiles;
 
     // basically this means that for a specific file to be loaded as a specific component, it must be in a specific folder
     // this was the easiest way I could think of so that different file types get loaded in properly as their respective components
     // because if I just search through one big open directory for all file types, things like .fbx meshes but turn into .fbx animations
     // it is recursive though, so we could do like Scripts/Player, or Animations/Player, it just needs that subfolder
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Meshes", { ".obj", ".fbx" })) allFiles.push_back({ a, "Meshes" });
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Textures", { ".png", ".jpg", ".jpeg" })) allFiles.push_back({ a, "Textures" });
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Materials", { ".mat" })) allFiles.push_back({ a, "Materials" });
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Shaders", { ".shader" })) allFiles.push_back({ a, "Shaders" });
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Scripts", { ".lua" })) allFiles.push_back({ a, "Scripts" });
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Animations", { ".gltf", ".fbx" })) allFiles.push_back({ a, "Animations" });
+    for (auto& a : sp.FindByExtension("Meshes", { ".obj", ".fbx" })) LoadMesh(a);
+    for (auto& a : sp.FindByExtension("Textures", { ".png", ".jpg", ".jpeg" })) LoadTexture(a);
+    for (auto& a : sp.FindByExtension("Materials", { ".mat" })) LoadMatManifest(a);
+    for (auto& a : sp.FindByExtension("Shaders", { ".glsl" })) rawGLSLPaths.push_back(a); // .shader manifests are the actual shader components, these are purely just to create them
+    for (auto& a : sp.FindByExtension("Shaders", { ".shader" })) LoadShaderManifest(a);   // could always do a rename thing though where its no longer .glsl, and split into .frag, .vert, etc, and it detects via same names
+                                                                                          // would still face the same issues though when creating shaders, how can you tell apart a shader that has different naming schemes i.e outline.vert and phong.frag
+    for (auto& a : sp.FindByExtension("Scripts", { ".lua" })) LoadScript(a);
+    for (auto& a : sp.FindByExtension("Animations", { ".gltf", ".fbx" })) LoadAnimation(a);
+    for (auto& a : sp.FindByExtension("Scenes", { ".scene" })) LoadScene(a);
+    for (auto& a : sp.FindByExtension("Prefabs", { ".prefab" })) LoadPrefab(a);
 
-    std::unordered_set<AssetKey, AssetKeyHasher> currentKeys;
+    // checks the old and current map to find any actors that might have been deleted or edited externally
+    for (auto& [key, oldComponent] : oldMap) {
+        auto newIt = assetMap.find(key);
 
-    // .shader manifests are the actual shader components, these are purely just to create them
-    // could always do a rename thing though where its no longer .glsl, and split into .frag, .vert, etc, and it detects via same names
-    // would still face the same issues though when creating shaders, how can you tell apart a shader that has different naming schemes i.e outline.vert and phong.frag
-    rawGLSLPaths.clear();
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Shaders", { ".glsl" })) rawGLSLPaths.push_back(a); 
-    
-    scenePaths.clear();
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Scenes", { ".scene" })) LoadScene(a);
-    
-    prefabPaths.clear();
-    for (auto& a : sp.FindByExtension(sp.GetRoot(), "Prefabs", { ".prefab" })) LoadPrefab(a);
-
-    // now checks each indivual file and folder, and only reloads if it detects the file has been modifed or is a new file
-    for (auto& [path, folder] : allFiles) {
-        std::string ext = path.extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower); // convert to lowercase for extension check
-        std::string stem = path.stem().string();
-
-        // finding the component type by file extension
-        std::string type;
-        if (ext == ".obj" || (ext == ".fbx" && folder == "Meshes")) type = "MeshComponent";
-        else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".mat") type = "MaterialComponent";
-        else if (ext == ".shader") type = "ShaderComponent";
-        else if (ext == ".lua") type = "ScriptAbstract";
-        else if (ext == ".gltf" || (ext == ".fbx" && folder == "Animations")) type = "Animation";
-
-        if (type.empty()) continue;
-
-        AssetKey key{ stem, type };
-        currentKeys.insert(key);
-
-        if (!HasFileChanged(path)) {
-            if (assetMap.count(key)) continue;
+        if (newIt == assetMap.end()) {
+            // asset got deleted
+            NotifyActors(key.name, key.componentType, oldComponent);
         }
-
-        assetMap.erase(key);
-        assetPaths.erase(key);
-
-        Ref<Component> oldComp; 
-        auto oldIt = oldMap.find(key);
-        if (oldIt != oldMap.end()) oldComp = oldIt->second;
-
-        if (type == "MeshComponent") LoadMesh(path);
-        else if (type == "MaterialComponent" && ext == ".mat") LoadMatManifest(path);
-        else if (type == "MaterialComponent") LoadTexture(path);
-        else if (type == "ShaderComponent") LoadShaderManifest(path);
-        else if (type == "ScriptAbstract") LoadScript(path);
-        else if (type == "Animation") LoadAnimation(path);
-
-        RecordFileTime(path);
-
-        if (oldComp) {
-            auto newIt = assetMap.find(key);
-            if (newIt != assetMap.end() && newIt->second.get() != oldComp.get()) {
-                ReplaceComponent(oldComp, newIt->second, type);
-            }
+        else if (newIt->second.get() != oldComponent.get()) {
+            // incase of an external hotswap
+            ReplaceComponent(oldComponent, newIt->second, key.componentType);
         }
     }
-    
-    for (auto& [key, oldComp] : oldMap) {
-        if (!currentKeys.count(key)) {
-            NotifyActors(key.name, key.componentType, oldComp);
-        }
-    }
+
+    // TODO: for testing, delete when window is setup
+    Debug::Info("AssetManager: Refresh complete. " + std::to_string(assetMap.size()) + " assets." + " GLSL: " + std::to_string(rawGLSLPaths.size()), __FILE__, __LINE__);
 }
 
 void AssetManager::RefreshSingle(const fs::path& absolutePath) {
@@ -386,24 +313,6 @@ std::vector<std::pair<std::string, std::string>> AssetManager::GetAllAssetKeyPai
     return pairs;
 }
 
-bool AssetManager::HasFileChanged(const fs::path& path) const
-{
-    std::error_code ec;
-    auto lastWrite = fs::last_write_time(path, ec);
-    if (ec) return true;
-
-    auto it = fileTimes.find(path.string());
-    if (it == fileTimes.end()) return true;
-    return it->second != lastWrite;
-}
-
-void AssetManager::RecordFileTime(const fs::path& path)
-{
-    std::error_code ec;
-    auto t = fs::last_write_time(path, ec);
-    if (!ec) fileTimes[path.string()] = t;
-}
-
 void AssetManager::LoadMesh(const fs::path& path) {
     std::string stem = path.stem().string();
     AssetKey key{ stem, "MeshComponent" };
@@ -422,7 +331,7 @@ void AssetManager::LoadTexture(const fs::path& path) {
     AssetKey key{ stem, "MaterialComponent" };
     if (assetMap.count(key)) return;
 
-    auto mat = std::make_shared<MaterialComponent>(nullptr, path.string().c_str(), "", "");
+    auto mat = std::make_shared<MaterialComponent>(nullptr, path.string().c_str(), "", "", "", "");
     if (mat->OnCreate()) {
         assetMap[key] = mat;
         assetPaths[key] = path;
@@ -447,10 +356,12 @@ void AssetManager::LoadMatManifest(const fs::path& path) {
     std::string diff = getPath("Diffuse");
     std::string spec = getPath("Specular");
     std::string norm = getPath("Normal");
+    std::string rough = getPath("Roughness");
+    std::string metal = getPath("Metallic");
 
     if (diff.empty()) return;
 
-    auto mat = std::make_shared<MaterialComponent>(nullptr, diff.c_str(), spec.c_str(), norm.c_str());
+    auto mat = std::make_shared<MaterialComponent>(nullptr, diff.c_str(), spec.c_str(), norm.c_str(), rough.c_str(), metal.c_str());
 
     if (mat->OnCreate()) {
         std::string name = path.stem().string();

@@ -119,10 +119,6 @@ void Renderer::ShadowPass()
 
 			float orthoSize = LC->getShadowOrthoSize();
 
-			if (SceneGraph::getInstance().GetMainCamera()->GetComponent<CameraComponent>()->getType() == ProjectionType::Orthographic) {
-				orthoSize += SceneGraph::getInstance().GetMainCamera()->GetComponent<CameraComponent>()->getOrthoSize();
-			}
-
 			Matrix4 lightProjection = MMath::orthographic(
 				-orthoSize, orthoSize,
 				-orthoSize, orthoSize,
@@ -257,6 +253,7 @@ void Renderer::RenderSceneView()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_FRAMEBUFFER_SRGB);
 	glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 
 	UploadLightUniforms(ctx);
@@ -354,9 +351,9 @@ void Renderer::UploadShadowUniforms(Ref<ShaderComponent> shader) const
 	// Skylight
 	FBOData& shadowFBO = FBOManager::getInstance().getFBO(FBO::ShadowMap);
 	if (shadowFBO.isCreated && info.hasSky) {
-		glActiveTexture(GL_TEXTURE3);
+		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, shadowFBO.texture);
-		glUniform1i(glGetUniformLocation(shader->GetProgram(), "shadowMap"), 3);
+		glUniform1i(glGetUniformLocation(shader->GetProgram(), "shadowMap"), 5);
 		glUniform3fv(glGetUniformLocation(shader->GetProgram(), "shadowLightDir"), 1, &info.LightDir.x);
 	}
 
@@ -368,10 +365,10 @@ void Renderer::UploadShadowUniforms(Ref<ShaderComponent> shader) const
 		FBOData& cubeFBO = FBOManager::getInstance().getFBO(CubeMapFBO[i]);
 		if (!cubeFBO.isCreated) continue;
 
-		glActiveTexture(GL_TEXTURE4 + i);
+		glActiveTexture(GL_TEXTURE6 + i);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeFBO.texture);
 		std::string name = "pointShadowMaps[" + std::to_string(i) + "]";
-		glUniform1i(glGetUniformLocation(shader->GetProgram(), name.c_str()), 4 + i);
+		glUniform1i(glGetUniformLocation(shader->GetProgram(), name.c_str()), 6 + i);
 	}
 
 	for (int i = 0; i < MAX_SHADOW_CASTERS; i++) {
@@ -466,22 +463,46 @@ void Renderer::RenderActors(const RenderContext& ctx) const
 		glBindTexture(GL_TEXTURE_2D, material->getDiffuseID());
 		glUniform1i(shader->GetUniformID("diffuseTexture"), 0);
 		
-		bool hasSpec = material->getSpecularID() != 0;
+		glUniform1i(shader->GetUniformID("isPBR"), material->getIsPBR());
+		
 		bool hasNorm = material->getNormalID() != 0;
-		glUniform1i(shader->GetUniformID("hasSpec"), hasSpec ? 1 : 0);
-		glUniform1i(shader->GetUniformID("hasNorm"), hasNorm ? 1 : 0);
-
-		if (hasSpec) {
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, material->getSpecularID());
-			glUniform1i(shader->GetUniformID("specularTexture"), 1);
-		}
+		glUniform1i(shader->GetUniformID("hasNorm"), hasNorm);
 		if (hasNorm) {
-			glActiveTexture(GL_TEXTURE2);
+			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, material->getNormalID());
-			glUniform1i(shader->GetUniformID("normalTexture"), 2);
+			glUniform1i(shader->GetUniformID("normalTexture"), 1);
 		}
+		if (material->getIsPBR()) {
+			glUniform1i(shader->GetUniformID("hasSpec"), 0);
 
+			bool hasRough = material->getRoughnessID() != 0;
+			glUniform1i(shader->GetUniformID("hasRough"), hasRough);
+			if (hasRough) {
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, material->getRoughnessID());
+				glUniform1i(shader->GetUniformID("roughnessTexture"), 2);
+			}
+
+			bool hasMetal = material->getMetallicID() != 0;
+			glUniform1i(shader->GetUniformID("hasMetal"), hasMetal);
+			if (hasMetal) {
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_2D, material->getMetallicID());
+				glUniform1i(shader->GetUniformID("metallicTexture"), 3);
+			}
+		}
+		else {
+			glUniform1i(shader->GetUniformID("hasRough"), 0);
+			glUniform1i(shader->GetUniformID("hasMetal"), 0);
+
+			bool hasSpec = material->getSpecularID() != 0;
+			glUniform1i(shader->GetUniformID("hasSpec"), hasSpec);
+			if (hasSpec) {
+				glActiveTexture(GL_TEXTURE4);
+				glBindTexture(GL_TEXTURE_2D, material->getSpecularID());
+				glUniform1i(shader->GetUniformID("specularTexture"), 4);
+			}
+		}
 		mesh->Render(GL_TRIANGLES);
 	}
 }

@@ -2,6 +2,7 @@
 #include "SceneManager.h"
 #include "Timer.h"
 #include "Window.h"
+#include "Scene3GUI.h"
 #include "EditorManager.h"
 #include "SceneGraph.h"
 #include "ScreenManager.h"
@@ -10,42 +11,37 @@
 #include "Renderer.h"
 #include "InputManager.h"
 #include "PhysicsSystem.h"
-#include "ColliderDebug.h"
-#include "ProjectSettingsManager.h"
-#include "SceneLoader.h"
-#include "LightingSystem.h"
 
 SceneManager::SceneManager() :
-	window{ nullptr }, timer{ nullptr }, isRunning{ false } {
+	currentScene{ nullptr }, window{ nullptr }, timer{ nullptr },
+	isRunning{ false }, fullScreen{ false } {
 	Debug::Info("Starting the SceneManager", __FILE__, __LINE__);
 }
 
 SceneManager::~SceneManager() {
 	Debug::Info("Deleting the SceneManager", __FILE__, __LINE__);
 
-	LightingSystem::getInstance().ClearActors();
-	PhysicsSystem::getInstance().ClearActors();
-	CollisionSystem::getInstance().ClearActors();
-	SceneGraph::getInstance().OnDestroy();
-	AnimationSystem::getInstance().StopMeshLoadingWorker();
-	// AudioManager::getInstance().Shutdown();
-
-#ifdef ENGINE_EDITOR
-	ColliderDebug::getInstance().OnDestroy();
-
 	if (EditorManager::getInstance().IsInitialized()) {
 		EditorManager::getInstance().Shutdown();
 	}
-#endif
 
 	Renderer::getInstance().OnDestroy();
 	FBOManager::getInstance().OnDestroy();
-	AssetManager::getInstance().RemoveAllAssets();
+
+	if (currentScene) {
+		currentScene->OnDestroy();
+		delete currentScene;
+		currentScene = nullptr;
+	}
 
 	if (timer) {
 		delete timer;
 		timer = nullptr;
 	}
+
+	AnimationSystem::getInstance().StopMeshLoadingWorker();
+	AssetManager::getInstance().RemoveAllAssets();
+	SceneGraph::getInstance().OnDestroy();
 
 	if (window) {
 		delete window;
@@ -55,29 +51,27 @@ SceneManager::~SceneManager() {
 
 bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	SearchPath::getInstance().Initialize(fs::current_path() / "Assets");
-	SearchPath::getInstance().InitializeEngineAssets(fs::current_path() / "EngineAssets");
-	
-	ProjectSettings& cfg = ProjectSettingsManager::getInstance().Get();	
+
+	window = new Window();
+	if (!window->OnCreate(name_, width_, height_)) {
+		Debug::FatalError("Failed to initialize Window object", __FILE__, __LINE__);
+		return false;
+	}
+
+	// filling out config file & initializing screenmanager
+	SettingsConfig cfg;
 	cfg.windowTitle = name_;
 	cfg.renderWidth = width_;
 	cfg.renderHeight = height_;
 	cfg.displayWidth = width_;
 	cfg.displayHeight = height_;
-
-	ProjectSettingsManager::getInstance().LoadDefault();
-
-	window = new Window();
-	if (!window->OnCreate(cfg.windowTitle, cfg.displayWidth, cfg.displayHeight)) {
-		Debug::FatalError("Failed to initialize Window object", __FILE__, __LINE__);
-		return false;
-	}
-	ScreenManager::getInstance().Initialize(window->getWindow());
+	ScreenManager::getInstance().Initialize(window->getWindow(), cfg);
 
 	// creating FBOs
 #ifdef ENGINE_EDITOR
-	FBOManager::getInstance().CreateFBO(FBO::Scene, cfg.renderWidth, cfg.renderHeight);
-	FBOManager::getInstance().CreateFBO(FBO::Game, cfg.renderWidth, cfg.renderHeight);
-	FBOManager::getInstance().CreateFBO(FBO::ColorPicker, cfg.renderWidth, cfg.renderHeight);
+	FBOManager::getInstance().CreateFBO(FBO::Scene, width_, height_);
+	FBOManager::getInstance().CreateFBO(FBO::Game, width_, height_);
+	FBOManager::getInstance().CreateFBO(FBO::ColorPicker, width_, height_);
 	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowMap, 1024, 1024);
 	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowCubeMap, 1024, 1024, true);
 	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowCubeMap1, 1024, 1024, true);
@@ -85,7 +79,9 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	FBOManager::getInstance().CreateShadowFBO(FBO::ShadowCubeMap3, 1024, 1024, true);
 #endif
 
-	if (!Renderer::getInstance().OnCreate()) { return false; }
+	if (!Renderer::getInstance().OnCreate()) {
+		return false;
+	}
 
 	timer = new Timer();
 	if (timer == nullptr) {
@@ -94,37 +90,12 @@ bool SceneManager::Initialize(std::string name_, int width_, int height_) {
 	}
 
 	AnimationSystem::getInstance().StartMeshLoadingWorker();
+
 	AssetManager::getInstance().Initialize();
-	AssetManager::getInstance().LoadEngineAssets();
-	ColliderDebug::getInstance().OnCreate();
 
-	{
-		const SceneListData* startup = cfg.GetStartupScene();
-		if (startup) {
-			LoadSceneFile(startup->name);
-		}
-		else {
-			fs::path dir = SearchPath::getInstance().EnsureSubfolder("Scenes");
-			fs::path existingScene = dir / "SampleScene.scene";
-			std::string stem;
-
-			if (fs::exists(existingScene)) {
-				stem = "SampleScene";
-			}
-			else {
-				stem = AssetManager::getInstance().GenerateUniqueFileName(dir, "SampleScene", ".scene");
-				fs::path out = dir / (stem + ".scene");
-
-				XMLDocument doc;
-				auto* root = doc.NewElement("Scene");
-				root->InsertEndChild(doc.NewElement("Actors"));
-				doc.InsertFirstChild(root);
-				doc.SaveFile(out.string().c_str());
-			}
-
-			LoadSceneFile(stem);
-		}
-	}
+	/********************************   Default first scene   ***********************/
+	BuildNewScene(SCENE_NUMBER::SCENE3GUI);
+	/********************************************************************************/
 	
 #ifdef ENGINE_EDITOR
 	EditorManager& editor = EditorManager::getInstance();
@@ -143,28 +114,23 @@ void SceneManager::Run() {
 	isRunning = true;
 
 	EditorManager& editor = EditorManager::getInstance();
-	const ProjectSettings& cfg = ScreenManager::getInstance().getConfig();
+	const SettingsConfig& cfg = ScreenManager::getInstance().getConfig();
 
 	while (isRunning) {
 		timer->UpdateFrameTicks();
+
 		AnimationSystem::getInstance().ProcessMainThreadTasks();
 		HandleEvents();
 		Update(timer->GetDeltaTime());
 		Render();
-
-#ifdef ENGINE_EDITOR
 		editor.RenderEditorUI();
-#endif
-
 		SDL_GL_SwapWindow(window->getWindow());
+		
 		timer->LimitFrameRate(cfg.targetFPS, cfg.vsync);
 	}
 }
 
 void SceneManager::Update(float deltaTime) {
-	// is there a better way then just having it be constantly called in update
-	ProcessPendingLoad();
-
 	AnimationSystem::getInstance().Update(deltaTime);
 	InputManager::getInstance().update(deltaTime);
 	SceneGraph::getInstance().Update(deltaTime);
@@ -178,6 +144,8 @@ void SceneManager::Update(float deltaTime) {
 	PhysicsSystem::getInstance().Update(deltaTime);
 	CollisionSystem::getInstance().Update(deltaTime);
 #endif
+
+	// if (currentScene) currentScene->Update(deltaTime);
 }
 
 void SceneManager::Render() {
@@ -189,59 +157,17 @@ void SceneManager::Render() {
 	Renderer::getInstance().ShadowPass();
 	Renderer::getInstance().RenderSceneView();
 	Renderer::getInstance().RenderGameView();
-}
 
-void SceneManager::ProcessPendingLoad()
-{
-	if (!SceneLoader::getInstance().HasPending()) return;
-
-	SceneLoader::Request request = SceneLoader::getInstance().ConsumePending();
-	using Type = SceneLoader::RequestType;
-
-	if (request.type == Type::ByName) LoadSceneFile(request.name);
-	else if (request.type == Type::ById) {
-		const auto* s = ProjectSettingsManager::getInstance().Get().GetSceneById(request.id);
-		if (s) LoadSceneFile(s->name);
-		else return;
-	}
-	else if (request.type == Type::Next) {
-		int nextId = SceneLoader::GetActiveSceneId() + 1;
-		const auto* s = ProjectSettingsManager::getInstance().Get().GetSceneById(nextId);
-		if (s) LoadSceneFile(s->name);
-		else return;
-	}
-}
-
-void SceneManager::LoadSceneFile(const std::string& sceneName)
-{
-	// shutdown
-	AnimationSystem::getInstance().StopMeshLoadingWorker();
-	LightingSystem::getInstance().ClearActors();
-	PhysicsSystem::getInstance().ClearActors();
-	CollisionSystem::getInstance().ClearActors();
-	SceneGraph::getInstance().OnDestroy();
-
-	// load new scene
-	AnimationSystem::getInstance().StartMeshLoadingWorker();
-	SceneGraph::getInstance().OnCreate();
-	SceneGraph::getInstance().sceneFileName = sceneName;
-	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), sceneName.c_str());
-	ScreenManager::getInstance().setWindowTitle(sceneName);
-	int sceneId = ProjectSettingsManager::getInstance().Get().GetSceneIdByName(sceneName);
-	SceneLoader::SetActiveScene(sceneName, sceneId);
-
-	Debug::Info("Loaded scene: " + sceneName, __FILE__, __LINE__);
+	// if (currentScene) currentScene->Render();
 }
 
 void SceneManager::HandleEvents() {
+	EditorManager& editor = EditorManager::getInstance();
+
 	SDL_Event sdlEvent;
 	while (SDL_PollEvent(&sdlEvent)) { /// Loop over all events in the SDL queue
 
-#ifdef ENGINE_EDITOR
-		EditorManager::getInstance().HandleEvents(sdlEvent);
-#endif
-
-		InputManager::getInstance().HandleEvents(sdlEvent);
+		editor.HandleEvents(sdlEvent);
 
 		if (sdlEvent.type == SDL_WINDOWEVENT && sdlEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
 			ScreenManager::getInstance().HandleResize(sdlEvent.window.data1, sdlEvent.window.data2, Source::WindowDrag);
@@ -254,10 +180,46 @@ void SceneManager::HandleEvents() {
 		else if (sdlEvent.type == SDL_KEYDOWN) {
 			switch (sdlEvent.key.keysym.scancode) {
 				[[fallthrough]]; /// C17 Prevents switch/case fallthrough warnings
+			
+
+			case SDL_SCANCODE_F1:
+				BuildNewScene(SCENE_NUMBER::SCENE3GUI);
+				break;
 
 			default:
 				break;
 			}
 		}
+		if (currentScene == nullptr) { /// Just to be careful
+			Debug::FatalError("No currentScene", __FILE__, __LINE__);
+			isRunning = false;
+			return;
+		}
+		currentScene->HandleEvents(sdlEvent);
 	}
 }
+
+bool SceneManager::BuildNewScene(SCENE_NUMBER scene) {
+	bool status;
+
+	if (currentScene != nullptr) {
+		currentScene->OnDestroy();
+		delete currentScene;
+		currentScene = nullptr;
+	}
+
+	switch (scene) {
+	case SCENE_NUMBER::SCENE3GUI:
+		currentScene = new Scene3GUI();
+		status = currentScene->OnCreate();
+		break;
+
+	default:
+		Debug::Error("Incorrect scene number assigned in the manager", __FILE__, __LINE__);
+		currentScene = nullptr;
+		return false;
+	}
+	return true;
+}
+
+

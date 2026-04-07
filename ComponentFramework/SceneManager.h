@@ -1,6 +1,8 @@
 #ifndef SCENEMANAGER_H
 #define SCENEMANAGER_H
 
+
+
 class SceneManager {
 public:
 
@@ -10,17 +12,32 @@ public:
 	bool Initialize(std::string name_, int width_, int height_);
 	void HandleEvents();
 
+
 private:
+	enum class SCENE_NUMBER {
+		SCENE0g = 0,
+		SCENEP0 = 4,
+		SCENE1g = 1,
+		SCENE2g = 2,
+		SCENE3GUI = 3,
+		SCENE4,
+		SCENE5,
+		SCENE6
+	};
+
 	void Update(float deltaTime);
 	void Render();
 
-	void ProcessPendingLoad();
-	void LoadSceneFile(const std::string& sceneName);
-
+	class Scene* currentScene;
 	class Timer* timer;
 	class Window* window;
 
 	bool isRunning;
+	bool fullScreen;
+	bool BuildNewScene(SCENE_NUMBER scene_);
 };
 
+
 #endif // SCENEMANAGER_H
+
+

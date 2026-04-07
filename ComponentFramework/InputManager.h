@@ -137,7 +137,7 @@ public:
 	ImVec2 gamePos;
 	ImVec2 gameSize;
 
-	void HandleEvents(const SDL_Event& sdlEvent);
+	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph);
 
 	void update(const float deltaTime) override;
 };
@@ -232,8 +232,8 @@ public:
 
 	bool debugClearDebugSelected(std::pair<KeyBinding, std::tuple<bool>> input, SceneGraph* sceneGraph);
 
-	void HandleEvents(const SDL_Event& sdlEvent) {
-		mouse.HandleEvents(sdlEvent);
+	void HandleEvents(const SDL_Event& sdlEvent, SceneGraph* sceneGraph) {
+		mouse.HandleEvents(sdlEvent, sceneGraph);
 
 		gamepad.HandleEvents(sdlEvent);
 	}

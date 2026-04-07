@@ -50,7 +50,7 @@ void XMLObjectFile::runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XML
 
 }
 
-void XMLObjectFile::WriteMatManifest(const fs::path& outputPath, const std::string& diffuseRelative, const std::string& specularRelative, const std::string& normalRelative)
+void XMLObjectFile::WriteMatManifest(const fs::path& outputPath, const std::string& diffuseRelative, const std::string& specularRelative, const std::string& normalRelative, const std::string& roughnessRelative, const std::string& metallicRelative)
 {
     XMLDocument doc;
     auto* root = doc.NewElement("Material");
@@ -67,6 +67,8 @@ void XMLObjectFile::WriteMatManifest(const fs::path& outputPath, const std::stri
     addEl("Diffuse", diffuseRelative);
     addEl("Specular", specularRelative);
     addEl("Normal", normalRelative);
+    addEl("Roughness", roughnessRelative);
+    addEl("Metallic", metallicRelative);
 
     doc.SaveFile(outputPath.string().c_str());
 }
@@ -691,6 +693,8 @@ bool SceneGraph::RenameActor(const std::string& oldName_, const std::string& new
 void SceneGraph::SaveFile(std::string name) const {
     XMLObjectFile::writeSceneFile(name);
 
+    XMLObjectFile::writeSceneTags(name, allTags);
+
     for (auto& obj : ActorNameToId) {
 
         XMLObjectFile::writeActor(obj.first);
@@ -748,7 +752,7 @@ void SceneGraph::SaveFile(std::string name) const {
 template<typename ComponentTemplate>
 inline int XMLObjectFile::writeReferenceComponent(std::string name, Ref<Component> toWrite)
 {
-    std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+    std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
     const char* id = path.c_str();
 
 

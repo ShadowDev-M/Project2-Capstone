@@ -4,7 +4,6 @@
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "LightingSystem.h"
-#include "Renderer.h"
 
 HierarchyWindow::HierarchyWindow(SceneGraph* sceneGraph_) : sceneGraph(sceneGraph_) {
 	EditorManager::getInstance().RegisterWindow("Hierarchy", true);
@@ -48,14 +47,9 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 		// TODO: actual functionaility for the add button, use for creating empty and premade actors, like preset camera, shapes, etc (would be the same extact options as empty right click)
 		ImGui::AlignTextToFramePadding();
 		if (ImGui::Button("+##AddActors", ImVec2(20.0f, 0.0f))) {
-			ImGui::OpenPopup("##CreateActorPopup");
+			//ImGui::OpenPopup("##TagManager");
+			//tagBuffer.clear();
 		}
-
-		if (ImGui::BeginPopup("##CreateActorPopup")) {
-			SpawnTemplatePopup();
-			ImGui::EndPopup();
-		}
-
 		ImGui::SameLine();
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -63,8 +57,19 @@ void HierarchyWindow::ShowHierarchyWindow(bool* pOpen)
 		ImGui::Separator();
 
 		// empty space right click
-		if (ImGui::BeginPopupContextWindow("##RightClickHierarchyWindow", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
-			SpawnTemplatePopup();
+		if (ImGui::BeginPopupContextWindow("##RightClickHierarchyWindow")) {
+			
+			if (ImGui::MenuItem("Create Empty Actor")) {
+				std::string actorName = "EmptyActor";
+				std::string newActorName = sceneGraph->GenerateUniqueActorName(actorName);
+
+				Ref<Actor> newActor = std::make_shared<Actor>(nullptr, newActorName);
+				RECORD newActor->AddComponent<TransformComponent>(newActor.get(), Vec3(0.0f, 0.0f, 0.0f),
+					Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)), Vec3(1.0f, 1.0f, 1.0f));
+				newActor->OnCreate();
+				sceneGraph->AddActor(newActor);	
+			}
+			
 			ImGui::EndPopup();
 		}
 
@@ -417,130 +422,4 @@ std::unordered_map<std::string, HierarchyNode> HierarchyWindow::SetChildNodesRec
 	}
 	
 	return childActors;
-}
-
-void HierarchyWindow::SpawnTemplatePopup()
-{
-	if (ImGui::MenuItem("Create Empty")) {
-		CreateEmptyActor();
-	}
-
-	ImGui::Separator();
-
-	if (ImGui::BeginMenu("3D Object")) {
-		if (ImGui::MenuItem("Cube")) CreateMeshActor("Cube", "Meshes/Cube.obj");
-		if (ImGui::MenuItem("Sphere")) CreateMeshActor("Sphere", "Meshes/Sphere.obj");
-		if (ImGui::MenuItem("Capsule")) CreateMeshActor("Capsule", "Meshes/Capsule.obj");
-		if (ImGui::MenuItem("Plane")) CreateMeshActor("Plane", "Meshes/Plane.obj");
-		ImGui::EndMenu();
-	}
-
-	if (ImGui::BeginMenu("Light")) {
-		if (ImGui::MenuItem("Sky Light"))   CreateLightActor(LightType::Sky);
-		if (ImGui::MenuItem("Point Light")) CreateLightActor(LightType::Point);
-		ImGui::EndMenu();
-	}
-
-	if (ImGui::MenuItem("Camera")) {
-		CreateCameraActor();
-	}
-}
-
-void HierarchyWindow::CreateEmptyActor()
-{
-	std::string name = sceneGraph->GenerateUniqueActorName("EmptyActor");
-	Vec3 spawnPos = GetSpawnPosition();
-
-	Ref<Actor> actor = std::make_shared<Actor>(nullptr, name);
-	RECORD actor->AddComponent<TransformComponent>(
-		actor.get(),
-		spawnPos,
-		Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)),
-		Vec3(1.0f, 1.0f, 1.0f));
-	actor->OnCreate();
-	sceneGraph->AddActor(actor);
-	EditorManager::getInstance().SetLastSelected(actor->getId());
-	UpdateHierarchyNextFrame();
-}
-
-void HierarchyWindow::CreateMeshActor(const std::string& actorName, const std::string& engineMeshRelPath)
-{
-	Ref<MeshComponent> mesh = AssetManager::getInstance().GetEngineAsset<MeshComponent>(actorName);
-	if (!mesh) return;
-
-	// using fallback components
-	Ref<MaterialComponent> mat = Renderer::getInstance().GetFallBackMaterial();
-	Ref<ShaderComponent> shader = Renderer::getInstance().GetFallBackShader();
-
-	std::string name = sceneGraph->GenerateUniqueActorName(actorName);
-	Vec3 spawnPos = GetSpawnPosition();
-
-	Ref<Actor> actor = std::make_shared<Actor>(nullptr, name);
-	if (actorName == "Capsule") {
-		RECORD actor->AddComponent<TransformComponent>(
-			actor.get(),
-			spawnPos,
-			Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)),
-			Vec3(0.05f, 0.05f, 0.05f));
-	}
-	else {
-		RECORD actor->AddComponent<TransformComponent>(
-			actor.get(),
-			spawnPos,
-			Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)),
-			Vec3(1.0f, 1.0f, 1.0f));
-	}
-	actor->AddComponent(mesh);
-	actor->AddComponent(mat);
-	actor->AddComponent(shader);
-	actor->AddComponent<ShadowSettings>(actor.get(), true);
-	actor->OnCreate();
-	sceneGraph->AddActor(actor);
-	EditorManager::getInstance().SetLastSelected(actor->getId());
-	UpdateHierarchyNextFrame();
-}
-
-void HierarchyWindow::CreateLightActor(LightType type)
-{
-	std::string baseName = (type == LightType::Sky) ? "SkyLight" : "PointLight";
-	std::string name = sceneGraph->GenerateUniqueActorName(baseName);
-	Vec3 spawnPos = GetSpawnPosition();
-
-	Ref<Actor> actor = std::make_shared<Actor>(nullptr, name);
-	RECORD actor->AddComponent<TransformComponent>(
-		actor.get(),
-		spawnPos,
-		Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)),
-		Vec3(1.0f, 1.0f, 1.0f));
-	RECORD actor->AddComponent<LightComponent>(actor.get(), type);
-	actor->OnCreate();
-
-	sceneGraph->AddActor(actor);
-	LightingSystem::getInstance().AddActor(actor);
-	EditorManager::getInstance().SetLastSelected(actor->getId());
-	UpdateHierarchyNextFrame();
-}
-
-void HierarchyWindow::CreateCameraActor()
-{
-	std::string name = sceneGraph->GenerateUniqueActorName("Camera");
-	Vec3 spawnPos = GetSpawnPosition();
-
-	Ref<Actor> actor = std::make_shared<Actor>(nullptr, name);
-	RECORD actor->AddComponent<TransformComponent>(
-		actor.get(),
-		spawnPos,
-		Quaternion(1.0f, Vec3(0.0f, 0.0f, 0.0f)),
-		Vec3(1.0f, 1.0f, 1.0f));
-	RECORD actor->AddComponent<CameraComponent>(actor.get());
-	actor->OnCreate();
-	sceneGraph->AddActor(actor);
-	EditorManager::getInstance().SetLastSelected(actor->getId());
-	UpdateHierarchyNextFrame();
-}
-
-Vec3 HierarchyWindow::GetSpawnPosition() const
-{
-	const EditorCamera& cam = EditorManager::getInstance().getEditorCamera();
-	return cam.GetPosition() + cam.GetForward() * 5.0f;
 }

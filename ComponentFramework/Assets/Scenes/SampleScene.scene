@@ -1,3 +1,10 @@
 <Scene>
-    <Actors/>
+    <Tags>
+        <Tag value="Untagged"/>
+        <Tag value="MainCamera"/>
+        <Tag value="Player"/>
+        <Tag value="Ground"/>
+    </Tags>
+    <Actors>
+    </Actors>
 </Scene>

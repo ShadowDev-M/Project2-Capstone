@@ -111,6 +111,9 @@ private:
 
 	void CreateEditorIcons();
 
+	// temporary save file location
+	std::string tempSaveFile = "tempsave";
+
 public:
 	// Meyers Singleton (from JPs class)
 	static EditorManager& getInstance();
@@ -130,11 +133,9 @@ public:
 	bool isPlayMode() const { return currentMode == EditorMode::Play; }
 	bool isPaused() const { return currentMode == EditorMode::Pause; }
 
-	// EditorManager/Current scene saving/loading
+	// functions for editor states
 	void SaveScene(const std::string& name = "");
 	void LoadScene(const std::string& name = "");
-	
-	// editor state functions
 	void Play();
 	void Stop();
 	void Pause();
@@ -186,10 +187,4 @@ public:
 
 private:
 	SelectedAsset selectedAsset;
-
-	bool showProjectSettings = false;
-	void ShowProjectSettingsWindow();
-
-	// temporary save file location
-	std::string tempSaveFile = "tempsave";
 };

@@ -27,8 +27,8 @@ class XMLObjectFile {
 
     static void runCreateActorsOfElementChildren(SceneGraph* sceneGraph, XMLElement* actorElement, XMLElement* rootElement = nullptr);
 
-    static fs::path BuildPath(const std::string& relative, const fs::path& rootPath = SearchPath::getInstance().GetRoot()) {
-        fs::path path = rootPath / relative;
+    static fs::path BuildPath(const std::string& relative) {
+        fs::path path = SearchPath::getInstance().GetRoot() / relative;
         fs::create_directories(path.parent_path());
         return path;
     }
@@ -41,7 +41,7 @@ class XMLObjectFile {
 public:
     // manifest file creation
     // these manifests are basically just xmls but with different extension names
-    static void WriteMatManifest(const fs::path& outputPath, const std::string& diffuseRelative, const std::string& specularRelative = "", const std::string& normalRelative = "");
+    static void WriteMatManifest(const fs::path& outputPath, const std::string& diffuseRelative, const std::string& specularRelative = "", const std::string& normalRelative = "", const std::string& roughnessRelative = "", const std::string& metallicRelative = "");
     static void WriteShaderManifest(const fs::path& outputPath, const std::string& vertRel, const std::string& fragRel, const std::string& tessCtrlRel = "", const std::string& tessEvalRel = "", const std::string& geomRel = "");
 
     // prefab read and write
@@ -56,7 +56,7 @@ public:
         XMLNode* cRoot = doc.NewElement("Actor");
         doc.InsertFirstChild(cRoot);
         
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
 
         doc.SaveFile(path.c_str());
         return 0;
@@ -74,9 +74,56 @@ public:
         return 0;
     }
 
+    static int writeSceneTags(const std::string& sceneName, const std::vector<std::string>& tags)
+    {
+        std::string path = BuildPath("Scenes/" + sceneName + ".scene").string();
+        XMLDocument doc;
+
+        XMLError eResult = doc.LoadFile(path.c_str());
+        if (eResult != XML_SUCCESS) return eResult;
+
+        XMLNode* cRoot = doc.RootElement();
+
+        XMLElement* existing = cRoot->FirstChildElement("Tags");
+        if (existing) cRoot->DeleteChild(existing);
+
+        XMLElement* tagsElement = doc.NewElement("Tags");
+        for (const std::string& tag : tags) {
+            XMLElement* tagElement = doc.NewElement("Tag");
+            tagElement->SetAttribute("value", tag.c_str());
+            tagsElement->InsertEndChild(tagElement);
+        }
+        cRoot->InsertFirstChild(tagsElement);
+
+        return doc.SaveFile(path.c_str());
+    }
+
+    static std::vector<std::string> readSceneTags(const std::string& sceneName)
+    {
+        std::string path = BuildPath("Scenes/" + sceneName + ".scene").string();
+        
+        std::vector<std::string> tags;
+
+        XMLDocument doc;
+        if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return tags;
+
+        XMLNode* cRoot = doc.RootElement();
+        if (!cRoot) return tags;
+
+        XMLElement* tagsElement = cRoot->FirstChildElement("Tags");
+        if (!tagsElement) return tags;
+
+        for (XMLElement* tag = tagsElement->FirstChildElement("Tag"); tag != nullptr; tag = tag->NextSiblingElement("Tag")) {
+            const char* val = tag->Attribute("value");
+            if (val) tags.push_back(val);
+        }
+
+        return tags;
+    }
+
     static int writeActorTag(const std::string& actorName, const std::string& tag)
     {
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml").string();
 
         XMLDocument doc;
 
@@ -97,7 +144,7 @@ public:
 
     static std::string readActorTag(const std::string& actorName)
     {
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + actorName + ".xml").string();
 
         XMLDocument doc;
 
@@ -117,7 +164,7 @@ public:
     static void applyLightShadowSettings(const std::string& name, Ref<LightComponent> lc) {
         if (!lc) return;
 
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
 
         XMLDocument doc;
         if (doc.LoadFile(path.c_str()) != XML_SUCCESS) return;
@@ -256,7 +303,7 @@ public:
 
         */
 
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
 
         XMLDocument doc;
@@ -625,7 +672,7 @@ public:
     }
 
     static inline std::vector<float> getPublicVars(std::string name, int copy = 0) {
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
 
         XMLDocument doc;
@@ -686,7 +733,7 @@ public:
 
     template<typename ComponentTemplate>
     static int writeUniqueComponent(std::string name, Component* toWrite) {
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
         XMLDocument doc;
         
@@ -1140,7 +1187,7 @@ public:
     /// <returns>true if the component type exists within the XML file</returns>
     template<typename ComponentTemplate>
     static bool hasComponent(std::string name) {
-        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml", SearchPath::getInstance().GetEngineRoot()).string();
+        std::string path = BuildPath("Game Objects/" + SceneGraph::getInstance().sceneFileName + "/" + name + ".xml").string();
         const char* id = path.c_str();
 
         XMLDocument doc;

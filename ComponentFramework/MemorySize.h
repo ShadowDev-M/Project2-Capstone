@@ -15,9 +15,9 @@ struct AllocationInfo {
 
 
 inline std::unordered_map<void*, AllocationInfo>& GetAllocMap() {
-    static std::unordered_map<void*, AllocationInfo>* allocMap =
-        new std::unordered_map<void*, AllocationInfo>();
-    return *allocMap;
+    static std::unordered_map<void*, AllocationInfo> allocMap;
+
+    return allocMap;
 }
 
 inline void MemoryStale() {

@@ -1,0 +1,29 @@
+<Scene>
+    <Tags>
+        <Tag value="Untagged"/>
+        <Tag value="MainCamera"/>
+        <Tag value="Player"/>
+        <Tag value="Ground"/>
+    </Tags>
+    <Actors>
+        <BackGroundScaler>
+            <Wall/>
+        </BackGroundScaler>
+        <Floor/>
+        <Skylight/>
+        <MechanicalDoor>
+            <Pressure_Pad/>
+            <FramePart/>
+            <DoorEndRot/>
+            <DoorPart/>
+        </MechanicalDoor>
+        <Cube/>
+        <Player/>
+        <Camera/>
+        <PointLight/>
+        <PointLight_1D/>
+        <Part_1D/>
+        <Part_2D/>
+        <Part_3D/>
+    </Actors>
+</Scene>

@@ -154,17 +154,15 @@
     <ClInclude Include="MemoryWindow.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PhysicsSystem.h" />
-    <ClInclude Include="ProjectSettings.h" />
-    <ClInclude Include="ProjectSettingsManager.h" />
     <ClInclude Include="ProjectWindow.h" />
     <ClInclude Include="QuadraticSolver.h" />
     <ClInclude Include="Renderer.h" />
-    <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="SceneWindow.h" />
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="ScreenManager.h" />
     <ClInclude Include="ScriptAbstract.h" />
     <ClInclude Include="SearchPath.h" />
+    <ClInclude Include="SettingsConfig.h" />
     <ClInclude Include="ShadowSettings.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="TilingSettings.h" />
@@ -188,6 +186,8 @@
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="Raycast.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Scene3GUI.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptComponent.h" />
@@ -229,11 +229,9 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="PhysicsSystem.cpp" />
-    <ClCompile Include="ProjectSettingsManager.cpp" />
     <ClCompile Include="ProjectWindow.cpp" />
     <ClCompile Include="QuadraticSolver.cpp" />
     <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="SceneWindow.cpp" />
     <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="ScreenManager.cpp" />
@@ -279,6 +277,7 @@
     <ClCompile Include="MaterialComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
+    <ClCompile Include="Scene3GUI.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScriptComponent.cpp" />

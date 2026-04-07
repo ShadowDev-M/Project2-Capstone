@@ -14,7 +14,7 @@ class LightingSystem
 	LightingSystem& operator=(LightingSystem&&) = delete;
 
 	std::vector<Ref<Actor>> lightActors;
-	Vec4 ambientColor = Vec4(0.1f, 0.1f, 0.15f, 0.0f); // TODO: saving ambient light (global), can edit in editor
+	Vec4 ambientColor = Vec4(pow(0.3f, 2.2f), pow(0.3f, 2.2f), pow(0.35f, 2.2f), 0.0f); // TODO: saving ambient light (global), can edit in editor
 
 public:
 	// Meyers Singleton (from JPs class)

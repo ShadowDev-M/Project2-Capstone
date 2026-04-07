@@ -1,0 +1,4 @@
+<Material>
+    <Diffuse>Textures/PurpleTexture.png</Diffuse>
+    <Normal>Textures/Test_Normal.png</Normal>
+</Material>

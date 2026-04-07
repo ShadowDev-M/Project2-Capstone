@@ -75,8 +75,6 @@ public:
 	bool isRMBHeld() const { return m_rmbActive; }
 	bool isMMBHeld() const { return m_mmbActive; }
 
-	Vec3 GetForward() const;
-
 private:
 	// no longer using lookAt, now building the rotation quaternion
 	Quaternion BuildRotationQuat() const;
@@ -87,6 +85,7 @@ private:
 	void HandleLook3D(float deltaX, float deltaY);
 	void HandleFly3D(float deltaTime);
 
+	Vec3 GetForward() const;
 	Vec3 GetRight() const;
 	Vec3 GetUp() const;
 

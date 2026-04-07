@@ -2,9 +2,10 @@
 #include "ScreenManager.h"
 #include "FBOManager.h"
 
-void ScreenManager::Initialize(SDL_Window* window_)
+void ScreenManager::Initialize(SDL_Window* window_, const SettingsConfig& cfg_)
 {
     window = window_;
+    cfg = cfg_;
 
     SDL_SetWindowTitle(window, cfg.windowTitle.c_str());
     SDL_GL_SetSwapInterval(cfg.vsync ? 1 : 0);
