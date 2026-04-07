@@ -168,6 +168,9 @@ void SceneManager::Update(float deltaTime) {
 	AnimationSystem::getInstance().Update(deltaTime);
 	InputManager::getInstance().update(deltaTime);
 	SceneGraph::getInstance().Update(deltaTime);
+	
+	// remove if causing bugs
+	//bool windowFocused = (SDL_GetWindowFlags(window->getWindow()) & SDL_WINDOW_INPUT_FOCUS) != 0;
 
 #ifdef ENGINE_EDITOR
 	if (EditorManager::getInstance().isPlayMode()) {
@@ -243,10 +246,25 @@ void SceneManager::LoadSceneFile(const std::string& sceneName)
 	SceneGraph::getInstance().sceneFileName = sceneName;
 	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), sceneName.c_str());
 	ScreenManager::getInstance().setWindowTitle(sceneName);
-	int sceneId = ProjectSettingsManager::getInstance().Get().GetSceneIdByName(sceneName);
-	SceneLoader::SetActiveScene(sceneName, sceneId);
 
-	Debug::Info("Loaded scene: " + sceneName, __FILE__, __LINE__);
+	ProjectSettings& cfg = ProjectSettingsManager::getInstance().Get();
+	int sceneId = cfg.GetSceneIdByName(sceneName);
+	if (sceneId == -1) {
+		fs::path sceneDir = SearchPath::getInstance().EnsureSubfolder("Scenes");
+		fs::path scenePath = sceneDir / (sceneName + ".scene");
+		std::string relPath = SearchPath::getInstance().MakeRelative(scenePath).string();
+
+		SceneListData entry;
+		entry.name = sceneName;
+		entry.path = relPath;
+		cfg.sceneList.push_back(entry);
+		cfg.RebuildIds();
+		ProjectSettingsManager::getInstance().SaveDefault();
+		sceneId = cfg.GetSceneIdByName(sceneName);
+	}
+
+	SceneLoader::SetActiveScene(sceneName, sceneId);
+	Debug::Info("Loaded scene: " + sceneName + " (id=" + std::to_string(sceneId) + ")", __FILE__, __LINE__);
 }
 
 void SceneManager::HandleEvents() {

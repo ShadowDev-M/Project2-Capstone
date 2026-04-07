@@ -1,8 +1,8 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="-23.374559" y="-5.1999998" z="-23.540409"/>
-        <rotation w="0.99999994" x="4.0344908e-06" y="1.6987321e-06" z="-6.7930682e-06"/>
+        <position x="-14.490499" y="45.373032" z="-23.540001"/>
+        <rotation w="1" x="4.0340124e-06" y="1.6984513e-06" z="-6.7915407e-06"/>
         <scale x="0.79999894" y="0.8000012" z="0.80000073"/>
     </TransformComponent>
     <PhysicsComponent>
@@ -31,8 +31,8 @@
     </ShadowSettings>
     <TilingSettings>
         <isTiled state="0"/>
-        <tileScale x="2.3599999" y="2.0799999"/>
-        <tileOffset x="-0.75999999" y="2.4200001"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="SM_Crate_01"/>
     <MaterialComponent name="darker_metal"/>

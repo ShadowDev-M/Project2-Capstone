@@ -1,0 +1,19 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="0" y="0" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="10" y="10" z="10"/>
+    </TransformComponent>
+    <ShadowSettings>
+        <castShadow state="0"/>
+    </ShadowSettings>
+    <TilingSettings>
+        <isTiled state="1"/>
+        <tileScale x="200" y="200"/>
+        <tileOffset x="-9.1700001" y="4.1399999"/>
+    </TilingSettings>
+    <MeshComponent name="Plane"/>
+    <MaterialComponent name="darker_metal"/>
+    <ShaderComponent name="MultiPhong"/>
+</Actor>

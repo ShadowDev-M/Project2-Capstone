@@ -31,5 +31,6 @@
         <Part_3D/>
         <Floor_1D/>
         <Floor_2D/>
+        <NextLevelTrigger/>
     </Actors>
 </Scene>

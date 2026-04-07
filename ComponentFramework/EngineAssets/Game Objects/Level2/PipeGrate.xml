@@ -1,40 +1,40 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="-23.374559" y="-5.1999998" z="-23.540409"/>
-        <rotation w="0.99999994" x="4.0344908e-06" y="1.6987321e-06" z="-6.7930682e-06"/>
-        <scale x="0.79999894" y="0.8000012" z="0.80000073"/>
+        <position x="-2.1237431" y="-17.601273" z="4.9698277"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
     </TransformComponent>
     <PhysicsComponent>
-        <PhysicsState state="0"/>
-        <Constraints freezePosX="0" freezePosY="0" freezePosZ="1" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
-        <mass value="1"/>
+        <PhysicsState state="2"/>
+        <Constraints freezePosX="0" freezePosY="0" freezePosZ="0" freezeRotX="0" freezeRotY="0" freezeRotZ="0"/>
+        <mass value="3.4028235e+38"/>
         <UsingGravity isUsing="1"/>
-        <drag value="0.1"/>
+        <drag value="0"/>
         <angularDrag value="0.050000001"/>
         <friction value="0.5"/>
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>
         <CollisionState state="0"/>
-        <CollisionType type="3"/>
+        <CollisionType type="2"/>
         <isTrigger trigger="0"/>
         <radius value="1.8"/>
-        <centre x="0" y="0" z="0"/>
+        <centre x="2.3" y="0" z="3.0999999"/>
         <centrePosA x="0" y="4.6999998" z="0"/>
         <centrePosB x="0" y="1.9" z="0"/>
-        <halfExtents x="2.5" y="2.5" z="2.5"/>
+        <halfExtents x="2.8" y="0.30000001" z="3.2"/>
         <orientation w="1" x="0" y="0" z="0"/>
     </CollisionComponent>
     <ShadowSettings>
-        <castShadow state="1"/>
+        <castShadow state="0"/>
     </ShadowSettings>
     <TilingSettings>
         <isTiled state="0"/>
-        <tileScale x="2.3599999" y="2.0799999"/>
-        <tileOffset x="-0.75999999" y="2.4200001"/>
+        <tileScale x="1" y="1"/>
+        <tileOffset x="0" y="0"/>
     </TilingSettings>
-    <MeshComponent name="SM_Crate_01"/>
+    <MeshComponent name="SM_Pipe_Straight_Vent"/>
     <MaterialComponent name="darker_metal"/>
     <ShaderComponent name="MultiPhong"/>
 </Actor>

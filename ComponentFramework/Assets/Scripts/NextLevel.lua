@@ -6,6 +6,6 @@ end
 
 function OnTriggerEnter(other)
 	if other.Tag == "Player" then
-		Scene:LoadNext()
+		Scene.LoadNext()
 	end
 end
