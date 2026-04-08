@@ -1,0 +1,12 @@
+<Actor>
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="-32.631798" y="31.354" z="-74.244713"/>
+        <rotation w="1" x="4.0340192e-06" y="1.6985924e-06" z="-6.8519123e-12"/>
+        <scale x="0.059999999" y="57.5" z="45.700001"/>
+    </TransformComponent>
+    <ShadowSettings>
+        <castShadow state="1"/>
+    </ShadowSettings>
+    <MeshComponent name="Cube"/>
+</Actor>
