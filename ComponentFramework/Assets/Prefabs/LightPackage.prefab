@@ -1,0 +1,29 @@
+<Prefab name="LightPackage">
+    <Tag value="Untagged"/>
+    <TransformComponent>
+        <position x="0" y="0" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </TransformComponent>
+    <Children>
+        <Child name="PointLight_4D">
+            <Tag value="Untagged"/>
+            <TransformComponent>
+                <position x="-70.915001" y="62.098999" z="-21.73275"/>
+                <rotation w="1" x="4.0339742e-06" y="1.6985155e-06" z="-6.7922019e-06"/>
+                <scale x="0.99999893" y="1.0000013" z="1.0000007"/>
+            </TransformComponent>
+            <LightComponent>
+                <diffuse x="0.5" y="0.5" z="0.5" w="1"/>
+                <specular x="1" y="1" z="1" w="1"/>
+                <intensity magnitude="242.60001"/>
+                <LightType type="1"/>
+                <shadowType type="1"/>
+                <shadowNear value="0.1"/>
+                <shadowFar value="200"/>
+                <shadowResolution value="1024"/>
+                <shadowOrthoSize value="60"/>
+            </LightComponent>
+        </Child>
+    </Children>
+</Prefab>

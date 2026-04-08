@@ -117,5 +117,6 @@ bool ProjectSettingsManager::Load(const std::string& filePath)
         }
     }
 
+    settings.RebuildIds();
     return true;
 }

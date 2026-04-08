@@ -12,7 +12,7 @@
         <UsingGravity isUsing="1"/>
         <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="1"/>
+        <friction value="0.5"/>
         <restitution value="0.18000001"/>
     </PhysicsComponent>
     <CollisionComponent>
@@ -31,10 +31,10 @@
     </ShadowSettings>
     <TilingSettings>
         <isTiled state="1"/>
-        <tileScale x="175" y="175"/>
-        <tileOffset x="0" y="0"/>
+        <tileScale x="150" y="200"/>
+        <tileOffset x="0.51999998" y="-0.67000002"/>
     </TilingSettings>
     <MeshComponent name="Cube"/>
-    <MaterialComponent name="drill-marked-granite-drystone-1118-mm-architextures"/>
+    <MaterialComponent name="dark_metal_yellow_brown_tint"/>
     <ShaderComponent name="MultiPhong"/>
 </Actor>

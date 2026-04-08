@@ -1,17 +1,20 @@
 <ProjectSettings>
-    <windowTitle value="NewScene_1D"/>
+    <windowTitle value="Level1"/>
     <renderWidth value="1280"/>
     <renderHeight value="720"/>
     <displayWidth value="1280"/>
     <displayHeight value="720"/>
     <targetFPS value="60"/>
-    <vsync value="0"/>
-    <startupScene value=""/>
+    <vsync value="1"/>
+    <startupScene value="Level1"/>
     <Tags>
         <Tag value="Untagged"/>
         <Tag value="MainCamera"/>
         <Tag value="Player"/>
         <Tag value="Ground"/>
     </Tags>
-    <SceneList/>
+    <SceneList>
+        <Scene id="0" name="Level1" path="Scenes\Level1.scene"/>
+        <Scene id="1" name="Level2" path="Scenes\Level2.scene"/>
+    </SceneList>
 </ProjectSettings>

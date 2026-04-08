@@ -25,6 +25,8 @@ public:
 	};
 
 	// load scene overloads
+	void Load(const std::string& name) { LoadScene(name); }
+	void Load(int id) { LoadScene(id); }
 	void LoadScene(const std::string& name) {
 		pending.type = RequestType::ByName;
 		pending.name = name;

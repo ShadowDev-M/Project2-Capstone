@@ -11,6 +11,10 @@
 #include "GameWindow.h" 
 #include "MemoryWindow.h"
 
+#include "LightingSystem.h"
+#include "PhysicsSystem.h"
+#include "SceneLoader.h"
+
 EditorManager& EditorManager::getInstance() {
 	static EditorManager instance;
 	return instance;
@@ -227,17 +231,23 @@ void EditorManager::LoadScene(const std::string& name)
 		return;
 	}
 
-	sceneGraph->RemoveAllActors();
-	std::vector<std::string> sceneTags = XMLObjectFile::readSceneTags(loadName);
-	for (const auto& tag : sceneTags) sceneGraph->addTag(tag);
-	
+	AnimationSystem::getInstance().StopMeshLoadingWorker();
+	LightingSystem::getInstance().ClearActors();
+	PhysicsSystem::getInstance().ClearActors();
+	CollisionSystem::getInstance().ClearActors();
+	sceneGraph->OnDestroy();
+
 	//set active memory to stale for later comparison
 	MemoryStale();
 
-	XMLObjectFile::addActorsFromFile(sceneGraph, loadName);
-	sceneGraph->sceneFileName = loadName;
-	ScreenManager::getInstance().setWindowTitle(loadName);
+	// load new scene
+	AnimationSystem::getInstance().StartMeshLoadingWorker();
 	sceneGraph->OnCreate();
+	sceneGraph->sceneFileName = loadName;
+	XMLObjectFile::addActorsFromFile(sceneGraph, loadName);
+	ScreenManager::getInstance().setWindowTitle(loadName);
+	int sceneId = ProjectSettingsManager::getInstance().Get().GetSceneIdByName(loadName);
+	SceneLoader::SetActiveScene(loadName, sceneId);
 	Debug::Info("Loaded file: " + sceneGraph->sceneFileName, __FILE__, __LINE__);
 }
 
@@ -277,6 +287,9 @@ void EditorManager::Stop()
 
 	XMLObjectFile::addActorsFromFile(sceneGraph, sceneFile);
 	sceneGraph->OnCreate();
+
+	int sceneId = ProjectSettingsManager::getInstance().Get().GetSceneIdByName(sceneFile);
+	SceneLoader::SetActiveScene(sceneFile, sceneId);
 
 	pendingFocusWindow = "Scene";
 }

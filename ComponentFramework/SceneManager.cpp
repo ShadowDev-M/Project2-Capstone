@@ -134,6 +134,9 @@ void SceneManager::Update(float deltaTime) {
 	AnimationSystem::getInstance().Update(deltaTime);
 	InputManager::getInstance().update(deltaTime);
 	SceneGraph::getInstance().Update(deltaTime);
+	
+	// remove if causing bugs
+	//bool windowFocused = (SDL_GetWindowFlags(window->getWindow()) & SDL_WINDOW_INPUT_FOCUS) != 0;
 
 #ifdef ENGINE_EDITOR
 	if (EditorManager::getInstance().isPlayMode()) {
@@ -157,8 +160,79 @@ void SceneManager::Render() {
 	Renderer::getInstance().ShadowPass();
 	Renderer::getInstance().RenderSceneView();
 	Renderer::getInstance().RenderGameView();
+}
 
-	// if (currentScene) currentScene->Render();
+void SceneManager::ProcessPendingLoad()
+{
+	if (!SceneLoader::getInstance().HasPending()) return;
+
+	SceneLoader::Request request = SceneLoader::getInstance().ConsumePending();
+	using Type = SceneLoader::RequestType;
+
+	std::string targetScene;
+	if (request.type == Type::ByName) {
+		targetScene = request.name;
+	}
+	else if (request.type == Type::ById) {
+		const auto* s = ProjectSettingsManager::getInstance().Get().GetSceneById(request.id);
+		if (!s) return;
+		targetScene = s->name;
+	}
+	else if (request.type == Type::Next) {
+		int nextId = SceneLoader::GetActiveSceneId() + 1;
+		const auto* s = ProjectSettingsManager::getInstance().Get().GetSceneById(nextId);
+		if (!s) return;
+		targetScene = s->name;
+	}
+
+	if (targetScene.empty()) return;
+
+	LoadSceneFile(targetScene);
+
+#ifdef ENGINE_EDITOR
+	if (EditorManager::getInstance().isPlayMode()) {
+		SceneGraph::getInstance().Start();
+		InputManager::getInstance().setGameInputActive(true);
+	}
+#else
+	SceneGraph::getInstance().Start();
+#endif
+}
+
+void SceneManager::LoadSceneFile(const std::string& sceneName)
+{
+	// shutdown
+	AnimationSystem::getInstance().StopMeshLoadingWorker();
+	LightingSystem::getInstance().ClearActors();
+	PhysicsSystem::getInstance().ClearActors();
+	CollisionSystem::getInstance().ClearActors();
+	SceneGraph::getInstance().OnDestroy();
+
+	// load new scene
+	AnimationSystem::getInstance().StartMeshLoadingWorker();
+	SceneGraph::getInstance().OnCreate();
+	SceneGraph::getInstance().sceneFileName = sceneName;
+	XMLObjectFile::addActorsFromFile(&SceneGraph::getInstance(), sceneName.c_str());
+	ScreenManager::getInstance().setWindowTitle(sceneName);
+
+	ProjectSettings& cfg = ProjectSettingsManager::getInstance().Get();
+	int sceneId = cfg.GetSceneIdByName(sceneName);
+	if (sceneId == -1) {
+		fs::path sceneDir = SearchPath::getInstance().EnsureSubfolder("Scenes");
+		fs::path scenePath = sceneDir / (sceneName + ".scene");
+		std::string relPath = SearchPath::getInstance().MakeRelative(scenePath).string();
+
+		SceneListData entry;
+		entry.name = sceneName;
+		entry.path = relPath;
+		cfg.sceneList.push_back(entry);
+		cfg.RebuildIds();
+		ProjectSettingsManager::getInstance().SaveDefault();
+		sceneId = cfg.GetSceneIdByName(sceneName);
+	}
+
+	SceneLoader::SetActiveScene(sceneName, sceneId);
+	Debug::Info("Loaded scene: " + sceneName + " (id=" + std::to_string(sceneId) + ")", __FILE__, __LINE__);
 }
 
 void SceneManager::HandleEvents() {
