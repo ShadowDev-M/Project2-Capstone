@@ -7,10 +7,6 @@ leverEndRot = Quaternion.new()
 leverStartPos = Vec3.new()
 leverEndPos = Vec3.new()
 
-spawnLight = false
-
-lock = false
-
 
 speed = 1.0
 openRange = 0.0
@@ -56,16 +52,9 @@ function Update(deltaTime)
 	local change = false
 	local leverChange = false
 
-	if spawnLight and not lock then
-		Game:Instantiate("LightPackage")
-		lock = true
-
-	end
 
 	--opening
 	if active then
-		
-		spawnLight = true
 
 		--Lever
 		if leverOpenRange >= 1 then 

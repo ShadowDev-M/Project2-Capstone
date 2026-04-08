@@ -1,7 +1,7 @@
 <Actor>
     <Tag value="Untagged"/>
     <TransformComponent>
-        <position x="8.2045813" y="8.0356674" z="-101.08023"/>
+        <position x="8.2045813" y="0.83566892" z="-38.680641"/>
         <rotation w="0.99999994" x="4.0344908e-06" y="1.6987321e-06" z="-6.7930682e-06"/>
         <scale x="0.69999945" y="0.70000076" z="0.70000035"/>
     </TransformComponent>
@@ -9,12 +9,12 @@
         <castShadow state="1"/>
     </ShadowSettings>
     <TilingSettings>
-        <isTiled state="1"/>
-        <tileScale x="2" y="2"/>
+        <isTiled state="0"/>
+        <tileScale x="1" y="1"/>
         <tileOffset x="0" y="0"/>
     </TilingSettings>
     <MeshComponent name="SM_Gear_Large"/>
-    <MaterialComponent name="rusted-iron-800-mm-architextures"/>
+    <MaterialComponent name="hammer_BaseColor"/>
     <ShaderComponent name="MultiPhong"/>
     <ScriptComponent name="GearTurn" e0="-10" e1="9"/>
 </Actor>

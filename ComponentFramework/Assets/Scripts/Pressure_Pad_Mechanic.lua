@@ -6,7 +6,7 @@ speed = 1.0
 openRange = 0.0
 pressedUsers = {}
 
-lightInstance = nil
+
 
 function Start()
 	--print("test")
@@ -21,28 +21,16 @@ end
 
 function Update(deltaTime)
 	local change = false
-	
-	local isActive = #pressedUsers > 0
-	
-		if isActive and lightInstance == nil then
-			lightInstance = Game:Instantiate("LightPackage")
-		end
-
-		if not isActive and lightInstance ~= nil then
-			Game:Destroy(lightInstance)
-			lightInstance = nil
-		end
-
-	if isActive then
-		if openRange >= 1 then
+	if #(pressedUsers) > 0 then
+		if openRange >= 1 then 
 			openRange = 1
 		else
 			change = true
 			openRange = openRange + deltaTime * speed
 		end
 	end
- 
-	if not isActive then
+
+	if #(pressedUsers) == 0 then
 		if openRange <= 0 then
 			openRange = 0
 		else
@@ -50,10 +38,12 @@ function Update(deltaTime)
 			openRange = openRange - deltaTime * speed
 		end
 	end
- 
+		
+	--print(openRange)
 	if change == true then
 		GameObject.Parent:FindFirstChild("DoorPart").Transform.Rotation = QMath.Slerp(startRot, endRot, openRange)
 	end
+
 end
 
 

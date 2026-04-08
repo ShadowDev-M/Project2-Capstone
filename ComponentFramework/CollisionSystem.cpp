@@ -203,11 +203,6 @@ void CollisionSystem::ResolvePenetration(Ref<Actor> actor1_, Ref<Actor> actor2_,
 	PhysicsState state1 = PC1->getState();
 	PhysicsState state2 = PC2->getState();
 
-	// capping tiny penetrations so that theres no jitter
-	constexpr float PEN_CAP = 0.005f;
-	float correctedPenetration = std::max(0.0f, data.penetration - PEN_CAP);
-	if (correctedPenetration < VERY_SMALL) return;
-
 	// setting inverse mass based on physics state 
 	float inverseMass1 = (state1 == PhysicsState::Dynamic) ? 1.0f / PC1->getMass() : 0.0f;
 	float inverseMass2 = (state2 == PhysicsState::Dynamic) ? 1.0f / PC2->getMass() : 0.0f;
@@ -219,7 +214,7 @@ void CollisionSystem::ResolvePenetration(Ref<Actor> actor1_, Ref<Actor> actor2_,
 	if (totalInverseMass < VERY_SMALL) return;
 
 	// multiplying the contact normal by the penetration value to get seperation value
-	Vec3 seperationValue = data.contactNormal * correctedPenetration;
+	Vec3 seperationValue = data.contactNormal * data.penetration;
 
 	// only dynamic physics actors penetration will be resolved
 	if (state1 == PhysicsState::Dynamic) {

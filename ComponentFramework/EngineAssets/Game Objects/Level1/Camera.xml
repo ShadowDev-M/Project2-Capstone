@@ -1,8 +1,8 @@
 <Actor>
     <Tag value="MainCamera"/>
     <TransformComponent>
-        <position x="56.599998" y="6.9000001" z="-31.440105"/>
-        <rotation w="0.99980962" x="0.017451677" y="-0.0087253228" z="0.00014550722"/>
+        <position x="0" y="6.9000001" z="-31.440105"/>
+        <rotation w="0.99999994" x="4.0344908e-06" y="1.6987321e-06" z="-6.7930682e-06"/>
         <scale x="0.99999893" y="1.0000013" z="1.0000007"/>
     </TransformComponent>
     <CameraComponent>

@@ -1,18 +1,18 @@
 <Prefab name="Player">
     <Tag value="Player"/>
     <TransformComponent>
-        <position x="17.487968" y="-6.6810002" z="-23.540409"/>
-        <rotation w="0.99999994" x="4.0344908e-06" y="1.6987321e-06" z="-6.7930682e-06"/>
-        <scale x="1.4999988" y="1.5000024" z="1.5000014"/>
+        <position x="17.487968" y="-5.6810002" z="0"/>
+        <rotation w="1" x="0" y="0" z="0"/>
+        <scale x="1.5" y="1.5" z="1.5"/>
     </TransformComponent>
     <PhysicsComponent>
         <PhysicsState state="0"/>
         <Constraints freezePosX="false" freezePosY="false" freezePosZ="true" freezeRotX="false" freezeRotY="false" freezeRotZ="false"/>
         <mass value="1"/>
         <UsingGravity isUsing="1"/>
-        <drag value="1"/>
+        <drag value="0"/>
         <angularDrag value="0.050000001"/>
-        <friction value="0.30000001"/>
+        <friction value="0.5"/>
         <restitution value="0"/>
     </PhysicsComponent>
     <CollisionComponent>

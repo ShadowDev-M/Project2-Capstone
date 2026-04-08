@@ -3,17 +3,17 @@
     <TransformComponent>
         <position x="0" y="0" z="0"/>
         <rotation w="1" x="0" y="0" z="0"/>
-        <scale x="10" y="10" z="10"/>
+        <scale x="100" y="40" z="0.001"/>
     </TransformComponent>
     <ShadowSettings>
         <castShadow state="0"/>
     </ShadowSettings>
     <TilingSettings>
         <isTiled state="1"/>
-        <tileScale x="200" y="200"/>
-        <tileOffset x="-9.1700001" y="4.1399999"/>
+        <tileScale x="400" y="330"/>
+        <tileOffset x="-9.2799997" y="4.2199998"/>
     </TilingSettings>
     <MeshComponent name="Plane"/>
-    <MaterialComponent name="darker_metal"/>
+    <MaterialComponent name="seamsky"/>
     <ShaderComponent name="MultiPhong"/>
 </Actor>
