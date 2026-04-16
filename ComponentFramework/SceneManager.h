@@ -28,6 +28,9 @@ private:
 	void Update(float deltaTime);
 	void Render();
 
+	void ProcessPendingLoad();
+	void LoadSceneFile(const std::string& sceneName);
+
 	class Scene* currentScene;
 	class Timer* timer;
 	class Window* window;

@@ -6,9 +6,7 @@ void SearchPath::Initialize(const fs::path& assetsRoot)
 	root = fs::absolute(assetsRoot);
 
 	// default subfolders for assets
-	static const char* assetFolders[] = { "Animations", "Audio", "Game Objects", "Icons",
-		"Materials", "Meshes", "Prefabs", "Scenes", "Scripts", "Shaders", "Textures" 
-	};
+	static const char* assetFolders[] = { "Animations", "Audio", "Materials", "Meshes", "Prefabs", "Scenes", "Scripts", "Shaders", "Textures" };
 
 	for (auto& folder : assetFolders) {
 		fs::create_directories(root / folder);
@@ -42,10 +40,10 @@ std::vector<fs::directory_entry> SearchPath::ListDirectory(const fs::path& relDi
 	return entries;
 }
 
-std::vector<fs::path> SearchPath::FindByExtension(const fs::path& relDir, const std::vector<std::string>& extensions) const
+std::vector<fs::path> SearchPath::FindByExtension(const fs::path& rootPath, const fs::path& relDir, const std::vector<std::string>& extensions) const
 {
 	std::vector<fs::path> results;
-	fs::path absDir = root / relDir;
+	fs::path absDir = rootPath / relDir;
 	if (!fs::is_directory(absDir)) return results;
 
 	for (auto& entry : fs::recursive_directory_iterator(absDir)) {
@@ -73,4 +71,23 @@ fs::path SearchPath::EnsureSubfolder(const std::string& name) const
 	fs::path path = root / name;
 	fs::create_directories(path);
 	return path;
+}
+
+void SearchPath::InitializeEngineAssets(const fs::path& engineAssetsRoot)
+{
+	engineRoot = fs::absolute(engineAssetsRoot);
+
+	// default subfolders for assets
+	static const char* assetFolders[] = { "Audio", "Game Objects", "Icons", "Meshes", "Prefabs", "Scenes", "Shaders", "Textures" };
+
+	for (auto& folder : assetFolders) {
+		fs::create_directories(engineRoot / folder);
+	}
+}
+
+fs::path SearchPath::ResolveEngine(const fs::path& relative) const
+{
+	fs::path relPath = engineRoot / relative;
+	if (fs::exists(relPath)) return fs::absolute(relPath);
+	return {};
 }

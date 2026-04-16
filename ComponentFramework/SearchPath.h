@@ -14,6 +14,9 @@ class SearchPath
 	// root folder
 	fs::path root;
 
+	// engine asset root
+	fs::path engineRoot;
+
 public:
 	static SearchPath& getInstance() {
 		static SearchPath instance;
@@ -33,7 +36,7 @@ public:
 	std::vector<fs::directory_entry> ListDirectory(const fs::path& relDir) const;
 
 	// takes a relative directory and returns all files that have the given extensions  ("Textures", { ".png", ".jpg", etc })
-	std::vector<fs::path> FindByExtension(const fs::path& relDir, const std::vector<std::string>& extensions) const;
+	std::vector<fs::path> FindByExtension(const fs::path& rootPath, const fs::path& relDir, const std::vector<std::string>& extensions) const;
 
 	// if a relative path exists
 	bool Exists(const fs::path& relative) const;
@@ -42,5 +45,10 @@ public:
 	fs::path EnsureSubfolder(const std::string& name) const;
 
 	const fs::path& GetRoot() const { return root; }
+
+	// engine asset functions (the engine assets folder is a seperate folder in the projectdir for... well you can guess what its for)
+	void InitializeEngineAssets(const fs::path& engineAssetsRoot);
+	fs::path ResolveEngine(const fs::path& relative) const;
+	const fs::path& GetEngineRoot() const { return engineRoot; }
 };
 

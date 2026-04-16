@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <queue>
 #include <mutex>
+#include <set>
 
 // SDL & OpenGL
 #include <SDL.h>

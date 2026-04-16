@@ -16,7 +16,7 @@ class GameWindow;
 // used for edit & play modes
 enum class EditorMode {
 	Edit,
-	Play, 
+	Play,
 	Pause
 };
 
@@ -31,7 +31,7 @@ class EditorManager {
 	EditorManager& operator=(EditorManager&&) = delete;
 private:
 	bool imguiInit = false;
-	
+
 	// scene graph reference (might change this after since scenegraph is a singleton now, I just don't want anything to break) TODO
 	SceneGraph* sceneGraph = nullptr;
 
@@ -47,7 +47,7 @@ private:
 	std::unique_ptr<SceneWindow> sceneWindow;
 	std::unique_ptr<GameWindow> gameWindow;
 	std::unique_ptr<MemoryManagerWindow> memoryWindow;
-	
+
 	std::unordered_map<std::string, bool> windowStates;
 
 	// Renaming was such a headache because information from the inspector window needed to be transfered over to the hierarchy window so that it could update with the actors new name
@@ -111,9 +111,6 @@ private:
 
 	void CreateEditorIcons();
 
-	// temporary save file location
-	std::string tempSaveFile = "tempsave";
-
 public:
 	// Meyers Singleton (from JPs class)
 	static EditorManager& getInstance();
@@ -125,7 +122,7 @@ public:
 	void HandleEvents(const SDL_Event& event) const;
 	void RenderEditorUI();
 	bool IsInitialized() const { return imguiInit; }
-	
+
 	// Editor states
 	EditorMode GetEditorMode() const { return currentMode; }
 	void SetEditorMode(EditorMode mode) { currentMode = mode; }
@@ -133,9 +130,11 @@ public:
 	bool isPlayMode() const { return currentMode == EditorMode::Play; }
 	bool isPaused() const { return currentMode == EditorMode::Pause; }
 
-	// functions for editor states
+	// EditorManager/Current scene saving/loading
 	void SaveScene(const std::string& name = "");
 	void LoadScene(const std::string& name = "");
+
+	// editor state functions
 	void Play();
 	void Stop();
 	void Pause();
@@ -151,7 +150,7 @@ public:
 	void RequestActorRename(const std::string& oldName_, const std::string& newName_);
 	bool HasPendingRename() const { return pendingRename.pending; }
 	std::pair<std::string, std::string> ConsumePendingRename();
-	
+
 	EditorManager::EditorIcons getEditorIcons() { return editorIcons; }
 
 	// get editor camera overloads
@@ -177,14 +176,20 @@ public:
 		bool isSet = false;
 	};
 
-	void SetSelectedAsset(const SelectedAsset& asset) { 
-		selectedAsset = asset; 
+	void SetSelectedAsset(const SelectedAsset& asset) {
+		selectedAsset = asset;
 		SceneGraph::getInstance().debugSelectedAssets.clear();
 	}
 	void ClearSelectedAsset();
-	const SelectedAsset& GetSelectedAsset() const{ return selectedAsset; }
+	const SelectedAsset& GetSelectedAsset() const { return selectedAsset; }
 	void UpdateProjectWindow();
 
 private:
 	SelectedAsset selectedAsset;
+
+	bool showProjectSettings = false;
+	void ShowProjectSettingsWindow();
+
+	// temporary save file location
+	std::string tempSaveFile = "tempsave";
 };
